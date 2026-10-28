@@ -18,7 +18,7 @@
 ## One shared production world
 
 - Production is https://la-baraj.vercel.app/ for everyone. No room selection, generated room IDs, invite-copy UI, or visible capacity denominator.
-- CANONICAL_WORLD_ID is the preserved existing world in packages/shared/protocol.ts. Accepted legacy room URLs are aliases, not separate worlds. Preserve its ownership and fire state.
+- CANONICAL_WORLD_ID is the preserved existing world in packages/shared/protocol.ts. Accepted legacy room URLs are aliases, not separate worlds. Preserve its current ownership and fire state. The user explicitly retired housing v1 on October 28: housing epoch 2 assigns sequential cabins nearest the gathering area, builds only registered owners’ cabins, retains them offline, and commits owner signs after five unchanged minutes. Do not reset epoch 2 without a new user request.
 - Player-facing UI is the game, a transparent title banner, compact status, Menu and contextual actions. Inspection/debug tools are development-only. The circular minimap stays visible at bottom-left without labels or map controls; help remains on demand.
 
 ## One local game URL

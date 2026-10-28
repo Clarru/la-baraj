@@ -1,7 +1,6 @@
 import { useSyncExternalStore } from "react";
 import { GameIcon } from "./GameArt";
 import type { MultiplayerRoom, NetworkStatus } from "./multiplayer";
-import "./multiplayer.css";
 
 export function onlineLabel(status: NetworkStatus, count: number) {
   if (status === "online") return `${count} online`;
@@ -22,9 +21,11 @@ export function MultiplayerHud({ room }: { room: MultiplayerRoom }) {
     !homeError && ["error", "full", "offline"].includes(view.status);
   const label = homeError
     ? "Cabin unavailable"
-    : view.status === "error" && view.errorCode === "storage-unavailable"
-      ? "Save failed"
-      : onlineLabel(view.status, view.count);
+    : view.errorCode === "name-save-failed"
+      ? "Name not saved"
+      : view.status === "error" && view.errorCode === "storage-unavailable"
+        ? "Save failed"
+        : onlineLabel(view.status, view.count);
   const message =
     view.error ||
     (view.status === "full"

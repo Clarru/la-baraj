@@ -88,6 +88,7 @@ export function GameDialog({
 export function GameMenu({
   nickname,
   homeIndex,
+  homeOwnerName,
   canLookHome = true,
   onRename,
   onControls,
@@ -97,6 +98,7 @@ export function GameMenu({
 }: {
   nickname: string;
   homeIndex: number | null;
+  homeOwnerName?: string | null;
   canLookHome?: boolean;
   onRename: (name: string) => void;
   onControls: () => void;
@@ -137,9 +139,14 @@ export function GameMenu({
         <span>
           {homeIndex === null
             ? "Finding your cabin…"
-            : `Your cabin · ${String(homeIndex + 1).padStart(2, "0")}`}
+            : `Your cabin · ${String(homeIndex + 1)}`}
         </span>
       </p>
+      {homeIndex !== null && homeOwnerName !== nickname && (
+        <p className="game-name-sign-note">
+          Your cabin sign updates after your name stays unchanged for 5 minutes.
+        </p>
+      )}
       <div className="game-menu-actions">
         <button onClick={onControls}>
           <GameIcon name="controls" size={29} />

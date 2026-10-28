@@ -19,7 +19,9 @@ export type GroundContactsSummary = {
 };
 export function CabinGroundContacts({
   onReady,
+  indices,
 }: {
+  indices: readonly number[];
   onReady?: (summary: GroundContactsSummary) => void;
 }) {
   const { world, rapier } = useRapier();
@@ -30,6 +32,12 @@ export function CabinGroundContacts({
     vertices: number[];
     supports: FoundationSupport[];
   } | null>(null);
+  const signature = indices.join(",");
+  useEffect(() => {
+    ready.current = false;
+    elapsed.current = 0;
+    setContacts(null);
+  }, [signature]);
   useFrame((_, dt) => {
     if (ready.current) return;
     elapsed.current += dt;
@@ -57,7 +65,8 @@ export function CabinGroundContacts({
       supports: FoundationSupport[] = [];
     let cabins = 0,
       maxPlinthGap = 0;
-    for (const cabin of cabinSpots) {
+    for (const index of indices) {
+      const cabin = cabinSpots[index];
       const design = cabinDesignForPlot(cabin.i),
         width = design.width,
         depth = design.depth;

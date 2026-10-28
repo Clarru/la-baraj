@@ -22,7 +22,9 @@ export function CabinAccess({
   onTransition,
   onWalk,
   onPromptVisible,
+  cabinIndices,
 }: {
+  cabinIndices: readonly number[];
   interiorIndex: number | null;
   homeIndex: number;
   focusedIndex: number;
@@ -51,7 +53,14 @@ export function CabinAccess({
   };
   useEffect(() => () => timers.current.forEach(window.clearTimeout), []);
   const crossDoor = (index: number, entering: boolean) => {
-    if (locked.current || paused || busy || vehicleMounted) return;
+    if (
+      locked.current ||
+      paused ||
+      busy ||
+      vehicleMounted ||
+      !cabinIndices.includes(index)
+    )
+      return;
     locked.current = true;
     onTransition(true);
     setPhase("opening");
@@ -78,7 +87,7 @@ export function CabinAccess({
   useEffect(() => {
     const timer = window.setInterval(() => {
       if (interiorIndex === null) {
-        setNearby(nearestCabinDoor(playerPosition));
+        setNearby(nearestCabinDoor(playerPosition, 2.3, cabinIndices));
         setNearExit(false);
       } else {
         const door = cabinDoor(interiorIndex),
@@ -89,7 +98,7 @@ export function CabinAccess({
       }
     }, 150);
     return () => window.clearInterval(timer);
-  }, [interiorIndex]);
+  }, [interiorIndex, cabinIndices]);
   const target =
     mode === "home"
       ? homeIndex
@@ -151,7 +160,8 @@ export function CabinAccess({
     />
   );
   if (paused) return curtain;
-  if (!import.meta.env.DEV && interiorIndex !== null && !nearExit) return curtain;
+  if (!import.meta.env.DEV && interiorIndex !== null && !nearExit)
+    return curtain;
   if (interiorIndex !== null)
     return (
       <>
@@ -159,9 +169,7 @@ export function CabinAccess({
         <div className="cabin-entry-panel" data-testid="interior-controls">
           <GameIcon name="door" size={31} />
           <div>
-            <strong>
-              Inside cabin {String(interiorIndex + 1).padStart(2, "0")}
-            </strong>
+            <strong>Inside cabin {String(interiorIndex + 1)}</strong>
             <span>
               {nearExit
                 ? "E at the door to go outside"
@@ -185,7 +193,7 @@ export function CabinAccess({
           <strong>
             {target === homeIndex
               ? "Your cabin"
-              : `Cabin ${String(target + 1).padStart(2, "0")}`}
+              : `Cabin ${String(target + 1)}`}
           </strong>
           <span>
             {cabinDesignForPlot(target).label} ·{" "}

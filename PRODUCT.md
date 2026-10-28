@@ -1,5 +1,9 @@
 # La Baraj
 
+## Current player village — October 28, 2026
+
+A first-time visitor confirms a name before downloading or entering the 3D world. The server creates one permanent cabin per anonymous browser owner, numbered consecutively from 1. Cabins fill compact, dry, road-clear southern-shore plots nearest the gathering fire first. Only allocated cabins and their doors, benches, map markers and foundation supports render. Cabins remain when their owners disconnect, and reconnecting from the same browser restores the same home. Owner names appear immediately on player presence and on their cabin sign after five unchanged minutes; confirmed renames restart that server-persisted grace period. The user explicitly retired housing v1 assignments and placements for this release. Housing epoch 2 is the new durable baseline; fire state and the canonical shared world are preserved. Older prototype notes below are historical where they conflict with this section.
+
 <!-- impeccable:product-schema 1 -->
 
 ## Platform

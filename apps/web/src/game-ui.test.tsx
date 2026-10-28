@@ -148,7 +148,7 @@ describe("production world interface", () => {
     );
     expect(html).toContain('name="nickname"');
     for (const label of [
-      "Your cabin · 08",
+      "Your cabin · 8",
       "Controls",
       "Look at your cabin",
       "Return to your cabin",

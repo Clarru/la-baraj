@@ -1,5 +1,4 @@
 import { useProgress } from "@react-three/drei";
-import "./scene-loading.css";
 
 /** Suspense fallback. Resource counts come directly from Three's loading manager. */
 export function SceneLoading() {
