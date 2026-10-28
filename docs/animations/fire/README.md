@@ -1,16 +1,11 @@
-# Compact campfire visual revision
+# Reference-led faceted campfire
 
-The user rejected both the downloaded pixelated flames and the first generated24-frame dissolve. This change replaces those effects with a denser, lower custom flame generated using the built-in ImageGen tool. The original RGBA output is copied byte-for-byte to `apps/web/public/assets/fire/campfire-v2.png` (1536×1024). See [the exact generation prompt](imagegen-v2-prompt.txt) and [asset hash](asset-v2-sha256.txt).
+The user's supplied screenshot is the visual target. [Zoomed detail](reference/fire-detail.png) shows hard angular orange/gold tongues around a pale-yellow core, diamond embers and six radial logs leaning into the center. The prior downloaded and ImageGen-painted flame textures were rejected. No painted texture is used by the current renderer.
 
-Three intersecting world-space sheets give the flame depth around the logs. View-angle fading hides thin edge-on sheets. A small continuous UV flow and contour deformation replace the frame atlas/crossfade; the transparent PNG is shared by all three materials. Eight ember points, a restrained coal glow and a smaller, dimmer point light anchor the effect to the pit. Reduced motion freezes the flame and hides moving embers.
+Nine shallow faceted flame meshes recreate that layered silhouette. Each has four colored facets around a ridge, a pinned base, and small continuous height/width/lean changes. The individual tongues turn toward the camera, avoiding edge-on paper artifacts while their world-space positions preserve depth inside the pit. Eight instanced octahedral embers rise, grow and shrink; the radial seven-sided logs remain visible when extinguished. A bounded warm point light lights the rocks and logs.
 
-All effect resources and the point light stay mounted between toggles. The off state uses zero opacity/intensity, preserving the stable light count and shader setup. The existing authored ignition timing, authoritative shared fire updates, bench claims, remote activities and scoot reservations are untouched.
+Flames, embers and point light stay mounted across toggles, using opacity and intensity to fade on/off. The off state retains the light count and shader configuration. Reduced motion freezes the tongues, removes light flicker and hides moving embers. The existing authored character gesture, authoritative shared ignition, remote poses, seat claiming and scoot reservations are unchanged.
 
-The only activity behavior adjustment is a constant-speed fire approach; seated scoots retain easing. Its regression test checks intermediate and final floor anchors.
+The only activity-state change is a tested constant-speed fire approach; seated scoots retain easing. The settlement integration changes only the FireCircle's old pair of horizontal logs to CampfireLogs, leaving cabin geometry and multiplayer integration intact.
 
-## Validation
-
-- Worktree TypeScript/production build pass.
-- Worktree test suite:89 tests across16 files pass.
-- The local legacy preview was used to inspect the lower flame and continuous motion, lighting action and persistent resources before the GitHub migration. The camera check caught a thin intersecting-sheet edge; the feature branch adds view-angle fading to address it. That final visual change must be inspected in the branch preview before marking ready. No additional local server was started and no legacy dist was written after migration ownership changed.
-- This renderer is a visual revision, not a claim of user acceptance. Do not ship the rejected older atlas as the new result.
+The reference is user supplied and included for design provenance, not as a runtime texture. Shader/geometry code and logs are reconstructed locally. Final visual evidence and the exact served commit are recorded after the coordinated localhost preview check.

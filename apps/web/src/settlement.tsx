@@ -4,6 +4,7 @@ import { RigidBody, CuboidCollider } from "@react-three/rapier";
 import * as THREE from "three";
 import { Model, assetUrl } from "./assets";
 import { Bench, CabinBenchSeats } from "./Bench";
+import { CampfireLogs } from "./campfire";
 import { cabinDesignForPlot, cabinYaw } from "./cabin-designs";
 import { cabinSpots, southShore, terrainHeight } from "./geography";
 function woodTexture() {
@@ -271,17 +272,7 @@ function FireCircle() {
           </mesh>
         );
       })}
-      {[-0.35, 0.35].map((v, i) => (
-        <mesh
-          key={i}
-          position={[v, 0.22, 0]}
-          rotation={[0, i * 0.8, Math.PI / 2]}
-          castShadow
-        >
-          <cylinderGeometry args={[0.1, 0.14, 1.5, 8]} />
-          <meshStandardMaterial color="#503e2c" roughness={1} />
-        </mesh>
-      ))}
+      <CampfireLogs />
       {[0, 1, 2, 3].map((i) => {
         const a = (i * Math.PI) / 2;
         return (

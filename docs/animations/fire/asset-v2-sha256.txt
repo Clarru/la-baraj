@@ -1,1 +1,0 @@
-d85eaeb0bbc35566c752b68ae207a3a46aba310deaa577ee6f0eed554fc99f79  apps/web/public/assets/fire/campfire-v2.png
