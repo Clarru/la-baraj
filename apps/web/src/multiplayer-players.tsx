@@ -6,6 +6,7 @@ import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
 import { assetUrl } from "./assets";
 import { activityAnimation, createCharacterActivityRig, createFishingGestureClips } from "./character-actions";
 import type { ActivityKind } from "./activity-state";
+import { createRunJumpClips } from "./run-jump-clips";
 import { jumpAnimation, type JumpPhase } from "./locomotion-animation";
 import { createScooterRiderRig } from "./scooter-rider";
 import { Scooter, type ScooterHandle } from "./scooter";
@@ -26,7 +27,7 @@ function RemoteAvatar({ id, room }: { id: string; room: MultiplayerRoom }) {
   }, [scene]);
   const clips = useMemo(() => {
     const data = JSON.parse(String(supplemental)) as { clips: Parameters<typeof THREE.AnimationClip.parse>[0][] };
-    return [...animations, ...data.clips.map((clip) => THREE.AnimationClip.parse(clip)), ...createFishingGestureClips()];
+    return [...animations, ...createRunJumpClips(animations.find((clip) => clip.name === "Run")), ...data.clips.map((clip) => THREE.AnimationClip.parse(clip)), ...createFishingGestureClips()];
   }, [animations, supplemental]);
   const rig = useMemo(() => {
     const mixer = new THREE.AnimationMixer(object);
@@ -55,16 +56,18 @@ function RemoteAvatar({ id, room }: { id: string; room: MultiplayerRoom }) {
       group.rotation.y += turn * (1 - Math.exp(-18 * dt));
     }
     if (wasRiding.current && !riding) helpers.current?.rider.reset();
-    const activity = activityAnimation(player.activity as ActivityKind), jump = jumpAnimation(player.jumpPhase as JumpPhase);
+    const activity = activityAnimation(player.activity as ActivityKind), jump = jumpAnimation(player.jumpPhase as JumpPhase, player.animation.startsWith("Jump_Run") ? "run" : "walk");
     const config = activity ?? jump;
     const next = rig.actions.has(player.animation) ? player.animation : "Idle_Neutral";
     if (next !== previousAnimation.current || (activity && remote.activityAt !== previousActivityAt.current)) {
-      rig.actions.get(previousAnimation.current)?.fadeOut(0.14);
+      const blendDuration = jump || previousAnimation.current.startsWith("Jump_") ? 0.09 : 0.14;
+      rig.actions.get(previousAnimation.current)?.fadeOut(blendDuration);
       const action = rig.actions.get(next);
       if (action) {
         action.reset().setLoop(config && !config.loop ? THREE.LoopOnce : THREE.LoopRepeat, Infinity);
+        if (next === "Run" && previousAnimation.current === "Jump_RunLand") action.time = action.getClip().duration * 0.64;
         action.clampWhenFinished = Boolean(config && !config.loop);
-        action.setEffectiveTimeScale(config ? action.getClip().duration / config.duration : 1).fadeIn(0.14).play();
+        action.setEffectiveTimeScale(config ? action.getClip().duration / config.duration : 1).fadeIn(blendDuration).play();
       }
       previousAnimation.current = next; previousActivityAt.current = remote.activityAt;
     }

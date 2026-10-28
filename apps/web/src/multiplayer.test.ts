@@ -12,6 +12,7 @@ vi.mock("partysocket", () => ({ default: class extends EventTarget {
 } }));
 import { MultiplayerRoom } from "./multiplayer";
 import { queueCabinTransfer, takeCabinTransfer, sampleCabinMotion } from "./cabin-interior-state";
+import { parseClientMessage } from "../../../packages/shared/protocol";
 const roomId = "friends_room_with_128bits_12345";
 const self = { id: "self-1", nickname: "Me", position: [45, 2, 27], yaw: 0, animation: "Idle_Neutral", activity: "none", vehicle: "none" };
 const friend = { ...self, id: "friend-1", nickname: "Friend" };
@@ -29,6 +30,21 @@ beforeEach(() => {
 afterEach(() => { vi.useRealTimers(); vi.restoreAllMocks(); vi.unstubAllGlobals(); vi.unstubAllEnvs(); });
 
 describe("friends room client", () => {
+  it.each([
+    ["takeoff", "Jump_RunStart"],
+    ["airborne", "Jump_RunAir"],
+    ["landing", "Jump_RunLand"],
+  ])("publishes running jump %s through the existing pose contract", (jumpPhase, animation) => {
+    const room = new MultiplayerRoom();
+    room.publishMotion({ ...sample, jumpPhase, animation, velocity: [0, 2, 6.5], jumpStyle: "run" });
+    const disconnect = room.connect(), socket = sockets[0];
+    socket.open(); snapshot(socket);
+    const packet = socket.sent.find((message) => message.type === "pose")!;
+    expect(packet).toMatchObject({ type: "pose", pose: { jumpPhase, animation, vehicle: "none", speed: 6.5 } });
+    expect(parseClientMessage(JSON.stringify(packet))).toEqual(packet);
+    expect(packet.pose).not.toHaveProperty("jumpStyle");
+    disconnect();
+  });
   it("retains invite room and publishes the latest feet pose immediately after a snapshot", () => {
     const room = new MultiplayerRoom();
     expect(room.roomId).toBe(roomId);
@@ -51,6 +67,7 @@ describe("friends room client", () => {
       room.publishMotion(motion);
       const packet = socket.sent.at(-1)! as { type: string; pose: typeof poses[number] };
       expect(packet.type).toBe("pose");
+      expect(parseClientMessage(JSON.stringify(packet))).toMatchObject({type: "pose", pose: {position: packet.pose.position, animation: packet.pose.animation}});
       expect(packet.pose.position).toEqual(motion.feet.map(v => Math.round(v * 1000) / 1000));
       expect(motion.feet[1]).toBeCloseTo(transfer.position[1] - .95 + .015);
       expect(packet.pose.yaw).toBeCloseTo(Math.atan2(motion.facing[0], motion.facing[2]), 2);
