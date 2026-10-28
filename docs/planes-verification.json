@@ -55,7 +55,8 @@
     "fixedDefects": [
       "ready during opponent reconnect could stall setup",
       "folding or Menu discarded edited placement",
-      "repeated-square rejection misleadingly reported storage failure"
+      "repeated-square rejection misleadingly reported storage failure",
+      "paper keyboard capture blocked native Menu activation"
     ],
     "productionBuild": "passed; no test-worker, fixtures, controls or diagnostics emitted",
     "liveWorkerVersion": "5d07366b-d29f-4edb-9bc5-eacac15d254a",

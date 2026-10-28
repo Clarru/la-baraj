@@ -234,7 +234,8 @@ export default function Game({ initialName }: { initialName: string }) {
         if (target instanceof HTMLElement && target.closest(".planes-notebook"))
           return;
         if (!event.ctrlKey && !event.metaKey && !event.altKey) {
-          event.preventDefault();
+          // Block game listeners while retaining native Tab/Enter/Space actions
+          // on the surrounding UI, just as the other game panels do.
           event.stopImmediatePropagation();
           return;
         }
