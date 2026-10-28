@@ -584,3 +584,66 @@ describe("player village roster", () => {
     stop();
   });
 });
+
+describe("private paper-game client", () => {
+  it("sends only an action and revision, resolves server acknowledgement, and clears pending moves on disconnect", async () => {
+    const room = new MultiplayerRoom();
+    const disconnect = room.connect(),
+      socket = sockets[0];
+    socket.open();
+    snapshot(socket);
+    const pending = room.planesAction({ kind: "shot", x: 3, y: 4 }, 7);
+    const packet = socket.sent.at(-1)!;
+    expect(packet).toMatchObject({
+      type: "planes-action",
+      revision: 7,
+      action: { kind: "shot", x: 3, y: 4 },
+    });
+    expect(packet).not.toHaveProperty("owner");
+    const view = {
+      version: 1,
+      revision: 8,
+      round: 1,
+      phase: "playing",
+      players: [null, null],
+      you: null,
+      ownPlanes: null,
+      shots: [[], []],
+      turn: 1,
+      winner: null,
+      deadline: 61000,
+      reason: null,
+      event: null,
+    };
+    socket.receive({ type: "planes", view, requestId: packet.requestId });
+    await expect(pending).resolves.toBeNull();
+    expect(room.getSnapshot().planes).toEqual(view);
+    const next = room.planesAction({ kind: "shot", x: 4, y: 4 }, 8);
+    disconnect();
+    await expect(next).resolves.toContain("interrupted");
+  });
+  it("can receive an in-memory test home without persisting a fake capability", () => {
+    class MemoryRoom extends MultiplayerRoom {
+      accept(message: unknown) {
+        this.receive(message as Parameters<typeof this.receive>[0]);
+      }
+    }
+    const room = new MemoryRoom("Test", false),
+      stop = room.connect(true);
+    room.accept({
+      type: "snapshot",
+      version: 1,
+      selfId: "test",
+      players: [],
+      fire: { lit: true, revision: 0 },
+      seats: {},
+      home: { index: 0, resumeToken: "l".repeat(43), epoch: 2 },
+    });
+    expect(room.getSnapshot().homeIndex).toBe(0);
+    expect(sockets).toHaveLength(0);
+    expect(
+      [...storageData.keys()].some((key) => key.includes("home-resume")),
+    ).toBe(false);
+    stop();
+  });
+});

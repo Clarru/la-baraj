@@ -1,3 +1,9 @@
+import {
+  legalFleet,
+  isGridPoint,
+  type PlanesAction,
+  type PlanesView,
+} from "./planes.ts";
 /** The intentionally small, versioned friends-playtest wire protocol. */
 export const PROTOCOL_VERSION = 1 as const;
 /** Retains the existing world's Durable Object and anonymous home ownership. */
@@ -43,6 +49,12 @@ export type ClientMessage =
   | { type: "pose"; pose: PlayerPose }
   | { type: "fire"; lit: boolean }
   | { type: "seat"; seatId: string | null; requestId: string }
+  | {
+      type: "planes-action";
+      requestId: string;
+      revision: number;
+      action: PlanesAction;
+    }
   | { type: "sync" };
 export type ServerMessage =
   | {
@@ -54,6 +66,7 @@ export type ServerMessage =
       seats: Record<string, string>;
       home?: HomeAssignment;
       village?: VillageState;
+      planes?: PlanesView;
     }
   | { type: "village"; village: VillageState }
   | { type: "joined"; player: PlayerPresence }
@@ -61,6 +74,7 @@ export type ServerMessage =
   | { type: "left"; id: string }
   | { type: "fire"; fire: FireState }
   | { type: "seats"; seats: Record<string, string> }
+  | { type: "planes"; view: PlanesView; requestId?: string; error?: string }
   | {
       type: "seat-result";
       requestId: string;
@@ -106,6 +120,39 @@ export function parseClientMessage(raw: string): ClientMessage | null {
   }
   if (!object(value)) return null;
   switch (value.type) {
+    case "planes-action": {
+      const action = value.action;
+      if (
+        !label(value.requestId, 64) ||
+        !Number.isSafeInteger(value.revision) ||
+        Number(value.revision) < 0 ||
+        !object(action)
+      )
+        return null;
+      let parsed: PlanesAction;
+      if (action.kind === "leave") parsed = { kind: "leave" };
+      else if (action.kind === "shot" && isGridPoint(action.x, action.y))
+        parsed = { kind: "shot", x: Number(action.x), y: Number(action.y) };
+      else if (
+        (action.kind === "ready" || action.kind === "rematch") &&
+        legalFleet(action.planes)
+      )
+        parsed = {
+          kind: action.kind,
+          planes: action.planes.map((p) => ({
+            x: p.x,
+            y: p.y,
+            rotation: p.rotation,
+          })),
+        };
+      else return null;
+      return {
+        type: "planes-action",
+        requestId: value.requestId as string,
+        revision: Number(value.revision),
+        action: parsed,
+      };
+    }
     case "sync":
       return { type: "sync" };
     case "hello": {

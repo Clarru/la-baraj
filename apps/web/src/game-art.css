@@ -475,6 +475,36 @@ button:disabled {
   clip-path: circle(50%);
 }
 
+.planes-entry {
+  position: absolute;
+  right: 24px;
+  bottom: 24px;
+  pointer-events: auto;
+  max-width: 280px;
+  padding: 12px 16px;
+  border: 14px solid transparent;
+  border-image: url("/assets/ui/sign-plaque.webp") 64 fill / 14px /0 stretch;
+  color: #f3e5c9;
+  filter: drop-shadow(0 4px 7px #14211733);
+  font: 700 16px/1.2 var(--font-body);
+}
+.planes-entry button {
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  cursor: pointer;
+  padding: 4px;
+}
+.planes-entry span {
+  display: block;
+  font-weight: 400;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
 .name-welcome {
   height: 100%;
   overflow: auto;

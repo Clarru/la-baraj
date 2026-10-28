@@ -1,5 +1,6 @@
 import {
   Component,
+  lazy,
   Suspense,
   useCallback,
   useMemo,
@@ -43,6 +44,10 @@ import { MultiplayerRoom } from "./multiplayer";
 import { MultiplayerPlayers } from "./multiplayer-players";
 import { ControlsHelp, GameHeader, GameMenu } from "./GameMenu";
 import { captureGameKey, type GamePanel } from "./game-input";
+import { planesSeatSide } from "../../../packages/shared/planes-station";
+import { requestTableStand } from "./planes-activity";
+import { PlanesEntry } from "./PlanesEntry";
+import { planesLab, LocalPlanesRoom, PlanesLabControls } from "./PlanesLab";
 import {
   performanceLab,
   PerformancePanel,
@@ -77,6 +82,7 @@ class SceneBoundary extends Component<
   }
 }
 const ignoreMovement = () => {};
+const PlanesBoard = lazy(() => import("./PlanesBoard"));
 function SceneReady({ onReady }: { onReady: () => void }) {
   const reported = useRef(false);
   useFrame(() => {
@@ -88,7 +94,11 @@ function SceneReady({ onReady }: { onReady: () => void }) {
   return null;
 }
 export default function Game({ initialName }: { initialName: string }) {
-  const [room] = useState(() => new MultiplayerRoom(initialName));
+  const [room] = useState<MultiplayerRoom>(() =>
+    planesLab
+      ? new LocalPlanesRoom(initialName)
+      : new MultiplayerRoom(initialName),
+  );
   const [performanceScenario, setPerformanceScenario] =
     useState<PerformanceScenario>("solo");
   useEffect(() => room.connect(performanceLab), [room]);
@@ -117,6 +127,19 @@ export default function Game({ initialName }: { initialName: string }) {
   const [resetKey, setResetKey] = useState(0),
     [ready, setReady] = useState(false);
   const [panel, setPanel] = useState<GamePanel>(null);
+  const [planesOpen, setPlanesOpen] = useState(false);
+  const ownGameSide = planesSeatSide(room.ownSeatId());
+  const lastGameSeat = useRef<number | null>(null);
+  const openPlanes = useCallback(() => {
+    setPanel(null);
+    setMode("walk");
+    setPlanesOpen(true);
+  }, []);
+  useEffect(() => {
+    if (ownGameSide !== null && lastGameSeat.current !== ownGameSide)
+      openPlanes();
+    lastGameSeat.current = ownGameSide;
+  }, [ownGameSide, openPlanes]);
   const [foundationMetrics, setFoundationMetrics] =
     useState<GroundContactsSummary | null>(null);
   const [activityPrompt, setActivityPrompt] = useState<ActivityPrompt>(null),
@@ -168,6 +191,7 @@ export default function Game({ initialName }: { initialName: string }) {
   );
   const onSceneReady = useCallback(() => setReady(true), []);
   const resetHome = useCallback(() => {
+    setPlanesOpen(false);
     setPanel(null);
     setMode("walk");
     setResetKey((key) => key + 1);
@@ -179,6 +203,42 @@ export default function Game({ initialName }: { initialName: string }) {
   useEffect(() => {
     const capture = (event: KeyboardEvent) => {
       const target = event.target;
+      if (
+        event.repeat &&
+        (planesOpen || ownGameSide !== null) &&
+        ["Escape", "KeyF"].includes(event.code)
+      ) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        return;
+      }
+      if (
+        panel === null &&
+        (planesOpen || ownGameSide !== null) &&
+        event.code === "Escape"
+      ) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        if (planesOpen) setPlanesOpen(false);
+        else openPlanes();
+        return;
+      }
+      if (panel === null && planesOpen) {
+        if (event.code === "KeyF" && ownGameSide !== null) {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          setPlanesOpen(false);
+          requestTableStand();
+          return;
+        }
+        if (target instanceof HTMLElement && target.closest(".planes-notebook"))
+          return;
+        if (!event.ctrlKey && !event.metaKey && !event.altKey) {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          return;
+        }
+      }
       const typing =
         target instanceof HTMLElement &&
         (target.isContentEditable ||
@@ -203,9 +263,21 @@ export default function Game({ initialName }: { initialName: string }) {
     };
     window.addEventListener("keydown", capture, true);
     return () => window.removeEventListener("keydown", capture, true);
-  }, [panel, mode, interiorIndex, lookHome, resetHome]);
+  }, [
+    panel,
+    mode,
+    interiorIndex,
+    lookHome,
+    resetHome,
+    planesOpen,
+    ownGameSide,
+    openPlanes,
+  ]);
   const displayedPrompt: ActivityPrompt =
-    interiorIndex !== null || panel !== null
+    interiorIndex !== null ||
+    panel !== null ||
+    planesOpen ||
+    ownGameSide !== null
       ? null
       : vehicleMounted
         ? vehicleHintUntil > 0
@@ -313,7 +385,12 @@ export default function Game({ initialName }: { initialName: string }) {
                   homeIndex={homeIndex}
                   mode={mode}
                   resetKey={resetKey}
-                  paused={panel !== null || activityBusy || doorTransition}
+                  paused={
+                    panel !== null ||
+                    activityBusy ||
+                    doorTransition ||
+                    planesOpen
+                  }
                   onMove={ignoreMovement}
                   onMotion={updateMotion}
                   onVehicleChange={setVehicleMounted}
@@ -356,6 +433,7 @@ export default function Game({ initialName }: { initialName: string }) {
               }
             />
             <CameraRig
+              tableSeat={planesOpen ? ownGameSide : null}
               mode={mode}
               resetKey={resetKey}
               homeIndex={homeIndex}
@@ -382,6 +460,36 @@ export default function Game({ initialName }: { initialName: string }) {
             homeIndex={hasHome ? homeIndex : null}
             cabins={cabins}
           />
+          {!planesOpen &&
+            panel === null &&
+            interiorIndex === null &&
+            !vehicleMounted && (
+              <PlanesEntry
+                navigation={navigation}
+                view={roomView.planes}
+                seated={ownGameSide !== null}
+                onOpen={openPlanes}
+              />
+            )}
+          {planesOpen && panel === null && (
+            <Suspense
+              fallback={<div className="planes-entry">Opening the paper…</div>}
+            >
+              <PlanesBoard
+                view={roomView.planes}
+                connected={roomView.status === "online"}
+                onAction={(action, revision) =>
+                  room.planesAction(action, revision)
+                }
+                onClose={() => setPlanesOpen(false)}
+                onLeave={() => {
+                  setPlanesOpen(false);
+                  requestTableStand();
+                }}
+              />
+            </Suspense>
+          )}
+          {planesLab && <PlanesLabControls room={room} />}
           {performanceLab && (
             <PerformancePanel
               scenario={performanceScenario}
@@ -395,7 +503,11 @@ export default function Game({ initialName }: { initialName: string }) {
             focusedIndex={focusedCabinIndex}
             mode={import.meta.env.DEV ? mode : "walk"}
             resetKey={homeResetKey}
-            paused={panel !== null || (!import.meta.env.DEV && mode !== "walk")}
+            paused={
+              panel !== null ||
+              planesOpen ||
+              (!import.meta.env.DEV && mode !== "walk")
+            }
             busy={activityBusy}
             vehicleMounted={vehicleMounted}
             onChange={setInteriorIndex}

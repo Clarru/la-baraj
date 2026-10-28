@@ -6,6 +6,7 @@ import { Model, assetUrl } from "./assets";
 import { StaticCollider } from "./StaticCollider";
 import { Bench, CabinBenchSeats } from "./Bench";
 import { CampfireLogs } from "./campfire";
+import { PlanesStation } from "./PlanesStation";
 import { cabinCutawayBase } from "./cabin-cutaway";
 import type { PublicCabin } from "../../../packages/shared/protocol";
 import { cabinDesignForPlot, cabinYaw } from "./cabin-designs";
@@ -118,7 +119,11 @@ export function Cabin({
         >
           {String(index + 1)}
           {/* R3F owns the base material; disposal also releases Troika's derived shaders. */}
-          <meshBasicMaterial color="#ffffff" side={THREE.DoubleSide} transparent />
+          <meshBasicMaterial
+            color="#ffffff"
+            side={THREE.DoubleSide}
+            transparent
+          />
         </Text>
         {
           <group
@@ -147,7 +152,11 @@ export function Cabin({
               anchorY="middle"
             >
               {ownerName ?? " "}
-              <meshBasicMaterial color="#ffffff" side={THREE.DoubleSide} transparent />
+              <meshBasicMaterial
+                color="#ffffff"
+                side={THREE.DoubleSide}
+                transparent
+              />
             </Text>
           </group>
         }
@@ -283,22 +292,10 @@ export function Settlement({
           rotation={Math.PI + 0.2}
           flat={flat}
         />
-        <Model
-          id="Table_Large"
-          height={0.85}
-          position={[-5, 0, 1.5]}
-          rotation={-0.5}
-          flat={flat}
-        />
-        <Bench
-          benchId="picnic-west"
-          facing={0}
-          height={0.52}
-          position={[-5, 0, 0.5]}
-          rotation={-0.5}
-          flat={flat}
-        />
       </group>
+      <Suspense fallback={null}>
+        <PlanesStation flat={flat} />
+      </Suspense>
       <FireCircle />
       {[-68, -45, -22, 5, 28, 55].map((x, i) => {
         const zz = southShore(x) + 13;

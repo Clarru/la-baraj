@@ -6,7 +6,7 @@ import type {
 
 type Position = { x: number; y: number; z: number };
 const minimumSpacing = 0.65;
-const rootOffset = 0.33;
+import { SEAT_ROOT_OFFSET as rootOffset } from "../../../packages/shared/seating";
 const capsuleCenterHeight = 0.95;
 const floorTolerance = 0.8;
 
@@ -135,8 +135,10 @@ export function createSeatingRegistry() {
             facing: definition.facing,
             seatHeight: center[1],
             occupantId: onlineSelfId
-              ? (onlineSeats[`${definition.id}:seat:${index}`] === onlineSelfId ? "local-player" : onlineSeats[`${definition.id}:seat:${index}`] ?? null)
-              : previous?.seats[index]?.occupantId ?? null,
+              ? onlineSeats[`${definition.id}:seat:${index}`] === onlineSelfId
+                ? "local-player"
+                : (onlineSeats[`${definition.id}:seat:${index}`] ?? null)
+              : (previous?.seats[index]?.occupantId ?? null),
             reservedBy: previous?.seats[index]?.reservedBy ?? null,
           };
         },
@@ -305,12 +307,25 @@ export function createSeatingRegistry() {
     for (const bench of benches.values()) {
       const updated = bench.seats.map((seat) => {
         const actor = occupancy[seat.id];
-        const occupantId = actor === selfId && selfId ? "local-player" : actor ?? null;
+        const occupantId =
+          actor === selfId && selfId ? "local-player" : (actor ?? null);
         const move = pendingMoves.get("local-player");
         // Preserve the authored scoot's departing-seat reservation while its destination is owned.
-        const reservedBy = seat.reservedBy === "local-player" && move?.fromId === seat.id && occupancy[move.toId] === selfId ? "local-player" : null;
-        if (seat.occupantId !== occupantId || (seat.reservedBy ?? null) !== reservedBy) changed = true;
-        return seat.occupantId === occupantId && (seat.reservedBy ?? null) === reservedBy ? seat : { ...seat, occupantId, reservedBy };
+        const reservedBy =
+          seat.reservedBy === "local-player" &&
+          move?.fromId === seat.id &&
+          occupancy[move.toId] === selfId
+            ? "local-player"
+            : null;
+        if (
+          seat.occupantId !== occupantId ||
+          (seat.reservedBy ?? null) !== reservedBy
+        )
+          changed = true;
+        return seat.occupantId === occupantId &&
+          (seat.reservedBy ?? null) === reservedBy
+          ? seat
+          : { ...seat, occupantId, reservedBy };
       });
       benches.set(bench.id, { ...bench, seats: updated });
     }
