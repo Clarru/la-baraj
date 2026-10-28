@@ -2,9 +2,7 @@
   position: relative;
   color: var(--ink);
   pointer-events: auto;
-  font:
-    400 13px/1.4 "Barlow",
-    sans-serif;
+  font: 400 13px/1.4 var(--font-body);
 }
 .multiplayer-status {
   display: flex;
@@ -50,9 +48,7 @@
   padding: 4px 7px;
   background: var(--paper);
   color: var(--ink);
-  font:
-    600 12px/1.1 "Barlow",
-    sans-serif;
+  font: 600 12px/1.1 var(--font-body);
   border-radius: 2px;
   user-select: none;
 }

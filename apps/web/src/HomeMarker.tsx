@@ -1,7 +1,7 @@
 import { useRef } from "react";
 import { Html } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
-import { HouseLine } from "@phosphor-icons/react";
+import { GameIcon } from "./GameArt";
 import { cabinSpots, terrainHeight } from "./geography";
 import { cabinDesignForPlot } from "./cabin-designs";
 import { playerPosition } from "./player";
@@ -40,7 +40,7 @@ export function HomeMarker({
           className="home-world-marker"
           data-testid="home-world-marker"
         >
-          <HouseLine size={17} weight="fill" />
+          <GameIcon name="cabin" size={29} />
           <div>
             <strong>Your cabin</strong>
             <span>{String(index + 1).padStart(2, "0")} · Home</span>

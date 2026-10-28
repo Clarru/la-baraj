@@ -1,12 +1,5 @@
 import { useState } from "react";
-import {
-  ArrowsOutSimple,
-  ArrowsInSimple,
-  HouseLine,
-  FishSimple,
-  Flame,
-  X,
-} from "@phosphor-icons/react";
+import { GameIcon } from "./GameArt";
 import {
   lake,
   roads,
@@ -61,7 +54,7 @@ export function Minimap({
       }
     : { x: navigation.x, z: navigation.z };
   const scale = range / size,
-    icon = 12 * scale;
+    icon = 18 * scale;
   const marker = mapHomePosition(home, center, range),
     distance = Math.round(
       Math.hypot(home.x - navigation.x, home.z - navigation.z),
@@ -83,11 +76,7 @@ export function Minimap({
             onClick={() => setExpanded((v) => !v)}
             title={expanded ? "Collapse map" : "Expand map"}
           >
-            {expanded ? (
-              <ArrowsInSimple size={15} />
-            ) : (
-              <ArrowsOutSimple size={15} />
-            )}
+            <GameIcon name={expanded ? "collapse" : "expand"} size={21} />
           </button>
           <button
             className="map-expand"
@@ -95,7 +84,7 @@ export function Minimap({
             aria-label="Close map"
             title="Close map (M)"
           >
-            <X size={15} />
+            <GameIcon name="close" size={18} />
           </button>
         </div>
       </header>
@@ -147,24 +136,15 @@ export function Minimap({
         ))}
         {fishingSpots.map((p, i) => (
           <g key={i} transform={`translate(${p.x} ${p.z})`}>
-            <FishSimple
-              x={-icon / 2}
-              y={-icon / 2}
-              width={icon}
-              height={icon}
-              color="#254e5a"
-              weight="fill"
-            />
+            <GameIcon name="fish" x={-icon / 2} y={-icon / 2} size={icon} />
             <title>Fishing</title>
           </g>
         ))}
-        <Flame
+        <GameIcon
+          name="fire"
           x={sharedGrounds[1].x - icon / 2}
           y={sharedGrounds[1].z - icon / 2}
-          width={icon}
-          height={icon}
-          color="#87532d"
-          weight="fill"
+          size={icon}
         />
         <g
           transform={`translate(${marker.x} ${marker.z})`}
@@ -177,14 +157,7 @@ export function Minimap({
             strokeWidth={1.1}
             vectorEffect="non-scaling-stroke"
           />
-          <HouseLine
-            x={-icon / 2}
-            y={-icon / 2}
-            width={icon}
-            height={icon}
-            color="#714623"
-            weight="bold"
-          />
+          <GameIcon name="cabin" x={-icon / 2} y={-icon / 2} size={icon} />
           <title>{`Your home · Cabin ${homeIndex + 1}${marker.offscreen ? " · beyond this map edge" : ""}`}</title>
         </g>
         <g
@@ -208,7 +181,7 @@ export function Minimap({
           aria-label="Look at your cabin"
           title="H to look at home"
         >
-          <HouseLine size={14} weight="fill" />
+          <GameIcon name="cabin" size={24} />
           <span>
             Your cabin <strong>{String(homeIndex + 1).padStart(2, "0")}</strong>
           </span>

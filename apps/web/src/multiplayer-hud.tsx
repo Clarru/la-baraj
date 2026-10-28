@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from "react";
-import { UsersThree, WifiSlash } from "@phosphor-icons/react";
+import { GameIcon } from "./GameArt";
 import type { MultiplayerRoom, NetworkStatus } from "./multiplayer";
 import "./multiplayer.css";
 
@@ -40,9 +40,9 @@ export function MultiplayerHud({ room }: { room: MultiplayerRoom }) {
     >
       <span className={`multiplayer-status ${view.status}`} role="status">
         {view.status === "online" ? (
-          <UsersThree size={17} />
+          <GameIcon name="people" size={26} />
         ) : (
-          <WifiSlash size={17} />
+          <GameIcon name="offline" size={26} />
         )}
         <strong>{label}</strong>
       </span>

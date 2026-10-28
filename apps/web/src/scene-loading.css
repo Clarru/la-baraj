@@ -6,7 +6,7 @@
   place-items: center;
   background: #d9e4ea;
   color: var(--ink, #24313b);
-  font-family: "Barlow", sans-serif;
+  font-family: var(--font-body);
 }
 
 .scene-loading__location {
@@ -18,7 +18,7 @@
 }
 
 .scene-loading__location > :first-child {
-  font-family: "Barlow Condensed", sans-serif;
+  font-family: var(--font-heading);
   font-size: 18px;
   font-weight: 600;
   letter-spacing: 0.045em;
@@ -73,7 +73,7 @@
 
 .scene-loading__title {
   margin: 9px 0 0;
-  font-family: "Barlow Condensed", sans-serif;
+  font-family: var(--font-heading);
   font-size: 42px;
   font-weight: 600;
   letter-spacing: 0.01em;
@@ -194,4 +194,9 @@
   }
 }
 
-.scene-loading__logo { display: block; width: min(340px, 72vw); height: auto; margin-inline: auto; }
+.scene-loading__logo {
+  display: block;
+  width: min(340px, 72vw);
+  height: auto;
+  margin-inline: auto;
+}
