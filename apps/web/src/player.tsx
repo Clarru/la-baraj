@@ -33,6 +33,7 @@ import {
   scooterSteeringInput,
 } from "./scooter-controls";
 import { scooterSupportHeight } from "./scooter-support";
+import { createRunJumpClips } from "./run-jump-clips";
 import {
   activityAnimation,
   activityElapsed,
@@ -159,6 +160,7 @@ export function Player({
     };
     return [
       ...animations,
+      ...createRunJumpClips(animations.find((clip) => clip.name === "Run")),
       ...data.clips.map((clip) => THREE.AnimationClip.parse(clip)),
       ...createFishingGestureClips(),
     ];
@@ -440,6 +442,7 @@ export function Player({
       now: performance.now() / 1000,
       grounded: c.isOnGround,
       verticalSpeed: c.currLinVel.y,
+      horizontalSpeed: Math.hypot(c.currLinVel.x, c.currLinVel.z),
       jumpStarted,
       disabled: holding || mounted,
     });
@@ -483,14 +486,23 @@ export function Player({
       : ground
         ? p.y - ground.timeOfImpact
         : null;
-    if (visual.current)
-      visual.current.position.y = holding
+    if (visual.current) {
+      visual.current.parent?.getWorldPosition(playerViewPosition);
+      const offset = holding
         ? -0.95 + activitySeatLift(pose, elapsed)
         : c.isOnGround && groundY !== null && c.currLinVel.y < 0.8
-          ? groundY - p.y + 0.015
-          : -0.8;
+          ? groundY - playerViewPosition.y + 0.015
+          : -0.935;
+      // A single sole offset through flight avoids a 13.5 cm takeoff/landing pop.
+      visual.current.position.y = holding
+        ? offset
+        : THREE.MathUtils.damp(visual.current.position.y, offset, 30, dt);
+    }
     const speed = holding ? 0 : Math.hypot(c.currLinVel.x, c.currLinVel.z);
-    const jumpClip = jumpAnimation(jumpState.current.phase),
+    const jumpClip = jumpAnimation(
+        jumpState.current.phase,
+        jumpState.current.style,
+      ),
       clipConfig = activity ?? jumpClip;
     const next =
       activity?.name ??
@@ -509,10 +521,14 @@ export function Player({
       });
       if (animationHistory.current.length > 12)
         animationHistory.current.shift();
-      actions[animation.current]?.fadeOut(0.14);
+      const blendDuration =
+        jumpClip || animation.current.startsWith("Jump_") ? 0.09 : 0.14;
+      actions[animation.current]?.fadeOut(blendDuration);
       const action = actions[next];
       if (action) {
         action.reset();
+        if (next === "Run" && animation.current === "Jump_RunLand")
+          action.time = action.getClip().duration * 0.64;
         action.setLoop(
           clipConfig && !clipConfig.loop ? THREE.LoopOnce : THREE.LoopRepeat,
           Infinity,
@@ -521,7 +537,7 @@ export function Player({
         action.setEffectiveTimeScale(
           clipConfig ? action.getClip().duration / clipConfig.duration : 1,
         );
-        action.fadeIn(jumpClip?.loop === false ? 0.06 : 0.14).play();
+        action.fadeIn(blendDuration).play();
       }
       animation.current = next;
       lastActivityStart.current = pose.startedAt;
@@ -597,6 +613,7 @@ export function Player({
         vehicle: mounted ? "QuickVolt 9" : null,
         vehicleSpeed: mounted ? getVehicleState().speed : 0,
         jumpPhase: jumpState.current.phase,
+        jumpStyle: jumpState.current.style,
         animationHistory: animationHistory.current,
         position: [p.x, p.y, p.z],
         feet: feet.toArray(),
@@ -626,6 +643,7 @@ export function Player({
       position={[spawn.x, terrainHeight(spawn.x, spawn.z) + 2, spawn.z]}
       enabledRotations={[false, false, false]}
       autoBalance={false}
+      enableToggleRun={false}
       capsuleHalfHeight={0.35}
       capsuleRadius={0.3}
       ccd
