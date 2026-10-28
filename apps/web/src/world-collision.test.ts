@@ -46,7 +46,8 @@ describe("shore collision regression", () => {
     }
     world.free();
     patches.forEach((g) => g.dispose());
-  });
+    // Full terrain triangulation and WASM collider setup exceed 5s on CI runners.
+  }, 15_000);
   it("physically stops a player capsule approaching the lake without a reset", () => {
     const world = new RAPIER.World({ x: 0, y: 0, z: 0 });
     const [vertices, indices] = makeLakeBoundary();
