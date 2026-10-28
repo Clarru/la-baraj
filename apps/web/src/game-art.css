@@ -458,12 +458,12 @@ button:disabled {
   width: 200px;
   height: 200px;
   max-height: none;
-  padding: 6px;
+  padding: 2px;
   overflow: hidden;
-  border: 0;
+  border: 4px solid #354831;
   border-image: none;
   border-radius: 50%;
-  background: var(--sign-art) center / cover;
+  background: #cdb78b;
   filter: drop-shadow(0 3px 6px rgb(20 33 23 / 0.25));
   pointer-events: none;
 }
@@ -471,4 +471,6 @@ button:disabled {
   width: 100%;
   height: 100%;
   border-radius: 50%;
+  overflow: hidden;
+  clip-path: circle(50%);
 }
