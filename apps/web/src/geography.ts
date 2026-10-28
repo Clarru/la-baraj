@@ -132,33 +132,45 @@ export const sharedGrounds = [
   { x: 0, z: southShore(0) + 9 },
   { x: 36, z: southShore(36) + 17 },
 ].map((p) => ({ ...p, ground: baseTerrainHeight(p.x, p.z) }));
-function makePlot(i: number, column: number, uphill: boolean) {
-  const random = rng(8100 + i * 137);
-  const x = -420 + column * 54 + (random() - 0.5) * 10;
-  const roadZ = settlementRoadZ(x);
-  const z = uphill
-    ? roadZ + 22 + random() * 8
-    : Math.max(southShore(x) + 27, roadZ - 22 - random() * 6);
-  return {
-    x,
-    z,
-    i,
-    uphill,
-    roadZ,
-    ground: baseTerrainHeight(x, z),
-    seed: 8100 + i * 137,
-  };
-}
-// Preserve every existing plot/design identity; infill existing southern-road gaps.
+// Compact southern-road plots, filled nearest the gathering fire first.
+// These are placement candidates, not prebuilt houses: ownership controls rendering.
 export const cabinSpots = (() => {
-  const plots = Array.from({ length: 30 }, (_, i) => makePlot(i, Math.floor(i / 2), i % 2 === 1));
-  for (let column = 0; column < 14 && plots.length < MAX_HOMES; column++) {
-    const pair = [makePlot(plots.length, column + .5, false), makePlot(plots.length + 1, column + .5, true)];
-    if (pair.some(p => inWater(p.x, p.z) || !activityClearance(p.x, p.z) || plots.some(q => Math.hypot(p.x-q.x,p.z-q.z) < 17))) continue;
-    plots.push(...pair);
+  const focus = sharedGrounds[1];
+  const candidates: { x: number; z: number; uphill: boolean; roadZ: number }[] =
+    [];
+  for (const row of [-14, 15, 36, 57])
+    for (let column = -18; column <= 18; column++) {
+      const x = focus.x + column * 21 + (row > 15 ? 10.5 : 0);
+      const roadZ = settlementRoadZ(x),
+        z = roadZ + row;
+      if (inWater(x, z) || z < southShore(x) + 22 || !activityClearance(x, z))
+        continue;
+      if (sharedGrounds.some((p) => Math.hypot(x - p.x, z - p.z) < 26))
+        continue;
+      if (roadDistance(x, z) < 10) continue;
+      candidates.push({ x, z, uphill: z > roadZ, roadZ });
+    }
+  candidates.sort(
+    (a, b) =>
+      Math.hypot(a.x - focus.x, a.z - focus.z) -
+        Math.hypot(b.x - focus.x, b.z - focus.z) ||
+      a.x - b.x ||
+      a.z - b.z,
+  );
+  const selected: typeof candidates = [];
+  for (const p of candidates) {
+    if (selected.every((q) => Math.hypot(p.x - q.x, p.z - q.z) >= 20))
+      selected.push(p);
+    if (selected.length === MAX_HOMES) break;
   }
-  if (plots.length !== MAX_HOMES) throw new Error("The shared world needs clear cabin plots for every owner");
-  return plots;
+  if (selected.length !== MAX_HOMES)
+    throw new Error("Not enough clear village plots");
+  return selected.map((p, i) => ({
+    ...p,
+    i,
+    ground: baseTerrainHeight(p.x, p.z),
+    seed: 8100 + i * 137,
+  }));
 })();
 export function terrainHeight(
   x: number,

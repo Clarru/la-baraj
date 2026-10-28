@@ -8,6 +8,7 @@ import {
   lake,
   SCALE,
   settlementRoadZ,
+  sharedGrounds,
 } from "./geography";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -22,20 +23,22 @@ describe("real geographic layer and fictional settlement boundary", () => {
       expect(terrainHeight(c.x, c.z)).toBeCloseTo(c.ground, 5);
     }
   });
-  it("preserves the original plots and provides 50 stable plots on both sides of the southern road while preserving the lakefront", () => {
+  it("fills compact plots nearest the gathering point, on both sides of the southern road", () => {
     expect(cabinSpots).toHaveLength(50);
-    expect(cabinSpots.filter((c) => c.z > settlementRoadZ(c.x))).toHaveLength(
-      25,
+    expect(cabinSpots.filter((c) => c.uphill).length).toBeGreaterThan(0);
+    expect(cabinSpots.filter((c) => !c.uphill).length).toBeGreaterThan(0);
+    const focus = sharedGrounds[1];
+    const distances = cabinSpots.map((c) =>
+      Math.hypot(c.x - focus.x, c.z - focus.z),
     );
-    expect(cabinSpots.filter((c) => c.z < settlementRoadZ(c.x))).toHaveLength(
-      25,
-    );
+    expect(distances).toEqual([...distances].sort((a, b) => a - b));
+    expect(distances[9]).toBeLessThan(100);
     for (const c of cabinSpots)
-      expect(c.z - southShore(c.x)).toBeGreaterThanOrEqual(27);
+      expect(c.z - southShore(c.x)).toBeGreaterThanOrEqual(22);
     for (const a of cabinSpots)
       for (const b of cabinSpots)
         if (a.i !== b.i)
-          expect(Math.hypot(a.x - b.x, a.z - b.z)).toBeGreaterThan(16);
+          expect(Math.hypot(a.x - b.x, a.z - b.z)).toBeGreaterThanOrEqual(20);
   });
   it("uses longitude/latitude in a stable local metric scale and a closed shoreline", () => {
     expect(project([22.864, 45.69])).toEqual([0, -0]);

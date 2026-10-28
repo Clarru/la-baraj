@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Text, useGLTF } from "@react-three/drei";
+import { Text, useGLTF, useTexture } from "@react-three/drei";
 import { RigidBody, CuboidCollider } from "@react-three/rapier";
 import * as THREE from "three";
 import { Model, assetUrl } from "./assets";
@@ -7,6 +7,7 @@ import { StaticCollider } from "./StaticCollider";
 import { Bench, CabinBenchSeats } from "./Bench";
 import { CampfireLogs } from "./campfire";
 import { cabinCutawayBase } from "./cabin-cutaway";
+import type { PublicCabin } from "../../../packages/shared/protocol";
 import { cabinDesignForPlot, cabinYaw } from "./cabin-designs";
 import { cabinSpots, southShore, terrainHeight } from "./geography";
 function woodTexture() {
@@ -39,14 +40,23 @@ export function Cabin({
   z,
   flat,
   interiorActive = false,
+  ownerName = null,
 }: {
   index: number;
   x: number;
   z: number;
   flat: boolean;
   interiorActive?: boolean;
+  ownerName?: string | null;
 }) {
   const design = cabinDesignForPlot(index);
+  const ownerPlaque = useTexture("/assets/ui/sign-plaque.webp");
+  ownerPlaque.colorSpace = THREE.SRGBColorSpace;
+  const ownerWidth = Math.max(
+    0.85,
+    Math.min(1.7, 0.31 + (ownerName?.length ?? 0) * 0.095),
+  );
+  const ownerHeight = (ownerName?.length ?? 0) > 18 ? 0.38 : 0.26;
   const archetype = design.key;
   const { scene } = useGLTF(assetUrl("Lake_Cabin_" + archetype));
   const model = useMemo(() => {
@@ -93,8 +103,37 @@ export function Cabin({
           anchorX="center"
           anchorY="middle"
         >
-          {String(index + 1).padStart(2, "0")}
+          {String(index + 1)}
         </Text>
+        {
+          <group
+            visible={!!ownerName}
+            position={[plaqueX, plaqueY - 0.45, plaqueZ + 0.035]}
+          >
+            <mesh>
+              <planeGeometry args={[ownerWidth, ownerHeight]} />
+              <meshStandardMaterial
+                map={ownerPlaque}
+                roughness={0.9}
+                transparent
+                alphaTest={0.1}
+              />
+            </mesh>
+            <Text
+              position={[0, 0, 0.003]}
+              font="/fonts/AlegreyaSans-Bold.ttf"
+              fontSize={0.13}
+              maxWidth={ownerWidth - 0.25}
+              lineHeight={1.1}
+              overflowWrap="break-word"
+              color="#f3e5c9"
+              anchorX="center"
+              anchorY="middle"
+            >
+              {ownerName ?? " "}
+            </Text>
+          </group>
+        }
       </group>
     </group>
   );
@@ -113,9 +152,27 @@ function Dock({ x, flat }: { x: number; flat: boolean }) {
   return (
     <group position={[x, 0.85, z - 4.1]}>
       <RigidBody type="fixed" colliders={false}>
-        <CuboidCollider args={[1.7, 0.12, 7.2]} position={[0, -0.08, 0]} friction={1.4} />
-        {[-1.5, 1.5].flatMap(a => [-6, -2, 2, 6].map(b => <CuboidCollider key={`${a}-${b}`} args={[0.16, 1.3, 0.16]} position={[a, -0.7, b]} />))}
-        {[-1.6, 1.6].map(a => <CuboidCollider key={a} args={[0.13, 0.75, 0.13]} position={[a, 0.6, 6]} />)}
+        <CuboidCollider
+          args={[1.7, 0.12, 7.2]}
+          position={[0, -0.08, 0]}
+          friction={1.4}
+        />
+        {[-1.5, 1.5].flatMap((a) =>
+          [-6, -2, 2, 6].map((b) => (
+            <CuboidCollider
+              key={`${a}-${b}`}
+              args={[0.16, 1.3, 0.16]}
+              position={[a, -0.7, b]}
+            />
+          )),
+        )}
+        {[-1.6, 1.6].map((a) => (
+          <CuboidCollider
+            key={a}
+            args={[0.13, 0.75, 0.13]}
+            position={[a, 0.6, 6]}
+          />
+        ))}
       </RigidBody>
       {Array.from({ length: 24 }, (_, i) => (
         <mesh
@@ -148,24 +205,30 @@ function Dock({ x, flat }: { x: number; flat: boolean }) {
 export function Settlement({
   flat,
   interiorIndex = null,
+  cabins,
 }: {
   flat: boolean;
   interiorIndex?: number | null;
+  cabins: readonly PublicCabin[];
 }) {
   const z = southShore(0) + 9,
     y = terrainHeight(0, z);
   return (
     <>
-      {cabinSpots.map((c) => (
-        <Cabin
-          key={c.i}
-          index={c.i}
-          x={c.x}
-          z={c.z}
-          flat={flat}
-          interiorActive={interiorIndex === c.i}
-        />
-      ))}
+      {cabins.map((home) => {
+        const c = cabinSpots[home.index];
+        return (
+          <Cabin
+            key={c.i}
+            index={c.i}
+            x={c.x}
+            z={c.z}
+            flat={flat}
+            interiorActive={interiorIndex === c.i}
+            ownerName={home.ownerName}
+          />
+        );
+      })}
       <Dock x={0} flat={flat} />
       <Dock x={-235} flat={flat} />
       <group position={[0, y, z]}>
@@ -232,7 +295,11 @@ function FireCircle() {
   return (
     <group position={[x, y, z]}>
       <RigidBody type="fixed" colliders={false}>
-        <CuboidCollider args={[1.3, 0.22, 1.3]} position={[0, 0.1, 0]} friction={1.4} />
+        <CuboidCollider
+          args={[1.3, 0.22, 1.3]}
+          position={[0, 0.1, 0]}
+          friction={1.4}
+        />
       </RigidBody>
       <mesh
         rotation={[-Math.PI / 2, 0, 0]}

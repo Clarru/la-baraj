@@ -43,7 +43,7 @@ export function HomeMarker({
           <GameIcon name="cabin" size={29} />
           <div>
             <strong>Your cabin</strong>
-            <span>{String(index + 1).padStart(2, "0")} · Home</span>
+            <span>{String(index + 1)} · Home</span>
           </div>
         </div>
       </Html>

@@ -114,10 +114,12 @@ export function clearCabinTransfer() {
 export function nearestCabinDoor(
   position: { x: number; z: number },
   radius = 2.3,
+  indices: readonly number[] = cabinSpots.map((c) => c.i),
 ): number | null {
   let result: number | null = null,
     distance = radius;
-  for (const cabin of cabinSpots) {
+  for (const index of indices) {
+    const cabin = cabinSpots[index];
     const door = cabinDoor(cabin.i),
       p = cabinLocalToWorld(cabin.i, door.x, door.outsideZ + 0.6);
     const next = Math.hypot(position.x - p.x, position.z - p.z);
