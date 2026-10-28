@@ -356,6 +356,7 @@ export function Campfire({
         <meshBasicMaterial
           ref={emberMaterial}
           color="#ffb62e"
+          depthWrite={false}
           transparent
           opacity={0}
           toneMapped={false}
