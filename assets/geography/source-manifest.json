@@ -1,0 +1,37 @@
+{
+  "retrieved_date": "2026-10-28",
+  "lake_way_id": 26562627,
+  "lake_way_version": 20,
+  "lake_way_timestamp": "2026-04-20T09:40:54Z",
+  "lake_source_url": "https://api.openstreetmap.org/api/0.6/way/26562627/full.json",
+  "road_source_url": "https://api.openstreetmap.org/api/0.6/map.json?bbox=22.816,45.67,22.883,45.707",
+  "road_acquisition_bbox_wsen": [
+    22.816,
+    45.67,
+    22.883,
+    45.707
+  ],
+  "shoreline_coordinate_count": 643,
+  "road_way_count": 93,
+  "excluded": [
+    "buildings",
+    "addresses",
+    "businesses",
+    "contributor account metadata"
+  ],
+  "not_acquired": [
+    "terrain elevation",
+    "underwater bathymetry"
+  ],
+  "coordinate_reference_system": "WGS84 longitude, latitude (GeoJSON)",
+  "attribution": "© OpenStreetMap contributors",
+  "license": "https://opendatacommons.org/licenses/odbl/1.0/",
+  "files": {
+    "lake-cincis-shoreline.geojson": {
+      "sha256": "b477640511c1779e559b5ea95161e1a89ad3969c9fcace1d61223c80f02f90df"
+    },
+    "lake-cincis-roads.geojson": {
+      "sha256": "69cf6869365c87fe69def122d40e140c0da48ec6aa177d320549df4494b7e5ef"
+    }
+  }
+}

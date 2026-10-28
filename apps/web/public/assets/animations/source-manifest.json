@@ -1,0 +1,11 @@
+{
+  "source": "human_male.glb",
+  "sha256": "853d0a785345afadc3ed423bd3bb72144debe00cd0bb52c258e00387ab40f162",
+  "sourceMirror": "https://github.com/NafisRayan/Animate-Rigged-Humanoid-No-Blender",
+  "licenseEvidence": [
+    "assets/character-source/base-LICENSE.txt",
+    "assets/character-source/animation-LICENSE.txt"
+  ],
+  "extraction": "scripts/extract-activity-clips.mjs",
+  "modifications": "Selected six compatible clips, renamed, removed constant non-root translation/scale tracks, optimized and rounded key values to six decimals. No original character mesh replacement."
+}

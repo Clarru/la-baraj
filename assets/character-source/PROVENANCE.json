@@ -1,0 +1,31 @@
+{
+  "source": "Quaternius Universal Base Characters + UAL1/2; CC0 source copies with saved license notices",
+  "mirror": "https://github.com/NafisRayan/Animate-Rigged-Humanoid-No-Blender",
+  "modifications": "Blender assembly of universal head, authored modular outfit, fitted hair/beard; converted modular meshes from their source bind skeleton to the animation skeleton; cloth material adaptation; retained 11 animation clips; removed hidden body faces by skin weights; optimized textures",
+  "bounds": {
+    "min": [
+      -0.9256383180618286,
+      -0.0039675598964095116,
+      -0.18447719514369965
+    ],
+    "max": [
+      0.9256386160850525,
+      1.8397217988967896,
+      0.16754096746444702
+    ]
+  },
+  "animations": [
+    "HitRecieve",
+    "Idle_Neutral",
+    "Jog",
+    "Jump_Land",
+    "Jump_Loop",
+    "Jump_Start",
+    "Punch_Left",
+    "Punch_Right",
+    "Run",
+    "Walk",
+    "Wave"
+  ],
+  "bytes": 1867672
+}

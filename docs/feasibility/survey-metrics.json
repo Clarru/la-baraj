@@ -1,0 +1,39 @@
+{
+  "metrics": {
+    "calls": 1384,
+    "fps": 84.99546690857508,
+    "frameMs": 11.765333333313466,
+    "geometries": 163,
+    "height": 1180.60595703125,
+    "p95": 13.799999952316284,
+    "pixelRatio": 1,
+    "samples": 600,
+    "textures": 389,
+    "triangles": 2468496,
+    "width": 1089.6968994140625
+  },
+  "rect": {
+    "height": 1180.60595703125,
+    "width": 1089.6968994140625,
+    "x": 0,
+    "y": 0
+  },
+  "run": {
+    "avatars": 30,
+    "cameraPreset": "overview",
+    "counters": "previous complete frame across main, reflection and shadow passes",
+    "evening": false,
+    "mode": "overview",
+    "runId": "2603c410-5dc6-4994-afe5-b95c241f1a4f",
+    "sample": {
+      "excludeStallsAboveMs": 500,
+      "kind": "rolling latest 600 settled frames",
+      "samples": 600,
+      "seconds": 7.0591999999880795
+    },
+    "textured": true,
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36"
+  },
+  "capturedAt": "2026-10-28T13:45:41.158Z",
+  "purpose": "benchmark survey thirty local avatars"
+}

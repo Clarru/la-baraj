@@ -1,0 +1,73 @@
+{
+  "metrics": {
+    "calls": 377,
+    "fps": 69.21133681725614,
+    "frameMs": 14.448499999940395,
+    "geometries": 248,
+    "height": 1181.3333740234375,
+    "p95": 16.100000023841858,
+    "pixelRatio": 1,
+    "samples": 600,
+    "textures": 76,
+    "triangles": 2885984,
+    "width": 1089.3333740234375
+  },
+  "motion": {
+    "activity": "sit",
+    "animation": "Activity_Sit",
+    "contact": [
+      36,
+      1.3643198013305664,
+      37.101959228515625
+    ],
+    "facing": [
+      -2.4492935982947064e-16,
+      0,
+      1
+    ],
+    "facingDot": null,
+    "feet": [
+      36,
+      1.4643196105957033,
+      37.1062126159668
+    ],
+    "groundY": 1.364319674400397,
+    "grounded": true,
+    "inWater": false,
+    "lastMovingAlignment": 0.9999999148812708,
+    "position": [
+      36,
+      2.314319610595703,
+      37.1062126159668
+    ],
+    "velocity": [
+      0,
+      0,
+      0
+    ]
+  },
+  "prompt": "FBy the campfireF or Escape to stand · E to put out the fire",
+  "rect": {
+    "height": 1181.3333740234375,
+    "width": 1089.3333740234375,
+    "x": 0,
+    "y": 0
+  },
+  "run": {
+    "avatars": 1,
+    "cameraPreset": "walk",
+    "counters": "previous complete frame across main, reflection and shadow passes",
+    "evening": false,
+    "mode": "walk",
+    "runId": "136f9391-9ae1-4720-9234-dd89a4dd50c8",
+    "sample": {
+      "excludeStallsAboveMs": 500,
+      "kind": "rolling latest 600 settled frames",
+      "samples": 600,
+      "seconds": 8.669099999964237
+    },
+    "textured": true,
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36"
+  },
+  "capturedAt": "2026-10-28T14:33:34.246Z"
+}

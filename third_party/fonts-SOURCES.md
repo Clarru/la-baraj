@@ -1,0 +1,1 @@
+Self-hosted Barlow and Barlow Condensed, installed from Fontsource npm packages on 28 October 2026. Both families use the SIL Open Font License; notices are retained in this directory. Sources: https://github.com/jpt/barlow and https://fontsource.org/fonts/barlow. Earlier DM Sans/Fraunces candidates are not used by the current HUD.

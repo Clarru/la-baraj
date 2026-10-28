@@ -1,0 +1,98 @@
+import { useEffect, useMemo, useRef, useSyncExternalStore } from "react";
+import { useFrame, useLoader } from "@react-three/fiber";
+import { Html, useGLTF } from "@react-three/drei";
+import * as THREE from "three";
+import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
+import { assetUrl } from "./assets";
+import { activityAnimation, createCharacterActivityRig, createFishingGestureClips } from "./character-actions";
+import type { ActivityKind } from "./activity-state";
+import { jumpAnimation, type JumpPhase } from "./locomotion-animation";
+import { createScooterRiderRig } from "./scooter-rider";
+import { Scooter, type ScooterHandle } from "./scooter";
+import type { MultiplayerRoom } from "./multiplayer";
+
+/** Membership alone reconciles React. Pose packets update mutable targets read by each rig. */
+export function MultiplayerPlayers({ room }: { room: MultiplayerRoom }) {
+  const { ids } = useSyncExternalStore(room.subscribe, room.getSnapshot);
+  return <>{ids.map((id) => <RemoteAvatar key={id} id={id} room={room} />)}</>;
+}
+function RemoteAvatar({ id, room }: { id: string; room: MultiplayerRoom }) {
+  const { scene, animations } = useGLTF(assetUrl("Lakeside_Man"));
+  const supplemental = useLoader(THREE.FileLoader, "/assets/animations/character-actions.json");
+  const object = useMemo(() => {
+    const result = clone(scene);
+    result.traverse((node) => { if (node instanceof THREE.Mesh) { node.castShadow = true; node.receiveShadow = true; } });
+    return result;
+  }, [scene]);
+  const clips = useMemo(() => {
+    const data = JSON.parse(String(supplemental)) as { clips: Parameters<typeof THREE.AnimationClip.parse>[0][] };
+    return [...animations, ...data.clips.map((clip) => THREE.AnimationClip.parse(clip)), ...createFishingGestureClips()];
+  }, [animations, supplemental]);
+  const rig = useMemo(() => {
+    const mixer = new THREE.AnimationMixer(object);
+    return { mixer, actions: new Map(clips.map((clip) => [clip.name, mixer.clipAction(clip)])) };
+  }, [object, clips, animations]);
+  const helpers = useRef<{ rider: ReturnType<typeof createScooterRiderRig>; activity: ReturnType<typeof createCharacterActivityRig> } | null>(null);
+  const root = useRef<THREE.Group>(null), scooterGroup = useRef<THREE.Group>(null), scooter = useRef<ScooterHandle>(null);
+  const target = useMemo(() => new THREE.Vector3(), []);
+  const previousAnimation = useRef(""), previousActivityAt = useRef(-1), previousGesture = useRef<string | null>(null), wasRiding = useRef(false), initialized = useRef(false);
+  const badge = useRef<HTMLSpanElement>(null);
+  useEffect(() => {
+    const runtime = { rider: createScooterRiderRig(object, animations.find((clip) => clip.name === "Idle_Neutral")), activity: createCharacterActivityRig(object) };
+    helpers.current = runtime;
+    return () => { rig.mixer.stopAllAction(); runtime.rider.dispose(); runtime.activity.dispose(); helpers.current = null; };
+  }, [rig, object, animations]);
+  useFrame((_, delta) => {
+    const remote = room.remotes.get(id), group = root.current;
+    if (!remote || !group) return;
+    group.visible = remote.player.animation !== "idle";
+    const player = remote.player, dt = Math.min(delta, 0.1), riding = player.vehicle === "scooter";
+    target.fromArray(player.position);
+    if (!initialized.current || group.position.distanceToSquared(target) > 100) { group.position.copy(target); group.rotation.y = player.yaw; initialized.current = true; }
+    else {
+      group.position.lerp(target, 1 - Math.exp(-16 * dt));
+      const turn = Math.atan2(Math.sin(player.yaw - group.rotation.y), Math.cos(player.yaw - group.rotation.y));
+      group.rotation.y += turn * (1 - Math.exp(-18 * dt));
+    }
+    if (wasRiding.current && !riding) helpers.current?.rider.reset();
+    const activity = activityAnimation(player.activity as ActivityKind), jump = jumpAnimation(player.jumpPhase as JumpPhase);
+    const config = activity ?? jump;
+    const next = rig.actions.has(player.animation) ? player.animation : "Idle_Neutral";
+    if (next !== previousAnimation.current || (activity && remote.activityAt !== previousActivityAt.current)) {
+      rig.actions.get(previousAnimation.current)?.fadeOut(0.14);
+      const action = rig.actions.get(next);
+      if (action) {
+        action.reset().setLoop(config && !config.loop ? THREE.LoopOnce : THREE.LoopRepeat, Infinity);
+        action.clampWhenFinished = Boolean(config && !config.loop);
+        action.setEffectiveTimeScale(config ? action.getClip().duration / config.duration : 1).fadeIn(0.14).play();
+      }
+      previousAnimation.current = next; previousActivityAt.current = remote.activityAt;
+    }
+    const gesture = player.activity === "reel" ? "Activity_ReelGesture" : player.activity === "bite" ? "Activity_BiteGesture" : null;
+    if (gesture !== previousGesture.current) {
+      if (previousGesture.current) rig.actions.get(previousGesture.current)?.fadeOut(0.12);
+      if (gesture) rig.actions.get(gesture)?.reset().fadeIn(0.12).play();
+      previousGesture.current = gesture;
+    }
+    rig.mixer.update(dt);
+    helpers.current?.activity.update({ kind: player.activity as ActivityKind, startedAt: remote.activityAt }, (performance.now() - remote.activityAt) / 1000);
+    if (scooterGroup.current) scooterGroup.current.visible = riding;
+    if (riding) {
+      scooter.current?.update({ speed: player.speed ?? 0, steer: 0, dt });
+      helpers.current?.rider.update({ speed: player.speed ?? 0, steer: 0 });
+    }
+    wasRiding.current = riding;
+    // This DOM is an authored diagnostic surface for automated and manual multiplayer checks.
+    badge.current?.setAttribute("data-animation", next);
+    badge.current?.setAttribute("data-activity", player.activity);
+    badge.current?.setAttribute("data-vehicle", player.vehicle);
+  });
+  const player = room.remotes.get(id)?.player;
+  return <group ref={root} name={`Online player ${id}`}>
+    <primitive object={object} dispose={null} />
+    <group ref={scooterGroup} visible={false}><Scooter ref={scooter} /></group>
+    <Html center position={[0, 2.15, 0]} distanceFactor={12} zIndexRange={[5, 0]} style={{ pointerEvents: "none" }}>
+      <span ref={badge} className="multiplayer-name" data-player-id={id}>{player?.nickname ?? "Friend"}</span>
+    </Html>
+  </group>;
+}

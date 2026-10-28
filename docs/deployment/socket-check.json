@@ -1,0 +1,19 @@
+{
+  "ok": true,
+  "host": "https://la-baraj-world.claumarin336.workers.dev",
+  "room": "VseUOju1qaKXQE8kbA65tBI6",
+  "checks": [
+    "health",
+    "origin-policy",
+    "private-room-id",
+    "independent-connections",
+    "server-identity",
+    "presence",
+    "pose",
+    "room-isolation",
+    "seat-conflict",
+    "departure-seat-release",
+    "shared-fire",
+    "reconnect-snapshot"
+  ]
+}

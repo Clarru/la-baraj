@@ -1,0 +1,73 @@
+{
+  "metrics": {
+    "calls": 358,
+    "fps": 77.06634127544794,
+    "frameMs": 12.975833333333334,
+    "geometries": 166,
+    "height": 960,
+    "p95": 14.5,
+    "pixelRatio": 1,
+    "samples": 600,
+    "textures": 63,
+    "triangles": 2497937,
+    "width": 1706.666748046875
+  },
+  "motion": {
+    "activity": "catch",
+    "animation": "Activity_Catch",
+    "contact": [
+      54.42215347290039,
+      0.6262473464012146,
+      13.360220909118652
+    ],
+    "facing": [
+      0.06021736219731985,
+      0,
+      -0.9981852880552772
+    ],
+    "facingDot": null,
+    "feet": [
+      54.413482666015625,
+      0.6247458934783936,
+      13.347955703735352
+    ],
+    "groundY": 0.6247458399140363,
+    "grounded": true,
+    "inWater": false,
+    "lastMovingAlignment": 0.999999999999506,
+    "position": [
+      54.413482666015625,
+      1.5747458934783936,
+      13.347955703735352
+    ],
+    "velocity": [
+      0,
+      0,
+      0
+    ]
+  },
+  "prompt": "Perch · 2.5 kgCaught! Saved on this browser.",
+  "rect": {
+    "height": 960,
+    "width": 1706.666748046875,
+    "x": 0,
+    "y": 0
+  },
+  "run": {
+    "avatars": 1,
+    "cameraPreset": "walk",
+    "counters": "previous complete frame across main, reflection and shadow passes",
+    "evening": false,
+    "mode": "walk",
+    "runId": "d7d5af7b-a555-448c-b0c7-0784d4228537",
+    "sample": {
+      "excludeStallsAboveMs": 500,
+      "kind": "rolling latest 600 settled frames",
+      "samples": 600,
+      "seconds": 7.7855
+    },
+    "textured": true,
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36"
+  },
+  "capturedAt": "2026-10-28T14:20:25.165Z"
+}

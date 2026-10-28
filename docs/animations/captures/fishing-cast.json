@@ -1,0 +1,73 @@
+{
+  "metrics": {
+    "calls": 347,
+    "fps": 77.40337478749782,
+    "frameMs": 12.919333333273729,
+    "geometries": 162,
+    "height": 960,
+    "p95": 14.800000011920927,
+    "pixelRatio": 1,
+    "samples": 600,
+    "textures": 63,
+    "triangles": 2497649,
+    "width": 1706.666748046875
+  },
+  "motion": {
+    "activity": "cast",
+    "animation": "Activity_Cast",
+    "contact": [
+      54.42215347290039,
+      0.6262473464012146,
+      13.360220909118652
+    ],
+    "facing": [
+      0.06021736219731985,
+      0,
+      -0.9981852880552772
+    ],
+    "facingDot": null,
+    "feet": [
+      54.413482666015625,
+      0.6247458934783936,
+      13.347955703735352
+    ],
+    "groundY": 0.6247458399140363,
+    "grounded": true,
+    "inWater": false,
+    "lastMovingAlignment": 0.999999999999506,
+    "position": [
+      54.413482666015625,
+      1.5747458934783936,
+      13.347955703735352
+    ],
+    "velocity": [
+      0,
+      0,
+      0
+    ]
+  },
+  "prompt": "Casting…Escape to cancel",
+  "rect": {
+    "height": 960,
+    "width": 1706.666748046875,
+    "x": 0,
+    "y": 0
+  },
+  "run": {
+    "avatars": 1,
+    "cameraPreset": "walk",
+    "counters": "previous complete frame across main, reflection and shadow passes",
+    "evening": false,
+    "mode": "walk",
+    "runId": "d7d5af7b-a555-448c-b0c7-0784d4228537",
+    "sample": {
+      "excludeStallsAboveMs": 500,
+      "kind": "rolling latest 600 settled frames",
+      "samples": 600,
+      "seconds": 7.751599999964237
+    },
+    "textured": true,
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36"
+  },
+  "capturedAt": "2026-10-28T14:19:37.565Z"
+}

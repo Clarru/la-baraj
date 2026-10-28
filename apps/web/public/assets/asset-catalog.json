@@ -1,0 +1,749 @@
+{
+  "author": "Quaternius",
+  "packs": {
+    "nature": {
+      "origin": "https://quaternius.com/packs/stylizednaturemegakit.html",
+      "license": "CC0-1.0",
+      "license_file": "third_party/quaternius-nature-LICENSE.txt",
+      "mirror": "agentkaerf/FreeModels",
+      "commit": "db3df04d1e4714298a09510b26fb6de6645138a2"
+    },
+    "village": {
+      "origin": "https://quaternius.com/packs/medievalvillagemegakit.html",
+      "license": "CC0-1.0",
+      "license_file": "third_party/quaternius-village-LICENSE.txt",
+      "mirror": "agentkaerf/FreeModels",
+      "commit": "db3df04d1e4714298a09510b26fb6de6645138a2"
+    },
+    "props": {
+      "origin": "https://quaternius.com/packs/fantasypropsmegakit.html",
+      "license": "CC0-1.0",
+      "license_file": "third_party/quaternius-props-LICENSE.txt",
+      "mirror": "agentkaerf/FreeModels",
+      "commit": "db3df04d1e4714298a09510b26fb6de6645138a2"
+    },
+    "character": {
+      "origin": "https://quaternius.com",
+      "license": "CC0-1.0",
+      "license_file": "third_party/quaternius-character-LICENSE.txt",
+      "mirror": "agentkaerf/FreeModels",
+      "commit": "db3df04d1e4714298a09510b26fb6de6645138a2"
+    }
+  },
+  "models": [
+    {
+      "id": "CommonTree_1",
+      "pack": "nature",
+      "url": "/assets/optimized/CommonTree_1.glb",
+      "source_path": "Stylized Nature MegaKit[Standard]/glTF/CommonTree_1.gltf",
+      "bytes": 8933525,
+      "sha256": "b51cdea6545edb51d102dd6c27caafe62aa75e3c328ac8f9039f4e7bfd690bfa",
+      "animations": [],
+      "files": [
+        "CommonTree_1.gltf",
+        "CommonTree_1.bin",
+        "Bark_NormalTree_Normal.png",
+        "Bark_NormalTree.png",
+        "Leaves_NormalTree_C.png"
+      ],
+      "optimizedBytes": 551272,
+      "triangles": 6265,
+      "bounds": {
+        "min": [
+          -2.1944587230682373,
+          -0.24277201294898987,
+          -2.2245190143585205
+        ],
+        "max": [
+          2.116964101791382,
+          7.022013187408447,
+          2.3531949520111084
+        ]
+      }
+    },
+    {
+      "id": "CommonTree_3",
+      "pack": "nature",
+      "url": "/assets/optimized/CommonTree_3.glb",
+      "source_path": "Stylized Nature MegaKit[Standard]/glTF/CommonTree_3.gltf",
+      "bytes": 8738928,
+      "sha256": "17c6537aa8042bb7255fbb501bf7aeb2b6db87c16766f794f9c37be3ce70c976",
+      "animations": [],
+      "files": [
+        "CommonTree_3.gltf",
+        "CommonTree_3.bin",
+        "Bark_NormalTree_Normal.png",
+        "Bark_NormalTree.png",
+        "Leaves_NormalTree_C.png"
+      ],
+      "optimizedBytes": 356676,
+      "triangles": 3505,
+      "bounds": {
+        "min": [
+          -1.9864652156829834,
+          -0.24277201294898987,
+          -2.0609655380249023
+        ],
+        "max": [
+          2.076380968093872,
+          9.182417869567871,
+          2.1801114082336426
+        ]
+      }
+    },
+    {
+      "id": "Pine_2",
+      "pack": "nature",
+      "url": "/assets/optimized/Pine_2.glb",
+      "source_path": "Stylized Nature MegaKit[Standard]/glTF/Pine_2.gltf",
+      "bytes": 8611508,
+      "sha256": "57bd4732170b6c7e51bcf78fe5adaabf142f95a50378d8d3051d1f20a04d3c2f",
+      "animations": [],
+      "files": [
+        "Pine_2.gltf",
+        "Pine_2.bin",
+        "Bark_NormalTree_Normal.png",
+        "Bark_NormalTree.png",
+        "Leaf_Pine_C.png"
+      ],
+      "optimizedBytes": 294320,
+      "triangles": 3648,
+      "bounds": {
+        "min": [
+          -2.891958236694336,
+          -0.23508860170841217,
+          -2.6936988830566406
+        ],
+        "max": [
+          2.8361265659332275,
+          7.141149520874023,
+          2.527508020401001
+        ]
+      }
+    },
+    {
+      "id": "Pine_4",
+      "pack": "nature",
+      "url": "/assets/optimized/Pine_4.glb",
+      "source_path": "Stylized Nature MegaKit[Standard]/glTF/Pine_4.gltf",
+      "bytes": 8608014,
+      "sha256": "d8978cfd5a29a22446b9277f1789f44c3f953fb6e29adb625a8f61c3dd032952",
+      "animations": [],
+      "files": [
+        "Pine_4.gltf",
+        "Pine_4.bin",
+        "Bark_NormalTree_Normal.png",
+        "Bark_NormalTree.png",
+        "Leaf_Pine_C.png"
+      ],
+      "optimizedBytes": 290832,
+      "triangles": 3370,
+      "bounds": {
+        "min": [
+          -2.8718371391296387,
+          -0.23508861660957336,
+          -2.9459073543548584
+        ],
+        "max": [
+          2.930187225341797,
+          10.0013427734375,
+          2.424938201904297
+        ]
+      }
+    },
+    {
+      "id": "Bush_Common",
+      "pack": "nature",
+      "url": "/assets/optimized/Bush_Common.glb",
+      "source_path": "Stylized Nature MegaKit[Standard]/glTF/Bush_Common.gltf",
+      "bytes": 164254,
+      "sha256": "77811fca92610cb254713d3d49d5029ab6cf13050c3afb61aa942786a7b2ca90",
+      "animations": [],
+      "files": [
+        "Bush_Common.gltf",
+        "Bush_Common.bin",
+        "Leaves_TwistedTree_C.png"
+      ],
+      "optimizedBytes": 127216,
+      "triangles": 900,
+      "bounds": {
+        "min": [
+          -0.9234761595726013,
+          -0.234694704413414,
+          -0.9743891954421997
+        ],
+        "max": [
+          0.9913685917854309,
+          1.3470909595489502,
+          0.9907516837120056
+        ]
+      }
+    },
+    {
+      "id": "Fern_1",
+      "pack": "nature",
+      "url": "/assets/optimized/Fern_1.glb",
+      "source_path": "Stylized Nature MegaKit[Standard]/glTF/Fern_1.gltf",
+      "bytes": 2599938,
+      "sha256": "d41915cffe9dbbde1ae88be381eb9c60f7caa2274511436cc78fe4de627468ab",
+      "animations": [],
+      "files": [
+        "Fern_1.gltf",
+        "Fern_1.bin",
+        "Leaves.png"
+      ],
+      "optimizedBytes": 64784,
+      "triangles": 288,
+      "bounds": {
+        "min": [
+          -1.381242275238037,
+          -0.0773344337940216,
+          -1.278536081314087
+        ],
+        "max": [
+          1.4456915855407715,
+          0.7629088163375854,
+          1.373783826828003
+        ]
+      }
+    },
+    {
+      "id": "Grass_Common_Short",
+      "pack": "nature",
+      "url": "/assets/optimized/Grass_Common_Short.glb",
+      "source_path": "Stylized Nature MegaKit[Standard]/glTF/Grass_Common_Short.gltf",
+      "bytes": 42680,
+      "sha256": "6957b50622c9e26e7296c1b47ea8653bc0d957e0a547de444e2ed96f0075a21a",
+      "animations": [],
+      "files": [
+        "Grass_Common_Short.gltf",
+        "Grass_Common_Short.bin",
+        "Grass.png"
+      ],
+      "optimizedBytes": 9928,
+      "triangles": 155,
+      "bounds": {
+        "min": [
+          -0.3556424081325531,
+          -0.022385215386748314,
+          -0.47937828302383423
+        ],
+        "max": [
+          0.2832280695438385,
+          1.311718225479126,
+          0.25788721442222595
+        ]
+      }
+    },
+    {
+      "id": "Flower_3_Group",
+      "pack": "nature",
+      "url": "/assets/optimized/Flower_3_Group.glb",
+      "source_path": "Stylized Nature MegaKit[Standard]/glTF/Flower_3_Group.gltf",
+      "bytes": 3062442,
+      "sha256": "4df1612371982c543f930d6b213967372e0d459622d7eff7fc2ed1ddbfaa3b6c",
+      "animations": [],
+      "files": [
+        "Flower_3_Group.gltf",
+        "Flower_3_Group.bin",
+        "Leaves.png",
+        "Flowers.png"
+      ],
+      "optimizedBytes": 124176,
+      "triangles": 755,
+      "bounds": {
+        "min": [
+          -0.6136013269424438,
+          -0.03458359092473984,
+          -0.8017617464065552
+        ],
+        "max": [
+          0.8748752474784851,
+          2.020251512527466,
+          0.789365291595459
+        ]
+      }
+    },
+    {
+      "id": "Rock_Medium_1",
+      "pack": "nature",
+      "url": "/assets/optimized/Rock_Medium_1.glb",
+      "source_path": "Stylized Nature MegaKit[Standard]/glTF/Rock_Medium_1.gltf",
+      "bytes": 2532513,
+      "sha256": "5d1ab1fa03218f4a908728ed0eabe6486344a7e4f510b0d3d6f837fd1d011bd8",
+      "animations": [],
+      "files": [
+        "Rock_Medium_1.gltf",
+        "Rock_Medium_1.bin",
+        "Rocks_Diffuse.png"
+      ],
+      "optimizedBytes": 36216,
+      "triangles": 342,
+      "bounds": {
+        "min": [
+          -1.7272872924804688,
+          -0.27113133668899536,
+          -1.1498832702636719
+        ],
+        "max": [
+          1.4978611469268799,
+          1.988665223121643,
+          1.8392531871795654
+        ]
+      }
+    },
+    {
+      "id": "Rock_Medium_2",
+      "pack": "nature",
+      "url": "/assets/optimized/Rock_Medium_2.glb",
+      "source_path": "Stylized Nature MegaKit[Standard]/glTF/Rock_Medium_2.gltf",
+      "bytes": 2528655,
+      "sha256": "fac2d05a05f2d0d2098de59c09b58f42cc875c9caca4fd4c4bd57f3d36e7b12e",
+      "animations": [],
+      "files": [
+        "Rock_Medium_2.gltf",
+        "Rock_Medium_2.bin",
+        "Rocks_Diffuse.png"
+      ],
+      "optimizedBytes": 32360,
+      "triangles": 244,
+      "bounds": {
+        "min": [
+          -1.713641881942749,
+          -0.05084158852696419,
+          -1.1591253280639648
+        ],
+        "max": [
+          1.3351185321807861,
+          1.8481333255767822,
+          1.3199462890625
+        ]
+      }
+    },
+    {
+      "id": "Pebble_Round_1",
+      "pack": "nature",
+      "url": "/assets/optimized/Pebble_Round_1.glb",
+      "source_path": "Stylized Nature MegaKit[Standard]/glTF/Pebble_Round_1.gltf",
+      "bytes": 823742,
+      "sha256": "9f6261c81134915e73cf35eb4e37076238fd1e79434515ac686d15cbd1f779ab",
+      "animations": [],
+      "files": [
+        "Pebble_Round_1.gltf",
+        "Pebble_Round_1.bin",
+        "PathRocks_Diffuse.png"
+      ],
+      "optimizedBytes": 30588,
+      "triangles": 136,
+      "bounds": {
+        "min": [
+          -0.21980905532836914,
+          -0.0077979713678359985,
+          -0.15961268544197083
+        ],
+        "max": [
+          0.28022968769073486,
+          0.08767858147621155,
+          0.20741015672683716
+        ]
+      }
+    },
+    {
+      "id": "DeadTree_1",
+      "pack": "nature",
+      "url": "/assets/optimized/DeadTree_1.glb",
+      "source_path": "Stylized Nature MegaKit[Standard]/glTF/DeadTree_1.gltf",
+      "bytes": 10382019,
+      "sha256": "b7ca9e90cbd8e8e3b3b17fd9c8fd57184ebf4986ff433ee3f2212f37f3114469",
+      "animations": [],
+      "files": [
+        "DeadTree_1.gltf",
+        "DeadTree_1.bin",
+        "Bark_DeadTree_Normal.png",
+        "Bark_DeadTree.png"
+      ],
+      "optimizedBytes": 451560,
+      "triangles": 6169,
+      "bounds": {
+        "min": [
+          -2.5923237800598145,
+          -0.3355545997619629,
+          -2.9034998416900635
+        ],
+        "max": [
+          3.556612253189087,
+          9.15992259979248,
+          2.845168113708496
+        ]
+      }
+    },
+    {
+      "id": "Roof_RoundTiles_4x6",
+      "pack": "village",
+      "url": "/assets/optimized/Roof_RoundTiles_4x6.glb",
+      "source_path": "Medieval Village MegaKit[Standard]/glTF/Roof_RoundTiles_4x6.gltf",
+      "bytes": 17279166,
+      "sha256": "4d969026106822eb2106a32a8d596416e069f63e20f53b475839076fb635ed5a",
+      "animations": [],
+      "files": [
+        "Roof_RoundTiles_4x6.gltf",
+        "Roof_RoundTiles_4x6.bin",
+        "T_WoodTrim_Normal.png",
+        "T_WoodTrim_BaseColor.png",
+        "T_WoodTrim_Roughness.png",
+        "T_RoundTiles_Normal.png",
+        "T_RoundTiles_BaseColor.png",
+        "T_RoundTiles_Roughness.png"
+      ],
+      "optimizedBytes": 219352,
+      "triangles": 2520,
+      "bounds": {
+        "min": [
+          -2.756538152694702,
+          -0.5157185792922974,
+          -3.786034345626831
+        ],
+        "max": [
+          2.756538152694702,
+          3.7178683280944824,
+          3.7862460613250732
+        ]
+      }
+    },
+    {
+      "id": "Floor_WoodDark",
+      "pack": "village",
+      "url": "/assets/optimized/Floor_WoodDark.glb",
+      "source_path": "Medieval Village MegaKit[Standard]/glTF/Floor_WoodDark.gltf",
+      "bytes": 7380305,
+      "sha256": "2ee57724a06289164fee75ad62eb770f7f8cc9cb1b51c041da477c086775cd8d",
+      "animations": [],
+      "files": [
+        "Floor_WoodDark.gltf",
+        "Floor_WoodDark.bin",
+        "T_WoodTrim_Normal.png",
+        "T_WoodTrim_BaseColor.png",
+        "T_WoodTrim_Roughness.png"
+      ],
+      "optimizedBytes": 78788,
+      "triangles": 32,
+      "bounds": {
+        "min": [
+          -1,
+          -0.010000384412705898,
+          -1
+        ],
+        "max": [
+          1,
+          0.009999990463256836,
+          1
+        ]
+      }
+    },
+    {
+      "id": "Prop_WoodenFence_Single",
+      "pack": "village",
+      "url": "/assets/optimized/Prop_WoodenFence_Single.glb",
+      "source_path": "Medieval Village MegaKit[Standard]/glTF/Prop_WoodenFence_Single.gltf",
+      "bytes": 7380952,
+      "sha256": "c9f787c03c62dd94268da84bf3e4dacf554b2a5a9beee38314e37ff5d929c407",
+      "animations": [],
+      "files": [
+        "Prop_WoodenFence_Single.gltf",
+        "Prop_WoodenFence_Single.bin",
+        "T_WoodTrim_Normal.png",
+        "T_WoodTrim_BaseColor.png",
+        "T_WoodTrim_Roughness.png"
+      ],
+      "optimizedBytes": 79428,
+      "triangles": 40,
+      "bounds": {
+        "min": [
+          -1.0314507484436035,
+          -0.02825251966714859,
+          -0.059909969568252563
+        ],
+        "max": [
+          1.0326489210128784,
+          0.8098565340042114,
+          0.059910036623477936
+        ]
+      }
+    },
+    {
+      "id": "Door_4_Flat",
+      "pack": "village",
+      "url": "/assets/optimized/Door_4_Flat.glb",
+      "source_path": "Medieval Village MegaKit[Standard]/glTF/Door_4_Flat.gltf",
+      "bytes": 8262903,
+      "sha256": "93227b03b1502cea785e2e5e31492a5d0e3cfc934a3d767e0cad9b28ca192eed",
+      "animations": [],
+      "files": [
+        "Door_4_Flat.gltf",
+        "Door_4_Flat.bin",
+        "T_WoodTrim_Normal.png",
+        "T_WoodTrim_BaseColor.png",
+        "T_WoodTrim_Roughness.png",
+        "T_MetalOrnaments_BaseColor.png",
+        "T_MetalOrnaments_Roughness.png"
+      ],
+      "optimizedBytes": 163300,
+      "triangles": 1044,
+      "bounds": {
+        "min": [
+          -0.04626310616731644,
+          0.0352252721786499,
+          -0.11758767068386078
+        ],
+        "max": [
+          1.0716030597686768,
+          2.127084732055664,
+          0.09175863862037659
+        ]
+      }
+    },
+    {
+      "id": "Window_Wide_Flat1",
+      "pack": "village",
+      "url": "/assets/optimized/Window_Wide_Flat1.glb",
+      "source_path": "Medieval Village MegaKit[Standard]/glTF/Window_Wide_Flat1.gltf",
+      "bytes": 7390542,
+      "sha256": "28b91e0693bac3763248c72497f234085fccb646f1adee505dc87c62b5ad8403",
+      "animations": [],
+      "files": [
+        "Window_Wide_Flat1.gltf",
+        "Window_Wide_Flat1.bin",
+        "T_WoodTrim_Normal.png",
+        "T_WoodTrim_BaseColor.png",
+        "T_WoodTrim_Roughness.png"
+      ],
+      "optimizedBytes": 88116,
+      "triangles": 160,
+      "bounds": {
+        "min": [
+          -0.8041191101074219,
+          0.94417804479599,
+          -0.26658084988594055
+        ],
+        "max": [
+          0.8041172027587891,
+          2.5242888927459717,
+          0.4168574810028076
+        ]
+      }
+    },
+    {
+      "id": "Bench",
+      "pack": "props",
+      "url": "/assets/optimized/Bench.glb",
+      "source_path": "Fantasy Props MegaKit[Standard]/Exports/glTF/Bench.gltf",
+      "bytes": 14665095,
+      "sha256": "0184d3b128a8a3bcc828d7bc6aa867038e2a85a339130ed015f2727e739f9ab7",
+      "animations": [],
+      "files": [
+        "Bench.gltf",
+        "Bench.bin",
+        "T_Trim_Furniture_Normal.png",
+        "T_Trim_Furniture_BaseColor.png",
+        "T_Trim_Furniture_ORM.png",
+        "T_Trim_Metal_Normal.png",
+        "T_Trim_Metal_BaseColor.png",
+        "T_Trim_Metal_ORM.png"
+      ],
+      "optimizedBytes": 141072,
+      "triangles": 404,
+      "bounds": {
+        "min": [
+          -1.3883408308029175,
+          -0.007262172643095255,
+          -0.2621202766895294
+        ],
+        "max": [
+          1.3883408308029175,
+          0.525951623916626,
+          0.2721467912197113
+        ]
+      }
+    },
+    {
+      "id": "Table_Large",
+      "pack": "props",
+      "url": "/assets/optimized/Table_Large.glb",
+      "source_path": "Fantasy Props MegaKit[Standard]/Exports/glTF/Table_Large.gltf",
+      "bytes": 14702205,
+      "sha256": "ffd4e5b803f38f02922c2b0303ae3b5a602f7c239e717b725c0553019be8fcf2",
+      "animations": [],
+      "files": [
+        "Table_Large.gltf",
+        "Table_Large.bin",
+        "T_Trim_Furniture_Normal.png",
+        "T_Trim_Furniture_BaseColor.png",
+        "T_Trim_Furniture_ORM.png",
+        "T_Trim_Metal_Normal.png",
+        "T_Trim_Metal_BaseColor.png",
+        "T_Trim_Metal_ORM.png"
+      ],
+      "optimizedBytes": 178180,
+      "triangles": 986,
+      "bounds": {
+        "min": [
+          -1.4242464303970337,
+          0.001262865960597992,
+          -0.5419855713844299
+        ],
+        "max": [
+          1.4242464303970337,
+          0.8147094249725342,
+          0.5546767711639404
+        ]
+      }
+    },
+    {
+      "id": "Lantern_Wall",
+      "pack": "props",
+      "url": "/assets/optimized/Lantern_Wall.glb",
+      "source_path": "Fantasy Props MegaKit[Standard]/Exports/glTF/Lantern_Wall.gltf",
+      "bytes": 6980476,
+      "sha256": "9e7623e1d3a16f9212ff7cb41c939746435187f0071bd94849ee7bc6a59785a2",
+      "animations": [],
+      "files": [
+        "Lantern_Wall.gltf",
+        "Lantern_Wall.bin",
+        "T_Trim_Metal_Normal.png",
+        "T_Trim_Metal_BaseColor.png",
+        "T_Trim_Metal_ORM.png"
+      ],
+      "optimizedBytes": 176332,
+      "triangles": 2822,
+      "bounds": {
+        "min": [
+          -0.1786707192659378,
+          0.08183755725622177,
+          -0.05097728595137596
+        ],
+        "max": [
+          0.178670734167099,
+          1.4188451766967773,
+          1.2513371706008911
+        ]
+      }
+    },
+    {
+      "id": "Barrel",
+      "pack": "props",
+      "url": "/assets/optimized/Barrel.glb",
+      "source_path": "Fantasy Props MegaKit[Standard]/Exports/glTF/Barrel.gltf",
+      "bytes": 14702948,
+      "sha256": "cececb2da345addb21567e3ce1b30a9da071b689bcec59d85cd7a4446f531e87",
+      "animations": [],
+      "files": [
+        "Barrel.gltf",
+        "Barrel.bin",
+        "T_Trim_Furniture_Normal.png",
+        "T_Trim_Furniture_BaseColor.png",
+        "T_Trim_Furniture_ORM.png",
+        "T_Trim_Metal_Normal.png",
+        "T_Trim_Metal_BaseColor.png",
+        "T_Trim_Metal_ORM.png"
+      ],
+      "optimizedBytes": 178920,
+      "triangles": 824,
+      "bounds": {
+        "min": [
+          -0.34901556372642517,
+          0.003436744213104248,
+          -0.349015474319458
+        ],
+        "max": [
+          0.3490154445171356,
+          0.9013950824737549,
+          0.3490155041217804
+        ]
+      }
+    },
+    {
+      "id": "Crate_Wooden",
+      "pack": "props",
+      "url": "/assets/optimized/Crate_Wooden.glb",
+      "source_path": "Fantasy Props MegaKit[Standard]/Exports/glTF/Crate_Wooden.gltf",
+      "bytes": 14712401,
+      "sha256": "fb06d4b7b9bbfbb9dc51fa56ecff3fe7ba8e9142d643cabedd17a55d7ea46ee5",
+      "animations": [],
+      "files": [
+        "Crate_Wooden.gltf",
+        "Crate_Wooden.bin",
+        "T_Trim_Furniture_Normal.png",
+        "T_Trim_Furniture_BaseColor.png",
+        "T_Trim_Furniture_ORM.png",
+        "T_Trim_Metal_Normal.png",
+        "T_Trim_Metal_BaseColor.png",
+        "T_Trim_Metal_ORM.png"
+      ],
+      "optimizedBytes": 188344,
+      "triangles": 1576,
+      "bounds": {
+        "min": [
+          -0.4258447792468374,
+          -0.05243159234251937,
+          -0.4541466488101733
+        ],
+        "max": [
+          0.4164137671952943,
+          0.8784963503875858,
+          0.4541466488101733
+        ]
+      }
+    },
+    {
+      "id": "Casual_Hoodie",
+      "pack": "character",
+      "url": "/assets/optimized/Casual_Hoodie.glb",
+      "source_path": "Ultimate Modular Men- Feb 2022/Individual Characters/glTF/Casual_Hoodie.gltf",
+      "bytes": 3104001,
+      "sha256": "dd74886c26998a0fa888b4ce557a0932d7d97b0265dd4c763154d081b7a6cb98",
+      "animations": [
+        "Death",
+        "Gun_Shoot",
+        "HitRecieve",
+        "HitRecieve_2",
+        "Idle",
+        "Idle_Gun",
+        "Idle_Gun_Pointing",
+        "Idle_Gun_Shoot",
+        "Idle_Neutral",
+        "Idle_Sword",
+        "Interact",
+        "Kick_Left",
+        "Kick_Right",
+        "Punch_Left",
+        "Punch_Right",
+        "Roll",
+        "Run",
+        "Run_Back",
+        "Run_Left",
+        "Run_Right",
+        "Run_Shoot",
+        "Sword_Slash",
+        "Walk",
+        "Wave"
+      ],
+      "files": [
+        "Casual_Hoodie.gltf"
+      ],
+      "optimizedBytes": 1312692,
+      "triangles": 6206,
+      "bounds": {
+        "min": [
+          -0.8377335071563721,
+          -0.004176006652414799,
+          -0.09113743901252747
+        ],
+        "max": [
+          0.8377335071563721,
+          1.8661867380142212,
+          0.2866884469985962
+        ]
+      }
+    }
+  ]
+}

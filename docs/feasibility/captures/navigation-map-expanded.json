@@ -1,0 +1,39 @@
+{
+  "metrics": {
+    "calls": 327,
+    "fps": 119.9325998640692,
+    "frameMs": 8.33801652872858,
+    "geometries": 186,
+    "height": 1181.3333740234375,
+    "p95": 9.300000011920927,
+    "pixelRatio": 1,
+    "samples": 121,
+    "textures": 48,
+    "triangles": 2485110,
+    "width": 1136
+  },
+  "rect": {
+    "height": 1181.3333740234375,
+    "width": 1136,
+    "x": 0,
+    "y": 0
+  },
+  "run": {
+    "avatars": 1,
+    "cameraPreset": "walk",
+    "counters": "previous complete frame across main, reflection and shadow passes",
+    "evening": false,
+    "mode": "walk",
+    "runId": "20e09dfa-c60d-4c8a-b0b5-5f4fe4b979b2",
+    "sample": {
+      "excludeStallsAboveMs": 500,
+      "kind": "rolling latest 600 settled frames",
+      "samples": 121,
+      "seconds": 1.0088999999761583
+    },
+    "textured": true,
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36"
+  },
+  "capturedAt": "2026-10-28T14:53:17.884Z",
+  "purpose": "showcase screenshot, not a benchmark population"
+}

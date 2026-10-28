@@ -1,0 +1,114 @@
+{
+  "reference": "docs/art-direction/cabin-reference-grid.png",
+  "variantReference": "docs/art-direction/cabin-variants-grid.png",
+  "models": [
+    {
+      "id": "Lake_Cabin_Gable",
+      "bytes": 1462640,
+      "bounds": {
+        "min": [
+          -3.2599998712539673,
+          0,
+          -3.56000018119812
+        ],
+        "max": [
+          3.2600001096725464,
+          5.82499960064888,
+          6.06000018119812
+        ]
+      },
+      "source": "Original Blender mesh reconstructed from docs/art-direction/cabin-reference-grid.png; only the reference was generated with built-in image_gen",
+      "geometry": "Fixed architectural archetype; no random roof deformation"
+    },
+    {
+      "id": "Lake_Cabin_AFrame",
+      "bytes": 888336,
+      "bounds": {
+        "min": [
+          -3.377504587173462,
+          0,
+          -3.710000514984131
+        ],
+        "max": [
+          3.377504587173462,
+          6.839999943971634,
+          5.9599997997283936
+        ]
+      },
+      "source": "Original Blender mesh reconstructed from docs/art-direction/cabin-reference-grid.png; only the reference was generated with built-in image_gen",
+      "geometry": "Fixed architectural archetype; no random roof deformation"
+    },
+    {
+      "id": "Lake_Cabin_Sage",
+      "bytes": 1485040,
+      "bounds": {
+        "min": [
+          -3.760000228881836,
+          0,
+          -3.3700000643730164
+        ],
+        "max": [
+          3.7599998712539673,
+          5.374999791383743,
+          5.635000705718994
+        ]
+      },
+      "source": "Original Blender mesh reconstructed from docs/art-direction/cabin-reference-grid.png; only the reference was generated with built-in image_gen",
+      "geometry": "Fixed architectural archetype; no random roof deformation"
+    },
+    {
+      "id": "Lake_Cabin_GableBlue",
+      "bytes": 1859052,
+      "bounds": {
+        "min": [
+          -3.2599997520446777,
+          0,
+          -3.56000018119812
+        ],
+        "max": [
+          5.075000762939453,
+          5.824999809265137,
+          6.060000419616699
+        ]
+      },
+      "source": "Original Blender mesh reconstructed from docs/art-direction/cabin-variants-grid.png; only the reference was generated with built-in image_gen",
+      "geometry": "Fixed architectural archetype; no random roof deformation"
+    },
+    {
+      "id": "Lake_Cabin_AFrameCopper",
+      "bytes": 948052,
+      "bounds": {
+        "min": [
+          -3.377504825592041,
+          0,
+          -3.7100000381469727
+        ],
+        "max": [
+          3.377504348754883,
+          6.840000152587891,
+          5.9599995613098145
+        ]
+      },
+      "source": "Original Blender mesh reconstructed from docs/art-direction/cabin-variants-grid.png; only the reference was generated with built-in image_gen",
+      "geometry": "Fixed architectural archetype; no random roof deformation"
+    },
+    {
+      "id": "Lake_Cabin_SagePergola",
+      "bytes": 1784144,
+      "bounds": {
+        "min": [
+          -3.759999990463257,
+          0,
+          -3.3700003623962402
+        ],
+        "max": [
+          5.693154335021973,
+          5.375,
+          5.635000228881836
+        ]
+      },
+      "source": "Original Blender mesh reconstructed from docs/art-direction/cabin-variants-grid.png; only the reference was generated with built-in image_gen",
+      "geometry": "Fixed architectural archetype; no random roof deformation"
+    }
+  ]
+}

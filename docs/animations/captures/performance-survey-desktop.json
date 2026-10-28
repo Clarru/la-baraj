@@ -1,0 +1,73 @@
+{
+  "metrics": {
+    "calls": 1814,
+    "fps": 67.1373742574719,
+    "frameMs": 14.894833333293596,
+    "geometries": 248,
+    "height": 1181.3333740234375,
+    "p95": 16.900000035762787,
+    "pixelRatio": 1,
+    "samples": 600,
+    "textures": 76,
+    "triangles": 2442555,
+    "width": 1089.3333740234375
+  },
+  "motion": {
+    "activity": "none",
+    "animation": "Idle_Neutral",
+    "contact": [
+      45.01018142700195,
+      0.9998382329940796,
+      27.009294509887695
+    ],
+    "facing": [
+      -0.5812390044583916,
+      0,
+      -0.8137328921066287
+    ],
+    "facingDot": null,
+    "feet": [
+      45,
+      1.0133432292938234,
+      26.998350143432617
+    ],
+    "groundY": 0.9983432292938232,
+    "grounded": true,
+    "inWater": false,
+    "lastMovingAlignment": 0.9999999999652204,
+    "position": [
+      45,
+      1.9492127895355225,
+      26.998350143432617
+    ],
+    "velocity": [
+      0,
+      0.00024510821094736457,
+      0
+    ]
+  },
+  "prompt": null,
+  "rect": {
+    "height": 1181.3333740234375,
+    "width": 1089.3333740234375,
+    "x": 0,
+    "y": 0
+  },
+  "run": {
+    "avatars": 1,
+    "cameraPreset": "overview",
+    "counters": "previous complete frame across main, reflection and shadow passes",
+    "evening": false,
+    "mode": "overview",
+    "runId": "f3d95dd0-a7bc-4139-84be-585af7867a51",
+    "sample": {
+      "excludeStallsAboveMs": 500,
+      "kind": "rolling latest 600 settled frames",
+      "samples": 600,
+      "seconds": 8.936899999976157
+    },
+    "textured": true,
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36"
+  },
+  "capturedAt": "2026-10-28T14:29:15.968Z"
+}

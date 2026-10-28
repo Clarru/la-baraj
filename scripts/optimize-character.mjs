@@ -1,0 +1,13 @@
+import {NodeIO} from '@gltf-transform/core';
+import {ALL_EXTENSIONS} from '@gltf-transform/extensions';
+import {dedup,prune,resample,textureCompress,getBounds} from '@gltf-transform/functions';
+import sharp from 'sharp';
+import fs from 'node:fs/promises';
+const io=new NodeIO().registerExtensions(ALL_EXTENSIONS);
+const doc=await io.read('assets/character-source/Lakeside_Man.glb');
+await doc.transform(resample(),dedup(),prune(),textureCompress({encoder:sharp,targetFormat:'webp',resize:[1024,1024]}));
+await io.write('apps/web/public/assets/optimized/Lakeside_Man.glb',doc);
+const bounds=getBounds(doc.getRoot().getDefaultScene());
+const record={source:'Quaternius Universal Base Characters + UAL1/2; CC0 source copies with saved license notices',mirror:'https://github.com/NafisRayan/Animate-Rigged-Humanoid-No-Blender',modifications:'Blender assembly of universal head, authored modular outfit, fitted hair/beard; converted modular meshes from their source bind skeleton to the animation skeleton; cloth material adaptation; retained 11 animation clips; removed hidden body faces by skin weights; optimized textures',bounds,animations:doc.getRoot().listAnimations().map(a=>a.getName()),bytes:(await fs.stat('apps/web/public/assets/optimized/Lakeside_Man.glb')).size};
+await fs.writeFile('assets/character-source/PROVENANCE.json',JSON.stringify(record,null,2));
+console.log(record);

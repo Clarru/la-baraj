@@ -1,0 +1,30 @@
+{
+  "CommonTree_1": {
+    "height": 7.845968016386033,
+    "width": 5.230645344257355,
+    "source": "Quaternius Stylized Nature MegaKit: CommonTree_1.gltf",
+    "license": "CC0-1.0",
+    "method": "Blender orthographic RGBA bake; native alpha, not generated art"
+  },
+  "CommonTree_3": {
+    "height": 10.17920507311821,
+    "width": 6.78613671541214,
+    "source": "Quaternius Stylized Nature MegaKit: CommonTree_3.gltf",
+    "license": "CC0-1.0",
+    "method": "Blender orthographic RGBA bake; native alpha, not generated art"
+  },
+  "Pine_2": {
+    "height": 7.966337172389031,
+    "width": 5.310891448259354,
+    "source": "Quaternius Stylized Nature MegaKit: Pine_2.gltf",
+    "license": "CC0-1.0",
+    "method": "Blender orthographic RGBA bake; native alpha, not generated art"
+  },
+  "Pine_4": {
+    "height": 11.05534590125084,
+    "width": 7.370230600833893,
+    "source": "Quaternius Stylized Nature MegaKit: Pine_4.gltf",
+    "license": "CC0-1.0",
+    "method": "Blender orthographic RGBA bake; native alpha, not generated art"
+  }
+}
