@@ -455,8 +455,8 @@ button:disabled {
 .game-shell .lake-minimap {
   position: absolute;
   inset: auto auto 24px 24px;
-  width: 200px;
-  height: 200px;
+  width: 240px;
+  height: 240px;
   max-height: none;
   padding: 2px;
   overflow: hidden;
