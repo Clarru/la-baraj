@@ -453,6 +453,7 @@ button:disabled {
 
 /* Permanent, quiet minimap. World geometry and markers are the only content. */
 .game-shell .lake-minimap {
+  position: absolute;
   inset: auto auto 24px 24px;
   width: 200px;
   height: 200px;

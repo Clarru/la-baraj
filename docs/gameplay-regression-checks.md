@@ -23,6 +23,11 @@ edges. It has no visible heading, N, distance, legend, footer or buttons. There
 is no Show/Hide map action or M shortcut. OpenStreetMap attribution remains in
 the game menu. Accessible map and marker labels remain available.
 
+The final positioning check reads browser layout bounds: `position: absolute`,
+left gap 24px, bottom gap 24px, size 200×200px and border radius 50%. The explicit
+position declaration is required; bottom/left values alone do not anchor a
+statically positioned element.
+
 A small navigation subscription updates only the map when a motion sample
 changes. The full scene no longer receives map-driven React state updates.
 Obsolete map panel and button CSS has been removed.
