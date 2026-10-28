@@ -77,3 +77,9 @@ export function mapHomePosition(
     offscreen: scale > 1,
   };
 }
+
+/** Keep the initial follow camera on the open side of the cabin, not inside its roof. */
+export function homeWalkCameraOffset(index: number): [number, number, number] {
+  const yaw = cabinYaw(index);
+  return [5 * Math.cos(yaw) + 7 * Math.sin(yaw), 3.4, -5 * Math.sin(yaw) + 7 * Math.cos(yaw)];
+}

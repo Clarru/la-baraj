@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { readLocalHome, displayedHomeIndex, shouldSpawnAtHome, homeSpawn, mapHomePosition, playerMapRotation } from "./home";
+import { homeWalkCameraOffset, readLocalHome, displayedHomeIndex, shouldSpawnAtHome, homeSpawn, mapHomePosition, playerMapRotation } from "./home";
 import { cabinSpots, inWater, roads, segmentDistance, terrainHeight } from "./geography";
 import { cabinDesignForPlot, cabinYaw } from "./cabin-designs";
 function memoryStorage() {
@@ -62,6 +62,16 @@ describe("assigned home and navigation", () => {
     }
     expect(designs.size).toBe(6);
     expect(() => homeSpawn(50)).toThrow("Unknown home");
+  });
+  it("puts the follow camera on the open front side of every arrival", () => {
+    for (const plot of cabinSpots) {
+      const spawn = homeSpawn(plot.i), yaw = cabinYaw(plot.i), offset = homeWalkCameraOffset(plot.i);
+      const outward = offset[0] * Math.sin(yaw) + offset[2] * Math.cos(yaw);
+      expect(outward).toBeCloseTo(7);
+      expect(offset[1]).toBeGreaterThan(2);
+      const dx = spawn.position[0] + offset[0] - plot.x, dz = spawn.position[2] + offset[2] - plot.z;
+      expect(dx * Math.sin(yaw) + dz * Math.cos(yaw)).toBeGreaterThan(cabinDesignForPlot(plot.i).stairZ + 7);
+    }
   });
   it("keeps an offscreen home at the correct edge bearing and maps north/east/south correctly", () => {
     const point = mapHomePosition({ x: 300, z: 150 }, { x: 0, z: 0 }, 220);

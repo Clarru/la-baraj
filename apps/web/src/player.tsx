@@ -34,7 +34,7 @@ import {
   scooterSpeed,
   scooterSteeringInput,
 } from "./scooter-controls";
-import { homeSpawn } from "./home";
+import { homeSpawn, homeWalkCameraOffset } from "./home";
 import { scooterSupportHeight } from "./scooter-support";
 import { createRunJumpClips } from "./run-jump-clips";
 import {
@@ -837,7 +837,7 @@ export function CameraRig({
     } else {
       camera.position
         .copy(playerViewPosition)
-        .add(new THREE.Vector3(5, 3.4, 7));
+        .add(new THREE.Vector3(...homeWalkCameraOffset(homeIndex)));
       c.target.copy(playerViewPosition).add(new THREE.Vector3(0, 0.8, 0));
     }
     if (changingRoom) {
