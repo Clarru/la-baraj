@@ -1,13 +1,28 @@
 import * as THREE from "three";
 import type { ActivityKind, ActivityPose } from "./activity-state";
 
+export const fireLightingDuration = 3;
+export const fireIgnitionTime = 1.3;
+
 /** Authored clip durations are retimed to the local activity controller. */
 export function activityAnimation(kind: ActivityKind) {
   switch (kind) {
+    case "fire-approach":
+      return { name: "Walk", duration: 1.333333, loop: true };
+    case "light-fire":
+      return {
+        name: "Activity_LightFire",
+        duration: fireLightingDuration,
+        loop: false,
+      };
     case "sit-down":
       return { name: "Activity_SitDown", duration: 0.7, loop: false };
     case "sit":
       return { name: "Activity_Sit", duration: 1.666667, loop: true };
+    case "scoot-left":
+      return { name: "Activity_ScootLeft", duration: 0.6, loop: false };
+    case "scoot-right":
+      return { name: "Activity_ScootRight", duration: 0.6, loop: false };
     case "stand-up":
       return { name: "Activity_StandUp", duration: 0.65, loop: false };
     case "cast":
@@ -42,6 +57,14 @@ export function activitySeatLift(
   );
   if (pose.kind === "sit-down") return lift * smooth(elapsed / 0.7);
   if (pose.kind === "stand-up") return lift * (1 - smooth(elapsed / 0.65));
+  if (pose.kind === "scoot-left" || pose.kind === "scoot-right") {
+    const duration = pose.shiftDuration ?? 0.6;
+    const progress =
+      Number.isFinite(duration) && duration > 0
+        ? THREE.MathUtils.clamp(elapsed / duration, 0, 1)
+        : 1;
+    return lift + 0.025 * Math.sin(Math.PI * progress) ** 2;
+  }
   return pose.kind === "sit" ? lift : 0;
 }
 export function isFishing(kind: ActivityKind) {
@@ -168,6 +191,36 @@ export function createCharacterActivityRig(object: THREE.Object3D) {
   );
   eye.position.set(-0.038, -0.07, 0.036);
   left?.add(fish);
+  const lighter = new THREE.Group();
+  lighter.name = "Activity fire lighter";
+  lighter.position.set(0, 0.08, 0.015);
+  const lighterBody = mesh(
+    new THREE.BoxGeometry(0.033, 0.06, 0.022),
+    material("#a14727", 0.25),
+    lighter,
+  );
+  lighterBody.position.y = 0.025;
+  const lighterCap = mesh(
+    new THREE.BoxGeometry(0.033, 0.014, 0.024),
+    material("#bbc3b9", 0.7),
+    lighter,
+  );
+  lighterCap.position.y = 0.062;
+  const sparkMaterial = new THREE.MeshBasicMaterial({
+    color: "#ffe7a0",
+    toneMapped: false,
+  });
+  materials.push(sparkMaterial);
+  const lighterFlame = mesh(
+    new THREE.SphereGeometry(1, 6, 5),
+    sparkMaterial,
+    lighter,
+  );
+  lighterFlame.name = "Activity lighter flame";
+  lighterFlame.position.y = 0.088;
+  lighterFlame.scale.set(0.009, 0.025, 0.009);
+  right?.add(lighter);
+  lighter.visible = lighterFlame.visible = false;
   rod.visible = fish.visible = false;
   const delta = new THREE.Quaternion(),
     world = new THREE.Quaternion();
@@ -192,6 +245,14 @@ export function createCharacterActivityRig(object: THREE.Object3D) {
     destination = new THREE.Vector3();
   return {
     update(pose: Readonly<ActivityPose>, elapsed: number) {
+      lighter.visible =
+        pose.kind === "light-fire" && elapsed > 0.25 && elapsed < 2.45;
+      lighterFlame.visible =
+        lighter.visible && elapsed >= 1.05 && elapsed < 1.7;
+      if (lighterFlame.visible) {
+        lighter.getWorldQuaternion(world);
+        lighterFlame.quaternion.copy(world.invert());
+      }
       rod.visible = isFishing(pose.kind);
       fish.visible = pose.kind === "catch" && elapsed > 0.25;
       line.visible =
@@ -222,6 +283,7 @@ export function createCharacterActivityRig(object: THREE.Object3D) {
       }
     },
     dispose() {
+      lighter.removeFromParent();
       rod.removeFromParent();
       fish.removeFromParent();
       line.removeFromParent();

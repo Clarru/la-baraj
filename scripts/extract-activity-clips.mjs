@@ -4,6 +4,8 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import * as THREE from "three";
+import { createSeatScootClips } from "./seat-scoot-clips.mjs";
+import { createFireLightingClip } from "./fire-lighting-clip.mjs";
 
 export async function loadRig(path) {
   const bytes = fs.readFileSync(path);
@@ -59,6 +61,28 @@ async function main() {
       result.optimize();
       return THREE.AnimationClip.toJSON(result);
     });
+  const sitting = source.animations.find(
+    (clip) => clip.name === "Sitting_Idle_Loop",
+  );
+  const scoots = createSeatScootClips(source.scene, sitting);
+  // Match the six retained clips' compatible track set and serialization.
+  for (const clip of scoots) {
+    clip.tracks = clip.tracks.filter(
+      (track) =>
+        track.name.endsWith(".quaternion") ||
+        /^(root|pelvis)\./.test(track.name),
+    );
+    clips.push(THREE.AnimationClip.toJSON(clip));
+  }
+  clips.push(
+    THREE.AnimationClip.toJSON(
+      createFireLightingClip(
+        source.scene,
+        source.animations.find((clip) => clip.name === "Fixing_Kneeling"),
+        source.animations.find((clip) => clip.name === "Idle_Loop"),
+      ),
+    ),
+  );
   fs.mkdirSync("apps/web/public/assets/animations", { recursive: true });
   const serialized = JSON.stringify(
     { source: "human_male.glb", clips },

@@ -7,5 +7,6 @@
     "assets/character-source/animation-LICENSE.txt"
   ],
   "extraction": "scripts/extract-activity-clips.mjs",
-  "modifications": "Selected six compatible clips, renamed, removed constant non-root translation/scale tracks, optimized and rounded key values to six decimals. No original character mesh replacement."
+  "modifications": "Selected six compatible source clips, renamed and optimized animation tracks; generated two bounded 600 ms seated scoot motions from the authored seated pose with preserved fingers and matching endpoints; serialized key values at six decimals.",
+  "derivedClipScript": "scripts/seat-scoot-clips.mjs"
 }

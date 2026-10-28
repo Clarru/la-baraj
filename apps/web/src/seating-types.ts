@@ -23,5 +23,7 @@ export type BenchSeat = {
   facing: number;
   seatHeight: number;
   occupantId: string | null;
+  /** Keeps the departing seat unavailable until a seated scoot completes. */
+  reservedBy?: string | null;
 };
 export type RegisteredBench = BenchDefinition & { seats: readonly BenchSeat[] };

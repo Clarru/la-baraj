@@ -47,6 +47,8 @@ import { WorldActivities, type ActivityPrompt } from "./activities";
 import { SceneLoading } from "./SceneLoading";
 import { ParkedScooter } from "./scooter";
 import { SeatingMetrics } from "./SeatingMetrics";
+import { CabinInterior } from "./CabinInterior";
+import { CabinAccess } from "./CabinAccess";
 import { HomeMarker } from "./HomeMarker";
 import { Minimap } from "./Minimap";
 import { readLocalHome, type NavigationSample } from "./home";
@@ -199,20 +201,27 @@ export default function App() {
   const [activityBusy, setActivityBusy] = useState(false);
   const [vehicleMounted, setVehicleMounted] = useState(false),
     [scooterNear, setScooterNear] = useState(false);
-  const displayedPrompt: ActivityPrompt = vehicleMounted
-    ? {
-        main: "QuickVolt 9",
-        detail: "W accelerate · S brake · A/D steer · V park",
-        key: "V",
-      }
-    : (activityPrompt ??
-      (scooterNear
+  const [interiorIndex, setInteriorIndex] = useState<number | null>(null);
+  const [focusedCabinIndex, setFocusedCabinIndex] = useState(18);
+  const [doorTransition, setDoorTransition] = useState(false);
+  const [doorPromptVisible, setDoorPromptVisible] = useState(false);
+  const displayedPrompt: ActivityPrompt =
+    interiorIndex !== null
+      ? null
+      : vehicleMounted
         ? {
-            main: "Ride QuickVolt 9",
-            detail: "Electric scooter · faster travel",
+            main: "QuickVolt 9",
+            detail: "W accelerate · S brake · A/D steer · V park",
             key: "V",
           }
-        : null));
+        : (activityPrompt ??
+          (scooterNear
+            ? {
+                main: "Ride QuickVolt 9",
+                detail: "Electric scooter · faster travel",
+                key: "V",
+              }
+            : null));
   const runId = useMemo(
     () => crypto.randomUUID(),
     [mode, flat, evening, crowd, resetKey],
@@ -223,6 +232,10 @@ export default function App() {
     z: 27,
     heading: 0,
   });
+  const fireOutput = useRef<HTMLOutputElement>(null);
+  const updateFireMetrics = useCallback((sample: unknown) => {
+    fireOutput.current?.setAttribute("data-fire", JSON.stringify(sample));
+  }, []);
   const motionOutput = useRef<HTMLOutputElement>(null);
   const updateMotion = useCallback((sample: Record<string, unknown>) => {
     room.publishMotion(sample);
@@ -248,14 +261,18 @@ export default function App() {
         setInventoryOpen(false);
         setInfo(false);
       }
-      if (e.code === "KeyH" && !(e.target instanceof HTMLInputElement))
+      if (
+        e.code === "KeyH" &&
+        interiorIndex === null &&
+        !(e.target instanceof HTMLInputElement)
+      )
         setMode("home");
       if (e.code === "KeyR" && !(e.target instanceof HTMLInputElement))
         setResetKey((k) => k + 1);
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, []);
+  }, [interiorIndex]);
   function download() {
     const result = {
       runId,
@@ -290,7 +307,11 @@ export default function App() {
     URL.revokeObjectURL(url);
   }
   return (
-    <main className="game-shell" data-view={mode}>
+    <main
+      className="game-shell"
+      data-view={mode}
+      data-interior={interiorIndex !== null}
+    >
       <SceneBoundary>
         <Suspense fallback={<SceneLoading />}>
           <Canvas
@@ -306,28 +327,42 @@ export default function App() {
           >
             <color
               attach="background"
-              args={[evening ? "#becbc8" : "#cadfd8"]}
+              args={[
+                interiorIndex !== null
+                  ? "#121918"
+                  : evening
+                    ? "#becbc8"
+                    : "#cadfd8",
+              ]}
             />
             <fog
               attach="fog"
               args={[evening ? "#becbc8" : "#cadfd8", 380, 3300]}
             />
-            <Sky
-              distance={10000}
-              sunPosition={sunDirection(evening).multiplyScalar(1000).toArray()}
-              inclination={0.5}
-              azimuth={0.25}
-              turbidity={2.8}
-              rayleigh={1.9}
-            />
+            <group visible={interiorIndex === null}>
+              <Sky
+                distance={10000}
+                sunPosition={sunDirection(evening)
+                  .multiplyScalar(1000)
+                  .toArray()}
+                inclination={0.5}
+                azimuth={0.25}
+                turbidity={2.8}
+                rayleigh={1.9}
+              />
+            </group>
             <hemisphereLight
-              args={["#eef1db", "#7c8458", evening ? 0.55 : 0.75]}
+              args={[
+                "#eef1db",
+                "#7c8458",
+                interiorIndex !== null ? 0.65 : evening ? 0.55 : 0.75,
+              ]}
             />
             <ambientLight intensity={0.08} />
             <directionalLight
               position={sunDirection(evening).multiplyScalar(150).toArray()}
               color={evening ? "#ffce98" : "#ffe2b3"}
-              intensity={evening ? 2.4 : 3.3}
+              intensity={interiorIndex !== null ? 1.3 : evening ? 2.4 : 3.3}
               castShadow
               shadow-mapSize={[2048, 2048]}
               shadow-camera-left={-110}
@@ -340,38 +375,63 @@ export default function App() {
               shadow-normalBias={0.04}
             />
             <Physics timeStep={1 / 60} gravity={[0, -12, 0]}>
-              <Terrain />
-              <Roads />
-              <LakeWater evening={evening} />
-              <LakeBoundary />
-              <Vegetation flat={flat} />
-              <Settlement flat={flat} />
-              <CabinGroundContacts onReady={setFoundationMetrics} />
+              <group visible={interiorIndex === null}>
+                <Terrain />
+                <Roads />
+                <LakeWater evening={evening} />
+                <LakeBoundary />
+                <Vegetation flat={flat} />
+                <Settlement flat={flat} interiorIndex={interiorIndex} />
+              </group>
+              {interiorIndex !== null && (
+                <CabinInterior index={interiorIndex} />
+              )}
+              <group visible={interiorIndex === null}>
+                <CabinGroundContacts onReady={setFoundationMetrics} />
+              </group>
               <Player
                 mode={mode}
                 resetKey={resetKey}
-                paused={inventoryOpen || info || activityBusy}
+                paused={inventoryOpen || info || activityBusy || doorTransition}
                 onMove={setMoving}
                 onMotion={updateMotion}
                 onVehicleChange={setVehicleMounted}
                 onVehicleHint={setScooterNear}
+                indoors={interiorIndex !== null}
               />
-              <Crowd enabled={crowd} />
-              <MultiplayerPlayers room={room} />
-              <ParkedScooter />
-              <WorldActivities
-                room={room}
-                resetKey={resetKey}
-                paused={inventoryOpen || info || mode !== "walk"}
-                onPrompt={setActivityPrompt}
-                onBusy={setActivityBusy}
-              />
+              <group visible={interiorIndex === null}>
+                <Crowd enabled={crowd} />
+                <MultiplayerPlayers room={room} />
+                <ParkedScooter />
+                <WorldActivities
+                  room={room}
+                  onFireMetrics={updateFireMetrics}
+                  resetKey={resetKey}
+                  paused={
+                    inventoryOpen ||
+                    info ||
+                    mode !== "walk" ||
+                    interiorIndex !== null
+                  }
+                  onPrompt={setActivityPrompt}
+                  onBusy={setActivityBusy}
+                />
+              </group>
             </Physics>
             <HomeMarker
               index={homeIndex}
-              visible={mode === "walk" || mode === "home"}
+              visible={
+                interiorIndex === null && (mode === "walk" || mode === "home")
+              }
             />
-            <CameraRig mode={mode} resetKey={resetKey} homeIndex={homeIndex} />
+            <CameraRig
+              mode={mode}
+              resetKey={resetKey}
+              homeIndex={homeIndex}
+              interiorIndex={interiorIndex}
+              onFocusCabin={setFocusedCabinIndex}
+              transitioning={doorTransition}
+            />
             <Measurement key={runId} onMetrics={updateMetrics} />
           </Canvas>
         </Suspense>
@@ -383,9 +443,26 @@ export default function App() {
             navigation={navigation}
             homeIndex={homeIndex}
             active={
-              (mode === "walk" || mode === "home") && !inventoryOpen && !info
+              interiorIndex === null &&
+              (mode === "walk" || mode === "home") &&
+              !inventoryOpen &&
+              !info
             }
             onFocusHome={() => setMode("home")}
+          />
+          <CabinAccess
+            interiorIndex={interiorIndex}
+            homeIndex={homeIndex}
+            focusedIndex={focusedCabinIndex}
+            mode={mode}
+            resetKey={resetKey}
+            paused={inventoryOpen || info}
+            busy={activityBusy}
+            vehicleMounted={vehicleMounted}
+            onChange={setInteriorIndex}
+            onTransition={setDoorTransition}
+            onWalk={() => setMode("walk")}
+            onPromptVisible={setDoorPromptVisible}
           />
           <header className="topbar">
             <div className="place-plaque">
@@ -393,9 +470,19 @@ export default function App() {
                 <Map size={29} weight="duotone" />
               </div>
               <div>
-                <h1>La Baraj</h1>
+                <h1>
+                  {interiorIndex === null
+                    ? "La Baraj"
+                    : `Cabin ${String(interiorIndex + 1).padStart(2, "0")}`}
+                </h1>
                 <p>
-                  Lake Cinciș <span>/</span> South shore
+                  {interiorIndex === null ? "Lake Cinciș" : "Inside"}{" "}
+                  <span>/</span>{" "}
+                  {interiorIndex === null
+                    ? "World study"
+                    : interiorIndex === homeIndex
+                      ? "Your cabin"
+                      : "Cabin interior"}
                 </p>
               </div>
             </div>
@@ -543,8 +630,12 @@ export default function App() {
                     <span>run</span>
                     <kbd>Space</kbd>
                     <span>jump</span>
-                    <kbd>V</kbd>
-                    <span>scooter</span>
+                    {interiorIndex === null && (
+                      <>
+                        <kbd>V</kbd>
+                        <span>scooter</span>
+                      </>
+                    )}
                     <span className="hint-break">Drag to look</span>
                   </>
                 )
@@ -582,7 +673,7 @@ export default function App() {
             </span>
             <ChevronRight size={17} />
           </button>
-          {displayedPrompt && (
+          {displayedPrompt && !doorPromptVisible && (
             <div
               className="activity-prompt"
               role="status"
@@ -601,10 +692,12 @@ export default function App() {
             data-foundations={JSON.stringify(foundationMetrics)}
             hidden
           />
+          <output ref={fireOutput} data-testid="fire-metrics" hidden />
           <output ref={motionOutput} data-testid="movement-metrics" hidden />
           <footer className="world-footer">
             <span>
-              Friends playtest <span>·</span> Elevation proxy
+              Local prototype <span>·</span>{" "}
+              {interiorIndex === null ? "Elevation proxy" : "Cabin interior"}
             </span>
             <a
               href="https://www.openstreetmap.org/copyright"

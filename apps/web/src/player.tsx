@@ -6,7 +6,12 @@ import { useRapier } from "@react-three/rapier";
 import * as THREE from "three";
 import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
 import { assetUrl } from "./assets";
-import { cabinDesigns, cabinDesignForPlot } from "./cabin-designs";
+import {
+  takeCabinTransfer,
+  interiorFloorOffset,
+  cabinTransfer,
+} from "./cabin-interior-state";
+import { cabinDesigns, cabinDesignForPlot, cabinYaw } from "./cabin-designs";
 import { terrainHeight, inWater, southShore, cabinSpots } from "./geography";
 import { getActivityPose } from "./activity-state";
 import { Scooter, type ScooterHandle } from "./scooter";
@@ -22,7 +27,12 @@ import {
   initialJumpMotion,
   jumpAnimation,
 } from "./locomotion-animation";
-import { scooterHeading, scooterSpeed } from "./scooter-controls";
+import {
+  scooterHeading,
+  scooterSpeed,
+  scooterSteeringInput,
+} from "./scooter-controls";
+import { scooterSupportHeight } from "./scooter-support";
 import {
   activityAnimation,
   activityElapsed,
@@ -38,6 +48,8 @@ export const playerPosition = new THREE.Vector3(
   terrainHeight(spawn.x, spawn.z) + 1,
   spawn.z,
 );
+/** Camera follows the interpolated render body, not the discrete physics step. */
+export const playerViewPosition = playerPosition.clone();
 export function Avatar({
   position,
   rotation = 0,
@@ -86,6 +98,7 @@ export function Player({
   onMotion,
   onVehicleChange,
   onVehicleHint,
+  indoors = false,
 }: {
   mode: ViewMode;
   resetKey: number;
@@ -94,6 +107,7 @@ export function Player({
   onMotion: (sample: Record<string, unknown>) => void;
   onVehicleChange?: (mounted: boolean) => void;
   onVehicleHint?: (near: boolean) => void;
+  indoors?: boolean;
 }) {
   const controller = useRef<EcctrlHandle>(null);
   const { world, rapier } = useRapier();
@@ -101,6 +115,7 @@ export function Player({
   const keys = useRef(new Set<string>());
   const moving = useRef(false);
   const [riding, setRiding] = useState(false);
+  const [jumping, setJumping] = useState(false);
   const rideYaw = useRef(Math.PI / 2),
     scooter = useRef<ScooterHandle>(null);
   const riderRig = useRef<ReturnType<typeof createScooterRiderRig> | null>(
@@ -207,6 +222,7 @@ export function Player({
       }
       if (
         e.code === "KeyV" &&
+        !indoors &&
         !e.repeat &&
         mode === "walk" &&
         !paused &&
@@ -217,13 +233,25 @@ export function Player({
         e.preventDefault();
         if (getVehicleState().mounted) {
           const pos = body.translation(),
-            floor = floorAt(pos.x, pos.z);
+            floor = scooterSupportHeight(world, pos.x, pos.z, pos.y, body);
+          if (floor === undefined) return;
           parkVehicle([pos.x, floor, pos.z], rideYaw.current);
           const sideX = pos.x + Math.cos(rideYaw.current) * 0.65,
             sideZ = pos.z - Math.sin(rideYaw.current) * 0.65;
-          if (!inWater(sideX, sideZ))
+          const sideFloor = scooterSupportHeight(
+            world,
+            sideX,
+            sideZ,
+            pos.y + 0.25,
+            body,
+          );
+          if (
+            !inWater(sideX, sideZ) &&
+            sideFloor !== undefined &&
+            Math.abs(sideFloor - floor) < 0.7
+          )
             body.setTranslation(
-              { x: sideX, y: floorAt(sideX, sideZ) + 0.95, z: sideZ },
+              { x: sideX, y: sideFloor + 0.95, z: sideZ },
               true,
             );
           body.setLinvel({ x: 0, y: 0, z: 0 }, true);
@@ -246,7 +274,7 @@ export function Player({
           body.setTranslation(
             {
               x: parked.parked[0],
-              y: floorAt(parked.parked[0], parked.parked[2]) + 0.95,
+              y: parked.parked[1] + 0.95,
               z: parked.parked[2],
             },
             true,
@@ -289,7 +317,7 @@ export function Player({
       window.removeEventListener("keyup", up);
       window.removeEventListener("blur", blur);
     };
-  }, [mode, paused, mixer]);
+  }, [mode, paused, mixer, indoors]);
   useEffect(() => {
     controller.current?.body?.setTranslation(
       { x: spawn.x, y: terrainHeight(spawn.x, spawn.z) + 2, z: spawn.z },
@@ -299,18 +327,54 @@ export function Player({
     keys.current.clear();
     jumpRequest.current = false;
     jumpState.current = initialJumpMotion();
+    setJumping(false);
     riderRig.current?.reset();
     mixer.stopAllAction();
     animation.current = "";
     setRiding(false);
-    const x = spawn.x + 3,
-      z = spawn.z + 2;
-    parkVehicle([x, terrainHeight(x, z), z], Math.PI / 2);
+    const x = spawn.x + 2.5,
+      z = spawn.z + 1.5;
+    parkVehicle([x, terrainHeight(x, z), z], 0);
     parkedGrounded.current = false;
   }, [resetKey]);
   useFrame((_, dt) => {
     const c = controller.current;
     if (!c || !c.body) return;
+    const transfer = takeCabinTransfer();
+    if (transfer) {
+      c.body.setTranslation(
+        {
+          x: transfer.position[0],
+          y: transfer.position[1],
+          z: transfer.position[2],
+        },
+        true,
+      );
+      c.body.setLinvel({ x: 0, y: 0, z: 0 }, true);
+      c.body.setAngvel({ x: 0, y: 0, z: 0 }, true);
+      c.body.resetForces(true);
+      c.body.resetTorques(true);
+      keys.current.clear();
+      c.setMovement({
+        forward: false,
+        backward: false,
+        leftward: false,
+        rightward: false,
+        run: false,
+        jump: false,
+      });
+      playerPosition.set(...transfer.position);
+      playerViewPosition.set(...transfer.position);
+      if (visual.current) {
+        visual.current.parent?.getWorldQuaternion(facingParent);
+        localFacing(transfer.facing, facingParent, facingTarget);
+        visual.current.quaternion.copy(facingTarget);
+      }
+      jumpState.current = initialJumpMotion();
+      mixer.stopAllAction();
+      animation.current = "";
+      return;
+    }
     const k = keys.current;
     const mounted = getVehicleState().mounted;
     if (!mounted && !parkedGrounded.current) {
@@ -348,8 +412,10 @@ export function Player({
     const active = mode === "walk" && !paused && !holding;
     const steer =
       active && mounted
-        ? Number(k.has("KeyD") || k.has("ArrowRight")) -
-          Number(k.has("KeyA") || k.has("ArrowLeft"))
+        ? scooterSteeringInput(
+            k.has("KeyA") || k.has("ArrowLeft"),
+            k.has("KeyD") || k.has("ArrowRight"),
+          )
         : 0;
     if (mounted) {
       rideYaw.current = scooterHeading(
@@ -366,6 +432,7 @@ export function Player({
         c.body.setLinvel({ x: v.x * brake, y: v.y, z: v.z * brake }, true);
       }
     }
+    const braking = mounted && (k.has("KeyS") || k.has("ArrowDown"));
     const jumpStarted =
       active && !mounted && jumpRequest.current && c.isOnGround;
     jumpRequest.current = false;
@@ -376,8 +443,12 @@ export function Player({
       jumpStarted,
       disabled: holding || mounted,
     });
+    const airborneJump =
+      jumpState.current.phase === "takeoff" ||
+      jumpState.current.phase === "airborne";
+    if (airborneJump !== jumping) setJumping(airborneJump);
     c.setMovement({
-      forward: active && (k.has("KeyW") || k.has("ArrowUp")),
+      forward: active && !braking && (k.has("KeyW") || k.has("ArrowUp")),
       backward: active && !mounted && (k.has("KeyS") || k.has("ArrowDown")),
       leftward: active && !mounted && (k.has("KeyA") || k.has("ArrowLeft")),
       rightward: active && !mounted && (k.has("KeyD") || k.has("ArrowRight")),
@@ -484,6 +555,9 @@ export function Player({
         actions[gesture]?.reset().setEffectiveWeight(1).fadeIn(0.12).play();
       gestureAnimation.current = gesture;
     }
+    if (visual.current?.parent)
+      visual.current.parent.getWorldPosition(playerViewPosition);
+    else playerViewPosition.copy(playerPosition);
     activityRig.current?.update(pose, elapsed);
     if (mounted) {
       const signedSpeed =
@@ -507,6 +581,7 @@ export function Player({
         lastMovingAlignment.current =
           (facing.x * c.currLinVel.x + facing.z * c.currLinVel.z) / speed;
       const near =
+        !indoors &&
         mode === "walk" &&
         !paused &&
         !mounted &&
@@ -557,7 +632,8 @@ export function Player({
       useCustomForward={riding}
       maxWalkVel={riding ? scooterSpeed.cruise : 3.8}
       maxRunVel={riding ? scooterSpeed.boost : 6.5}
-      jumpVel={4.5}
+      jumpVel={5.6}
+      rayHitForgiveness={jumping ? 0.05 : 0.28}
       floatHeight={0.3}
     >
       <group ref={visual} position={[0, -0.9, 0]}>
@@ -571,10 +647,16 @@ export function CameraRig({
   mode,
   resetKey,
   homeIndex = 18,
+  interiorIndex = null,
+  onFocusCabin,
+  transitioning = false,
 }: {
   mode: ViewMode;
   resetKey: number;
   homeIndex?: number;
+  interiorIndex?: number | null;
+  onFocusCabin?: (index: number) => void;
+  transitioning?: boolean;
 }) {
   const controls = useRef<React.ComponentRef<typeof OrbitControls>>(null);
   const [cabinVariant, setCabinVariant] = useState(0);
@@ -593,14 +675,54 @@ export function CameraRig({
   }, [mode]);
   const { camera } = useThree();
   const last = useRef(new THREE.Vector3());
+  const priorInterior = useRef<number | null>(null);
+  const blend = useRef<{
+    from: THREE.Vector3;
+    to: THREE.Vector3;
+    fromTarget: THREE.Vector3;
+    target: THREE.Vector3;
+    elapsed: number;
+  } | null>(null);
   useEffect(() => {
     const c = controls.current;
     if (!c) return;
-    if (mode === "overview") {
+    const from = camera.position.clone(),
+      fromTarget = c.target.clone();
+    const leaving = priorInterior.current !== null && interiorIndex === null;
+    const changingRoom = priorInterior.current !== interiorIndex;
+    const exitedIndex = priorInterior.current;
+    priorInterior.current = interiorIndex;
+    if (interiorIndex !== null) {
+      const plot = cabinSpots[interiorIndex],
+        yaw = cabinYaw(interiorIndex),
+        x = 6.2,
+        z = 8.1;
+      camera.position.set(
+        plot.x + x * Math.cos(yaw) + z * Math.sin(yaw),
+        plot.ground + interiorFloorOffset + 7.0,
+        plot.z - x * Math.sin(yaw) + z * Math.cos(yaw),
+      );
+      c.target.set(plot.x, plot.ground + interiorFloorOffset + 0.8, plot.z);
+    } else if (leaving && exitedIndex !== null) {
+      const exit = cabinTransfer(exitedIndex, false),
+        yaw = cabinYaw(exitedIndex);
+      const p = new THREE.Vector3(...exit.position);
+      camera.position
+        .copy(p)
+        .add(
+          new THREE.Vector3(
+            5 * Math.cos(yaw) + 7 * Math.sin(yaw),
+            3.4,
+            -5 * Math.sin(yaw) + 7 * Math.cos(yaw),
+          ),
+        );
+      c.target.copy(p).add(new THREE.Vector3(0, 0.65, 0));
+    } else if (mode === "overview") {
       camera.position.set(390, 290, southShore(0) + 500);
       c.target.set(0, 10, southShore(0) + 80);
     } else if (mode === "home") {
       const plot = cabinSpots[homeIndex];
+      onFocusCabin?.(plot.i);
       camera.position.set(plot.x + 10, plot.ground + 8, plot.z - 16);
       c.target.set(plot.x, plot.ground + 2, plot.z);
     } else if (mode === "settlement") {
@@ -610,48 +732,90 @@ export function CameraRig({
         cabinSpots[18];
       camera.position.set(plot.x + 8, plot.ground + 7, plot.z - 13);
       c.target.set(plot.x, plot.ground + 2, plot.z);
+      onFocusCabin?.(plot.i);
     } else if (mode === "study") {
-      camera.position.copy(playerPosition).add(new THREE.Vector3(4, 1.4, 5));
-      c.target.copy(playerPosition).add(new THREE.Vector3(0, 0.1, 0));
+      camera.position
+        .copy(playerViewPosition)
+        .add(new THREE.Vector3(4, 1.4, 5));
+      c.target.copy(playerViewPosition).add(new THREE.Vector3(0, 0.1, 0));
     } else {
-      camera.position.copy(playerPosition).add(new THREE.Vector3(5, 3.4, 7));
-      c.target.copy(playerPosition).add(new THREE.Vector3(0, 0.8, 0));
+      camera.position
+        .copy(playerViewPosition)
+        .add(new THREE.Vector3(5, 3.4, 7));
+      c.target.copy(playerViewPosition).add(new THREE.Vector3(0, 0.8, 0));
     }
-    last.current.copy(playerPosition);
+    if (changingRoom) {
+      blend.current = {
+        from,
+        fromTarget,
+        to: camera.position.clone(),
+        target: c.target.clone(),
+        elapsed: 0,
+      };
+      camera.position.copy(from);
+      c.target.copy(fromTarget);
+    }
+    last.current.copy(playerViewPosition);
     c.update();
-  }, [mode, camera, resetKey, cabinVariant, homeIndex]);
-  useFrame(() => {
+  }, [
+    mode,
+    camera,
+    resetKey,
+    cabinVariant,
+    homeIndex,
+    interiorIndex,
+    onFocusCabin,
+  ]);
+  useFrame((_, dt) => {
     const c = controls.current;
     if (!c) return;
-    if (mode === "walk" || mode === "study") {
-      const delta = playerPosition.clone().sub(last.current);
+    const transition = blend.current;
+    if (transition) {
+      transition.elapsed += Math.min(dt, 0.05);
+      const t = Math.min(1, transition.elapsed / 0.55),
+        eased = t * t * (3 - 2 * t);
+      camera.position.lerpVectors(transition.from, transition.to, eased);
+      c.target.lerpVectors(transition.fromTarget, transition.target, eased);
+      c.update();
+      last.current.copy(playerViewPosition);
+      if (t === 1) blend.current = null;
+      return;
+    }
+    if (interiorIndex === null && (mode === "walk" || mode === "study")) {
+      const delta = playerViewPosition.clone().sub(last.current);
       camera.position.add(delta);
       c.target
-        .copy(playerPosition)
+        .copy(playerViewPosition)
         .add(new THREE.Vector3(0, mode === "study" ? 0.1 : 0.65, 0));
-      last.current.copy(playerPosition);
+      last.current.copy(playerViewPosition);
     }
   });
   return (
     <OrbitControls
       ref={controls}
       makeDefault
+      enabled={!transitioning}
       enablePan={
-        mode === "overview" || mode === "settlement" || mode === "home"
+        interiorIndex === null &&
+        (mode === "overview" || mode === "settlement" || mode === "home")
       }
       minDistance={
-        mode === "overview" || mode === "settlement" || mode === "home"
-          ? 8
-          : 2.5
+        interiorIndex !== null
+          ? 9
+          : mode === "overview" || mode === "settlement" || mode === "home"
+            ? 8
+            : 2.5
       }
       maxDistance={
-        mode === "overview" || mode === "settlement" || mode === "home"
-          ? 1600
-          : 22
+        interiorIndex !== null
+          ? 18
+          : mode === "overview" || mode === "settlement" || mode === "home"
+            ? 1600
+            : 22
       }
       maxPolarAngle={Math.PI * 0.47}
       minPolarAngle={0.15}
-      enableDamping
+      enableDamping={mode !== "walk" && mode !== "study"}
       dampingFactor={0.08}
       zoomSpeed={0.8}
       rotateSpeed={0.55}

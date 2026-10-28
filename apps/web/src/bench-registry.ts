@@ -33,6 +33,7 @@ export function createSeatingRegistry() {
   const benches = new Map<string, RegisteredBench>();
   const registrations = new Map<string, symbol>();
   const actors = new Map<string, string>();
+  const pendingMoves = new Map<string, { fromId: string; toId: string }>();
   const listeners = new Set<() => void>();
   let seats = new Map<string, BenchSeat>();
   let snapshot: readonly RegisteredBench[] = [];
@@ -41,6 +42,25 @@ export function createSeatingRegistry() {
   let onlineSelfId = "";
 
   function publish() {
+    seats = new Map(
+      [...benches.values()].flatMap((bench) =>
+        bench.seats.map((seat) => [seat.id, seat] as const),
+      ),
+    );
+    for (const [actorId, move] of pendingMoves) {
+      const from = seats.get(move.fromId),
+        to = seats.get(move.toId);
+      if (
+        !from ||
+        !to ||
+        from.reservedBy !== actorId ||
+        to.occupantId !== actorId
+      ) {
+        if (from?.reservedBy === actorId)
+          updateSeat(from.id, { reservedBy: null });
+        pendingMoves.delete(actorId);
+      }
+    }
     snapshot = [...benches.values()];
     seats = new Map(
       snapshot.flatMap((bench) =>
@@ -117,6 +137,7 @@ export function createSeatingRegistry() {
             occupantId: onlineSelfId
               ? (onlineSeats[`${definition.id}:seat:${index}`] === onlineSelfId ? "local-player" : onlineSeats[`${definition.id}:seat:${index}`] ?? null)
               : previous?.seats[index]?.occupantId ?? null,
+            reservedBy: previous?.seats[index]?.reservedBy ?? null,
           };
         },
       );
@@ -191,7 +212,10 @@ export function createSeatingRegistry() {
     let nearest: BenchSeat | undefined;
     let distance = Infinity;
     for (const seat of benches.get(benchId)?.seats ?? []) {
+      if (seat.reservedBy) continue;
       if (seat.occupantId !== null && seat.occupantId !== actorId) continue;
+      if (actorId && pendingMoves.has(actorId) && seat.occupantId !== actorId)
+        continue;
       const candidate = Math.hypot(
         position.x - seat.anchor[0],
         position.z - seat.anchor[2],
@@ -204,14 +228,17 @@ export function createSeatingRegistry() {
     return nearest;
   }
 
-  function setOccupant(seatId: string, occupantId: string | null) {
+  function updateSeat(
+    seatId: string,
+    changes: Partial<Pick<BenchSeat, "occupantId" | "reservedBy">>,
+  ) {
     const seat = seats.get(seatId);
     if (!seat) return;
     const bench = benches.get(seat.benchId)!;
     benches.set(bench.id, {
       ...bench,
       seats: bench.seats.map((current) =>
-        current.id === seatId ? { ...current, occupantId } : current,
+        current.id === seatId ? { ...current, ...changes } : current,
       ),
     });
   }
@@ -222,18 +249,53 @@ export function createSeatingRegistry() {
     if (!seat || (seat.occupantId !== null && seat.occupantId !== actorId))
       return;
     if (seat.occupantId === actorId) return seat;
+    if (seat.reservedBy || pendingMoves.has(actorId)) return;
     const previous = actors.get(actorId);
-    if (previous) setOccupant(previous, null);
-    setOccupant(seatId, actorId);
+    if (previous) updateSeat(previous, { occupantId: null });
+    updateSeat(seatId, { occupantId: actorId });
     publish();
     return seats.get(seatId);
   }
 
   function releaseSeat(actorId: string): void {
-    const seatId = actors.get(actorId);
-    if (!seatId) return;
-    setOccupant(seatId, null);
+    let changed = pendingMoves.delete(actorId);
+    for (const seat of seats.values()) {
+      if (seat.occupantId !== actorId && seat.reservedBy !== actorId) continue;
+      updateSeat(seat.id, {
+        occupantId: seat.occupantId === actorId ? null : seat.occupantId,
+        reservedBy: seat.reservedBy === actorId ? null : seat.reservedBy,
+      });
+      changed = true;
+    }
+    if (!changed) return;
     publish();
+  }
+
+  function moveSeat(
+    actorId: string,
+    indexStep: -1 | 1,
+  ): { from: BenchSeat; to: BenchSeat } | undefined {
+    if (pendingMoves.has(actorId) || (indexStep !== -1 && indexStep !== 1))
+      return;
+    const fromId = actors.get(actorId);
+    const from = fromId ? seats.get(fromId) : undefined;
+    if (!from) return;
+    const to = benches.get(from.benchId)?.seats[from.index + indexStep];
+    if (!to || to.occupantId !== null || to.reservedBy) return;
+    pendingMoves.set(actorId, { fromId: from.id, toId: to.id });
+    updateSeat(from.id, { occupantId: null, reservedBy: actorId });
+    updateSeat(to.id, { occupantId: actorId });
+    publish();
+    return { from: seats.get(from.id)!, to: seats.get(to.id)! };
+  }
+
+  function finishSeatMove(actorId: string): BenchSeat | undefined {
+    const move = pendingMoves.get(actorId);
+    if (!move) return;
+    pendingMoves.delete(actorId);
+    updateSeat(move.fromId, { reservedBy: null });
+    publish();
+    return seats.get(move.toId);
   }
 
   function syncOnlineSeats(occupancy: Record<string, string>, selfId: string) {
@@ -244,8 +306,11 @@ export function createSeatingRegistry() {
       const updated = bench.seats.map((seat) => {
         const actor = occupancy[seat.id];
         const occupantId = actor === selfId && selfId ? "local-player" : actor ?? null;
-        if (seat.occupantId !== occupantId) changed = true;
-        return seat.occupantId === occupantId ? seat : { ...seat, occupantId };
+        const move = pendingMoves.get("local-player");
+        // Preserve the authored scoot's departing-seat reservation while its destination is owned.
+        const reservedBy = seat.reservedBy === "local-player" && move?.fromId === seat.id && occupancy[move.toId] === selfId ? "local-player" : null;
+        if (seat.occupantId !== occupantId || (seat.reservedBy ?? null) !== reservedBy) changed = true;
+        return seat.occupantId === occupantId && (seat.reservedBy ?? null) === reservedBy ? seat : { ...seat, occupantId, reservedBy };
       });
       benches.set(bench.id, { ...bench, seats: updated });
     }
@@ -262,6 +327,8 @@ export function createSeatingRegistry() {
     findAvailableSeat,
     claimSeat,
     releaseSeat,
+    moveSeat,
+    finishSeatMove,
     subscribeSeating: (listener: () => void): (() => void) => {
       listeners.add(listener);
       return () => {
@@ -283,6 +350,8 @@ export const {
   findAvailableSeat,
   claimSeat,
   releaseSeat,
+  moveSeat,
+  finishSeatMove,
   subscribeSeating,
   getSeatingRevision,
 } = registry;

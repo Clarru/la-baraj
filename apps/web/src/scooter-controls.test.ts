@@ -1,6 +1,18 @@
 import { describe, it, expect } from "vitest";
-import { scooterHeading, scooterSpeed } from "./scooter-controls";
+import {
+  scooterHeading,
+  scooterSpeed,
+  scooterSteeringInput,
+} from "./scooter-controls";
 describe("scooter controls", () => {
+  it("maps A to left and D to right for the +Z-forward scooter", () => {
+    expect(scooterSteeringInput(true, false)).toBe(1);
+    expect(scooterSteeringInput(false, true)).toBe(-1);
+    expect(scooterSteeringInput(true, true)).toBe(0);
+    expect(
+      scooterHeading(0, scooterSteeringInput(false, true), 10, 0.02),
+    ).toBeLessThan(0);
+  });
   it("has faster cruise than the existing 6.5m/s run", () =>
     expect(scooterSpeed.cruise).toBeGreaterThan(6.5));
   it("turns left/right under travel but does not spin at rest", () => {

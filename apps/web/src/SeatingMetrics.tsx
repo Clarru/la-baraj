@@ -21,7 +21,8 @@ export function SeatingMetrics() {
           id: b.id,
           label: b.label,
           capacity: b.seats.length,
-          free: b.seats.filter((s) => s.occupantId === null).length,
+          free: b.seats.filter((s) => s.occupantId === null && !s.reservedBy)
+            .length,
           center: b.center,
           seats: b.seats.map((s) => ({
             id: s.id,
@@ -30,6 +31,7 @@ export function SeatingMetrics() {
             anchor: s.anchor,
             facing: s.facing,
             occupant: s.occupantId,
+            reservedBy: s.reservedBy ?? null,
           })),
         })),
         benchCount: benches.length,

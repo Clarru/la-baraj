@@ -1,0 +1,55 @@
+{
+  "models": [
+    {
+      "id": "Lake_Interior_Timber",
+      "bytes": 761844,
+      "bounds": {
+        "min": [
+          -2.740000009536743,
+          -0.2199999988079071,
+          -2.869999647140503
+        ],
+        "max": [
+          2.740000009536743,
+          3.8296585083007812,
+          3.595996856689453
+        ]
+      },
+      "source": "Original Blender mesh following docs/art-direction/interiors/interior-reference-grid.png; reference generated with built-in image_gen"
+    },
+    {
+      "id": "Lake_Interior_AFrame",
+      "bytes": 777048,
+      "bounds": {
+        "min": [
+          -2.8899998664855957,
+          -0.21999996900558472,
+          -2.869999885559082
+        ],
+        "max": [
+          2.8899998664855957,
+          4.760931015014648,
+          3.5959970951080322
+        ]
+      },
+      "source": "Original Blender mesh following docs/art-direction/interiors/interior-reference-grid.png; reference generated with built-in image_gen"
+    },
+    {
+      "id": "Lake_Interior_Sage",
+      "bytes": 673804,
+      "bounds": {
+        "min": [
+          -3.0399999618530273,
+          -0.2199999988079071,
+          -2.7700002193450928
+        ],
+        "max": [
+          3.0399999618530273,
+          3.831069231033325,
+          3.4959967136383057
+        ]
+      },
+      "source": "Original Blender mesh following docs/art-direction/interiors/interior-reference-grid.png; reference generated with built-in image_gen"
+    }
+  ]
+}

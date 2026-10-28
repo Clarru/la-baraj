@@ -14,6 +14,134 @@ const bench: BenchDefinition = {
 const standing = { x: 0, y: 0.95, z: 1 };
 
 describe("bench registry", () => {
+  it("reserves the departing seat during an adjacent move and releases only that reservation on finish", () => {
+    const registry = createSeatingRegistry();
+    registry.registerBench(bench);
+    const [first, second, third] = registry.getBench(bench.id)!.seats;
+    registry.claimSeat(first.id, "alice");
+    registry.claimSeat(third.id, "bob");
+    const move = registry.moveSeat("alice", 1)!;
+    expect(move.from.id).toBe(first.id);
+    expect(move.to.id).toBe(second.id);
+    expect(registry.getSeat(first.id)).toMatchObject({
+      occupantId: null,
+      reservedBy: "alice",
+    });
+    expect(registry.getSeat(second.id)?.occupantId).toBe("alice");
+    expect(registry.claimSeat(first.id, "charlie")).toBeUndefined();
+    expect(registry.claimSeat(first.id, "alice")).toBeUndefined();
+    expect(
+      registry.findAvailableSeat(bench.id, standing, "charlie"),
+    ).toBeUndefined();
+    expect(registry.claimSeat(second.id, "alice")).toBe(
+      registry.getSeat(second.id),
+    );
+    const revision = registry.getSeatingRevision();
+    expect(registry.moveSeat("alice", -1)).toBeUndefined();
+    expect(registry.moveSeat("alice", 1)).toBeUndefined();
+    expect(registry.getSeatingRevision()).toBe(revision);
+    expect(registry.finishSeatMove("alice")?.id).toBe(second.id);
+    expect(registry.getSeat(first.id)).toMatchObject({
+      occupantId: null,
+      reservedBy: null,
+    });
+    expect(registry.getSeat(second.id)?.occupantId).toBe("alice");
+    expect(registry.getSeat(third.id)?.occupantId).toBe("bob");
+    expect(registry.claimSeat(first.id, "charlie")?.occupantId).toBe("charlie");
+  });
+
+  it("rejects edges and occupied or reserved neighbours without skipping or changing state", () => {
+    const registry = createSeatingRegistry();
+    registry.registerBench({ ...bench, width: 3.1 });
+    const [first, second, third, fourth] = registry.getBench(bench.id)!.seats;
+    registry.claimSeat(first.id, "alice");
+    registry.claimSeat(second.id, "bob");
+    const snapshot = registry.getBenches();
+    expect(registry.moveSeat("alice", -1)).toBeUndefined();
+    expect(registry.moveSeat("alice", 1)).toBeUndefined();
+    expect(registry.moveSeat("missing", 1)).toBeUndefined();
+    expect(registry.getBenches()).toBe(snapshot);
+    registry.moveSeat("bob", 1);
+    expect(registry.moveSeat("alice", 1)).toBeUndefined();
+    expect(registry.getSeat(second.id)?.reservedBy).toBe("bob");
+    expect(registry.getSeat(third.id)?.occupantId).toBe("bob");
+    expect(registry.claimSeat(fourth.id, "bob")).toBeUndefined();
+    expect(registry.findAvailableSeat(bench.id, standing, "bob")?.id).toBe(
+      third.id,
+    );
+    registry.finishSeatMove("bob");
+    expect(registry.moveSeat("bob", -1)?.to.id).toBe(second.id);
+  });
+
+  it("clears both occupied and reserved seats when an actor leaves mid-move", () => {
+    const registry = createSeatingRegistry();
+    registry.registerBench(bench);
+    const [first, second] = registry.getBench(bench.id)!.seats;
+    registry.claimSeat(first.id, "alice");
+    registry.moveSeat("alice", 1);
+    registry.releaseSeat("alice");
+    expect(registry.finishSeatMove("alice")).toBeUndefined();
+    expect(registry.getSeat(first.id)).toMatchObject({
+      occupantId: null,
+      reservedBy: null,
+    });
+    expect(registry.getSeat(second.id)).toMatchObject({
+      occupantId: null,
+      reservedBy: null,
+    });
+    expect(registry.claimSeat(first.id, "bob")?.occupantId).toBe("bob");
+    expect(registry.claimSeat(second.id, "charlie")?.occupantId).toBe(
+      "charlie",
+    );
+  });
+
+  it("preserves a pending reservation across upserts and clears it if its destination is removed", () => {
+    const registry = createSeatingRegistry();
+    registry.registerBench(bench);
+    const [first, second] = registry.getBench(bench.id)!.seats;
+    registry.claimSeat(first.id, "alice");
+    registry.moveSeat("alice", 1);
+    registry.registerBench({
+      ...bench,
+      label: "Updated",
+      center: [2, 0.55, 0],
+    });
+    expect(registry.getSeat(first.id)?.reservedBy).toBe("alice");
+    expect(registry.getSeat(second.id)?.occupantId).toBe("alice");
+    expect(registry.moveSeat("alice", 1)).toBeUndefined();
+    registry.registerBench({ ...bench, capacity: 1 });
+    expect(registry.getSeat(first.id)).toMatchObject({
+      occupantId: null,
+      reservedBy: null,
+    });
+    expect(registry.finishSeatMove("alice")).toBeUndefined();
+    expect(registry.claimSeat(first.id, "bob")?.occupantId).toBe("bob");
+  });
+
+  it("keeps a surviving destination occupied if the source is removed and cleans moves on unmount", () => {
+    const registry = createSeatingRegistry();
+    registry.registerBench(bench);
+    const [first, second] = registry.getBench(bench.id)!.seats;
+    registry.claimSeat(second.id, "alice");
+    registry.moveSeat("alice", -1);
+    registry.registerBench({ ...bench, capacity: 1 });
+    expect(registry.getSeat(first.id)?.occupantId).toBe("alice");
+    expect(registry.finishSeatMove("alice")).toBeUndefined();
+    const unmount = registry.registerBench(bench);
+    expect(registry.moveSeat("alice", 1)).toBeDefined();
+    unmount();
+    expect(registry.finishSeatMove("alice")).toBeUndefined();
+    registry.registerBench(bench);
+    expect(
+      registry
+        .getBench(bench.id)
+        ?.seats.every(
+          (seat) => seat.occupantId === null && seat.reservedBy === null,
+        ),
+    ).toBe(true);
+    expect(registry.claimSeat(first.id, "alice")?.occupantId).toBe("alice");
+  });
+
   it("derives safe capacities from width and limits authored capacity", () => {
     for (const [width, capacity] of [
       [0.3, 0],
@@ -173,6 +301,21 @@ describe("bench registry", () => {
     expect(registry.getSeat(secondId)?.occupantId).toBeNull();
     registry.syncOnlineSeats({}, "");
     expect(registry.getBench(bench.id)?.seats.every((seat) => seat.occupantId === null)).toBe(true);
+  });
+
+  it("preserves a local authored scoot reservation while applying the server destination", () => {
+    const registry = createSeatingRegistry();
+    registry.registerBench(bench);
+    const first = `${bench.id}:seat:0`, second = `${bench.id}:seat:1`;
+    registry.syncOnlineSeats({ [first]: "me" }, "me");
+    expect(registry.moveSeat("local-player", 1)?.to.id).toBe(second);
+    registry.syncOnlineSeats({ [second]: "me" }, "me");
+    expect(registry.getSeat(first)?.reservedBy).toBe("local-player");
+    expect(registry.getSeat(second)?.occupantId).toBe("local-player");
+    registry.finishSeatMove("local-player");
+    expect(registry.getSeat(first)?.reservedBy).toBeNull();
+    registry.syncOnlineSeats({}, "");
+    expect(registry.getSeat(second)?.occupantId).toBeNull();
   });
 
 });

@@ -35,11 +35,13 @@ export function Cabin({
   x,
   z,
   flat,
+  interiorActive = false,
 }: {
   index: number;
   x: number;
   z: number;
   flat: boolean;
+  interiorActive?: boolean;
 }) {
   const design = cabinDesignForPlot(index);
   const archetype = design.key;
@@ -68,14 +70,17 @@ export function Cabin({
   const [plaqueX, plaqueY, plaqueZ] = design.numberMount;
   return (
     <group
+      visible={!interiorActive}
       position={[x, terrainHeight(x, z), z]}
       rotation={[0, cabinYaw(index), 0]}
     >
       <RigidBody type="fixed" colliders={false}>
-        <CuboidCollider
-          args={[design.width / 2, 1.35, design.depth / 2]}
-          position={[0, 1.95, 0]}
-        />
+        {!interiorActive && (
+          <CuboidCollider
+            args={[design.width / 2, 1.35, design.depth / 2]}
+            position={[0, 1.95, 0]}
+          />
+        )}
         {design.porches.map((p, i) => (
           <CuboidCollider
             key={"deck" + i}
@@ -154,13 +159,26 @@ function Dock({ x, flat }: { x: number; flat: boolean }) {
     </group>
   );
 }
-export function Settlement({ flat }: { flat: boolean }) {
+export function Settlement({
+  flat,
+  interiorIndex = null,
+}: {
+  flat: boolean;
+  interiorIndex?: number | null;
+}) {
   const z = southShore(0) + 9,
     y = terrainHeight(0, z);
   return (
     <>
       {cabinSpots.map((c) => (
-        <Cabin key={c.i} index={c.i} x={c.x} z={c.z} flat={flat} />
+        <Cabin
+          key={c.i}
+          index={c.i}
+          x={c.x}
+          z={c.z}
+          flat={flat}
+          interiorActive={interiorIndex === c.i}
+        />
       ))}
       <Dock x={0} flat={flat} />
       <Dock x={-235} flat={flat} />
@@ -271,7 +289,11 @@ function FireCircle() {
             key={i}
             benchId={`campfire-${i}`}
             height={0.55}
-            bench={{id:`campfire-${i}`,label:"Campfire bench",facingOffset:Math.PI}}
+            bench={{
+              id: `campfire-${i}`,
+              label: "Campfire bench",
+              facingOffset: Math.PI,
+            }}
             position={[Math.sin(a) * 3.6, 0, Math.cos(a) * 3.6]}
             rotation={a}
           />

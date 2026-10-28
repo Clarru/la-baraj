@@ -5,5 +5,11 @@ export default defineConfig({
   root: "apps/web",
   plugins: [react()],
   build: { outDir: resolve(import.meta.dirname, "dist"), emptyOutDir: true },
-  server: { fs: { allow: ["../.."] } },
+  server: {
+    host: "127.0.0.1",
+    port: 4173,
+    strictPort: true,
+    fs: { allow: ["../.."] },
+  },
+  preview: { host: "127.0.0.1", port: 4173, strictPort: true },
 });

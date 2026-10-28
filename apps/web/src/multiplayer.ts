@@ -151,6 +151,7 @@ export class MultiplayerRoom {
     this.resolvePending();
     this.send({ type: "seat", seatId: null, requestId: crypto.randomUUID() });
   }
-  toggleFire() { if (this.view.status === "online") this.send({ type: "fire", lit: !this.view.fireLit }); }
+  setFire(lit: boolean) { if (this.view.status === "online") this.send({ type: "fire", lit }); }
+  toggleFire() { this.setFire(!this.view.fireLit); }
   private resolvePending() { this.pending.forEach(({ resolve, timer }) => { clearTimeout(timer); resolve(false); }); this.pending.clear(); }
 }

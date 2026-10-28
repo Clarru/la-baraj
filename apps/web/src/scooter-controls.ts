@@ -16,3 +16,8 @@ export function scooterHeading(
       Math.max(0, Math.min(dt, 0.05))
   );
 }
+
+/** +Z-forward objects turn toward their own left with positive Y yaw. */
+export function scooterSteeringInput(left: boolean, right: boolean): number {
+  return Number(left) - Number(right);
+}

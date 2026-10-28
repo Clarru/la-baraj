@@ -1,18 +1,22 @@
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import { Model } from "./assets";
 import { playerPosition } from "./player";
 import { terrainHeight, fishingSpots } from "./geography";
 import { fireCircleSpot } from "./settlement";
 import { setActivityPose, type ActivityKind } from "./activity-state";
-import { Campfire } from "./campfire";
+import { Campfire, type FireMetrics } from "./campfire";
 import { Bench } from "./Bench";
+import { fireIgnitionTime, fireLightingDuration } from "./character-actions";
 import { getBmxState } from "./bmx-state";
 import {
   activitySeatIsValid,
   advanceActivity,
   beginFishing,
+  beginLightingFire,
   beginSitting,
+  beginSeatMove,
+  seatStepForKey,
   cancelActivity,
   idleActivity,
   reelActivity,
@@ -25,6 +29,8 @@ import {
   getBench,
   getSeat,
   releaseSeat,
+  moveSeat,
+  finishSeatMove,
 } from "./bench-registry";
 import type { MultiplayerRoom } from "./multiplayer";
 import type { RegisteredBench } from "./seating-types";
@@ -43,18 +49,22 @@ export function WorldActivities({
   resetKey = 0,
   onPrompt,
   onBusy,
+  onFireMetrics,
 }: {
   room: MultiplayerRoom;
   paused: boolean;
   resetKey?: number;
   onPrompt: (p: ActivityPrompt) => void;
   onBusy: (busy: boolean) => void;
+  onFireMetrics?: (sample: FireMetrics) => void;
 }) {
+  const camera = useThree((state) => state.camera);
+  const seatFeedback = useRef({ message: "", until: 0 });
   const [localLit, setLocalLit] = useState(false);
   const network = useSyncExternalStore(room.subscribe, room.getSnapshot);
   const lit = network.status === "offline" ? localLit : network.fireLit;
-  const seatAttempt = useRef(0);
-  const seatPending = useRef(false);
+  const seatAttempt = useRef(0), seatPending = useRef(false), fireSent = useRef(false);
+  const pendingLight = useRef(false);
   const [phase, setPhase] = useState<ActivityKind>("none");
   const state = useRef<ActivityInteraction>(idleActivity());
   const callbacks = useRef({ onPrompt, onBusy });
@@ -71,25 +81,64 @@ export function WorldActivities({
   const commit = useCallback((next: ActivityInteraction) => {
     if (next === state.current) return;
     if (next.kind === "none") {
-      if (state.current.seatId) room.releaseSeat();
+      if (state.current.seatId || seatPending.current) room.releaseSeat();
+      seatPending.current = false;
       releaseSeat(localSeatedActorId);
     }
+    const previous = state.current;
+    const preserveShiftClock =
+      (next.kind === "scoot-left" || next.kind === "scoot-right") &&
+      next.kind === previous.kind &&
+      next.pose === previous.pose;
     state.current = next;
     setPhase(next.kind);
-    setActivityPose(next.kind, next.pose);
+    if (!preserveShiftClock) setActivityPose(next.kind, next.pose);
     callbacks.current.onBusy(next.kind !== "none");
   }, [room]);
   const clear = useCallback(() => {
     seatAttempt.current++;
-    if (seatPending.current) {
-      seatPending.current = false;
-      room.releaseSeat();
-      callbacks.current.onBusy(false);
-    }
+    pendingLight.current = false;
     commit(idleActivity());
     lastPrompt.current = "";
     callbacks.current.onPrompt(null);
-  }, [commit, room]);
+  }, [commit]);
+
+  const requestSeat = useCallback((seatId: string, accepted: () => void, rejected: () => void) => {
+    const attempt = ++seatAttempt.current;
+    seatPending.current = true;
+    callbacks.current.onBusy(true);
+    void room.claimSeat(seatId).then((ok) => {
+      if (attempt !== seatAttempt.current) {
+        if (ok && !seatPending.current && !state.current.seatId) room.releaseSeat();
+        return;
+      }
+      seatPending.current = false;
+      if (ok) accepted();
+      else rejected();
+      callbacks.current.onBusy(state.current.kind !== "none");
+    });
+  }, [room]);
+
+  const startLighting = useCallback(
+    (now: number) => {
+      pendingLight.current = false;
+      fireSent.current = false;
+      if (state.current.seatId) room.releaseSeat();
+      releaseSeat(localSeatedActorId);
+      commit(
+        beginLightingFire(
+          [
+            playerPosition.x,
+            terrainHeight(playerPosition.x, playerPosition.z),
+            playerPosition.z,
+          ],
+          [fireCircleSpot.x, ground, fireCircleSpot.z],
+          now,
+        ),
+      );
+    },
+    [commit, ground, room],
+  );
 
   useEffect(() => {
     try {
@@ -112,8 +161,9 @@ export function WorldActivities({
     };
   }, []);
   useEffect(() => room.subscribeWorld(() => {
-    if (room.getSnapshot().status !== "online" && room.getSnapshot().status !== "offline") clear();
-    else if (state.current.seatId && !activitySeatIsValid(state.current, getSeat(state.current.seatId), localSeatedActorId)) clear();
+    const status = room.getSnapshot().status;
+    if (status !== "online" && status !== "offline") clear();
+    else if (!seatPending.current && state.current.seatId && !activitySeatIsValid(state.current, getSeat(state.current.seatId), localSeatedActorId)) clear();
   }), [room, clear]);
   useEffect(() => {
     if (paused) clear();
@@ -153,12 +203,50 @@ export function WorldActivities({
         return;
       }
       const current = state.current;
-      const seated = ["sit-down", "sit", "stand-up"].includes(current.kind);
+      const seated = [
+        "sit-down",
+        "sit",
+        "scoot-left",
+        "scoot-right",
+        "stand-up",
+      ].includes(current.kind);
       if (event.code === "Escape" || (event.code === "KeyF" && seated)) {
         if (current.kind !== "none") {
           event.preventDefault();
+          pendingLight.current = false;
           commit(cancelActivity(current, now));
         }
+        return;
+      }
+      if (
+        (event.code === "KeyA" || event.code === "KeyD") &&
+        current.kind === "sit" &&
+        current.seatId
+      ) {
+        event.preventDefault();
+        const seat = getSeat(current.seatId);
+        if (!seat) return;
+        const step = seatStepForKey(event.code, seat.facing, {
+          x: camera.matrixWorld.elements[0],
+          z: camera.matrixWorld.elements[2],
+        });
+        const adjacent = getBench(seat.benchId)?.seats[seat.index + step];
+        const shift = () => {
+          const moved = moveSeat(localSeatedActorId, step);
+          const destination = adjacent && getSeat(adjacent.id);
+          if (moved || destination?.occupantId === localSeatedActorId) {
+            seatFeedback.current.until = 0;
+            commit(beginSeatMove(moved?.from ?? seat, moved?.to ?? destination!, performance.now()));
+          } else {
+            room.releaseSeat();
+            clear();
+          }
+        };
+        const blocked = () => { seatFeedback.current = { message: adjacent ? "That seat is taken." : "End of the bench.", until: performance.now() + 1200 }; };
+        if (!adjacent || adjacent.occupantId !== null || adjacent.reservedBy) blocked();
+        else if (room.getSnapshot().status === "online") requestSeat(adjacent.id, shift, blocked);
+        else if (room.getSnapshot().status === "offline") shift();
+        else blocked();
         return;
       }
       if (event.code === "KeyF" && current.kind === "none") {
@@ -170,36 +258,23 @@ export function WorldActivities({
             playerPosition,
             localSeatedActorId,
           );
-          if (available && room.getSnapshot().status === "online") {
-            const attempt = ++seatAttempt.current;
-            seatPending.current = true;
-            callbacks.current.onBusy(true);
-            void room.claimSeat(available.id).then((accepted) => {
-              if (attempt !== seatAttempt.current) {
-                if (accepted && !seatPending.current && !state.current.seatId) room.releaseSeat();
-                return;
-              }
-              seatPending.current = false;
-              callbacks.current.onBusy(false);
-              const seat = accepted ? claimSeat(available.id, localSeatedActorId) : undefined;
-              if (seat) {
-                messageUntil.current = 0;
-                commit(beginSitting(seat, performance.now()));
-              } else {
-                if (accepted) room.releaseSeat();
-                commit(idleActivity());
-                message.current = `${bench.label} · Seat unavailable`;
-                messageUntil.current = performance.now() + 2500;
-              }
-            });
-          } else if (available && room.getSnapshot().status === "offline") {
-            const seat = claimSeat(available.id, localSeatedActorId);
-            if (seat) commit(beginSitting(seat, now));
-          } else {
-            // No claim means no pose change, even if another actor took the last seat.
-            message.current = `${bench.label} · Full`;
-            messageUntil.current = now + 2000;
-          }
+          const sit = () => {
+            const seat = available && claimSeat(available.id, localSeatedActorId);
+            if (seat) {
+              messageUntil.current = 0;
+              commit(beginSitting(seat, performance.now()));
+            } else {
+              room.releaseSeat();
+              clear();
+            }
+          };
+          const blocked = () => {
+            message.current = `${bench.label} · Seat unavailable`;
+            messageUntil.current = performance.now() + 2500;
+          };
+          if (available && room.getSnapshot().status === "online") requestSeat(available.id, sit, blocked);
+          else if (available && room.getSnapshot().status === "offline") sit();
+          else blocked();
         }
         return;
       }
@@ -250,13 +325,19 @@ export function WorldActivities({
         ) < 6.5
       ) {
         event.preventDefault();
-        if (room.getSnapshot().status === "offline") setLocalLit((value) => !value);
-        else room.toggleFire();
+        if (lit) {
+          if (room.getSnapshot().status === "offline") setLocalLit(false);
+          else room.setFire(false);
+        }
+        else if (seated) {
+          pendingLight.current = true;
+          commit(cancelActivity(current, now));
+        } else startLighting(now);
       }
     };
     window.addEventListener("keydown", handle);
     return () => window.removeEventListener("keydown", handle);
-  }, [paused, commit, clear, room]);
+  }, [paused, commit, camera, lit, startLighting, clear, room, requestSeat]);
 
   useFrame((_, dt) => {
     if (getBmxState().mounted) {
@@ -265,6 +346,7 @@ export function WorldActivities({
     }
     const now = performance.now();
     if (
+      !seatPending.current &&
       state.current.seatId &&
       !activitySeatIsValid(
         state.current,
@@ -274,7 +356,19 @@ export function WorldActivities({
     )
       clear();
     if (!paused) {
-      const next = advanceActivity(state.current, now);
+      const current = state.current;
+      if (
+        current.kind === "light-fire" &&
+        !lit &&
+        !fireSent.current &&
+        now >=
+          current.deadline - (fireLightingDuration - fireIgnitionTime) * 1000
+      ) {
+        if (room.getSnapshot().status === "offline") { setLocalLit(true); fireSent.current = true; }
+        else if (room.getSnapshot().status === "online") { room.setFire(true); fireSent.current = true; }
+      }
+      const next = advanceActivity(current, now);
+      if (next.outcome === "seat-moved") finishSeatMove(localSeatedActorId);
       if (next.outcome === "caught") {
         const species = ["Perch", "Carp", "Roach", "Pike"][
           Math.floor(Math.random() * 4)
@@ -308,7 +402,9 @@ export function WorldActivities({
         message.current = "It got away. Try another cast.";
         messageUntil.current = now + 3500;
       }
-      commit(next.state);
+      if (next.state.kind === "none" && pendingLight.current)
+        startLighting(now);
+      else commit(next.state);
     }
     promptTick.current += dt;
     if (promptTick.current < 0.1) return;
@@ -327,7 +423,9 @@ export function WorldActivities({
         playerPosition.z - fireCircleSpot.z,
       ) < 6.5;
     const freeCount = (bench: RegisteredBench) =>
-      bench.seats.filter((candidate) => candidate.occupantId === null).length;
+      bench.seats.filter(
+        (candidate) => candidate.occupantId === null && !candidate.reservedBy,
+      ).length;
     const seatDescription = occupiedBench?.label ?? "Bench";
     const secondaryAction = nearFishing
       ? "E to cast a line"
@@ -337,6 +435,10 @@ export function WorldActivities({
     if (!paused) {
       if (seatPending.current)
         prompt = { main: "Reserving a seat…", detail: "Waiting for the room · F or Escape to cancel", key: "F" };
+      else if (current.kind === "fire-approach")
+        prompt = { main: "Walking to the fire…", detail: "Escape to cancel" };
+      else if (current.kind === "light-fire")
+        prompt = { main: "Lighting the fire…", detail: "Escape to cancel" };
       else if (current.kind === "sit-down")
         prompt = {
           main: seatDescription,
@@ -346,8 +448,15 @@ export function WorldActivities({
       else if (current.kind === "sit")
         prompt = {
           main: seatDescription,
-          detail: `F or Escape to stand${nearFire ? ` · E to ${lit ? "put out" : "light"} the fire` : ""}`,
+          detail: `${now < seatFeedback.current.until ? seatFeedback.current.message : "A/D to shift"} · F or Escape to stand${nearFire ? ` · E to ${lit ? "put out" : "light"} the fire` : ""}`,
           key: "F",
+        };
+      else if (current.kind === "scoot-left" || current.kind === "scoot-right")
+        prompt = {
+          main: seatDescription,
+          detail: current.standAfterMove
+            ? "Shifting over, then standing…"
+            : "Shifting over…",
         };
       else if (current.kind === "stand-up")
         prompt = { main: seatDescription, detail: "Standing up…" };
@@ -431,11 +540,11 @@ export function WorldActivities({
           </group>
         );
       })}
-      {lit && (
-        <Campfire
-          position={[fireCircleSpot.x, ground + 0.26, fireCircleSpot.z]}
-        />
-      )}
+      <Campfire
+        active={lit}
+        onMetrics={onFireMetrics}
+        position={[fireCircleSpot.x, ground + 0.26, fireCircleSpot.z]}
+      />
     </>
   );
 }

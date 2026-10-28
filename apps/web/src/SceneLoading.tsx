@@ -16,8 +16,8 @@ export function SceneLoading() {
   return (
     <div className="scene-loading" aria-busy="true">
       <div className="scene-loading__location" aria-hidden="true">
-        <span>La Baraj</span>
-        <span>Lake Cinciș / South shore</span>
+        <span>Lake Cinciș</span>
+        <span>South shore / World study</span>
       </div>
       <section className="scene-loading__content" aria-label="Loading the lake">
         <div className="scene-loading__drawing" aria-hidden="true">

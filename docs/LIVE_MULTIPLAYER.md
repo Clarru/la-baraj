@@ -2,19 +2,26 @@
 
 The small room server runs on Cloudflare Workers with a SQLite-backed Durable Object per invite room. The browser connects using PartySocket. This beta shares player presence, feet positions, facing, animation/activity, scooter state, campfire state, and exclusive seat occupancy. Movement remains client controlled; it does not implement authoritative physics, account authentication, an economy, or anti-cheat.
 
-## Backend development
+## Deployed services
 
-Use Node 24 and install the repository dependencies. Start the worker from the repository root:
+- Frontend: https://la-baraj.vercel.app
+- Multiplayer: https://la-baraj-world.claumarin336.workers.dev
+- Public backend health: https://la-baraj-world.claumarin336.workers.dev/health
+- Private source repository: https://github.com/Clarru/la-baraj
 
-```sh
-npm run server:dev
-```
+Use the full invite URL, including its `?room=` value, for everyone joining the same playtest. Opening the bare frontend URL creates a new random room. The production Worker accepts only the exact `https://la-baraj.vercel.app` browser origin; arbitrary preview domains are not allowed.
 
-The default address is `http://127.0.0.1:8787`. Configure the frontend's multiplayer host as described in its environment example. The backend accepts the local Vite origins on ports 5173 and 4173 by default.
+The frontend uses Vercel Hobby and the room server uses Cloudflare Workers with SQLite Durable Objects. No paid plan was enabled for this deployment.
 
-The worker entry point is `apps/server/index.ts`; its binding and SQLite migration are in `apps/server/wrangler.jsonc`. No account ID or credentials belong in these source files. Deployment is a separate operator action, using `npm run server:deploy` after selecting the intended Cloudflare account.
+## Release workflow
 
-The checked-in compatibility date is `2026-10-28`. If an older local Wrangler runtime rejects that date, upgrade Wrangler to the version in the lockfile. An older runtime used during initial verification supported only `2026-05-03`; that one was tested with the explicit local CLI override `--compatibility-date 2026-05-03`.
+This release repository is an isolated snapshot at `/Users/claumarin/Documents/ChatGPT/multiplayer-game-release`. Parallel game development continues in the original sibling `multiplayer-game` workspace. Copy completed changes into the release repository deliberately, preserving the multiplayer integration, then run the checks before publishing. Changes in the original directory are not automatically live.
+
+Use Node 24 and `npm ci`. The frontend reads `VITE_ROOM_SERVER_URL` at build time; Vercel has it set to the deployed multiplayer host. The Worker entry point is `apps/server/index.ts`; its binding and SQLite migration are in `apps/server/wrangler.jsonc`. Deploy an intentional backend change with `npm run server:deploy`. Credentials stay outside the repository.
+
+Keep one local game server at `http://127.0.0.1:4173/`, as required by `AGENTS.md`. Do not start another backend or frontend listener without coordinating ownership. The deployed socket harness below exercises the remote backend without a local server.
+
+Production frontend deployments use the linked Vercel project `la-baraj`; pushes to `main` are connected through GitHub. Use `vercel deploy --prod` for an explicit release when needed. Keep the Worker origin policy aligned with the actual production frontend alias.
 
 ## Room addresses and browser origins
 
@@ -38,12 +45,11 @@ Campfire messages use `{ "type": "fire", "lit": false }`. Changes persist in Dur
 
 Rooms allow 30 active connections. Incoming JSON packets are limited to 1 KiB. Positions and all numeric/string fields have explicit bounds. The per-connection token buckets allow 20 incoming messages per second with an initial burst of 30, at most 10 pose updates per second with a burst of 3, and 2 interaction messages per second with a burst of 5. Excess pose updates are dropped. Repeated invalid packets or excessive interaction messages close the connection. Rate state survives hibernation.
 
-Run the backend checks and local WebSocket smoke test:
+Run the backend checks:
 
 ```sh
 npm run server:check
 npm run test:protocol
-node apps/server/websocket-smoke.mjs
 ```
 
 The smoke harness also accepts a deployed worker host and an allowed browser origin:

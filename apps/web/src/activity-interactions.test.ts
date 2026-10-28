@@ -4,8 +4,11 @@ import {
   activityDurations,
   advanceActivity,
   beginFishing,
+  beginLightingFire,
   activitySeatIsValid,
   beginSitting,
+  beginSeatMove,
+  seatStepForKey,
   cancelActivity,
   idleActivity,
   reelActivity,
@@ -169,5 +172,85 @@ describe("registered bench activity lifecycle", () => {
     expect(activitySeatIsValid(idleActivity(), undefined, "local-player")).toBe(
       true,
     );
+  });
+});
+
+describe("seated adjacent movement", () => {
+  const next: BenchSeat = {
+    ...claimedSeat,
+    id: "long-bench:2",
+    index: 2,
+    anchor: [4.65, 2, 8.33],
+    center: [4.65, 2.55, 8],
+  };
+  it("keeps a seated gesture throughout movement and completes at the claimed destination", () => {
+    const moving = beginSeatMove(claimedSeat, next, 1000);
+    expect(moving.kind).toBe("scoot-left");
+    expect(moving.seatId).toBe(next.id);
+    expect(moving.pose?.fromAnchor).toBe(claimedSeat.anchor);
+    expect(moving.pose?.anchor).toBe(next.anchor);
+    expect(advanceActivity(moving, 1599).state).toBe(moving);
+    const done = advanceActivity(moving, 1600);
+    expect(done.outcome).toBe("seat-moved");
+    expect(done.state.kind).toBe("sit");
+    expect(done.state.seatId).toBe(next.id);
+    expect(done.state.pose?.fromAnchor).toBeUndefined();
+    expect(done.state.pose?.anchor).toBe(next.anchor);
+  });
+  it("finishes the move before a queued stand and then releases normally", () => {
+    const moving = beginSeatMove(claimedSeat, next, 1000),
+      cancelled = cancelActivity(moving, 1200);
+    expect(cancelled.kind).toBe(moving.kind);
+    expect(cancelled.deadline).toBe(1600);
+    expect(cancelled.pose).toBe(moving.pose);
+    const standing = advanceActivity(cancelled, 1600);
+    expect(standing.state.kind).toBe("stand-up");
+    expect(standing.outcome).toBe("seat-moved");
+    expect(standing.state.seatId).toBe(next.id);
+    expect(advanceActivity(standing.state, 2250).state.kind).toBe("none");
+  });
+  it("never creates a move across benches or over another seat", () => {
+    expect(() =>
+      beginSeatMove(claimedSeat, { ...next, benchId: "other" }, 0),
+    ).toThrow();
+    expect(() =>
+      beginSeatMove(claimedSeat, { ...next, index: 3 }, 0),
+    ).toThrow();
+  });
+  it("maps A/D to the projected screen side of a rotated bench", () => {
+    for (const facing of [0, 0.6, Math.PI, -2]) {
+      const along = { x: Math.cos(facing), z: -Math.sin(facing) };
+      expect(seatStepForKey("KeyD", facing, along)).toBe(1);
+      expect(seatStepForKey("KeyA", facing, along)).toBe(-1);
+      expect(seatStepForKey("KeyD", facing, { x: -along.x, z: -along.z })).toBe(
+        -1,
+      );
+    }
+  });
+});
+
+describe("lighting a campfire", () => {
+  it("approaches the near log edge before kneeling, and returns control after the full gesture", () => {
+    const approach = beginLightingFire([0, 2, 5], [0, 2, 0], 1000);
+    expect(approach.kind).toBe("fire-approach");
+    expect(approach.pose?.anchor).toEqual([0, 2, 1.65]);
+    expect(Math.abs(approach.pose!.facing!)).toBe(Math.PI);
+    expect(advanceActivity(approach, approach.deadline - 1).state).toBe(approach);
+    const lighting = advanceActivity(approach, approach.deadline).state;
+    expect(lighting.kind).toBe("light-fire");
+    expect(lighting.pose?.fromAnchor).toBeUndefined();
+    expect(lighting.deadline - approach.deadline).toBeCloseTo(3000);
+    expect(advanceActivity(lighting, lighting.deadline - 1).state).toBe(lighting);
+    expect(advanceActivity(lighting, lighting.deadline).state).toEqual(idleActivity());
+  });
+  it("cancels approach or kneeling without retaining a seat or movement lock", () => {
+    const approach = beginLightingFire([3, 1, 4], [0, 1, 0], 0);
+    const lighting = advanceActivity(approach, approach.deadline).state;
+    for (const state of [approach, lighting]) {
+      expect(state.seatId).toBeUndefined();
+      expect(cancelActivity(state, 50)).toEqual(idleActivity());
+    }
+    const centered = beginLightingFire([0, 1, 0], [0, 1, 0], 0);
+    expect(centered.pose?.anchor?.every(Number.isFinite)).toBe(true);
   });
 });
