@@ -31,7 +31,7 @@ Reuse maintained packages and licensed art. Write the small set of La Baraj game
 
 ## Current status
 
-The public La Baraj friends playtest is live at https://la-baraj.vercel.app. Real multiplayer presence, movement, activities, scooter state, shared fire and exclusive seating are implemented. Fishing catches and cabin interior presentation remain local. Persistent ownership and punching are not implemented. See [verified deployment details](docs/deployment/PLAYTEST.md).
+The public La Baraj friends playtest is live at https://la-baraj.vercel.app. Real multiplayer presence, movement, activities, scooter state, shared fire and exclusive seating are implemented. Fishing catches and cabin interior presentation remain local. Anonymous cabin assignments persist per browser and invite room, with arrivals beside the assigned house. Account-based ownership and punching are not implemented. See [verified deployment details](docs/deployment/PLAYTEST.md).
 
 The owner rejected the first test's scale, character and interface. The revised test expands geographic distances 5×, preserves human-scale buildings and avatars, uses a Blender-assembled character study and baked distant trees, adds reflective water, and replaces the original HUD with Barlow typography and Phosphor icons. Terrain heights remain a procedural proxy.
 
@@ -63,3 +63,6 @@ Select **Cabins** and press **1**, **2**, or **3** to inspect the three archetyp
 
 
 Current cabin/navigation extension: six fixed architectural designs are shuffled across the 30 plots (five of each). Extra variants follow `docs/art-direction/cabin-variants-grid.png`; actual Blender output is `cabin-variants-blender.png`. Number plates attach to validated model-specific wall/post mounts. In Cabins mode, keys 1–6 inspect each design. H or Home focuses your local-preview cabin; M expands the live north-up minimap. This browser stores the current home selection, while server ownership, actual room interiors, owner-approved visits and admin authentication remain next-stage work. All seating behavior belongs to the separate seating task.
+
+
+World solids: fixed geometry-matched colliders cover cabin roofs/decks, interior furniture, benches, tables, crates and fences. Docks and parked scooters have simple solid shapes. Nearby rocks/bushes use model shapes and trees use trunks, independent of visual LOD; grass, flowers and VFX remain non-solid. Ground contact, grip and jumping support successive roof/prop landings. Cabin arrivals and the parked scooter are tested against all30 plots and rendered road edges. The home credential is stored per browser and room; using another browser creates another anonymous owner, while same-owner tabs share the cabin. Clearing browser storage loses the resume capability; no account recovery is implemented.

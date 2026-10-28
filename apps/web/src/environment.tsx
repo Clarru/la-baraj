@@ -4,6 +4,7 @@ import { RigidBody, TrimeshCollider } from "@react-three/rapier";
 import * as THREE from "three";
 import { Water } from "three/examples/jsm/objects/Water.js";
 import { ModelInstances, type Placement } from "./assets";
+import { NearbySolids, type NaturalSolid } from "./NearbySolids";
 import { useTexture, Detailed } from "@react-three/drei";
 import impostorInfo from "../public/assets/impostors/manifest.json";
 import {
@@ -390,6 +391,14 @@ const vegetationData = (() => {
   }
   return groups;
 })();
+const naturalSolids: NaturalSolid[] = Object.entries(vegetationData).flatMap(([id, items]) => {
+  const modelId = id.replace("_Distant", "");
+  const tree = /^(CommonTree|Pine)/.test(modelId);
+  if (!tree && !/^(Rock|Bush)/.test(modelId)) return [];
+  return items.map((item, index) => ({ ...item, id: modelId, key: `${id}-${index}`,
+    ...(tree ? { treeHeight: impostorInfo[modelId as keyof typeof impostorInfo].height * .72 } : {}),
+  }));
+});
 export const environmentCounts = Object.fromEntries(
   Object.entries(vegetationData).map(([k, v]) => [k, v.length]),
 );
@@ -486,6 +495,7 @@ export const Vegetation = memo(function Vegetation({
   );
   return (
     <>
+      <NearbySolids items={naturalSolids} />
       {vegetationGroups.map(
         ({ id, key, placements, distant, cx, cz, isTree, isSmall }) => {
           if (distant)

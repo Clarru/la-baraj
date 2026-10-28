@@ -34,6 +34,7 @@ import {
   scooterSpeed,
   scooterSteeringInput,
 } from "./scooter-controls";
+import { homeSpawn } from "./home";
 import { scooterSupportHeight } from "./scooter-support";
 import { createRunJumpClips } from "./run-jump-clips";
 import {
@@ -94,6 +95,7 @@ export function Avatar({
   );
 }
 export function Player({
+  homeIndex,
   mode,
   resetKey,
   paused,
@@ -104,6 +106,7 @@ export function Player({
   indoors = false,
   doorTransition = false,
 }: {
+  homeIndex: number;
   mode: ViewMode;
   resetKey: number;
   paused: boolean;
@@ -114,6 +117,7 @@ export function Player({
   indoors?: boolean;
   doorTransition?: boolean;
 }) {
+  const arrival = useMemo(() => homeSpawn(homeIndex), [homeIndex]);
   const controller = useRef<EcctrlHandle>(null);
   const doorArrival = useRef<ReturnType<typeof takeCabinTransfer>>(null);
   const doorArrivalStarted = useRef(0);
@@ -328,10 +332,20 @@ export function Player({
   }, [mode, paused, mixer, indoors]);
   useEffect(() => {
     controller.current?.body?.setTranslation(
-      { x: spawn.x, y: terrainHeight(spawn.x, spawn.z) + 2, z: spawn.z },
+      { x: arrival.position[0], y: arrival.position[1] + 0.98, z: arrival.position[2] },
       true,
     );
     controller.current?.body?.setLinvel({ x: 0, y: 0, z: 0 }, true);
+    doorArrival.current = null;
+    controller.current?.body?.setBodyType(rapier.RigidBodyType.Dynamic, true);
+    playerPosition.set(arrival.position[0], arrival.position[1] + 0.98, arrival.position[2]);
+    playerViewPosition.copy(playerPosition);
+    rideYaw.current = arrival.yaw;
+    if (visual.current) {
+      visual.current.parent?.getWorldQuaternion(facingParent);
+      localFacing(arrival.yaw, facingParent, facingTarget);
+      visual.current.quaternion.copy(facingTarget);
+    }
     keys.current.clear();
     jumpRequest.current = false;
     jumpState.current = initialJumpMotion();
@@ -340,11 +354,10 @@ export function Player({
     mixer.stopAllAction();
     animation.current = "";
     setRiding(false);
-    const x = spawn.x + 2.5,
-      z = spawn.z + 1.5;
-    parkVehicle([x, terrainHeight(x, z), z], 0);
+    parkVehicle(arrival.scooter, arrival.yaw);
     parkedGrounded.current = false;
-  }, [resetKey]);
+    onMotion({ homeIndex, position: playerPosition.toArray(), feet: [arrival.position[0], arrival.position[1] + 0.015, arrival.position[2]], facing: [Math.sin(arrival.yaw), 0, Math.cos(arrival.yaw)], animation: "Idle_Neutral", activity: "none", velocity: [0, 0, 0], jumpPhase: "grounded", vehicle: null, grounded: true });
+  }, [resetKey, arrival]);
   useFrame((_, dt) => {
     const c = controller.current;
     if (!c || !c.body) return;
@@ -421,7 +434,7 @@ export function Player({
       sampleClock.current += dt;
       if (sampleClock.current > 1 / 7) {
         sampleClock.current = 0;
-        onMotion({ ...doorMotion, animationHistory: animationHistory.current });
+        onMotion({ ...doorMotion, homeIndex, animationHistory: animationHistory.current });
       }
       return;
     }
@@ -520,7 +533,7 @@ export function Player({
       (p.y < -5 || Math.abs(p.x) > 2100 || Math.abs(p.z) > 1450)
     ) {
       c.body.setTranslation(
-        { x: spawn.x, y: terrainHeight(spawn.x, spawn.z) + 1.6, z: spawn.z },
+        { x: arrival.position[0], y: arrival.position[1] + 0.98, z: arrival.position[2] },
         true,
       );
       c.body.setLinvel({ x: 0, y: 0, z: 0 }, true);
@@ -536,11 +549,14 @@ export function Player({
       undefined,
       c.body,
     );
+    const rayGroundY = ground ? p.y - ground.timeOfImpact : null;
+    const contactGroundY = c.standPoint.y;
+    const groundedEdge = c.isOnGround && p.y - contactGroundY > 0.55 && p.y - contactGroundY < 1.4;
     const groundY = holding
       ? pose.anchor![1]
-      : ground
-        ? p.y - ground.timeOfImpact
-        : null;
+      : groundedEdge && (rayGroundY === null || contactGroundY - rayGroundY > 0.25)
+        ? contactGroundY
+        : rayGroundY;
     if (visual.current) {
       visual.current.parent?.getWorldPosition(playerViewPosition);
       const offset = holding
@@ -665,6 +681,7 @@ export function Player({
         onVehicleHint?.(near);
       }
       onMotion({
+        homeIndex,
         vehicle: mounted ? "QuickVolt 9" : null,
         vehicleSpeed: mounted ? getVehicleState().speed : 0,
         jumpPhase: jumpState.current.phase,
@@ -695,7 +712,7 @@ export function Player({
   return (
     <Ecctrl
       ref={controller}
-      position={[spawn.x, terrainHeight(spawn.x, spawn.z) + 2, spawn.z]}
+      position={[arrival.position[0], arrival.position[1] + 0.98, arrival.position[2]]}
       enabledRotations={[false, false, false]}
       autoBalance={false}
       enableToggleRun={false}
@@ -705,7 +722,13 @@ export function Player({
       useCustomForward={riding}
       maxWalkVel={riding ? scooterSpeed.cruise : 3.8}
       maxRunVel={riding ? scooterSpeed.boost : 6.5}
-      jumpVel={5.6}
+      jumpVel={7.4}
+      friction={1.2}
+      restitution={0}
+      slideGripFactor={1.1}
+      decDeltaTime={0.3}
+      slopeMaxAngle={Math.PI * 0.4}
+      rayRadius={0.22}
       rayHitForgiveness={jumping ? 0.05 : 0.28}
       floatHeight={0.3}
     >

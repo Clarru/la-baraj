@@ -1,4 +1,5 @@
-import { MAX_PLAYERS, PROTOCOL_VERSION, parseClientMessage, type FireState, type PlayerPresence, type ServerMessage } from "../../packages/shared/protocol";
+import { MAX_PLAYERS, PROTOCOL_VERSION, parseClientMessage, type FireState, type HomeAssignment, type PlayerPresence, type ServerMessage } from "../../packages/shared/protocol";
+import { HomeAllocationError, type HomeAssignments } from "./home-assignments";
 
 type Bucket = { tokens: number; at: number };
 export type SessionState = {
@@ -7,6 +8,8 @@ export type SessionState = {
   pose: Bucket;
   action: Bucket;
   violations: number;
+  /** Optional for connection attachments created before home allocation shipped. */
+  home?: HomeAssignment;
 };
 export interface RoomConnection {
   readonly state: Readonly<SessionState> | null;
@@ -17,6 +20,7 @@ export interface RoomConnection {
 export type RoomRuntime = {
   connections(): Iterable<RoomConnection>;
   saveFire(fire: FireState): Promise<void>;
+  homes: HomeAssignments;
 };
 /** These buckets are stored in the websocket attachment and survive hibernation. */
 export function consume(bucket: Bucket, now: number, rate: number, capacity: number): Bucket | null {
@@ -26,6 +30,7 @@ export function consume(bucket: Bucket, now: number, rate: number, capacity: num
 
 export class RoomCore {
   fire: FireState;
+  private homeClaims = new WeakMap<RoomConnection, Promise<HomeAssignment>>();
   constructor(private runtime: RoomRuntime, fire: FireState = { lit: true, revision: 0 }) { this.fire = fire; }
   private send(connection: RoomConnection, message: ServerMessage) { connection.send(JSON.stringify(message)); }
   private active() { return [...this.runtime.connections()].filter((c) => c.state !== null); }
@@ -39,7 +44,8 @@ export class RoomCore {
   snapshot(connection: RoomConnection) {
     if (!connection.state) return;
     this.send(connection, { type: "snapshot", version: PROTOCOL_VERSION, selfId: connection.state.player.id,
-      players: this.active().map((c) => c.state!.player), fire: this.fire, seats: this.seats() });
+      players: this.active().map((c) => c.state!.player), fire: this.fire, seats: this.seats(),
+      ...(connection.state.home ? { home: connection.state.home } : {}) });
   }
   connect(connection: RoomConnection, id: string, now = Date.now()) {
     if (this.active().length >= MAX_PLAYERS) {
@@ -81,9 +87,42 @@ export class RoomCore {
     connection.setState({ ...current, action });
     if (message.type === "sync") { this.snapshot(connection); return; }
     if (message.type === "hello") {
-      const player = { ...connection.state!.player, nickname: message.nickname };
-      connection.setState({ ...connection.state!, player });
-      this.broadcast({ type: "pose", player }); return;
+      // Record renames in receipt order. An earlier home allocation may await
+      // storage while a newer hello updates this same connection's nickname.
+      connection.setState({ ...connection.state!, player: { ...connection.state!.player, nickname: message.nickname } });
+      if (message.requestHome === true) {
+        if (connection.state!.home && connection.state!.home!.resumeToken !== message.resumeToken) {
+          this.send(connection, { type: "error", code: "invalid-resume", message: "A connected player cannot change cabin ownership." });
+          connection.close(1008, "Invalid home resume"); return;
+        }
+        if (!connection.state!.home) {
+          let pending = this.homeClaims.get(connection);
+          if (!pending) {
+            pending = this.runtime.homes.claim(message.resumeToken!, message.createHome === true);
+            this.homeClaims.set(connection, pending);
+          }
+          try {
+            const home = await pending;
+            // The browser already saved the credential before requesting. If
+            // its socket closed during persistence, a retry can safely resume
+            // this assignment without sending to the departed connection.
+            if (!this.active().includes(connection)) return;
+            // A duplicate hello may have awaited the same allocation. Always
+            // preserve the newest rate/pose/seat state across this storage wait.
+            if (home.resumeToken !== message.resumeToken) throw new HomeAllocationError("invalid-resume", "A connected player cannot change cabin ownership.");
+            connection.setState({ ...connection.state!, home, player: { ...connection.state!.player, homeIndex: home.index } });
+          } catch (error) {
+            if (error instanceof HomeAllocationError) {
+              this.send(connection, { type: "error", code: error.code, message: error.message });
+              connection.close(1008, "Home allocation unavailable");
+            } else this.send(connection, { type: "error", code: "storage-unavailable", message: "Your cabin could not be saved. Retry with the same saved credential." });
+            return;
+          } finally { this.homeClaims.delete(connection); }
+        }
+      }
+      this.broadcast({ type: "pose", player: connection.state!.player });
+      if (message.requestHome) this.snapshot(connection);
+      return;
     }
     if (message.type === "fire") {
       if (this.fire.lit === message.lit) return;

@@ -29,6 +29,8 @@ export function MultiplayerHud({ room }: { room: MultiplayerRoom }) {
         <input name="nickname" aria-label="Your nickname" defaultValue={view.nickname} maxLength={24} autoFocus onKeyDown={(event) => { event.stopPropagation(); if (event.key === "Escape") setEditing(false); }} />
         <button type="submit">Save</button>
       </form> : <button onClick={() => setEditing(true)} aria-label={`Edit nickname, currently ${view.nickname}`}><span>{view.nickname}</span><PencilSimple size={13} /></button>}
+      {view.homeIndex !== null && <span data-testid="assigned-home">Your cabin · {String(view.homeIndex + 1).padStart(2, "0")}</span>}
+      {view.homeIndex === null && ["connecting", "online"].includes(view.status) && <span>Assigning your cabin…</span>}
       {copyError && <span role="alert">Copy the address bar link to invite friends.</span>}
       {view.status === "full" && <span role="alert">Try again when a friend leaves. <button onClick={() => location.reload()}>Retry</button></span>}
       {view.status === "online" && view.error && <span role="alert">{view.error}</span>}

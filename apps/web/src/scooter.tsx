@@ -6,6 +6,7 @@ import {
   useRef,
 } from "react";
 import { useFrame } from "@react-three/fiber";
+import { RigidBody, CuboidCollider, type RapierRigidBody } from "@react-three/rapier";
 import * as THREE from "three";
 import { getVehicleState } from "./vehicle-state";
 import {
@@ -48,16 +49,33 @@ export const Scooter = forwardRef<
 
 export function ParkedScooter() {
   const group = useRef<THREE.Group>(null);
+  const body = useRef<RapierRigidBody>(null);
+  const rotation = useMemo(() => new THREE.Quaternion(), []);
   useFrame(() => {
     if (!group.current) return;
     const state = getVehicleState();
     group.current.visible = !state.mounted;
     group.current.position.set(...state.parked);
     group.current.rotation.y = state.yaw;
+    if (body.current) {
+      body.current.setEnabled(!state.mounted);
+      if (!state.mounted) {
+        const [x,y,z] = state.parked;
+        body.current.setTranslation({x,y,z}, true);
+        body.current.setNextKinematicTranslation({x,y,z});
+        rotation.setFromAxisAngle(THREE.Object3D.DEFAULT_UP, state.yaw);
+        body.current.setRotation(rotation, true);
+        body.current.setNextKinematicRotation(rotation);
+      }
+    }
   });
   return (
-    <group ref={group}>
-      <Scooter parked />
-    </group>
+    <>
+      <group ref={group}><Scooter parked /></group>
+      <RigidBody ref={body} type="kinematicPosition" colliders={false} position={[0,-1000,0]}>
+        <CuboidCollider args={[.2,.09,.62]} position={[0,.18,0]} friction={1.4} />
+        <CuboidCollider args={[.18,.5,.09]} position={[0,.65,.46]} friction={1.4} />
+      </RigidBody>
+    </>
   );
 }

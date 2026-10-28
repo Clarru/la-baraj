@@ -2,6 +2,7 @@ import { useLayoutEffect, useMemo, useRef } from "react";
 import { useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 import { useModelBench, type BenchOptions } from "./BenchRegistration";
+import { StaticCollider } from "./StaticCollider";
 export const assetUrl = (id: string) => `/assets/optimized/${id}.glb`;
 function materialFor(source: THREE.Material, flat: boolean) {
   const m = source.clone() as THREE.MeshStandardMaterial;
@@ -72,6 +73,7 @@ export function Model({
     <group ref={root} position={position} rotation={[0, rotation, 0]} scale={scale}>
       <group scale={model.s}>
         <primitive object={model.obj} position={model.offset} dispose={null} />
+        <group position={model.offset}><StaticCollider object={scene} /></group>
       </group>
     </group>
   );
