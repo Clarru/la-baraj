@@ -1,4 +1,4 @@
-# Lake Cinciș — Environment asset feasibility test
+# La Baraj — Environment asset feasibility test
 
 Started: 28 October 2026, 14:28:58 Europe/Bucharest (12:28:58 UTC).
 

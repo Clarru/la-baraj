@@ -302,7 +302,7 @@ export default function App() {
     );
     const a = document.createElement("a");
     a.href = url;
-    a.download = "lake-cincis-feasibility-metrics.json";
+    a.download = "la-baraj-feasibility-metrics.json";
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -832,7 +832,7 @@ export default function App() {
                 Asset feasibility test.
               </h2>
               <p>
-                This is a real-time asset experiment for Lake Cinciș: imported
+                This is a real-time asset experiment for La Baraj: imported
                 trees, rocks, furniture, cabin parts, and an animated character,
                 assembled in one light and scale.
               </p>

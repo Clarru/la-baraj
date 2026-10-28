@@ -1,4 +1,4 @@
-# Lake Cinciș — Current five-block visual direction contract
+# La Baraj — Current five-block visual direction contract
 
 Status: provisional asset-test direction, 28 October 2026. This is the local feasibility HUD and world-study contract. It records the implemented inspection apparatus; it does not approve the current 3D art as final.
 

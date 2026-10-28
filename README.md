@@ -27,11 +27,11 @@ The product and architecture below are the v1 implementation baseline, dated 28 
 
 React + TypeScript + Vite; Three.js through React Three Fiber and Drei; Rapier + Ecctrl for local character movement; PartySocket + PartyServer; Cloudflare Workers and one SQLite-backed Durable Object for the shared world; Vercel for the static frontend.
 
-Reuse maintained packages and licensed art. Write the small set of Lake Cinciș game rules ourselves. No full-game fork has been adopted.
+Reuse maintained packages and licensed art. Write the small set of La Baraj game rules ourselves. No full-game fork has been adopted.
 
 ## Current status
 
-The local asset feasibility scene is implemented. It covers 16 of the 20 environment families fixed in the test plan, with a walkable character, survey camera, material/light comparisons, a source inventory, and a 30-avatar rendering stress option. This is an environment test; multiplayer, ownership, fishing and punching are not implemented yet.
+The public La Baraj friends playtest is live at https://la-baraj.vercel.app. Real multiplayer presence, movement, activities, scooter state, shared fire and exclusive seating are implemented. Fishing catches and cabin interior presentation remain local. Persistent ownership and punching are not implemented. See [verified deployment details](docs/deployment/PLAYTEST.md).
 
 The owner rejected the first test's scale, character and interface. The revised test expands geographic distances 5×, preserves human-scale buildings and avatars, uses a Blender-assembled character study and baked distant trees, adds reflective water, and replaces the original HUD with Barlow typography and Phosphor icons. Terrain heights remain a procedural proxy.
 
@@ -44,13 +44,13 @@ npm ci
 npm run dev
 ```
 
-The development URL is `http://127.0.0.1:5173/`. To inspect the production build, run `npm run build` followed by `npm run preview` and open `http://127.0.0.1:4173/`.
+Use the one canonical local URL, `http://127.0.0.1:4173/`, and reuse an existing listener as required by `AGENTS.md`. To inspect a production build, run `npm run build` and use the existing preview process; only start `npm run preview` when no other game server is running.
 
 Choose **On foot**, use WASD/arrows to move, Shift to run and Space to jump. Drag to turn the camera. **Survey view** shows the wider settlement. The side controls change light, compare close materials and render 30 local avatars. The inventory distinguishes imported, custom, mixed and pending families and exports the current rendering measurements.
 
 `npm test` checks source asset integrity and the geographic/settlement constraints. `npm run build` typechecks and builds the application. The current bundle has a size advisory; code splitting remains a later optimization.
 
-Cloudflare signup is complete, but this asset test has not deployed a Worker or used paid services.
+The frontend is deployed on Vercel and multiplayer runs on the Cloudflare Worker `la-baraj-world`. No paid plan was enabled.
 
 Geographic inputs and generated previews live under `assets/geography/`. See their data license before redistribution. Buildings and game objects are separate from the source geography.
 

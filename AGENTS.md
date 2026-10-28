@@ -1,4 +1,10 @@
-# Lake Cinciș — shared workspace rules
+# La Baraj — shared workspace rules
+
+## Product naming
+
+- The game name is **La Baraj** everywhere players or repository visitors see a product name.
+- Use `la-baraj` for public URL, repository and service slugs. The multiplayer Worker is `la-baraj-world`.
+- **Lake Cinciș** is the real map/location. Preserve geographical names and existing local storage keys; those are not game branding.
 
 ## One local game URL
 

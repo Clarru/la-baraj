@@ -1,10 +1,10 @@
-# Lake Cinciș — Reuse and build plan
+# La Baraj — Reuse and build plan
 
 Research date: 28 October 2026. Source review only; no third-party game has been cloned into this project or run.
 
 ## Decision
 
-Build Lake Cinciș's own small gameplay layer on reused rendering, controller, networking and art packages. Do not fork a whole game as the default. A full fork is worthwhile only when its existing gameplay, runtime and data model reduce more work than they introduce.
+Build La Baraj's own small gameplay layer on reused rendering, controller, networking and art packages. Do not fork a whole game as the default. A full fork is worthwhile only when its existing gameplay, runtime and data model reduce more work than they introduce.
 
 This is a reuse-heavy custom game. The original work is the map composition, game rules, persistence/identity integration and polish. No numerical “percentage already built” is claimed.
 

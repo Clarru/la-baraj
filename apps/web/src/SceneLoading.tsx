@@ -16,10 +16,10 @@ export function SceneLoading() {
   return (
     <div className="scene-loading" aria-busy="true">
       <div className="scene-loading__location" aria-hidden="true">
-        <span>Lake Cinciș</span>
-        <span>South shore / World study</span>
+        <span>La Baraj</span>
+        <span>Lake Cinciș / South shore</span>
       </div>
-      <section className="scene-loading__content" aria-label="Loading the lake">
+      <section className="scene-loading__content" aria-label="Loading La Baraj">
         <div className="scene-loading__drawing" aria-hidden="true">
           <svg viewBox="0 0 240 112" fill="none">
             <path

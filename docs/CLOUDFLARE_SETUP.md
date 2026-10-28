@@ -1,4 +1,4 @@
-# Lake Cinciș — Cloudflare setup
+# La Baraj — Cloudflare setup
 
 Checked: 28 October 2026
 
@@ -34,7 +34,7 @@ These are future implementation steps, not commands already run. Review any new 
 
 ## Required deployed shape
 
-- Worker name `lake-cincis-server`.
+- Worker name `la-baraj-world`.
 - PartyServer class `WorldRoom`, hibernation enabled.
 - A Durable Object binding for that class, with `new_sqlite_classes` in the initial migration.
 - A fixed production room, e.g. `cincis-main`; reject arbitrary room names.

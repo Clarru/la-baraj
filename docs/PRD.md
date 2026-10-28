@@ -1,14 +1,14 @@
-# Lake Cinciș — Product requirements
+# La Baraj — Product requirements
 
 Version: 1.0 baseline · 28 October 2026
 
 ## 1. Product
 
-Lake Cinciș is a browser multiplayer playground for an existing Romanian UX design community. Friends arrive at their own cabin, explore the lake, collect peculiar objects, chat, and chase each other over a stealable trophy.
+La Baraj is a browser multiplayer playground for an existing Romanian UX design community. Friends arrive at their own cabin, explore the lake, collect peculiar objects, chat, and chase each other over a stealable trophy.
 
 The intended feeling is: “I'm heading down to the lake. Let's see who's there.”
 
-The community includes men around 30–45 who already enjoy games. This informs the social setting, not a requirement for workplace jokes or design-themed quests. All interface text, instructions, item descriptions and game messages are English. The title retains the Romanian spelling: **Lake Cinciș**. Use `lake-cincis` for technical identifiers. La Baraj is the former working title.
+The community includes men around 30–45 who already enjoy games. This informs the social setting, not a requirement for workplace jokes or design-themed quests. All interface text, instructions, item descriptions and game messages are English. The game name is **La Baraj**. Use `la-baraj` for public project and service identifiers. **Lake Cinciș** names the real map/location, not the game.
 
 ## 2. Decisions established with the owner
 

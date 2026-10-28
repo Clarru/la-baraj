@@ -1,4 +1,4 @@
-# Lake Cinciș — Technical decisions
+# La Baraj — Technical decisions
 
 Status: v1 implementation baseline · 28 October 2026
 
