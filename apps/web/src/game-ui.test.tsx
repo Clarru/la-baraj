@@ -3,9 +3,10 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { ControlsHelp, GameHeader, GameMenu } from "./GameMenu";
 import { captureGameKey, type GameInputState } from "./game-input";
 import type { MultiplayerRoom, NetworkStatus } from "./multiplayer";
+import { Minimap } from "./Minimap";
+import { createNavigationFeed } from "./navigation-feed";
 const idle: GameInputState = {
   panel: null,
-  mapOpen: false,
   homeView: false,
   indoors: false,
   typing: false,
@@ -42,6 +43,20 @@ function room(
 }
 afterEach(() => vi.unstubAllEnvs());
 describe("production world interface", () => {
+  it("keeps the minimap free of visible labels, controls and hide actions", () => {
+    const html = renderToStaticMarkup(
+      <Minimap
+        homeIndex={7}
+        navigation={createNavigationFeed({ x: 10, z: 20, heading: 0 })}
+      />,
+    );
+    expect(html).toContain('data-testid="minimap"');
+    expect(html).toContain('data-testid="player-map-marker"');
+    expect(html).toContain('data-testid="home-map-marker"');
+    expect(html).not.toMatch(
+      /<header|<footer|<button|<a |map-north|map-legend|Show map|Hide map/,
+    );
+  });
   it("shows the real brand, a single online count and Menu without prototype or invitation controls", () => {
     vi.stubEnv("DEV", false);
     const html = renderToStaticMarkup(
@@ -124,9 +139,7 @@ describe("production world interface", () => {
       <GameMenu
         nickname="Quiet Otter"
         homeIndex={7}
-        mapOpen={false}
         onRename={noop}
-        onMap={noop}
         onControls={noop}
         onHome={noop}
         onReset={noop}
@@ -136,7 +149,6 @@ describe("production world interface", () => {
     expect(html).toContain('name="nickname"');
     for (const label of [
       "Your cabin · 08",
-      "Show map",
       "Controls",
       "Look at your cabin",
       "Return to your cabin",
@@ -173,12 +185,12 @@ describe("production world interface", () => {
       expect(typing.preventDefault).not.toHaveBeenCalled();
     }
   });
-  it("opens the map only on demand, closes UI before gameplay, and returns home view to walking", () => {
-    expect(captureGameKey(key("KeyM"), idle)).toBe("map");
+  it("keeps the map permanent, closes UI before gameplay, and returns home view to walking", () => {
+    expect(captureGameKey(key("KeyM"), idle)).toBe("pass");
     expect(captureGameKey(key("Slash", "?"), idle)).toBe("controls");
-    expect(
-      captureGameKey(key("Escape"), { ...idle, mapOpen: true, indoors: true }),
-    ).toBe("close-map");
+    expect(captureGameKey(key("Escape"), { ...idle, indoors: true })).toBe(
+      "pass",
+    );
     const walk = key("KeyW");
     expect(captureGameKey(walk, { ...idle, homeView: true })).toBe("walk");
     expect(walk.stopImmediatePropagation).not.toHaveBeenCalled();

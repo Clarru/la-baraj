@@ -30,12 +30,9 @@ import { CabinInterior } from "./CabinInterior";
 import { CabinAccess } from "./CabinAccess";
 import { HomeMarker } from "./HomeMarker";
 import { Minimap } from "./Minimap";
-import {
-  displayedHomeIndex,
-  readLocalHome,
-  type NavigationSample,
-} from "./home";
+import { displayedHomeIndex, readLocalHome } from "./home";
 import { cabinSpots } from "./geography";
+import { createNavigationFeed } from "./navigation-feed";
 import {
   CabinGroundContacts,
   type GroundContactsSummary,
@@ -97,8 +94,7 @@ export default function App() {
   const [metrics, setMetrics] = useState<RenderSample | null>(null);
   const [resetKey, setResetKey] = useState(0),
     [ready, setReady] = useState(false);
-  const [panel, setPanel] = useState<GamePanel>(null),
-    [mapOpen, setMapOpen] = useState(false);
+  const [panel, setPanel] = useState<GamePanel>(null);
   const [foundationMetrics, setFoundationMetrics] =
     useState<GroundContactsSummary | null>(null);
   const [activityPrompt, setActivityPrompt] = useState<ActivityPrompt>(null),
@@ -122,17 +118,9 @@ export default function App() {
   const [doorTransition, setDoorTransition] = useState(false),
     [doorPromptVisible, setDoorPromptVisible] = useState(false);
   const homeResetKey = resetKey * cabinSpots.length + homeIndex;
-  const [navigation, setNavigation] = useState<NavigationSample>({
-    x: 45,
-    z: 27,
-    heading: 0,
-  });
-  const latestNavigation = useRef(navigation),
-    mapVisible = useRef(mapOpen);
-  mapVisible.current = mapOpen;
-  useEffect(() => {
-    if (mapOpen) setNavigation(latestNavigation.current);
-  }, [mapOpen]);
+  const [navigation] = useState(() =>
+    createNavigationFeed({ x: 45, z: 27, heading: 0 }),
+  );
   const fireOutput = useRef<HTMLOutputElement>(null),
     motionOutput = useRef<HTMLOutputElement>(null);
   const updateFireMetrics = useCallback((sample: unknown) => {
@@ -151,11 +139,10 @@ export default function App() {
             Number(sample.facing[2]),
           ),
         };
-        latestNavigation.current = next;
-        if (mapVisible.current) setNavigation(next);
+        navigation.update(next);
       }
     },
-    [room],
+    [room, navigation],
   );
   const onSceneReady = useCallback(() => setReady(true), []);
   const resetHome = useCallback(() => {
@@ -165,7 +152,6 @@ export default function App() {
   }, []);
   const lookHome = useCallback(() => {
     setPanel(null);
-    setMapOpen(false);
     setMode((current) => (current === "home" ? "walk" : "home"));
   }, []);
   useEffect(() => {
@@ -177,7 +163,6 @@ export default function App() {
           ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName));
       const action = captureGameKey(event, {
         panel,
-        mapOpen,
         homeView: mode === "home",
         indoors: interiorIndex !== null,
         typing,
@@ -189,8 +174,6 @@ export default function App() {
       }
       if (action === "block") return;
       if (action === "close-panel") setPanel(null);
-      if (action === "close-map") setMapOpen(false);
-      if (action === "map") setMapOpen((open) => !open);
       if (action === "controls")
         setPanel((current) => (current === "controls" ? null : "controls"));
       if (action === "home") lookHome();
@@ -198,7 +181,7 @@ export default function App() {
     };
     window.addEventListener("keydown", capture, true);
     return () => window.removeEventListener("keydown", capture, true);
-  }, [panel, mapOpen, mode, interiorIndex, lookHome, resetHome]);
+  }, [panel, mode, interiorIndex, lookHome, resetHome]);
   const displayedPrompt: ActivityPrompt =
     interiorIndex !== null || panel !== null
       ? null
@@ -310,7 +293,7 @@ export default function App() {
               <group>
                 {import.meta.env.DEV && <Crowd enabled={crowd} />}
                 <MultiplayerPlayers room={room} />
-                <ParkedScooter />
+                <ParkedScooter mounted={vehicleMounted} />
                 <WorldActivities
                   room={room}
                   onFireMetrics={
@@ -353,13 +336,7 @@ export default function App() {
             menuOpen={panel !== null}
             onMenu={() => setPanel((current) => (current ? null : "menu"))}
           />
-          <Minimap
-            navigation={navigation}
-            homeIndex={homeIndex}
-            active={mapOpen && panel === null}
-            onClose={() => setMapOpen(false)}
-            onFocusHome={lookHome}
-          />
+          <Minimap navigation={navigation} homeIndex={homeIndex} />
           <CabinAccess
             interiorIndex={interiorIndex}
             homeIndex={homeIndex}
@@ -397,13 +374,8 @@ export default function App() {
             <GameMenu
               nickname={roomView.nickname}
               homeIndex={menuHomeIndex}
-              mapOpen={mapOpen}
               canLookHome={interiorIndex === null}
               onRename={(name) => room.rename(name)}
-              onMap={() => {
-                setMapOpen((open) => !open);
-                setPanel(null);
-              }}
               onControls={() => setPanel("controls")}
               onHome={lookHome}
               onReset={resetHome}
@@ -416,19 +388,22 @@ export default function App() {
               onMenu={() => setPanel("menu")}
             />
           )}
-          {import.meta.env.DEV && (
+          {(import.meta.env.DEV ||
+            import.meta.env.VITE_GAME_DIAGNOSTICS === "1") && (
             <>
-              <DeveloperTools
-                mode={mode}
-                onMode={setMode}
-                flat={flat}
-                onFlat={setFlat}
-                evening={evening}
-                onEvening={setEvening}
-                crowd={crowd}
-                onCrowd={setCrowd}
-                metrics={metrics}
-              />
+              {import.meta.env.DEV && (
+                <DeveloperTools
+                  mode={mode}
+                  onMode={setMode}
+                  flat={flat}
+                  onFlat={setFlat}
+                  evening={evening}
+                  onEvening={setEvening}
+                  crowd={crowd}
+                  onCrowd={setCrowd}
+                  metrics={metrics}
+                />
+              )}
               <SeatingMetrics />
               <output
                 data-testid="foundation-metrics"

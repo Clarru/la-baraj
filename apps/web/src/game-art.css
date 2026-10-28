@@ -144,7 +144,6 @@ button:disabled {
 }
 
 .game-dialog,
-.lake-minimap,
 .multiplayer-notice,
 .activity-prompt,
 .cabin-entry-panel,
@@ -181,8 +180,7 @@ button:disabled {
   width: 34px;
   height: 34px;
 }
-.game-close:hover,
-.map-expand:hover {
+.game-close:hover {
   background: rgb(115 96 54 / 0.1);
 }
 .game-name-form label {
@@ -354,58 +352,6 @@ button:disabled {
   font: 700 14px/1.1 var(--font-body);
 }
 
-.lake-minimap,
-.lake-minimap.expanded {
-  top: 110px;
-  padding: 0;
-  max-height: calc(100vh - 145px);
-}
-.lake-minimap {
-  width: 250px;
-}
-.lake-minimap.expanded {
-  width: 460px;
-}
-.lake-minimap header {
-  padding: 3px 5px 9px;
-}
-.lake-minimap header strong {
-  font: 400 18px/1.2 var(--font-heading);
-}
-.map-header-actions {
-  gap: 4px;
-}
-.map-header-actions button {
-  width: 30px;
-  height: 30px;
-}
-.lake-minimap footer {
-  font-size: 15px;
-  padding: 10px 5px 4px;
-}
-.lake-minimap footer > span:last-child {
-  font-size: 14px;
-}
-.map-home-button {
-  gap: 7px;
-}
-.map-north {
-  top: 52px;
-  left: 23px;
-  background: #f3e5c9;
-  color: #263b30;
-  font: 700 13px var(--font-body);
-}
-.map-attribution {
-  padding: 6px 5px 2px;
-  font-size: 11px;
-}
-.map-legend {
-  font-size: 12px;
-  padding: 9px 5px 3px;
-  gap: 4px 9px;
-}
-
 .scene-loading {
   background: #e4dfca;
   font-family: var(--font-body);
@@ -493,11 +439,6 @@ button:disabled {
     max-height: calc(100vh - 102px);
     padding-inline: 10px;
   }
-  .lake-minimap,
-  .lake-minimap.expanded {
-    left: 16px;
-    max-width: calc(100vw - 32px);
-  }
   .activity-prompt,
   .cabin-entry-panel {
     max-width: calc(100vw - 32px);
@@ -508,4 +449,25 @@ button:disabled {
   button {
     transition: none;
   }
+}
+
+/* Permanent, quiet minimap. World geometry and markers are the only content. */
+.game-shell .lake-minimap {
+  inset: auto auto 24px 24px;
+  width: 200px;
+  height: 200px;
+  max-height: none;
+  padding: 6px;
+  overflow: hidden;
+  border: 0;
+  border-image: none;
+  border-radius: 50%;
+  background: var(--sign-art) center / cover;
+  filter: drop-shadow(0 3px 6px rgb(20 33 23 / 0.25));
+  pointer-events: none;
+}
+.game-shell .lake-minimap > svg {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
 }

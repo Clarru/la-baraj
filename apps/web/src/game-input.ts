@@ -3,8 +3,6 @@ export type GameShortcut =
   | "pass"
   | "block"
   | "close-panel"
-  | "close-map"
-  | "map"
   | "controls"
   | "home"
   | "reset"
@@ -20,7 +18,6 @@ export type GameKey = {
 /** Route UI keys in window capture before door/activity/controller listeners can receive them. */
 export type GameInputState = {
   panel: GamePanel;
-  mapOpen: boolean;
   homeView: boolean;
   indoors: boolean;
   typing: boolean;
@@ -36,9 +33,7 @@ export function gameShortcut(
   }
   if (state.typing || event.ctrlKey || event.metaKey || event.altKey)
     return "pass";
-  if (event.code === "Escape" && state.mapOpen) return "close-map";
   if (event.repeat) return "pass";
-  if (event.code === "KeyM") return "map";
   if (event.key === "?") return "controls";
   if (event.code === "KeyH" && !state.indoors) return "home";
   if (event.code === "KeyR") return "reset";
