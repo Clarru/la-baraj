@@ -193,3 +193,5 @@
     opacity: 0.45;
   }
 }
+
+.scene-loading__logo { display: block; width: min(340px, 72vw); height: auto; margin-inline: auto; }

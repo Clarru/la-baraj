@@ -22,13 +22,13 @@ describe("real geographic layer and fictional settlement boundary", () => {
       expect(terrainHeight(c.x, c.z)).toBeCloseTo(c.ground, 5);
     }
   });
-  it("provides 30 stable plots on both sides of the southern road while preserving the lakefront", () => {
-    expect(cabinSpots).toHaveLength(30);
+  it("preserves the original plots and provides 50 stable plots on both sides of the southern road while preserving the lakefront", () => {
+    expect(cabinSpots).toHaveLength(50);
     expect(cabinSpots.filter((c) => c.z > settlementRoadZ(c.x))).toHaveLength(
-      15,
+      25,
     );
     expect(cabinSpots.filter((c) => c.z < settlementRoadZ(c.x))).toHaveLength(
-      15,
+      25,
     );
     for (const c of cabinSpots)
       expect(c.z - southShore(c.x)).toBeGreaterThanOrEqual(27);

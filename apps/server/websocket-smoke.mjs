@@ -1,98 +1,76 @@
-/** Run a local or deployed worker check: node apps/server/websocket-smoke.mjs [http(s)://host] [allowed-origin] */
+/** Safe shared-world check: node apps/server/websocket-smoke.mjs [http(s)://host] [allowed-origin] */
 import assert from "node:assert/strict";
 import { randomBytes } from "node:crypto";
-// Node's standard WebSocket cannot supply an Origin header; ws is already in
-// this project's dependency tree and gives this non-browser smoke test one.
 import WebSocket from "ws";
+import { CANONICAL_WORLD_ID } from "../../packages/shared/protocol.ts";
 
 const host = (process.argv[2] ?? "http://127.0.0.1:8787").replace(/\/$/, "");
-const origin = process.argv[3] ?? "http://127.0.0.1:5173";
-const room = randomBytes(18).toString("base64url");
+const origin = process.argv[3] ?? "http://127.0.0.1:4173";
 const sockets = [];
-async function connect(id = room) {
+
+// Every accepted alias reaches the real shared world. This harness never
+// allocates a home, supplies a private credential, claims a seat, moves a
+// player, or changes the campfire. Exhaustive mutation tests live in Vitest.
+async function connect(id = CANONICAL_WORLD_ID) {
+  // ws permits the browser Origin header; Node's standard constructor does not.
   const socket = new WebSocket(`${host.replace(/^http/, "ws")}/parties/world-room/${id}?_pk=same-client-id`, { origin });
   sockets.push(socket);
-  const messages = [];
-  const pending = [];
+  const messages = [], pending = [];
   socket.on("message", (raw) => {
     const message = JSON.parse(raw.toString());
     const index = pending.findIndex((waiter) => waiter.matches(message));
-    if (index >= 0) { const waiter = pending.splice(index, 1)[0]; clearTimeout(waiter.timer); waiter.resolve(message); }
-    else messages.push(message);
+    if (index >= 0) {
+      const waiter = pending.splice(index, 1)[0];
+      clearTimeout(waiter.timer); waiter.resolve(message);
+    } else messages.push(message);
   });
   const next = (matches) => new Promise((resolve, reject) => {
     const index = messages.findIndex(matches);
     if (index >= 0) { resolve(messages.splice(index, 1)[0]); return; }
-    const waiter = { matches, resolve, timer: setTimeout(() => { pending.splice(pending.indexOf(waiter), 1); reject(Error("Timed out waiting for room message")); }, 8000) };
+    const waiter = { matches, resolve, timer: setTimeout(() => {
+      pending.splice(pending.indexOf(waiter), 1);
+      reject(Error("Timed out waiting for a shared-world message"));
+    }, 8000) };
     pending.push(waiter);
   });
   await new Promise((resolve, reject) => { socket.once("open", resolve); socket.once("error", reject); });
-  return { socket, next, send: (message) => socket.send(JSON.stringify(message)), snapshot: await next((message) => message.type === "snapshot") };
+  return { socket, next, sync: () => socket.send(JSON.stringify({ type: "sync" })), snapshot: await next((message) => message.type === "snapshot") };
 }
 async function close(client) {
   if (client.socket.readyState === WebSocket.CLOSED) return;
-  await new Promise((resolve) => { client.socket.once("close", resolve); client.socket.close(1000, "Smoke check complete"); });
+  await new Promise((resolve) => { client.socket.once("close", resolve); client.socket.close(1000, "Connection check complete"); });
 }
+const contains = (snapshot, id) => snapshot.players.some((player) => player.id === id);
 
 try {
   const health = await fetch(`${host}/health`);
   assert.equal(health.status, 200);
-  assert.equal((await health.json()).version, 1);
-  assert.equal((await fetch(`${host}/parties/world-room/${room}`, { headers: { origin: "https://denied.invalid" } })).status, 403);
+  const healthData = await health.json();
+  assert.equal(healthData.version, 1);
+  assert.equal(healthData.worldId, CANONICAL_WORLD_ID);
+  assert.equal((await fetch(`${host}/parties/world-room/${CANONICAL_WORLD_ID}`, { headers: { origin: "https://denied.invalid" } })).status, 403);
   assert.equal((await fetch(`${host}/parties/world-room/public`, { headers: { origin } })).status, 404);
-  const a = await connect(), b = await connect(), isolated = await connect(randomBytes(18).toString("base64url"));
-  const aId = a.snapshot.selfId, bId = b.snapshot.selfId;
-  assert.notEqual(aId, bId, "server IDs must differ even with the same client _pk");
-  assert.equal(b.snapshot.players.length, 2);
-  assert.equal(isolated.snapshot.players.length, 1, "rooms must be isolated");
-  assert.equal((await a.next((m) => m.type === "joined")).player.id, bId);
-  a.send({ type: "hello", nickname: "Smoke friend A" });
-  const legacy = await b.next((m) => m.type === "pose" && m.player.nickname === "Smoke friend A");
-  assert.equal(legacy.player.homeIndex, undefined, "legacy clients must not reserve homes");
-  // Persist these tokens before sending in a browser. Keep them out of URLs,
-  // console output, assertion payloads, and other clients' public presence.
-  const tokenA = randomBytes(32).toString("base64url"), tokenB = randomBytes(32).toString("base64url");
-  a.send({ type: "hello", nickname: "Smoke friend A", requestHome: true, resumeToken: tokenA, createHome: true });
-  b.send({ type: "hello", nickname: "Smoke friend B", requestHome: true, resumeToken: tokenB, createHome: true });
-  const [homeA, homeB] = await Promise.all([a.next((m) => m.type === "snapshot" && m.home), b.next((m) => m.type === "snapshot" && m.home)]);
-  assert.notEqual(homeA.home.index, homeB.home.index, "distinct anonymous owners must have distinct cabins");
-  assert.ok(homeA.home.resumeToken === tokenA && homeB.home.resumeToken === tokenB, "private home acknowledgements must preserve credentials");
-  assert.ok(!JSON.stringify(homeA.players).includes(tokenA) && !JSON.stringify(homeA.players).includes(tokenB), "public presence must not contain credentials");
-  const pose = { position: [14, 2.5, -9], yaw: 1.2, animation: "walk", activity: "none", vehicle: "scooter", speed: 4 };
-  a.send({ type: "pose", id: bId, homeIndex: homeB.home.index, pose: { ...pose, homeIndex: homeB.home.index } });
-  const received = await b.next((m) => m.type === "pose" && m.player.position[0] === 14);
-  assert.equal(received.player.id, aId);
-  assert.deepEqual(received.player.position, pose.position);
-  assert.equal(received.player.homeIndex, homeA.home.index, "client poses cannot override cabin ownership");
-  a.send({ type: "seat", seatId: "campfire:seat:0", requestId: "seat-a" });
-  assert.equal((await a.next((m) => m.type === "seat-result" && m.requestId === "seat-a")).accepted, true);
-  b.send({ type: "seat", seatId: "campfire:seat:0", requestId: "seat-b" });
-  assert.equal((await b.next((m) => m.type === "seat-result" && m.requestId === "seat-b")).accepted, false);
-  a.send({ type: "fire", lit: false });
-  const fire = await b.next((m) => m.type === "fire");
-  assert.deepEqual(fire.fire, { lit: false, revision: 1 });
+  const a = await connect(), b = await connect(randomBytes(18).toString("base64url")), c = await connect(randomBytes(18).toString("base64url"));
+  const aId = a.snapshot.selfId, bId = b.snapshot.selfId, cId = c.snapshot.selfId;
+  assert.equal(new Set([aId, bId, cId]).size, 3, "client-supplied _pk values must not control public identity");
+  assert.ok(contains(b.snapshot, aId), "a legacy link must join the canonical world");
+  assert.ok(contains(c.snapshot, aId) && contains(c.snapshot, bId), "all accepted legacy links must share presence");
+  await a.next((message) => message.type === "joined" && message.player.id === bId);
+  await b.next((message) => message.type === "joined" && message.player.id === cId);
+  for (const client of [a, b, c]) {
+    assert.ok(client.snapshot.home === undefined, "a connection check must not allocate a cabin");
+    assert.ok(typeof client.snapshot.fire.lit === "boolean" && Number.isSafeInteger(client.snapshot.fire.revision), "the shared fire snapshot must be valid");
+    assert.ok(client.snapshot.seats && typeof client.snapshot.seats === "object", "the shared seats snapshot must be valid");
+  }
+  a.sync();
+  const synced = await a.next((message) => message.type === "snapshot");
+  assert.ok(contains(synced, bId) && contains(synced, cId), "sync must contain clients from every legacy link");
   await close(a);
-  assert.equal((await b.next((m) => m.type === "left")).id, aId);
-  assert.deepEqual((await b.next((m) => m.type === "seats" && Object.keys(m.seats).length === 0)).seats, {});
-  b.send({ type: "seat", seatId: "campfire:seat:0", requestId: "seat-b-again" });
-  assert.equal((await b.next((m) => m.type === "seat-result" && m.requestId === "seat-b-again")).accepted, true);
-  await close(b);
-  const reconnected = await connect();
-  assert.equal(reconnected.snapshot.players.length, 1);
-  assert.deepEqual(reconnected.snapshot.seats, {});
-  assert.deepEqual(reconnected.snapshot.fire, { lit: false, revision: 1 });
-  reconnected.send({ type: "hello", nickname: "Returned A", requestHome: true, resumeToken: tokenA });
-  const resumed = await reconnected.next((m) => m.type === "snapshot" && m.home);
-  assert.equal(resumed.home.index, homeA.home.index);
-  const secondTab = await connect();
-  secondTab.send({ type: "hello", nickname: "Second tab A", requestHome: true, resumeToken: tokenA, createHome: true });
-  const tabHome = await secondTab.next((m) => m.type === "snapshot" && m.home);
-  assert.equal(tabHome.home.index, homeA.home.index, "lost acknowledgement retries and multiple tabs must be idempotent");
-  assert.notEqual(secondTab.snapshot.selfId, reconnected.snapshot.selfId);
-  const unknown = await connect();
-  unknown.send({ type: "hello", nickname: "Unknown", requestHome: true, resumeToken: randomBytes(32).toString("base64url") });
-  assert.equal((await unknown.next((m) => m.type === "error")).code, "invalid-resume");
-  console.log(JSON.stringify({ ok: true, host, room, checks: ["health", "origin-policy", "private-room-id", "independent-connections", "server-identity", "presence", "pose", "room-isolation", "seat-conflict", "departure-seat-release", "shared-fire", "reconnect-snapshot", "legacy-home-opt-in", "unique-cabins", "private-home-credentials", "home-override-rejected", "home-resume", "same-owner-tabs", "unknown-home-rejected"] }, null, 2));
+  await b.next((message) => message.type === "left" && message.id === aId);
+  b.sync();
+  const afterLeave = await b.next((message) => message.type === "snapshot");
+  assert.ok(!contains(afterLeave, aId) && contains(afterLeave, cId), "disconnect cleanup must preserve other clients");
+  console.log(JSON.stringify({ ok: true, host, worldId: CANONICAL_WORLD_ID, checks: ["health", "origin-policy", "path-validation", "server-identity", "canonical-world", "legacy-link-aliases", "shared-presence", "read-only-fire-snapshot", "read-only-seats-snapshot", "no-home-allocation", "snapshot-sync", "departure-cleanup"] }, null, 2));
 } finally {
-  for (const socket of sockets) if (socket.readyState !== WebSocket.CLOSED) socket.close(1000, "Smoke check complete");
+  await Promise.all(sockets.map((socket) => close({ socket })));
 }

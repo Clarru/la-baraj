@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   ArrowsOutSimple,
   ArrowsInSimple,
   HouseLine,
   FishSimple,
   Flame,
+  X,
 } from "@phosphor-icons/react";
 import {
   lake,
@@ -33,31 +34,15 @@ export function Minimap({
   homeIndex,
   active,
   onFocusHome,
+  onClose,
 }: {
   navigation: NavigationSample;
   homeIndex: number;
   active: boolean;
   onFocusHome: () => void;
+  onClose: () => void;
 }) {
   const [expanded, setExpanded] = useState(false);
-  useEffect(() => {
-    const key = (e: KeyboardEvent) => {
-      if (
-        !active ||
-        e.repeat ||
-        e.target instanceof HTMLInputElement ||
-        e.target instanceof HTMLTextAreaElement
-      )
-        return;
-      if (e.code === "KeyM") {
-        e.preventDefault();
-        setExpanded((v) => !v);
-      }
-      if (e.code === "Escape") setExpanded(false);
-    };
-    window.addEventListener("keydown", key);
-    return () => window.removeEventListener("keydown", key);
-  }, [active]);
   if (!active) return null;
   const home = cabinSpots[homeIndex],
     size = expanded ? 420 : 204;
@@ -91,18 +76,28 @@ export function Minimap({
     >
       <header>
         <strong>{expanded ? "South shore" : "Lake Cinciș"}</strong>
-        <button
-          className="map-expand"
-          aria-label={expanded ? "Collapse map" : "Expand map"}
-          onClick={() => setExpanded((v) => !v)}
-          title="M to change map size"
-        >
-          {expanded ? (
-            <ArrowsInSimple size={15} />
-          ) : (
-            <ArrowsOutSimple size={15} />
-          )}
-        </button>
+        <div className="map-header-actions">
+          <button
+            className="map-expand"
+            aria-label={expanded ? "Collapse map" : "Expand map"}
+            onClick={() => setExpanded((v) => !v)}
+            title={expanded ? "Collapse map" : "Expand map"}
+          >
+            {expanded ? (
+              <ArrowsInSimple size={15} />
+            ) : (
+              <ArrowsOutSimple size={15} />
+            )}
+          </button>
+          <button
+            className="map-expand"
+            onClick={onClose}
+            aria-label="Close map"
+            title="Close map (M)"
+          >
+            <X size={15} />
+          </button>
+        </div>
       </header>
       <svg
         role="img"
@@ -220,6 +215,14 @@ export function Minimap({
         </button>
         <span>{distance} m</span>
       </footer>
+      <a
+        className="map-attribution"
+        href="https://www.openstreetmap.org/copyright"
+        target="_blank"
+        rel="noreferrer"
+      >
+        © OpenStreetMap contributors
+      </a>
       {expanded && (
         <p className="map-legend">
           <span>Arrow · You</span>

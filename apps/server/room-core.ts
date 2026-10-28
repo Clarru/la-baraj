@@ -49,8 +49,8 @@ export class RoomCore {
   }
   connect(connection: RoomConnection, id: string, now = Date.now()) {
     if (this.active().length >= MAX_PLAYERS) {
-      this.send(connection, { type: "error", code: "room-full", message: "This room is full (30 friends)." });
-      connection.close(1008, "Room full"); return;
+      this.send(connection, { type: "error", code: "room-full", message: "The world is busy. Please try again shortly." });
+      connection.close(1008, "World temporarily busy"); return;
     }
     connection.setState({ player: { id, nickname: "Guest", position: [0, 0, 0], yaw: 0, animation: "idle", activity: "none", vehicle: "none" },
       all: { tokens: 30, at: now }, pose: { tokens: 3, at: now }, action: { tokens: 5, at: now }, violations: 0 });

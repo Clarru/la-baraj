@@ -1,14 +1,58 @@
-.multiplayer-hud { position: absolute; top: 110px; right: 28px; width: 264px; background: #f0f3f5; color: #24313b; pointer-events: auto; font: 400 13px/1.4 "Barlow", sans-serif; }
-.multiplayer-row { display: flex; align-items: stretch; border-bottom: 1px solid #ccd4db; }
-.multiplayer-status { display: flex; align-items: center; gap: 7px; flex: 1; padding: 11px 12px; white-space: nowrap; font-variant-numeric: tabular-nums; }
-.multiplayer-status.online svg { color: #5f7f94; }
-.multiplayer-invite { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 11px; border: 0; border-left: 1px solid #ccd4db; background: transparent; color: #24313b; font: 600 12px "Barlow", sans-serif; cursor: pointer; }
-.multiplayer-identity { padding: 7px 12px; color: #566672; font-size: 12px; }
-.multiplayer-identity > button { display: flex; align-items: center; gap: 8px; padding: 2px 0; }
-.multiplayer-identity button { border: 0; background: transparent; color: #24313b; font: 600 12px "Barlow", sans-serif; cursor: pointer; }
-.multiplayer-identity > span { display: block; margin-top: 6px; }
-.multiplayer-identity form { display: flex; gap: 8px; }
-.multiplayer-identity input { min-width: 0; width: 100%; padding: 4px 6px; border: 1px solid #688ca4; border-radius: 0; color: #24313b; background: #fff; font: 400 13px "Barlow", sans-serif; caret-color: #24313b; }
-.multiplayer-invite:hover, .multiplayer-identity button:hover { background: #dbe4ea; }
-.multiplayer-hud button:focus-visible, .multiplayer-hud input:focus-visible { outline: 2px solid #24313b; outline-offset: 2px; }
-.multiplayer-name { display: block; width: max-content; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 4px 7px; background: #f0f3f5; color: #24313b; font: 600 12px/1.1 "Barlow", sans-serif; border-radius: 2px; user-select: none; }
+.multiplayer-hud {
+  position: relative;
+  color: var(--ink);
+  pointer-events: auto;
+  font:
+    400 13px/1.4 "Barlow",
+    sans-serif;
+}
+.multiplayer-status {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 38px;
+  padding: 9px 12px;
+  background: var(--paper);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.multiplayer-status.online svg {
+  color: var(--accent);
+}
+.multiplayer-status strong {
+  font-weight: 600;
+}
+.multiplayer-notice {
+  position: absolute;
+  right: 0;
+  top: 47px;
+  width: 240px;
+  padding: 12px;
+  background: var(--paper);
+}
+.multiplayer-notice p {
+  margin: 0;
+}
+.multiplayer-notice button {
+  margin-top: 8px;
+  padding: 6px 10px;
+  background: var(--ink);
+  color: var(--white, #fff);
+  font-weight: 600;
+}
+.multiplayer-name {
+  display: block;
+  width: max-content;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 4px 7px;
+  background: var(--paper);
+  color: var(--ink);
+  font:
+    600 12px/1.1 "Barlow",
+    sans-serif;
+  border-radius: 2px;
+  user-select: none;
+}

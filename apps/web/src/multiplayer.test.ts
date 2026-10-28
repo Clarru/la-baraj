@@ -12,8 +12,8 @@ vi.mock("partysocket", () => ({ default: class extends EventTarget {
 } }));
 import { MultiplayerRoom } from "./multiplayer";
 import { queueCabinTransfer, takeCabinTransfer, sampleCabinMotion } from "./cabin-interior-state";
-import { parseClientMessage } from "../../../packages/shared/protocol";
-const roomId = "friends_room_with_128bits_12345";
+import { CANONICAL_WORLD_ID, parseClientMessage } from "../../../packages/shared/protocol";
+const roomId = CANONICAL_WORLD_ID;
 const self = { id: "self-1", nickname: "Me", position: [45, 2, 27], yaw: 0, animation: "Idle_Neutral", activity: "none", vehicle: "none" };
 const friend = { ...self, id: "friend-1", nickname: "Friend" };
 const sample = { feet: [45, 2, 27], facing: [0, 0, 1], animation: "Walk", activity: "none", velocity: [0, 0, 3], jumpPhase: "grounded", vehicle: null };
@@ -46,7 +46,7 @@ describe("friends room client", () => {
     expect(packet.pose).not.toHaveProperty("jumpStyle");
     disconnect();
   });
-  it("retains invite room and publishes the feet pose after assigned-home acknowledgement", () => {
+  it("uses the shared world and publishes the feet pose after assigned-home acknowledgement", () => {
     const room = new MultiplayerRoom();
     expect(room.roomId).toBe(roomId);
     const disconnect = room.connect(), socket = sockets[0];
@@ -80,12 +80,16 @@ describe("friends room client", () => {
     expect(poses[3]).toMatchObject({animation: "Idle_Neutral", speed: 0});
     disconnect();
   });
-  it("generates a random shareable room when the URL has no valid room", () => {
-    vi.stubGlobal("location", { href: "https://lake.example.test/?room=invalid" });
+  it.each(["", "?room=invalid", "?room=friends_room_with_128bits_12345"])("joins the same world for URL query %s", (query) => {
+    vi.stubGlobal("location", { href: `https://lake.example.test/${query}` });
     const first = new MultiplayerRoom(), second = new MultiplayerRoom();
-    expect(first.roomId).toMatch(/^[A-Za-z0-9_-]{22,80}$/);
-    expect(second.roomId).not.toBe(first.roomId);
-    expect(history.replaceState).toHaveBeenCalled();
+    expect(first.roomId).toBe(CANONICAL_WORLD_ID);
+    expect(second.roomId).toBe(CANONICAL_WORLD_ID);
+    if (query) {
+      expect(history.replaceState).toHaveBeenCalled();
+      const changed = vi.mocked(history.replaceState).mock.calls[0][2] as URL;
+      expect(new URL(String(changed)).searchParams.has("room")).toBe(false);
+    }
   });
   it("suppresses unchanged poses and updates remote targets without React subscriber notifications", () => {
     const room = new MultiplayerRoom(), disconnect = room.connect(), socket = sockets[0];
@@ -146,7 +150,7 @@ describe("friends room client", () => {
     disconnect();
   });
 
-  it("opts into a private durable home, keeps credentials out of URL/diagnostics, and scopes them by room", () => {
+  it("opts into a private durable home, keeps credentials out of URL/diagnostics, and preserves the shared owner through old room links", () => {
     const room = new MultiplayerRoom(), disconnect = room.connect(), socket = sockets[0];
     socket.open();
     const hello = socket.sent[0];
@@ -173,7 +177,7 @@ describe("friends room client", () => {
     vi.stubGlobal("location", { href: "https://lake.example.test/?room=second_room_with_128bits_12345" });
     const other = new MultiplayerRoom(), stopOther = other.connect();
     sockets[1].open();
-    expect(sockets[1].sent[0].resumeToken).not.toBe(hello.resumeToken);
+    expect(sockets[1].sent[0].resumeToken).toBe(hello.resumeToken);
     stopOther();
   });
 

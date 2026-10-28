@@ -1,10 +1,10 @@
 import PartySocket from "partysocket";
-import { isResumeToken, type ClientMessage, type PlayerPose, type PlayerPresence, type ServerMessage } from "../../../packages/shared/protocol";
+import { CANONICAL_WORLD_ID, isResumeToken, type ClientMessage, type PlayerPose, type PlayerPresence, type ServerMessage } from "../../../packages/shared/protocol";
 import { syncOnlineSeats } from "./bench-registry";
 import { isHomeIndex, shouldSpawnAtHome } from "./home";
 
 export type NetworkStatus = "connecting" | "online" | "reconnecting" | "full" | "error" | "offline";
-type RoomView = { status: NetworkStatus; selfId: string; nickname: string; ids: string[]; count: number; error: string; fireLit: boolean; homeIndex: number | null };
+type RoomView = { status: NetworkStatus; selfId: string; nickname: string; ids: string[]; count: number; error: string; errorCode: string | null; fireLit: boolean; homeIndex: number | null };
 export type RemotePlayer = { player: PlayerPresence; receivedAt: number; activityAt: number };
 const adjectives = ["Quiet", "Sunny", "Copper", "Wild", "Blue", "Silver"];
 const animals = ["Otter", "Heron", "Fox", "Perch", "Deer", "Finch"];
@@ -16,13 +16,11 @@ function initialNickname() {
 }
 export function roomFromLocation() {
   const url = new URL(location.href);
-  let room = url.searchParams.get("room");
-  if (!room || !/^[A-Za-z0-9_-]{22,80}$/.test(room)) {
-    room = crypto.randomUUID().replaceAll("-", "");
-    url.searchParams.set("room", room);
+  if (url.searchParams.has("room")) {
+    url.searchParams.delete("room");
     history.replaceState(null, "", url);
   }
-  return room;
+  return CANONICAL_WORLD_ID;
 }
 type HomeCredential = { resumeToken: string; createHome: boolean };
 const homeCredentialKey = (roomId: string) => `la-baraj-home-resume-v1:${roomId}`;
@@ -59,7 +57,7 @@ export class MultiplayerRoom {
   private pending = new Map<string, { resolve: (accepted: boolean) => void; timer: ReturnType<typeof setTimeout> }>();
   private diagnostic: HTMLOutputElement | null = null;
   private lastDiagnosticAt = 0;
-  private view: RoomView = { status: "connecting", selfId: "", nickname: initialNickname(), ids: [], count: 0, error: "", fireLit: false, homeIndex: null };
+  private view: RoomView = { status: "connecting", selfId: "", nickname: initialNickname(), ids: [], count: 0, error: "", errorCode: null, fireLit: false, homeIndex: null };
   subscribe = (listener: () => void) => { this.listeners.add(listener); return () => { this.listeners.delete(listener); }; };
   getSnapshot = () => this.view;
   subscribeWorld = (listener: () => void) => { this.worldListeners.add(listener); return () => { this.worldListeners.delete(listener); }; };
@@ -132,7 +130,7 @@ export class MultiplayerRoom {
         this.view = { ...this.view, selfId: message.selfId };
         for (const player of message.players) this.updateRemote(player);
         this.seats = message.seats; syncOnlineSeats(this.seats, message.selfId);
-        this.publish({ status: this.homeAcknowledged ? "online" : this.view.homeIndex === null ? "connecting" : "reconnecting", error: "", count: message.players.length, ids: [...this.remotes.keys()], fireLit: message.fire.lit });
+        this.publish({ status: this.homeAcknowledged ? "online" : this.view.homeIndex === null ? "connecting" : "reconnecting", error: "", errorCode: null, count: message.players.length, ids: [...this.remotes.keys()], fireLit: message.fire.lit });
         this.sentPose = ""; if (this.lastPose) this.publishPose(this.lastPose, true);
         this.publishWorld(); break;
       }
@@ -143,7 +141,7 @@ export class MultiplayerRoom {
       case "seat-result": { const pending = this.pending.get(message.requestId); if (pending) { clearTimeout(pending.timer); this.pending.delete(message.requestId); pending.resolve(message.accepted); } break; }
       case "error": {
         const homeError = ["homes-full", "invalid-resume"].includes(message.code);
-        this.publish({ status: message.code === "ROOM_FULL" || message.code === "room-full" ? "full" : homeError ? "error" : this.view.status === "online" ? "online" : "error", error: message.message });
+        this.publish({ status: message.code === "ROOM_FULL" || message.code === "room-full" ? "full" : homeError ? "error" : this.view.status === "online" ? "online" : "error", error: message.message, errorCode: message.code });
         if (homeError || this.view.status === "full") this.socket?.close();
         break;
       }
