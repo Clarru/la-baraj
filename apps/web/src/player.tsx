@@ -4,7 +4,11 @@ import { useGLTF, useAnimations, OrbitControls } from "@react-three/drei";
 import { Ecctrl, type EcctrlHandle } from "ecctrl";
 import { useRapier } from "@react-three/rapier";
 import * as THREE from "three";
-import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
+import {
+  cloneCharacter,
+  characterClips,
+  disposeCharacterSkeletons,
+} from "./character-resources";
 import { assetUrl } from "./assets";
 import {
   takeCabinTransfer,
@@ -36,13 +40,11 @@ import {
 } from "./scooter-controls";
 import { homeSpawn, homeWalkCameraOffset } from "./home";
 import { scooterSupportHeight } from "./scooter-support";
-import { createRunJumpClips } from "./run-jump-clips";
 import {
   activityAnimation,
   activityElapsed,
   activitySeatLift,
   createCharacterActivityRig,
-  createFishingGestureClips,
   localFacing,
 } from "./character-actions";
 export type ViewMode = "walk" | "overview" | "study" | "settlement" | "home";
@@ -67,17 +69,9 @@ export function Avatar({
 }) {
   const { scene, animations } = useGLTF(assetUrl("Lakeside_Man"));
   const group = useRef<THREE.Group>(null);
-  const object = useMemo(() => {
-    const obj = clone(scene);
-    obj.traverse((o) => {
-      if (o instanceof THREE.Mesh) {
-        o.castShadow = true;
-        o.receiveShadow = true;
-      }
-    });
-    return obj;
-  }, [scene]);
+  const object = useMemo(() => cloneCharacter(scene), [scene]);
   const { actions } = useAnimations(animations, object);
+  useEffect(() => () => disposeCharacterSkeletons(object), [object]);
   useEffect(() => {
     const action = actions[state] ?? actions.Idle;
     action?.reset().fadeIn(0.2).play();
@@ -150,32 +144,17 @@ export function Player({
   const facingTarget = useMemo(() => new THREE.Quaternion(), []);
   const lastMovingAlignment = useRef<number | null>(null);
   const { scene, animations } = useGLTF(assetUrl("Lakeside_Man"));
-  const object = useMemo(() => {
-    const obj = clone(scene);
-    obj.traverse((o) => {
-      if (o instanceof THREE.Mesh) {
-        o.castShadow = true;
-        o.receiveShadow = true;
-      }
-    });
-    return obj;
-  }, [scene]);
+  const object = useMemo(() => cloneCharacter(scene), [scene]);
   const supplemental = useLoader(
     THREE.FileLoader,
     "/assets/animations/character-actions.json",
   );
-  const allAnimations = useMemo(() => {
-    const data = JSON.parse(String(supplemental)) as {
-      clips: Parameters<typeof THREE.AnimationClip.parse>[0][];
-    };
-    return [
-      ...animations,
-      ...createRunJumpClips(animations.find((clip) => clip.name === "Run")),
-      ...data.clips.map((clip) => THREE.AnimationClip.parse(clip)),
-      ...createFishingGestureClips(),
-    ];
-  }, [animations, supplemental]);
+  const allAnimations = useMemo(
+    () => characterClips(animations, String(supplemental)),
+    [animations, supplemental],
+  );
   const { actions, mixer } = useAnimations(allAnimations, object);
+  useEffect(() => () => disposeCharacterSkeletons(object), [object]);
   const activityRig = useRef<ReturnType<
     typeof createCharacterActivityRig
   > | null>(null);
@@ -332,13 +311,21 @@ export function Player({
   }, [mode, paused, mixer, indoors]);
   useEffect(() => {
     controller.current?.body?.setTranslation(
-      { x: arrival.position[0], y: arrival.position[1] + 0.98, z: arrival.position[2] },
+      {
+        x: arrival.position[0],
+        y: arrival.position[1] + 0.98,
+        z: arrival.position[2],
+      },
       true,
     );
     controller.current?.body?.setLinvel({ x: 0, y: 0, z: 0 }, true);
     doorArrival.current = null;
     controller.current?.body?.setBodyType(rapier.RigidBodyType.Dynamic, true);
-    playerPosition.set(arrival.position[0], arrival.position[1] + 0.98, arrival.position[2]);
+    playerPosition.set(
+      arrival.position[0],
+      arrival.position[1] + 0.98,
+      arrival.position[2],
+    );
     playerViewPosition.copy(playerPosition);
     rideYaw.current = arrival.yaw;
     if (visual.current) {
@@ -356,7 +343,22 @@ export function Player({
     setRiding(false);
     parkVehicle(arrival.scooter, arrival.yaw);
     parkedGrounded.current = false;
-    onMotion({ homeIndex, position: playerPosition.toArray(), feet: [arrival.position[0], arrival.position[1] + 0.015, arrival.position[2]], facing: [Math.sin(arrival.yaw), 0, Math.cos(arrival.yaw)], animation: "Idle_Neutral", activity: "none", velocity: [0, 0, 0], jumpPhase: "grounded", vehicle: null, grounded: true });
+    onMotion({
+      homeIndex,
+      position: playerPosition.toArray(),
+      feet: [
+        arrival.position[0],
+        arrival.position[1] + 0.015,
+        arrival.position[2],
+      ],
+      facing: [Math.sin(arrival.yaw), 0, Math.cos(arrival.yaw)],
+      animation: "Idle_Neutral",
+      activity: "none",
+      velocity: [0, 0, 0],
+      jumpPhase: "grounded",
+      vehicle: null,
+      grounded: true,
+    });
   }, [resetKey, arrival]);
   useFrame((_, dt) => {
     const c = controller.current;
@@ -434,7 +436,11 @@ export function Player({
       sampleClock.current += dt;
       if (sampleClock.current > 1 / 7) {
         sampleClock.current = 0;
-        onMotion({ ...doorMotion, homeIndex, animationHistory: animationHistory.current });
+        onMotion({
+          ...doorMotion,
+          homeIndex,
+          animationHistory: animationHistory.current,
+        });
       }
       return;
     }
@@ -533,7 +539,11 @@ export function Player({
       (p.y < -5 || Math.abs(p.x) > 2100 || Math.abs(p.z) > 1450)
     ) {
       c.body.setTranslation(
-        { x: arrival.position[0], y: arrival.position[1] + 0.98, z: arrival.position[2] },
+        {
+          x: arrival.position[0],
+          y: arrival.position[1] + 0.98,
+          z: arrival.position[2],
+        },
         true,
       );
       c.body.setLinvel({ x: 0, y: 0, z: 0 }, true);
@@ -551,10 +561,12 @@ export function Player({
     );
     const rayGroundY = ground ? p.y - ground.timeOfImpact : null;
     const contactGroundY = c.standPoint.y;
-    const groundedEdge = c.isOnGround && p.y - contactGroundY > 0.55 && p.y - contactGroundY < 1.4;
+    const groundedEdge =
+      c.isOnGround && p.y - contactGroundY > 0.55 && p.y - contactGroundY < 1.4;
     const groundY = holding
       ? pose.anchor![1]
-      : groundedEdge && (rayGroundY === null || contactGroundY - rayGroundY > 0.25)
+      : groundedEdge &&
+          (rayGroundY === null || contactGroundY - rayGroundY > 0.25)
         ? contactGroundY
         : rayGroundY;
     if (visual.current) {
@@ -712,7 +724,11 @@ export function Player({
   return (
     <Ecctrl
       ref={controller}
-      position={[arrival.position[0], arrival.position[1] + 0.98, arrival.position[2]]}
+      position={[
+        arrival.position[0],
+        arrival.position[1] + 0.98,
+        arrival.position[2],
+      ]}
       enabledRotations={[false, false, false]}
       autoBalance={false}
       enableToggleRun={false}

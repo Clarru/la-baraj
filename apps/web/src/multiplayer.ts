@@ -162,10 +162,11 @@ export class MultiplayerRoom {
       }),
     );
   }
-  connect() {
+  connect(offlinePreview = false) {
     activeRoom = this;
-    const configured = import.meta.env.VITE_ROOM_SERVER_URL as
-      string | undefined;
+    const configured = offlinePreview
+      ? undefined
+      : (import.meta.env.VITE_ROOM_SERVER_URL as string | undefined);
     if (!configured) {
       this.publish({
         status: "offline",

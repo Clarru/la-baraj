@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import * as THREE from "three";
+import { MeshoptDecoder } from "meshoptimizer";
 import { createSeatScootClips } from "./seat-scoot-clips.mjs";
 import { createFireLightingClip } from "./fire-lighting-clip.mjs";
 
@@ -30,7 +31,7 @@ export async function loadRig(path) {
   header.writeUInt32LE(data.length, 12);
   header.writeUInt32LE(0x4e4f534a, 16);
   const glb = Buffer.concat([header, data, binary]);
-  return new GLTFLoader().parseAsync(
+  return new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).parseAsync(
     glb.buffer.slice(glb.byteOffset, glb.byteOffset + glb.byteLength),
     "",
   );

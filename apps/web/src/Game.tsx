@@ -44,6 +44,13 @@ import { MultiplayerPlayers } from "./multiplayer-players";
 import { ControlsHelp, GameHeader, GameMenu } from "./GameMenu";
 import { captureGameKey, type GamePanel } from "./game-input";
 import {
+  performanceLab,
+  PerformancePanel,
+  PerformanceScene,
+  PerformanceMeasurement,
+  type PerformanceScenario,
+} from "./PerformanceLab";
+import {
   DeveloperMeasurement,
   DeveloperTools,
   type RenderSample,
@@ -82,16 +89,23 @@ function SceneReady({ onReady }: { onReady: () => void }) {
 }
 export default function Game({ initialName }: { initialName: string }) {
   const [room] = useState(() => new MultiplayerRoom(initialName));
-  useEffect(() => room.connect(), [room]);
+  const [performanceScenario, setPerformanceScenario] =
+    useState<PerformanceScenario>("solo");
+  useEffect(() => room.connect(performanceLab), [room]);
   const roomView = useSyncExternalStore(room.subscribe, room.getSnapshot);
   const [localHomeIndex] = useState(() => readLocalHome());
   const homeIndex = displayedHomeIndex(roomView.homeIndex, localHomeIndex);
   const cabins = useMemo(
     () =>
-      roomView.status === "offline"
-        ? [{ index: 0, ownerName: roomView.nickname }]
-        : roomView.cabins,
-    [roomView.status, roomView.cabins, roomView.nickname],
+      performanceLab && performanceScenario !== "solo"
+        ? Array.from({ length: 50 }, (_, index) => ({
+            index,
+            ownerName: `Friend ${index + 1}`,
+          }))
+        : roomView.status === "offline"
+          ? [{ index: 0, ownerName: roomView.nickname }]
+          : roomView.cabins,
+    [roomView.status, roomView.cabins, roomView.nickname, performanceScenario],
   );
   const cabinIndices = useMemo(() => cabins.map((c) => c.index), [cabins]);
   const hasHome = roomView.status === "offline" || roomView.homeIndex !== null;
@@ -220,7 +234,7 @@ export default function Game({ initialName }: { initialName: string }) {
       <SceneBoundary>
         <Suspense fallback={<SceneLoading />}>
           <Canvas
-            shadows
+            shadows="percentage"
             dpr={[1, 1.5]}
             camera={{ position: [58, 35, 72], fov: 48, near: 0.1, far: 6000 }}
             gl={{
@@ -280,6 +294,7 @@ export default function Game({ initialName }: { initialName: string }) {
                   flat={flat}
                   interiorIndex={interiorIndex}
                   cabins={cabins}
+                  arrivalIndex={hasHome ? homeIndex : undefined}
                 />
               </group>
               {interiorIndex !== null && (
@@ -310,6 +325,9 @@ export default function Game({ initialName }: { initialName: string }) {
               <group>
                 {import.meta.env.DEV && <Crowd enabled={crowd} />}
                 <MultiplayerPlayers room={room} />
+                {performanceLab && (
+                  <PerformanceScene scenario={performanceScenario} />
+                )}
                 {hasHome && <ParkedScooter mounted={vehicleMounted} />}
                 <WorldActivities
                   room={room}
@@ -327,6 +345,7 @@ export default function Game({ initialName }: { initialName: string }) {
                   onBusy={setActivityBusy}
                 />
               </group>
+              {performanceLab && <PerformanceMeasurement />}
             </Physics>
             <HomeMarker
               index={homeIndex}
@@ -363,6 +382,12 @@ export default function Game({ initialName }: { initialName: string }) {
             homeIndex={hasHome ? homeIndex : null}
             cabins={cabins}
           />
+          {performanceLab && (
+            <PerformancePanel
+              scenario={performanceScenario}
+              onScenario={setPerformanceScenario}
+            />
+          )}
           <CabinAccess
             cabinIndices={cabinIndices}
             interiorIndex={interiorIndex}

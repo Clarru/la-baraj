@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useGLTF, Html } from "@react-three/drei";
 import { RigidBody, CuboidCollider } from "@react-three/rapier";
 import * as THREE from "three";
@@ -31,6 +31,14 @@ export function CabinInterior({ index }: { index: number }) {
     return clone;
   }, [scene, size.depth]);
   const door = cabinDoor(index);
+  useEffect(
+    () => () => {
+      object.traverse((node) => {
+        if (node instanceof THREE.Mesh) node.geometry.dispose();
+      });
+    },
+    [object],
+  );
   return (
     <group
       position={[
@@ -66,7 +74,6 @@ export function CabinInterior({ index }: { index: number }) {
             args={[size.width / 2, 1.7, 0.1]}
             position={[0, 1.7, -size.depth / 2 - 0.05]}
           />
-
         </RigidBody>
       </group>
       <ambientLight intensity={0.34} />
@@ -94,5 +101,3 @@ export function CabinInterior({ index }: { index: number }) {
     </group>
   );
 }
-for (const name of roomNames)
-  useGLTF.preload(assetUrl("Lake_Interior_" + name));

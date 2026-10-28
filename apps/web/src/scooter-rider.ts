@@ -203,12 +203,21 @@ export function createScooterRiderRig(
     aim(lower, endpoint, reachable);
   };
   let active = false;
+  // IK depends on local rig proportions, speed and steering, not world travel.
+  // Restore the solved local pose after the mixer when those inputs are unchanged.
+  const posed = standing.map((pose) => ({
+    ...pose,
+    position: pose.position.clone(),
+    quaternion: pose.quaternion.clone(),
+    scale: pose.scale.clone(),
+  }));
+  let solvedSteer = NaN,
+    solvedEffort = NaN;
   return {
     available,
     update({ speed, steer }: ScooterRiderFrame) {
       if (!available || !pelvis || !spine1 || !spine2) return;
       active = true;
-      restore(standing);
       const steeringAngle = Number.isFinite(steer)
         ? THREE.MathUtils.clamp(
             steer,
@@ -219,6 +228,11 @@ export function createScooterRiderRig(
       const effort = Number.isFinite(speed)
         ? THREE.MathUtils.clamp(Math.abs(speed) / 12, 0, 1)
         : 0;
+      if (steeringAngle === solvedSteer && effort === solvedEffort) {
+        restore(posed);
+        return;
+      }
+      restore(standing);
       target.set(
         steeringAngle * -0.025 * effort,
         SCOOTER_RIDER_PELVIS_HEIGHT - effort * 0.025,
@@ -261,6 +275,13 @@ export function createScooterRiderRig(
         setWorldRotation(limb.foot, worldRotation);
       }
       object.updateWorldMatrix(true, true);
+      for (const pose of posed) {
+        pose.position.copy(pose.bone.position);
+        pose.quaternion.copy(pose.bone.quaternion);
+        pose.scale.copy(pose.bone.scale);
+      }
+      solvedSteer = steeringAngle;
+      solvedEffort = effort;
     },
     reset() {
       if (!active) return;

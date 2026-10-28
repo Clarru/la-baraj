@@ -46,7 +46,7 @@
         "Bark_NormalTree.png",
         "Leaves_NormalTree_C.png"
       ],
-      "optimizedBytes": 551272,
+      "optimizedBytes": 304208,
       "triangles": 6265,
       "bounds": {
         "min": [
@@ -76,7 +76,7 @@
         "Bark_NormalTree.png",
         "Leaves_NormalTree_C.png"
       ],
-      "optimizedBytes": 356676,
+      "optimizedBytes": 220512,
       "triangles": 3505,
       "bounds": {
         "min": [
@@ -106,7 +106,7 @@
         "Bark_NormalTree.png",
         "Leaf_Pine_C.png"
       ],
-      "optimizedBytes": 294320,
+      "optimizedBytes": 157132,
       "triangles": 3648,
       "bounds": {
         "min": [
@@ -136,7 +136,7 @@
         "Bark_NormalTree.png",
         "Leaf_Pine_C.png"
       ],
-      "optimizedBytes": 290832,
+      "optimizedBytes": 157860,
       "triangles": 3370,
       "bounds": {
         "min": [
@@ -164,7 +164,7 @@
         "Bush_Common.bin",
         "Leaves_TwistedTree_C.png"
       ],
-      "optimizedBytes": 127216,
+      "optimizedBytes": 89492,
       "triangles": 900,
       "bounds": {
         "min": [
@@ -583,7 +583,7 @@
         "T_Trim_Metal_BaseColor.png",
         "T_Trim_Metal_ORM.png"
       ],
-      "optimizedBytes": 178180,
+      "optimizedBytes": 154548,
       "triangles": 986,
       "bounds": {
         "min": [
@@ -679,7 +679,7 @@
         "T_Trim_Metal_BaseColor.png",
         "T_Trim_Metal_ORM.png"
       ],
-      "optimizedBytes": 188344,
+      "optimizedBytes": 161276,
       "triangles": 1576,
       "bounds": {
         "min": [

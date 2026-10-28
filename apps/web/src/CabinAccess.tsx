@@ -9,6 +9,7 @@ import {
   clearCabinTransfer,
 } from "./cabin-interior-state";
 import { cabinDesignForPlot } from "./cabin-designs";
+import { preloadCabinInterior } from "./interior-assets";
 export function CabinAccess({
   interiorIndex,
   homeIndex,
@@ -107,6 +108,10 @@ export function CabinAccess({
         : mode === "walk"
           ? nearby
           : null;
+  useEffect(() => {
+    if (target !== null && interiorIndex === null && !vehicleMounted)
+      preloadCabinInterior(target);
+  }, [target, interiorIndex, vehicleMounted]);
   useEffect(() => {
     onPromptVisible?.(
       interiorIndex === null &&

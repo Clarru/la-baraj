@@ -1,0 +1,13 @@
+{
+  "players": 30,
+  "simulatedSeconds": 600,
+  "poseHz": 8,
+  "inboundPoses": 144000,
+  "delivered": 4176000,
+  "bytes": 846052786,
+  "perClientKiBps": 45.90130132378472,
+  "durationMs": 1297.00475,
+  "meanHandlerMs": 0.009006977430555556,
+  "p95HandlerMs": 0.01012500000000216,
+  "poseStorageWrites": 0
+}

@@ -4,7 +4,7 @@
   "models": [
     {
       "id": "Lake_Cabin_Gable",
-      "bytes": 1462640,
+      "bytes": 888248,
       "bounds": {
         "min": [
           -3.2599998712539673,
@@ -22,7 +22,7 @@
     },
     {
       "id": "Lake_Cabin_AFrame",
-      "bytes": 888336,
+      "bytes": 554080,
       "bounds": {
         "min": [
           -3.377504587173462,
@@ -40,7 +40,7 @@
     },
     {
       "id": "Lake_Cabin_Sage",
-      "bytes": 1485040,
+      "bytes": 919092,
       "bounds": {
         "min": [
           -3.760000228881836,
@@ -58,7 +58,7 @@
     },
     {
       "id": "Lake_Cabin_GableBlue",
-      "bytes": 1859052,
+      "bytes": 1126508,
       "bounds": {
         "min": [
           -3.2599997520446777,
@@ -76,7 +76,7 @@
     },
     {
       "id": "Lake_Cabin_AFrameCopper",
-      "bytes": 948052,
+      "bytes": 587360,
       "bounds": {
         "min": [
           -3.377504825592041,
@@ -94,7 +94,7 @@
     },
     {
       "id": "Lake_Cabin_SagePergola",
-      "bytes": 1784144,
+      "bytes": 1097640,
       "bounds": {
         "min": [
           -3.759999990463257,
