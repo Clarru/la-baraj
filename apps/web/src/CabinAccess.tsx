@@ -54,18 +54,14 @@ export function CabinAccess({
     if (locked.current || paused || busy || vehicleMounted) return;
     locked.current = true;
     onTransition(true);
-    setPhase("closing");
-    // Exchange the exterior shell and room only while the view is fully covered.
-    // Both arrivals straddle the exact same world-space door plane.
+    setPhase("opening");
+    queueCabinTransfer(index, entering, true);
+    onWalk();
+    if (entering) onChange(index);
+    else timers.current.push(window.setTimeout(() => onChange(null), 760));
     timers.current.push(
-      window.setTimeout(() => {
-        queueCabinTransfer(index, entering);
-        onChange(entering ? index : null);
-        onWalk();
-      }, 260),
+      window.setTimeout(cancelTransition, entering ? 950 : 1420),
     );
-    timers.current.push(window.setTimeout(() => setPhase("opening"), 560));
-    timers.current.push(window.setTimeout(cancelTransition, 1080));
   };
   const enter = (index: number) => crossDoor(index, true);
   const leave = () => {
@@ -147,8 +143,8 @@ export function CabinAccess({
     return () => window.removeEventListener("keydown", key);
   }, [interiorIndex, target, nearExit, paused, busy, vehicleMounted]);
   const curtain = (
-    <div
-      className={`cabin-transition cabin-transition--${phase}`}
+    <output
+      className="door-transition-state"
       aria-hidden="true"
       data-testid="door-transition"
       data-phase={phase}

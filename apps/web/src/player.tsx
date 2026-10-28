@@ -10,6 +10,8 @@ import {
   takeCabinTransfer,
   interiorFloorOffset,
   cabinTransfer,
+  sampleCabinMotion,
+  cabinSoleOffset,
 } from "./cabin-interior-state";
 import { cabinDesigns, cabinDesignForPlot, cabinYaw } from "./cabin-designs";
 import { terrainHeight, inWater, southShore, cabinSpots } from "./geography";
@@ -100,6 +102,7 @@ export function Player({
   onVehicleChange,
   onVehicleHint,
   indoors = false,
+  doorTransition = false,
 }: {
   mode: ViewMode;
   resetKey: number;
@@ -109,8 +112,11 @@ export function Player({
   onVehicleChange?: (mounted: boolean) => void;
   onVehicleHint?: (near: boolean) => void;
   indoors?: boolean;
+  doorTransition?: boolean;
 }) {
   const controller = useRef<EcctrlHandle>(null);
+  const doorArrival = useRef<ReturnType<typeof takeCabinTransfer>>(null);
+  const doorArrivalStarted = useRef(0);
   const { world, rapier } = useRapier();
   const visual = useRef<THREE.Group>(null);
   const keys = useRef(new Set<string>());
@@ -342,16 +348,46 @@ export function Player({
   useFrame((_, dt) => {
     const c = controller.current;
     if (!c || !c.body) return;
-    const transfer = takeCabinTransfer();
-    if (transfer) {
+    const requestedTransfer = takeCabinTransfer();
+    if (requestedTransfer) {
+      doorArrival.current = requestedTransfer;
+      doorArrivalStarted.current = performance.now();
+      const bodyPosition = c.body.translation();
+      if (
+        requestedTransfer.from &&
+        Math.hypot(
+          bodyPosition.x - requestedTransfer.from[0],
+          bodyPosition.z - requestedTransfer.from[2],
+        ) < 2.3
+      ) {
+        requestedTransfer.from = [
+          bodyPosition.x,
+          requestedTransfer.position[1],
+          bodyPosition.z,
+        ];
+      }
+    }
+    const transfer = doorArrival.current;
+    if (transfer && (requestedTransfer || doorTransition)) {
+      c.body.setBodyType(rapier.RigidBodyType.KinematicPositionBased, true);
+      const doorMotion = sampleCabinMotion(
+        transfer,
+        (performance.now() - doorArrivalStarted.current) / 1000,
+      );
+      const arrivalPosition = doorMotion.position;
       c.body.setTranslation(
         {
-          x: transfer.position[0],
-          y: transfer.position[1],
-          z: transfer.position[2],
+          x: arrivalPosition[0],
+          y: arrivalPosition[1],
+          z: arrivalPosition[2],
         },
         true,
       );
+      c.body.setNextKinematicTranslation({
+        x: arrivalPosition[0],
+        y: arrivalPosition[1],
+        z: arrivalPosition[2],
+      });
       c.body.setLinvel({ x: 0, y: 0, z: 0 }, true);
       c.body.setAngvel({ x: 0, y: 0, z: 0 }, true);
       c.body.resetForces(true);
@@ -365,17 +401,36 @@ export function Player({
         run: false,
         jump: false,
       });
-      playerPosition.set(...transfer.position);
-      playerViewPosition.set(...transfer.position);
+      playerPosition.set(...arrivalPosition);
+      playerViewPosition.set(...arrivalPosition);
       if (visual.current) {
         visual.current.parent?.getWorldQuaternion(facingParent);
         localFacing(transfer.facing, facingParent, facingTarget);
         visual.current.quaternion.copy(facingTarget);
       }
+      if (visual.current) visual.current.position.y = cabinSoleOffset;
       jumpState.current = initialJumpMotion();
-      mixer.stopAllAction();
-      animation.current = "";
+      setJumping(false);
+      const doorAnimation = doorMotion.animation;
+      if (requestedTransfer || animation.current !== doorAnimation) {
+        actions[animation.current]?.fadeOut(0.12);
+        actions[doorAnimation]?.reset().fadeIn(0.12).play();
+        animation.current = doorAnimation;
+      }
+      // Keep peers moving during the scripted walk; normal locomotion stays bypassed.
+      sampleClock.current += dt;
+      if (sampleClock.current > 1 / 7) {
+        sampleClock.current = 0;
+        onMotion({ ...doorMotion, animationHistory: animationHistory.current });
+      }
       return;
+    }
+    if (doorArrival.current) {
+      doorArrival.current = null;
+      c.body.setBodyType(rapier.RigidBodyType.Dynamic, true);
+      c.body.setLinvel({ x: 0, y: 0, z: 0 }, true);
+      c.body.resetForces(true);
+      c.body.resetTorques(true);
     }
     const k = keys.current;
     const mounted = getVehicleState().mounted;
@@ -790,7 +845,7 @@ export function CameraRig({
     const transition = blend.current;
     if (transition) {
       transition.elapsed += Math.min(dt, 0.05);
-      const t = Math.min(1, transition.elapsed / 0.55),
+      const t = Math.min(1, transition.elapsed / 0.8),
         eased = t * t * (3 - 2 * t);
       camera.position.lerpVectors(transition.from, transition.to, eased);
       c.target.lerpVectors(transition.fromTarget, transition.target, eased);

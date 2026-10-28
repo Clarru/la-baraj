@@ -110,7 +110,7 @@ components:
     padding: "10px"
 ---
 
-# Design System: Lake Cinciș
+# Design System: La Baraj
 
 ## Overview
 
@@ -131,6 +131,9 @@ The current local settlement pass gives that HUD a stable inspection subject: 30
 - Provisional labels for coverage and rendering measurements.
 - Six fixed, complete cabin designs distributed five each by a stable world shuffle.
 - Local home and north-up geography navigation with restrained map landmarks.
+
+
+The furnished cabin view uses a fixed Sims-style roof/front cutaway within the visible landscape. The original deck and steps stay in place, a 0.72s Walk-to-Idle path crosses the same world-space doorway, and the camera blends over 0.8s without a blackout. This cabin presentation is local; the release multiplayer lifecycle, remote avatars, shared fire and authoritative seating remain integrated.
 
 ## Colors
 
@@ -241,11 +244,17 @@ The component language is a small field kit: opaque paper surfaces, strong text 
 - **Shared fire circle:** A single lakefront fire circle is a common social landmark. Its nearby E prompt uses the existing `--paper`, `--ink`, and `--line` palette with the same compact Barlow treatment as the rest of the HUD.
 - **Fishing prompt:** At local fishing spots, E casts, waits for a bite, and reels. Catch records are saved only in this browser, and the prompt says so; it does not represent network persistence or shared multiplayer state.
 
+### Cabin Interiors
+
+- **Room library:** `Lake_Interior_Timber`, `Lake_Interior_AFrame`, and `Lake_Interior_Sage` are furnished Blender room GLBs mapped by family across all six exterior designs and all 30 local cabins. They are placed at each cabin's actual world coordinates and rotation, with the reference sheet at `docs/art-direction/interiors/interior-reference-grid.png`, actual Blender render at `docs/art-direction/interiors/interiors-blender.png`, editable source at `assets/blender/Cabin_Interiors.blend`, construction scripts at `scripts/build-cabin-interiors.py` and `scripts/optimize-interiors.mjs`, and metadata at `apps/web/public/assets/interior-library.json`.
+- **Entry and movement:** Home/Cabins inspection provides Go inside, and E near an exterior door enters. Inside and outside use the same `cabinDoor` plane; a local room Z offset aligns the frame. The outdoor landscape, lighting, and neighbours remain rendered with no screen overlay, fade, or black backdrop. The active exterior switches to the original-mesh-derived low deck/foundation cutaway from `apps/web/src/cabin-cutaway.ts`, preserving the original porch and steps, while physics remains retained; the avatar crosses the shared endpoints through a 0.72s kinematic Walk-to-Idle path and the camera blends over 0.8s. Exterior roof restoration occurs after 0.76s on exit; entering locks for 0.95s and exiting for 1.42s, while controls lock during crossing and reset cancels it. Primitive floor/wall volumes and tall furniture blockers supply physical room navigation without allowing steps onto furnishings. The fixed-orientation `roomCutawayFront` helper removes the foreground door/frame with the front wall from the same GLB; it does not dynamically reclassify walls on every camera rotation. E at the same inner door, Escape, or Go outside returns to the porch only when near that door; away from it, the HUD says to walk to the door. These checks passed in the retained legacy preview captures; the independent reviewer disposition is SHIP with five sections complete and material fixes none, corroborating continuity, retained source porch, shared-door paths, UI fidelity, and all four captures. Still images scope motion timing; they do not prove every transition duration. No wide-viewport or full Sims-parity claim is made.
+- **Vehicle boundary:** Vehicle entry is gated at the doorway and the indoor scooter shortcut is suppressed. Local door access is available for unclaimed cabins in this preview; it does not grant server ownership or administrator authority.
+
 ### Home and Map Navigation
 
 - **Local home:** `HomeMarker.tsx` presents a visible “Your cabin” label and porch light for the locally selected plot. `home.ts` stores home index 18 in browser storage and maps the home against the real geography; it is a local preview choice that a server-backed room can replace.
 - **North-up minimap:** `Minimap.tsx` uses the real lake and road geometry with Barlow/Phosphor/slate UI and geography colors for land, water, roads, cabins, fishing spots, and the shared campfire. The player arrow rotates against a fixed north-up map, while the selected home is highlighted and remains bounded when off-screen. M expands the map; H or the Home button focuses the selected cabin.
-- **Access boundary:** Visits require the owner's approval, while administrator entry is independent of owner approval; both rules are separate from the local home choice. Interiors, entry, invitations, and administrator authentication are not implemented in this preview and remain the next server-backed step.
+- **Access boundary:** Visits require the owner's approval, while administrator entry is independent of owner approval; both rules are separate from the local home choice. Local furnished rooms and door entry are implemented. Cabin ownership, owner-approved network visits and administrator authentication remain future server-backed work; room invitations already exist for the multiplayer session.
 
 ### Icons
 
@@ -263,7 +272,7 @@ Use Phosphor icons at the sizes present in the implementation, generally 15–29
 - **Do** keep each cabin plot on one coherent whole-house design and use Cabins mode keys 1 through 6 to inspect the library.
 - **Do** keep seeded cabin placement, the shared fire circle, and browser-only catch persistence described as local prototype behavior.
 - **Do** treat the imagegen reference grids as architectural references and the Blender renders/library as the current reconstruction evidence, without claiming pixel-perfect matching.
-- **Do** keep the local home marker and north-up minimap clearly separate from server ownership, interiors, entry, invitations, and administrator authentication.
+- **Do** keep the local home marker and north-up minimap clearly separate from server cabin ownership, owner-approved visits and administrator authentication.
 - **Do** point to the final verified home, minimap, cabin-number, and cabin-variant captures under `docs/feasibility/captures/` when showing the current preview.
 - **Do** preserve keyboard focus, reduced-motion behavior, and map attribution at every supported viewport.
 
