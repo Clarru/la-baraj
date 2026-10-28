@@ -12,6 +12,7 @@ import {
   nearestCabinDoor,
   roomSizes,
   roomNames,
+  sampleCabinTransfer,
 } from "./cabin-interior-state";
 const { loadRig } = await import(
   /* @vite-ignore */ new URL(
@@ -39,14 +40,16 @@ describe("real cabin entry and return", () => {
         b = local(outside.position),
         room = roomSizes[design.family];
       expect(Math.abs(a.x)).toBeLessThan(room.width / 2 - 0.3);
-      expect(Math.abs(a.z - door.roomOffsetZ)).toBeLessThan(room.depth / 2 - 0.3);
+      expect(Math.abs(a.z - door.roomOffsetZ)).toBeLessThan(
+        room.depth / 2 - 0.3,
+      );
       expect(door.insideZ).toBe(door.outsideZ);
       expect(door.roomOffsetZ + room.depth / 2).toBeCloseTo(door.outsideZ);
       expect(a.x).toBeCloseTo(b.x);
       expect(a.z).toBeLessThan(door.outsideZ);
       expect(b.z).toBeGreaterThan(door.outsideZ);
       expect(inside.position[1]).toBeCloseTo(
-        terrainHeight(cabin.x, cabin.z) + 0.64 + 1.05,
+        terrainHeight(cabin.x, cabin.z) + 0.64 + 0.95,
       );
       expect(
         design.porches.some(
@@ -66,6 +69,24 @@ describe("real cabin entry and return", () => {
     expect(takeCabinTransfer()).toBeNull();
     expect(() => cabinTransfer(99, true)).toThrow(RangeError);
   });
+  it("walks continuously through the same doorway and clamps both ends", () => {
+    for (const cabin of cabinSpots) {
+      queueCabinTransfer(cabin.i, true, true);
+      const entering = takeCabinTransfer()!;
+      expect(sampleCabinTransfer(entering, -1)).toEqual(
+        cabinTransfer(cabin.i, false).position,
+      );
+      expect(sampleCabinTransfer(entering, 2)).toEqual(
+        cabinTransfer(cabin.i, true).position,
+      );
+      queueCabinTransfer(cabin.i, false, true);
+      const leaving = takeCabinTransfer()!;
+      const forward = sampleCabinTransfer(entering, 0.36),
+        reverse = sampleCabinTransfer(leaving, 0.36);
+      forward.forEach((v, i) => expect(v).toBeCloseTo(reverse[i]));
+      expect(forward[1]).toBeCloseTo(entering.position[1]);
+    }
+  });
   it("ships furnished geometry with a clear floor beneath each indoor arrival", async () => {
     for (let family = 0; family < 3; family++) {
       const index = cabinSpots.find(
@@ -80,7 +101,7 @@ describe("real cabin entry and return", () => {
       scene.updateMatrixWorld(true);
       const door = cabinDoor(index),
         ray = new THREE.Raycaster(
-          new THREE.Vector3(door.x, 2, door.insideZ - door.roomOffsetZ - .85),
+          new THREE.Vector3(door.x, 2, door.insideZ - door.roomOffsetZ - 0.85),
           new THREE.Vector3(0, -1, 0),
         );
       const hits = ray.intersectObject(scene, true);

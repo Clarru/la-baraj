@@ -5,6 +5,7 @@ import * as THREE from "three";
 import { Model, assetUrl } from "./assets";
 import { Bench, CabinBenchSeats } from "./Bench";
 import { CampfireLogs } from "./campfire";
+import { cabinCutawayBase } from "./cabin-cutaway";
 import { cabinDesignForPlot, cabinYaw } from "./cabin-designs";
 import { cabinSpots, southShore, terrainHeight } from "./geography";
 function woodTexture() {
@@ -68,10 +69,10 @@ export function Cabin({
     });
     return object;
   }, [scene, flat]);
+  const cutaway = useMemo(() => cabinCutawayBase(model), [model]);
   const [plaqueX, plaqueY, plaqueZ] = design.numberMount;
   return (
     <group
-      visible={!interiorActive}
       position={[x, terrainHeight(x, z), z]}
       rotation={[0, cabinYaw(index), 0]}
     >
@@ -97,22 +98,24 @@ export function Cabin({
           />
         ))}
       </RigidBody>
-      <primitive object={model} dispose={null} />
+      <primitive object={interiorActive ? cutaway : model} dispose={null} />
       <CabinBenchSeats index={index} />
-      <mesh position={[plaqueX, plaqueY, plaqueZ]}>
-        <boxGeometry args={[0.36, 0.4, 0.035]} />
-        <meshStandardMaterial color="#263c40" roughness={0.9} />
-      </mesh>
-      <Text
-        position={[plaqueX, plaqueY, plaqueZ + 0.022]}
-        font="/fonts/barlow-condensed-latin-600-normal.woff"
-        fontSize={0.22}
-        color="#e7e7d5"
-        anchorX="center"
-        anchorY="middle"
-      >
-        {String(index + 1).padStart(2, "0")}
-      </Text>
+      <group visible={!interiorActive}>
+        <mesh position={[plaqueX, plaqueY, plaqueZ]}>
+          <boxGeometry args={[0.36, 0.4, 0.035]} />
+          <meshStandardMaterial color="#263c40" roughness={0.9} />
+        </mesh>
+        <Text
+          position={[plaqueX, plaqueY, plaqueZ + 0.022]}
+          font="/fonts/barlow-condensed-latin-600-normal.woff"
+          fontSize={0.22}
+          color="#e7e7d5"
+          anchorX="center"
+          anchorY="middle"
+        >
+          {String(index + 1).padStart(2, "0")}
+        </Text>
+      </group>
     </group>
   );
 }

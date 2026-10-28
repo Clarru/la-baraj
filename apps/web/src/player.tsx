@@ -10,6 +10,8 @@ import {
   takeCabinTransfer,
   interiorFloorOffset,
   cabinTransfer,
+  sampleCabinMotion,
+  cabinSoleOffset,
 } from "./cabin-interior-state";
 import { cabinDesigns, cabinDesignForPlot, cabinYaw } from "./cabin-designs";
 import { terrainHeight, inWater, southShore, cabinSpots } from "./geography";
@@ -33,6 +35,7 @@ import {
   scooterSteeringInput,
 } from "./scooter-controls";
 import { scooterSupportHeight } from "./scooter-support";
+import { createRunJumpClips } from "./run-jump-clips";
 import {
   activityAnimation,
   activityElapsed,
@@ -99,6 +102,7 @@ export function Player({
   onVehicleChange,
   onVehicleHint,
   indoors = false,
+  doorTransition = false,
 }: {
   mode: ViewMode;
   resetKey: number;
@@ -108,8 +112,11 @@ export function Player({
   onVehicleChange?: (mounted: boolean) => void;
   onVehicleHint?: (near: boolean) => void;
   indoors?: boolean;
+  doorTransition?: boolean;
 }) {
   const controller = useRef<EcctrlHandle>(null);
+  const doorArrival = useRef<ReturnType<typeof takeCabinTransfer>>(null);
+  const doorArrivalStarted = useRef(0);
   const { world, rapier } = useRapier();
   const visual = useRef<THREE.Group>(null);
   const keys = useRef(new Set<string>());
@@ -159,6 +166,7 @@ export function Player({
     };
     return [
       ...animations,
+      ...createRunJumpClips(animations.find((clip) => clip.name === "Run")),
       ...data.clips.map((clip) => THREE.AnimationClip.parse(clip)),
       ...createFishingGestureClips(),
     ];
@@ -340,16 +348,46 @@ export function Player({
   useFrame((_, dt) => {
     const c = controller.current;
     if (!c || !c.body) return;
-    const transfer = takeCabinTransfer();
-    if (transfer) {
+    const requestedTransfer = takeCabinTransfer();
+    if (requestedTransfer) {
+      doorArrival.current = requestedTransfer;
+      doorArrivalStarted.current = performance.now();
+      const bodyPosition = c.body.translation();
+      if (
+        requestedTransfer.from &&
+        Math.hypot(
+          bodyPosition.x - requestedTransfer.from[0],
+          bodyPosition.z - requestedTransfer.from[2],
+        ) < 2.3
+      ) {
+        requestedTransfer.from = [
+          bodyPosition.x,
+          requestedTransfer.position[1],
+          bodyPosition.z,
+        ];
+      }
+    }
+    const transfer = doorArrival.current;
+    if (transfer && (requestedTransfer || doorTransition)) {
+      c.body.setBodyType(rapier.RigidBodyType.KinematicPositionBased, true);
+      const doorMotion = sampleCabinMotion(
+        transfer,
+        (performance.now() - doorArrivalStarted.current) / 1000,
+      );
+      const arrivalPosition = doorMotion.position;
       c.body.setTranslation(
         {
-          x: transfer.position[0],
-          y: transfer.position[1],
-          z: transfer.position[2],
+          x: arrivalPosition[0],
+          y: arrivalPosition[1],
+          z: arrivalPosition[2],
         },
         true,
       );
+      c.body.setNextKinematicTranslation({
+        x: arrivalPosition[0],
+        y: arrivalPosition[1],
+        z: arrivalPosition[2],
+      });
       c.body.setLinvel({ x: 0, y: 0, z: 0 }, true);
       c.body.setAngvel({ x: 0, y: 0, z: 0 }, true);
       c.body.resetForces(true);
@@ -363,17 +401,36 @@ export function Player({
         run: false,
         jump: false,
       });
-      playerPosition.set(...transfer.position);
-      playerViewPosition.set(...transfer.position);
+      playerPosition.set(...arrivalPosition);
+      playerViewPosition.set(...arrivalPosition);
       if (visual.current) {
         visual.current.parent?.getWorldQuaternion(facingParent);
         localFacing(transfer.facing, facingParent, facingTarget);
         visual.current.quaternion.copy(facingTarget);
       }
+      if (visual.current) visual.current.position.y = cabinSoleOffset;
       jumpState.current = initialJumpMotion();
-      mixer.stopAllAction();
-      animation.current = "";
+      setJumping(false);
+      const doorAnimation = doorMotion.animation;
+      if (requestedTransfer || animation.current !== doorAnimation) {
+        actions[animation.current]?.fadeOut(0.12);
+        actions[doorAnimation]?.reset().fadeIn(0.12).play();
+        animation.current = doorAnimation;
+      }
+      // Keep peers moving during the scripted walk; normal locomotion stays bypassed.
+      sampleClock.current += dt;
+      if (sampleClock.current > 1 / 7) {
+        sampleClock.current = 0;
+        onMotion({ ...doorMotion, animationHistory: animationHistory.current });
+      }
       return;
+    }
+    if (doorArrival.current) {
+      doorArrival.current = null;
+      c.body.setBodyType(rapier.RigidBodyType.Dynamic, true);
+      c.body.setLinvel({ x: 0, y: 0, z: 0 }, true);
+      c.body.resetForces(true);
+      c.body.resetTorques(true);
     }
     const k = keys.current;
     const mounted = getVehicleState().mounted;
@@ -440,6 +497,7 @@ export function Player({
       now: performance.now() / 1000,
       grounded: c.isOnGround,
       verticalSpeed: c.currLinVel.y,
+      horizontalSpeed: Math.hypot(c.currLinVel.x, c.currLinVel.z),
       jumpStarted,
       disabled: holding || mounted,
     });
@@ -483,14 +541,23 @@ export function Player({
       : ground
         ? p.y - ground.timeOfImpact
         : null;
-    if (visual.current)
-      visual.current.position.y = holding
+    if (visual.current) {
+      visual.current.parent?.getWorldPosition(playerViewPosition);
+      const offset = holding
         ? -0.95 + activitySeatLift(pose, elapsed)
         : c.isOnGround && groundY !== null && c.currLinVel.y < 0.8
-          ? groundY - p.y + 0.015
-          : -0.8;
+          ? groundY - playerViewPosition.y + 0.015
+          : -0.935;
+      // A single sole offset through flight avoids a 13.5 cm takeoff/landing pop.
+      visual.current.position.y = holding
+        ? offset
+        : THREE.MathUtils.damp(visual.current.position.y, offset, 30, dt);
+    }
     const speed = holding ? 0 : Math.hypot(c.currLinVel.x, c.currLinVel.z);
-    const jumpClip = jumpAnimation(jumpState.current.phase),
+    const jumpClip = jumpAnimation(
+        jumpState.current.phase,
+        jumpState.current.style,
+      ),
       clipConfig = activity ?? jumpClip;
     const next =
       activity?.name ??
@@ -509,10 +576,14 @@ export function Player({
       });
       if (animationHistory.current.length > 12)
         animationHistory.current.shift();
-      actions[animation.current]?.fadeOut(0.14);
+      const blendDuration =
+        jumpClip || animation.current.startsWith("Jump_") ? 0.09 : 0.14;
+      actions[animation.current]?.fadeOut(blendDuration);
       const action = actions[next];
       if (action) {
         action.reset();
+        if (next === "Run" && animation.current === "Jump_RunLand")
+          action.time = action.getClip().duration * 0.64;
         action.setLoop(
           clipConfig && !clipConfig.loop ? THREE.LoopOnce : THREE.LoopRepeat,
           Infinity,
@@ -521,7 +592,7 @@ export function Player({
         action.setEffectiveTimeScale(
           clipConfig ? action.getClip().duration / clipConfig.duration : 1,
         );
-        action.fadeIn(jumpClip?.loop === false ? 0.06 : 0.14).play();
+        action.fadeIn(blendDuration).play();
       }
       animation.current = next;
       lastActivityStart.current = pose.startedAt;
@@ -597,6 +668,7 @@ export function Player({
         vehicle: mounted ? "QuickVolt 9" : null,
         vehicleSpeed: mounted ? getVehicleState().speed : 0,
         jumpPhase: jumpState.current.phase,
+        jumpStyle: jumpState.current.style,
         animationHistory: animationHistory.current,
         position: [p.x, p.y, p.z],
         feet: feet.toArray(),
@@ -626,6 +698,7 @@ export function Player({
       position={[spawn.x, terrainHeight(spawn.x, spawn.z) + 2, spawn.z]}
       enabledRotations={[false, false, false]}
       autoBalance={false}
+      enableToggleRun={false}
       capsuleHalfHeight={0.35}
       capsuleRadius={0.3}
       ccd
@@ -772,7 +845,7 @@ export function CameraRig({
     const transition = blend.current;
     if (transition) {
       transition.elapsed += Math.min(dt, 0.05);
-      const t = Math.min(1, transition.elapsed / 0.55),
+      const t = Math.min(1, transition.elapsed / 0.8),
         eased = t * t * (3 - 2 * t);
       camera.position.lerpVectors(transition.from, transition.to, eased);
       c.target.lerpVectors(transition.fromTarget, transition.target, eased);

@@ -327,19 +327,13 @@ export default function App() {
           >
             <color
               attach="background"
-              args={[
-                interiorIndex !== null
-                  ? "#121918"
-                  : evening
-                    ? "#becbc8"
-                    : "#cadfd8",
-              ]}
+              args={[evening ? "#becbc8" : "#cadfd8"]}
             />
             <fog
               attach="fog"
               args={[evening ? "#becbc8" : "#cadfd8", 380, 3300]}
             />
-            <group visible={interiorIndex === null}>
+            <group>
               <Sky
                 distance={10000}
                 sunPosition={sunDirection(evening)
@@ -355,14 +349,14 @@ export default function App() {
               args={[
                 "#eef1db",
                 "#7c8458",
-                interiorIndex !== null ? 0.65 : evening ? 0.55 : 0.75,
+                evening ? 0.55 : 0.75,
               ]}
             />
             <ambientLight intensity={0.08} />
             <directionalLight
               position={sunDirection(evening).multiplyScalar(150).toArray()}
               color={evening ? "#ffce98" : "#ffe2b3"}
-              intensity={interiorIndex !== null ? 1.3 : evening ? 2.4 : 3.3}
+              intensity={evening ? 2.4 : 3.3}
               castShadow
               shadow-mapSize={[2048, 2048]}
               shadow-camera-left={-110}
@@ -375,7 +369,7 @@ export default function App() {
               shadow-normalBias={0.04}
             />
             <Physics timeStep={1 / 60} gravity={[0, -12, 0]}>
-              <group visible={interiorIndex === null}>
+              <group>
                 <Terrain />
                 <Roads />
                 <LakeWater evening={evening} />
@@ -386,7 +380,7 @@ export default function App() {
               {interiorIndex !== null && (
                 <CabinInterior index={interiorIndex} />
               )}
-              <group visible={interiorIndex === null}>
+              <group>
                 <CabinGroundContacts onReady={setFoundationMetrics} />
               </group>
               <Player
@@ -398,8 +392,9 @@ export default function App() {
                 onVehicleChange={setVehicleMounted}
                 onVehicleHint={setScooterNear}
                 indoors={interiorIndex !== null}
+                doorTransition={doorTransition}
               />
-              <group visible={interiorIndex === null}>
+              <group>
                 <Crowd enabled={crowd} />
                 <MultiplayerPlayers room={room} />
                 <ParkedScooter />
