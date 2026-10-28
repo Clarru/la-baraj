@@ -1,0 +1,212 @@
+{
+  "encoding": "EXT_meshopt_compression, lossless vertex data; no simplification/quantization; textures unchanged",
+  "models": [
+    {
+      "id": "CommonTree_1",
+      "compressed": true,
+      "beforeBytes": 551272,
+      "bytes": 304208,
+      "originalSha256": "8620ec66c21a025994d77fa82336071151652d1bf0a61ed62dedf68eec00f970",
+      "sha256": "2a8e118a823ad7dd5632b82c1ae3e679ba625ad4a63792917f44a771f6addd95",
+      "geometrySha256": "dca457e84436f614eebdb787c3e7cde017432d6963c4732e499b3b029763522e"
+    },
+    {
+      "id": "CommonTree_3",
+      "compressed": true,
+      "beforeBytes": 356676,
+      "bytes": 220512,
+      "originalSha256": "e0213cd200d7830c9df378d2cd53b7eb42556e4bd89c2fc53901637e16f1b138",
+      "sha256": "8df9a17fb49fdbefd3f1926cd4009085f7c20902e43f4f4db4a807cea7b5987f",
+      "geometrySha256": "e59bceee5e30c089685836651544a26fceef19e367101aecff45d96bc540b8b0"
+    },
+    {
+      "id": "Pine_2",
+      "compressed": true,
+      "beforeBytes": 294320,
+      "bytes": 157132,
+      "originalSha256": "ce38ed2b60486de14f87922fbf74951771ef7d03226095f6b299cef4da56d231",
+      "sha256": "4bee0dfac3aaf6c55e95ab55741ab1dda9aaebcedac93fafa4bf83491d08f07c",
+      "geometrySha256": "05733b47a1ee38cf75794298b6ef8d33a21dcf57b49f5d70d37a5c99ea9705c3"
+    },
+    {
+      "id": "Pine_4",
+      "compressed": true,
+      "beforeBytes": 290832,
+      "bytes": 157860,
+      "originalSha256": "5d6cc199117a9da3ff7ef975acd08d70f686ee8de77f37ad800eaf5143033022",
+      "sha256": "bb3782d4d2ca5d03de6697fc1eea9b374ea734e8cdd9347084224fecba4d78c4",
+      "geometrySha256": "5c2d9cf9f12253ccfa229405be44ebf566683a090dde1cfcbc856b851627d8cf"
+    },
+    {
+      "id": "Bush_Common",
+      "compressed": true,
+      "beforeBytes": 127216,
+      "bytes": 89492,
+      "originalSha256": "18c0555bf7d2cbfa5666ed7375cc783560c7d7487691295d3877f74a1abd7988",
+      "sha256": "2f53b2f47df99746784331c86731e0ab82d092babacc8ac4cae9b29c7d868638",
+      "geometrySha256": "fe9a4f3f65c2e33023ae69bba711a636b052a1c4ff8e63c759b9e1c41961889c"
+    },
+    {
+      "id": "Fern_1",
+      "compressed": false,
+      "beforeBytes": 64784,
+      "bytes": 64784,
+      "originalSha256": "fcfcd6b625b33c1f0f2d544f8a1fc9e8feb84dcddbb567e472a5fd3d16469a0c",
+      "sha256": "fcfcd6b625b33c1f0f2d544f8a1fc9e8feb84dcddbb567e472a5fd3d16469a0c",
+      "geometrySha256": "698075e6b554a651002ccda57b46f48222a3cc029354d1aafce9c19e66a57b56"
+    },
+    {
+      "id": "Grass_Common_Short",
+      "compressed": false,
+      "beforeBytes": 9928,
+      "bytes": 9928,
+      "originalSha256": "57592ff27ef789694c4009180d38eed418386b6dcd9d67e50b47be6fc97d6e5a",
+      "sha256": "57592ff27ef789694c4009180d38eed418386b6dcd9d67e50b47be6fc97d6e5a",
+      "geometrySha256": "bfea7610f6f088f2842c4dfd365df4bb21b1a4c9b229b5b2aee7c66a01ba1071"
+    },
+    {
+      "id": "Flower_3_Group",
+      "compressed": false,
+      "beforeBytes": 124176,
+      "bytes": 124176,
+      "originalSha256": "42a25b577b23ff930e40d3b548ce5d5119fc05b85f6a28bbb41a6c882727c033",
+      "sha256": "42a25b577b23ff930e40d3b548ce5d5119fc05b85f6a28bbb41a6c882727c033",
+      "geometrySha256": "a43e16b8fd2e1b87dd94827efa5f043aeb07dcbc6aae0bbf13ecc16f4f9b018b"
+    },
+    {
+      "id": "Rock_Medium_1",
+      "compressed": false,
+      "beforeBytes": 36216,
+      "bytes": 36216,
+      "originalSha256": "d6e15c5cc198e751feab2bfaab2e601c53bebdb9bda6a9f63883635d4cbf51f1",
+      "sha256": "d6e15c5cc198e751feab2bfaab2e601c53bebdb9bda6a9f63883635d4cbf51f1",
+      "geometrySha256": "f8beda3286a97acb7b1477c1be5bcd47413b2dfb0a0805cf793f3958ade3aecf"
+    },
+    {
+      "id": "Rock_Medium_2",
+      "compressed": false,
+      "beforeBytes": 32360,
+      "bytes": 32360,
+      "originalSha256": "713e9dd6a36f5ff8b43830015b6ee895a375cbadf6274e30b44b14b53cf9556b",
+      "sha256": "713e9dd6a36f5ff8b43830015b6ee895a375cbadf6274e30b44b14b53cf9556b",
+      "geometrySha256": "5610afbdd9d61a8682f904035bc9f012b277fcca8e0f67f7e447e700daab4d17"
+    },
+    {
+      "id": "Bench",
+      "compressed": false,
+      "beforeBytes": 141072,
+      "bytes": 141072,
+      "originalSha256": "acc7821bfac9e2fc059891a1cdae8f8e9ce8544a341ed97ebc82e480d52856e4",
+      "sha256": "acc7821bfac9e2fc059891a1cdae8f8e9ce8544a341ed97ebc82e480d52856e4",
+      "geometrySha256": "9b6c0ec5bf01355ac585ed4ac766a15820e412976bc531e7969b24e93b001332"
+    },
+    {
+      "id": "Table_Large",
+      "compressed": true,
+      "beforeBytes": 178180,
+      "bytes": 154548,
+      "originalSha256": "43e6b7f30ff1375829a961a04dad83e3b04ef8e8355e98515c5cd4c938ef102a",
+      "sha256": "94155f03f208e90e867ad48d48315da5dd46be446a771fe7f40be1c950085698",
+      "geometrySha256": "1afcfac095740eecbf0dc38aa3a48014823f7dc61db21f3583cc8137cc0899d2"
+    },
+    {
+      "id": "Prop_WoodenFence_Single",
+      "compressed": false,
+      "beforeBytes": 79428,
+      "bytes": 79428,
+      "originalSha256": "5cb82b80d254895a184d811abb45287d44da0a8dfba3cc2006aec4385d36e750",
+      "sha256": "5cb82b80d254895a184d811abb45287d44da0a8dfba3cc2006aec4385d36e750",
+      "geometrySha256": "d0d822cd9e0ae35a388e8b9642085ca454b61bc41af98a1ff993eaa814b19fb8"
+    },
+    {
+      "id": "Crate_Wooden",
+      "compressed": true,
+      "beforeBytes": 188344,
+      "bytes": 161276,
+      "originalSha256": "338fb8691af3fc08183ce31893f2fae92ef65c35501c1c2270467fcf0729df00",
+      "sha256": "dc967cbafc3211a98f140306e0db6d69e3068e01dc96d79fd4d9b472f8d07927",
+      "geometrySha256": "e133ca24d87125135a2175837ccd09ae3923522f954ad4313d83b93a246ebfeb"
+    },
+    {
+      "id": "Lake_Cabin_Gable",
+      "compressed": true,
+      "beforeBytes": 1462640,
+      "bytes": 888248,
+      "originalSha256": "055623c57b3d2aa600c1345ac95b65d45f69aaabd1370d28acf17c2ab09f8dec",
+      "sha256": "8f43e55ac079483be9a87116d794a1097a00a6ccdd6e4ce7ea6a709ce6739d37",
+      "geometrySha256": "4a500bf38e8d88aa151e81c0d822424283bbe9ad6832e855401fcc06ef21b2ca"
+    },
+    {
+      "id": "Lake_Cabin_AFrame",
+      "compressed": true,
+      "beforeBytes": 888336,
+      "bytes": 554080,
+      "originalSha256": "3d8d5b2c2dc9602bc6215375c6b4fd76cc407be0c8bab4f14c8f05f9146b68ec",
+      "sha256": "729b82f4d32553d853356e02b3eb8f7f6cfaf2080c64bb1f9ac3cced2b4205c5",
+      "geometrySha256": "936ca1c2eabb6fc50e492f323412c72f4e3bebfb2aa192fe6a2aeb7e2b3000e1"
+    },
+    {
+      "id": "Lake_Cabin_Sage",
+      "compressed": true,
+      "beforeBytes": 1485040,
+      "bytes": 919092,
+      "originalSha256": "6f706826e66fd0ae837d1f1594a0ac4de6f1852f97bd42ed8957589b604cfee4",
+      "sha256": "76d20501aa989c4e92a678a1f2037099418f65a5ba40a681a5bfa18e96139af4",
+      "geometrySha256": "e3f2bf6571fb2ab8646e1f24771006eb8ab127961770133e93e682b37aff4227"
+    },
+    {
+      "id": "Lake_Cabin_GableBlue",
+      "compressed": true,
+      "beforeBytes": 1859052,
+      "bytes": 1126508,
+      "originalSha256": "cd5dc7982bf29c04abdfa8a919edbea406039915eeb960d7dd1eafcfcfabb284",
+      "sha256": "430d514dc1d022769e4e1a758462ac692061eaf8d1fd36d888e29be43cb3fbc3",
+      "geometrySha256": "befd2930de1f6cb26017343f6f39bbc4d03895fb3218c7768b0678e57723393c"
+    },
+    {
+      "id": "Lake_Cabin_AFrameCopper",
+      "compressed": true,
+      "beforeBytes": 948052,
+      "bytes": 587360,
+      "originalSha256": "a2f1612ba9c075734a6dbf20f68decb0b2d12d99067ffb52e8100a0a83ecb33b",
+      "sha256": "b14446630912e73cb2e3683b9db181b9ee9e3886b6ba9202468029e09339d8de",
+      "geometrySha256": "87e64cd6cef393c5df6d2f7c23aaaf09c2c5178c2494dbc2dafcae325aed5f31"
+    },
+    {
+      "id": "Lake_Cabin_SagePergola",
+      "compressed": true,
+      "beforeBytes": 1784144,
+      "bytes": 1097640,
+      "originalSha256": "873f1d14f9451e0ee68078196921fbed9755a97a74e8459aca9d27ecbcce982c",
+      "sha256": "2a6bd78b8897aa60cbfa664b645a6bff529eb5db71a62b21b124ce0487e5d13f",
+      "geometrySha256": "ce05702395744725e8b3b0d28b36d1ca58e113a7bd79c379e81cf079dc3d66bd"
+    },
+    {
+      "id": "Lake_Interior_Timber",
+      "compressed": true,
+      "beforeBytes": 761844,
+      "bytes": 478608,
+      "originalSha256": "0b56c31b0ab3ca65ef5e159940aec85184192dc7e7242ca00ef1e5212c5fb48a",
+      "sha256": "e84f379fdaa3cfd90f0be7fef5305018474df41bc01008546c74ee98f6972916",
+      "geometrySha256": "de719bec7044be166bef2acede45496dff2950b730140bfed80036b4de43881a"
+    },
+    {
+      "id": "Lake_Interior_AFrame",
+      "compressed": true,
+      "beforeBytes": 777048,
+      "bytes": 493256,
+      "originalSha256": "5d563eedbba88d0bcbaf444c0e57e32c299fc03e8da9cf74a77b6a141ad88954",
+      "sha256": "9cea428e35f5317af0622f5a3de3ee55c1cc80ccbec998546fc775e289a3732d",
+      "geometrySha256": "878c123553a557cc979b5874fcf00eb220139a3c06ca91e9d3b56eafe527c32a"
+    },
+    {
+      "id": "Lake_Interior_Sage",
+      "compressed": true,
+      "beforeBytes": 673804,
+      "bytes": 431188,
+      "originalSha256": "97655be902b74633963168e9cde6cf746fcf08364a0126cfa47a72ce4dd280b5",
+      "sha256": "6aebd738c808f2550c29a83d98852ad035ef1497d4077a1640c84117e710049d",
+      "geometrySha256": "4e15c58dc5e1d9bbddc0c8e1fe8109763da3e5b87f550fca988ec9923642c9a7"
+    }
+  ]
+}

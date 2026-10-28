@@ -9,9 +9,9 @@ import { RigidBody, CuboidCollider } from "@react-three/rapier";
 import { getVehicleState } from "./vehicle-state";
 import {
   advanceScooterMotion,
-  createScooterRig,
   type ScooterMotion,
 } from "./scooter-geometry";
+import { cloneScooterRig } from "./scooter-resources";
 
 export { SCOOTER_METRICS, scooterGripPosition } from "./scooter-geometry";
 export type ScooterHandle = {
@@ -23,7 +23,7 @@ export const Scooter = forwardRef<
   ScooterHandle,
   { parked?: boolean; visible?: boolean }
 >(function Scooter({ parked = false, visible = true }, ref) {
-  const rig = useMemo(createScooterRig, []);
+  const rig = useMemo(cloneScooterRig, []);
   const motion = useRef({ wheelAngle: 0, steeringAngle: 0 });
   rig.kickstand.visible = parked;
   useImperativeHandle(

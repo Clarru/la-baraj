@@ -1,10 +1,17 @@
-import { useLayoutEffect, useMemo, useRef } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 import { useModelBench, type BenchOptions } from "./BenchRegistration";
 import { StaticCollider } from "./StaticCollider";
 export const assetUrl = (id: string) => `/assets/optimized/${id}.glb`;
+const materialCache = new WeakMap<
+  THREE.Material,
+  Map<boolean, THREE.Material>
+>();
 function materialFor(source: THREE.Material, flat: boolean) {
+  const cached = materialCache.get(source);
+  const saved = cached?.get(flat);
+  if (saved) return saved;
   const m = source.clone() as THREE.MeshStandardMaterial;
   m.roughness = Math.max(m.roughness ?? 0.8, 0.65);
   m.metalness = Math.min(m.metalness ?? 0, 0.15);
@@ -25,6 +32,9 @@ function materialFor(source: THREE.Material, flat: boolean) {
             : "#977754",
     );
   }
+  const variants = cached ?? new Map<boolean, THREE.Material>();
+  variants.set(flat, m);
+  materialCache.set(source, variants);
   return m;
 }
 export function Model({
@@ -63,17 +73,24 @@ export function Model({
     return {
       obj,
       s,
-      dimensions: {width:size.x*s,depth:size.z*s,height},
+      dimensions: { width: size.x * s, depth: size.z * s, height },
       offset: [-center.x, -box.min.y, -center.z] as [number, number, number],
     };
   }, [scene, height, flat]);
   const root = useRef<THREE.Group>(null);
-  useModelBench(root,id,model.dimensions,bench);
+  useModelBench(root, id, model.dimensions, bench);
   return (
-    <group ref={root} position={position} rotation={[0, rotation, 0]} scale={scale}>
+    <group
+      ref={root}
+      position={position}
+      rotation={[0, rotation, 0]}
+      scale={scale}
+    >
       <group scale={model.s}>
         <primitive object={model.obj} position={model.offset} dispose={null} />
-        <group position={model.offset}><StaticCollider object={scene} /></group>
+        <group position={model.offset}>
+          <StaticCollider object={scene} />
+        </group>
       </group>
     </group>
   );
@@ -151,6 +168,10 @@ function InstanceBatch({
   shadows: boolean;
 }) {
   const mesh = useRef<THREE.InstancedMesh>(null);
+  useEffect(() => {
+    const instance = mesh.current;
+    return () => instance?.dispose();
+  }, []);
   useLayoutEffect(() => {
     if (!mesh.current) return;
     const p = new THREE.Vector3(),

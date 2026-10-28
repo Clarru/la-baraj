@@ -102,9 +102,16 @@ function groundTexture() {
   t.colorSpace = THREE.SRGBColorSpace;
   return t;
 }
+// Suspense discards useMemo on an uncommitted render. Loading each GLB retried
+// the whole initial scene and rebuilt this mesh ~15 times. These immutable,
+// page-lifetime resources must survive those retries, like the GLTF loader cache.
+let terrainResources:
+  { patches: THREE.PlaneGeometry[]; tex: THREE.CanvasTexture } | undefined;
 export function Terrain() {
-  const patches = useMemo(makeTerrain, []);
-  const tex = useMemo(groundTexture, []);
+  const { patches, tex } = (terrainResources ??= {
+    patches: makeTerrain(),
+    tex: groundTexture(),
+  });
   return (
     <>
       {patches.map((geometry, i) => (
@@ -119,6 +126,7 @@ export function Terrain() {
             userData={{ terrain: true }}
             geometry={geometry}
             receiveShadow
+            dispose={null}
           >
             <meshStandardMaterial
               vertexColors
@@ -226,6 +234,16 @@ export function LakeWater({ evening }: { evening: boolean }) {
         "vec3 outgoingLight = mix(albedo, waterColor * 1.3, 0.48);",
       )
       .replace("100.0, 2.0, 0.5", "240.0, 0.65, 0.5");
+    // Waves still animate every frame. Re-render the reflected world at 30Hz,
+    // rather than drawing all houses and players again at 120Hz.
+    const reflect = w.onBeforeRender.bind(w);
+    let reflectedAt = -Infinity;
+    w.onBeforeRender = (...args) => {
+      const now = performance.now();
+      if (now - reflectedAt < 1000 / 30) return;
+      reflectedAt = now;
+      reflect(...args);
+    };
     return w;
   }, []);
   useEffect(() => {
@@ -298,10 +316,11 @@ function roadGeometry() {
   g.computeVertexNormals();
   return g;
 }
+let sharedRoadGeometry: THREE.BufferGeometry | undefined;
 export function Roads() {
-  const geometry = useMemo(roadGeometry, []);
+  const geometry = (sharedRoadGeometry ??= roadGeometry());
   return (
-    <mesh geometry={geometry} receiveShadow>
+    <mesh geometry={geometry} receiveShadow dispose={null}>
       <meshStandardMaterial
         color="#86827b"
         roughness={0.96}
@@ -391,14 +410,24 @@ const vegetationData = (() => {
   }
   return groups;
 })();
-const naturalSolids: NaturalSolid[] = Object.entries(vegetationData).flatMap(([id, items]) => {
-  const modelId = id.replace("_Distant", "");
-  const tree = /^(CommonTree|Pine)/.test(modelId);
-  if (!tree && !/^(Rock|Bush)/.test(modelId)) return [];
-  return items.map((item, index) => ({ ...item, id: modelId, key: `${id}-${index}`,
-    ...(tree ? { treeHeight: impostorInfo[modelId as keyof typeof impostorInfo].height * .72 } : {}),
-  }));
-});
+const naturalSolids: NaturalSolid[] = Object.entries(vegetationData).flatMap(
+  ([id, items]) => {
+    const modelId = id.replace("_Distant", "");
+    const tree = /^(CommonTree|Pine)/.test(modelId);
+    if (!tree && !/^(Rock|Bush)/.test(modelId)) return [];
+    return items.map((item, index) => ({
+      ...item,
+      id: modelId,
+      key: `${id}-${index}`,
+      ...(tree
+        ? {
+            treeHeight:
+              impostorInfo[modelId as keyof typeof impostorInfo].height * 0.72,
+          }
+        : {}),
+    }));
+  },
+);
 export const environmentCounts = Object.fromEntries(
   Object.entries(vegetationData).map(([k, v]) => [k, v.length]),
 );
@@ -510,7 +539,7 @@ export const Vegetation = memo(function Vegetation({
             <Detailed
               key={key}
               position={[cx, 0, cz]}
-              distances={[0, isTree ? 160 : isSmall ? 110 : 360]}
+              distances={[0, isTree ? 120 : isSmall ? 110 : 360]}
               hysteresis={0.12}
               autoUpdate={false}
             >

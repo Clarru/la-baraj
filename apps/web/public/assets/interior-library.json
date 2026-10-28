@@ -2,7 +2,7 @@
   "models": [
     {
       "id": "Lake_Interior_Timber",
-      "bytes": 761844,
+      "bytes": 478608,
       "bounds": {
         "min": [
           -2.740000009536743,
@@ -19,7 +19,7 @@
     },
     {
       "id": "Lake_Interior_AFrame",
-      "bytes": 777048,
+      "bytes": 493256,
       "bounds": {
         "min": [
           -2.8899998664855957,
@@ -36,7 +36,7 @@
     },
     {
       "id": "Lake_Interior_Sage",
-      "bytes": 673804,
+      "bytes": 431188,
       "bounds": {
         "min": [
           -3.0399999618530273,

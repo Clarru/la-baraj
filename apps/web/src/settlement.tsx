@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { Suspense, useEffect, useMemo } from "react";
 import { Text, useGLTF, useTexture } from "@react-three/drei";
 import { RigidBody, CuboidCollider } from "@react-three/rapier";
 import * as THREE from "three";
@@ -80,22 +80,35 @@ export function Cabin({
     });
     return object;
   }, [scene, flat]);
-  const cutaway = useMemo(() => cabinCutawayBase(model), [model]);
+  const cutaway = useMemo(
+    () => (interiorActive ? cabinCutawayBase(model) : null),
+    [model, interiorActive],
+  );
+  useEffect(
+    () => () => {
+      cutaway?.traverse((node) => {
+        if (node instanceof THREE.Mesh) node.geometry.dispose();
+      });
+    },
+    [cutaway],
+  );
   const [plaqueX, plaqueY, plaqueZ] = design.numberMount;
   return (
     <group
       position={[x, terrainHeight(x, z), z]}
       rotation={[0, cabinYaw(index), 0]}
     >
-      <StaticCollider object={interiorActive ? cutaway : scene} />
-      <primitive object={interiorActive ? cutaway : model} dispose={null} />
+      <StaticCollider object={cutaway ?? scene} />
+      <primitive object={cutaway ?? model} dispose={null} />
       <CabinBenchSeats index={index} />
       <group visible={!interiorActive}>
         <mesh position={[plaqueX, plaqueY, plaqueZ]}>
           <boxGeometry args={[0.36, 0.4, 0.035]} />
           <meshStandardMaterial color="#263c40" roughness={0.9} />
         </mesh>
+        {/* Empty glyph geometry must wait for Troika's first asynchronous sync. */}
         <Text
+          geometry-instanceCount={0}
           position={[plaqueX, plaqueY, plaqueZ + 0.022]}
           font="/fonts/barlow-condensed-latin-600-normal.woff"
           fontSize={0.22}
@@ -104,6 +117,8 @@ export function Cabin({
           anchorY="middle"
         >
           {String(index + 1)}
+          {/* R3F owns the base material; disposal also releases Troika's derived shaders. */}
+          <meshBasicMaterial color="#ffffff" side={THREE.DoubleSide} transparent />
         </Text>
         {
           <group
@@ -120,6 +135,7 @@ export function Cabin({
               />
             </mesh>
             <Text
+              geometry-instanceCount={0}
               position={[0, 0, 0.003]}
               font="/fonts/AlegreyaSans-Bold.ttf"
               fontSize={0.13}
@@ -131,6 +147,7 @@ export function Cabin({
               anchorY="middle"
             >
               {ownerName ?? " "}
+              <meshBasicMaterial color="#ffffff" side={THREE.DoubleSide} transparent />
             </Text>
           </group>
         }
@@ -206,10 +223,12 @@ export function Settlement({
   flat,
   interiorIndex = null,
   cabins,
+  arrivalIndex,
 }: {
   flat: boolean;
   interiorIndex?: number | null;
   cabins: readonly PublicCabin[];
+  arrivalIndex?: number;
 }) {
   const z = southShore(0) + 9,
     y = terrainHeight(0, z);
@@ -217,7 +236,7 @@ export function Settlement({
     <>
       {cabins.map((home) => {
         const c = cabinSpots[home.index];
-        return (
+        const cabin = (
           <Cabin
             key={c.i}
             index={c.i}
@@ -227,6 +246,15 @@ export function Settlement({
             interiorActive={interiorIndex === c.i}
             ownerName={home.ownerName}
           />
+        );
+        // A newly joining friend's first archetype/font must not hide the whole
+        // running world. Our own arrival cabin still gates the initial loader.
+        return c.i === arrivalIndex ? (
+          cabin
+        ) : (
+          <Suspense key={c.i} fallback={null}>
+            {cabin}
+          </Suspense>
         );
       })}
       <Dock x={0} flat={flat} />

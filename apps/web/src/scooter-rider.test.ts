@@ -21,6 +21,42 @@ const position = (scene: THREE.Object3D, name: string) =>
   );
 
 describe("QuickVolt9 scooter rider", () => {
+  it("preserves solved grip and foot contacts after mixer writes, world travel, turning and remounting", async () => {
+    const { scene, animations } = await load();
+    const parent = new THREE.Group();
+    parent.add(scene);
+    const rig = createScooterRiderRig(
+      scene,
+      animations.find((c) => c.name === "Idle_Neutral"),
+    );
+    const mixer = new THREE.AnimationMixer(scene);
+    mixer.clipAction(animations.find((c) => c.name === "Walk")!).play();
+    for (let frame = 0; frame < 120; frame++) {
+      parent.position.set(frame * 0.1, 3, 10);
+      parent.rotation.y = frame * 0.03;
+      mixer.update(1 / 60);
+      if (frame === 60) rig.reset();
+      rig.update({ speed: 4, steer: 0 });
+      for (const [suffix, side] of [
+        ["l", "right"],
+        ["r", "left"],
+      ] as const) {
+        const wrist = new THREE.Vector3(...scooterGripPosition(side, 0)).sub(
+          new THREE.Vector3(0, 0, 0.045),
+        );
+        expect(
+          position(scene, `hand_${suffix}`).distanceTo(wrist),
+        ).toBeLessThan(0.001);
+        expect(
+          position(scene, `ball_${suffix}`).distanceTo(
+            new THREE.Vector3(...SCOOTER_METRICS.feet[side]),
+          ),
+        ).toBeLessThan(0.001);
+      }
+    }
+    rig.dispose();
+    mixer.stopAllAction();
+  });
   it("stands with soft knees and staggered feet while following the steered bars", async () => {
     const { scene, animations } = await load();
     const parent = new THREE.Group();

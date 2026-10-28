@@ -106,6 +106,16 @@ afterEach(() => {
 });
 
 describe("friends room client", () => {
+  it("keeps an explicit offline preview disconnected even with a configured live host", () => {
+    const room = new MultiplayerRoom();
+    const disconnect = room.connect(true);
+    expect(sockets).toHaveLength(0);
+    expect(room.getSnapshot().status).toBe("offline");
+    expect(
+      [...storageData.keys()].some((key) => key.includes("home-resume")),
+    ).toBe(false);
+    disconnect();
+  });
   it.each([
     ["takeoff", "Jump_RunStart"],
     ["airborne", "Jump_RunAir"],
