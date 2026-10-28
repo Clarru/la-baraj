@@ -127,91 +127,12 @@ a {
   font: 400 10px var(--font-body);
   color: #61523f;
 }
-.lake-minimap {
-  position: absolute;
-  left: 28px;
-  bottom: 76px;
-  width: 204px;
-  background: var(--paper);
-  color: var(--ink);
-  border-bottom: 2px solid var(--ink);
-  pointer-events: auto;
-}
-.lake-minimap.expanded {
-  width: 420px;
-  bottom: 160px;
-}
-.lake-minimap header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 7px 9px;
-}
-.lake-minimap header strong {
-  font: 600 15px var(--font-heading);
-}
-.map-expand {
-  background: transparent;
-  color: var(--ink);
-  padding: 3px;
-  display: flex;
-}
-.map-expand:hover {
-  background: #dbe4ea;
-}
-.lake-minimap > svg {
-  display: block;
-  overflow: hidden;
-}
-.map-north {
-  position: absolute;
-  top: 43px;
-  left: 10px;
-  font: 600 12px var(--font-heading);
-  color: #263b40;
-  background: #edf1e7;
-  padding: 2px 4px;
-}
-.lake-minimap footer {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  padding: 8px 9px;
-  font-size: 11px;
-}
-.lake-minimap footer > span:last-child {
-  margin-left: auto;
-  font-variant-numeric: tabular-nums;
-  color: var(--muted);
-}
-.map-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 12px;
-  margin: 0;
-  padding: 0 10px 10px;
-  font-size: 10px;
-  color: var(--muted);
-}
 .game-shell[data-view="walk"] .location-readout {
   display: none;
 }
 
 .game-shell[data-view="home"] .location-readout {
   display: none;
-}
-.map-home-button {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  background: transparent;
-  color: var(--ink);
-  padding: 0;
-  font: inherit;
-}
-.map-home-button:hover span {
-  text-decoration: underline;
-  text-underline-offset: 3px;
 }
 
 .cabin-entry-panel {
@@ -521,34 +442,6 @@ a {
 }
 .cabin-entry-panel button {
   margin-left: 6px;
-}
-.lake-minimap,
-.lake-minimap.expanded {
-  top: 110px;
-  bottom: auto;
-  max-height: calc(100vh - 145px);
-  overflow: auto;
-}
-.lake-minimap > svg {
-  width: 100%;
-  height: auto;
-}
-.map-header-actions {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-}
-.map-header-actions button {
-  width: 28px;
-  height: 28px;
-  align-items: center;
-  justify-content: center;
-}
-.map-attribution {
-  display: block;
-  padding: 0 10px 9px;
-  color: var(--muted);
-  font-size: 9px;
 }
 .developer-tools {
   position: absolute;

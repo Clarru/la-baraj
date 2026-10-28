@@ -19,7 +19,7 @@
 
 - Production is https://la-baraj.vercel.app/ for everyone. No room selection, generated room IDs, invite-copy UI, or visible capacity denominator.
 - CANONICAL_WORLD_ID is the preserved existing world in packages/shared/protocol.ts. Accepted legacy room URLs are aliases, not separate worlds. Preserve its ownership and fire state.
-- Player-facing UI is the game, a transparent title banner, compact status, Menu and contextual actions. Inspection/debug tools are development-only; map/help are on demand.
+- Player-facing UI is the game, a transparent title banner, compact status, Menu and contextual actions. Inspection/debug tools are development-only. The circular minimap stays visible at bottom-left without labels or map controls; help remains on demand.
 
 ## One local game URL
 

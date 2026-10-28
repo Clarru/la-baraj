@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useSyncExternalStore } from "react";
+import type { NavigationFeed } from "./navigation-feed";
 import { GameIcon } from "./GameArt";
 import {
   lake,
@@ -8,11 +9,7 @@ import {
   sharedGrounds,
 } from "./geography";
 import { cabinDesignForPlot } from "./cabin-designs";
-import {
-  mapHomePosition,
-  playerMapRotation,
-  type NavigationSample,
-} from "./home";
+import { mapHomePosition, playerMapRotation } from "./home";
 const shoreline = lake.map((p) => p.join(",")).join(" ");
 const mapRoads = roads
   .filter(
@@ -23,74 +20,35 @@ const mapRoads = roads
   )
   .map((r) => r.points.map((p) => p.join(",")).join(" "));
 export function Minimap({
-  navigation,
+  navigation: feed,
   homeIndex,
-  active,
-  onFocusHome,
-  onClose,
 }: {
-  navigation: NavigationSample;
+  navigation: NavigationFeed;
   homeIndex: number;
-  active: boolean;
-  onFocusHome: () => void;
-  onClose: () => void;
 }) {
-  const [expanded, setExpanded] = useState(false);
-  if (!active) return null;
+  const navigation = useSyncExternalStore(
+    feed.subscribe,
+    feed.getSnapshot,
+    feed.getSnapshot,
+  );
   const home = cabinSpots[homeIndex],
-    size = expanded ? 420 : 204;
-  const xs = cabinSpots.map((p) => p.x).concat(navigation.x),
-    zs = cabinSpots.map((p) => p.z).concat(navigation.z);
-  const range = expanded
-    ? Math.max(
-        Math.max(...xs) - Math.min(...xs),
-        Math.max(...zs) - Math.min(...zs),
-      ) + 160
-    : 220;
-  const center = expanded
-    ? {
-        x: (Math.max(...xs) + Math.min(...xs)) / 2,
-        z: (Math.max(...zs) + Math.min(...zs)) / 2,
-      }
-    : { x: navigation.x, z: navigation.z };
+    size = 204,
+    range = 220;
+  const center = { x: navigation.x, z: navigation.z };
   const scale = range / size,
     icon = 18 * scale;
-  const marker = mapHomePosition(home, center, range),
-    distance = Math.round(
-      Math.hypot(home.x - navigation.x, home.z - navigation.z),
-    );
+  const marker = mapHomePosition(home, center, range);
   return (
     <aside
-      className={`lake-minimap ${expanded ? "expanded" : ""}`}
+      className="lake-minimap"
       aria-label="Lake minimap"
       data-testid="minimap"
       data-player={JSON.stringify(navigation)}
       data-home={homeIndex + 1}
     >
-      <header>
-        <strong>{expanded ? "South shore" : "Lake Cinciș"}</strong>
-        <div className="map-header-actions">
-          <button
-            className="map-expand"
-            aria-label={expanded ? "Collapse map" : "Expand map"}
-            onClick={() => setExpanded((v) => !v)}
-            title={expanded ? "Collapse map" : "Expand map"}
-          >
-            <GameIcon name={expanded ? "collapse" : "expand"} size={21} />
-          </button>
-          <button
-            className="map-expand"
-            onClick={onClose}
-            aria-label="Close map"
-            title="Close map (M)"
-          >
-            <GameIcon name="close" size={18} />
-          </button>
-        </div>
-      </header>
       <svg
         role="img"
-        aria-label={`You are ${distance} metres from your home, cabin ${homeIndex + 1}`}
+        aria-label="Nearby lake, roads, cabins and activities"
         viewBox={`${center.x - range / 2} ${center.z - range / 2} ${range} ${range}`}
         width={size}
         height={size}
@@ -173,37 +131,6 @@ export function Minimap({
           />
         </g>
       </svg>
-      <span className="map-north">N</span>
-      <footer>
-        <button
-          className="map-home-button"
-          onClick={onFocusHome}
-          aria-label="Look at your cabin"
-          title="H to look at home"
-        >
-          <GameIcon name="cabin" size={24} />
-          <span>
-            Your cabin <strong>{String(homeIndex + 1).padStart(2, "0")}</strong>
-          </span>
-        </button>
-        <span>{distance} m</span>
-      </footer>
-      <a
-        className="map-attribution"
-        href="https://www.openstreetmap.org/copyright"
-        target="_blank"
-        rel="noreferrer"
-      >
-        © OpenStreetMap contributors
-      </a>
-      {expanded && (
-        <p className="map-legend">
-          <span>Arrow · You</span>
-          <span>House · Home</span>
-          <span>Fish · Fishing</span>
-          <span>Flame · Campfire</span>
-        </p>
-      )}
     </aside>
   );
 }

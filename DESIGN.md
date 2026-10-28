@@ -119,8 +119,10 @@ nine-slice parchment frame, sixteen-symbol pictogram atlas and loading vignette.
 as HTML text. Bree Serif supplies short headings; Alegreya Sans 400/700 supplies
 supporting text. Both are self-hosted with Latin Extended support.
 
-Keep the default HUD to logo, online status, Menu and contextual prompts. Map,
-controls and cabin actions remain on demand. The world, approved character,
+Keep the default HUD to logo, online status, Menu, contextual prompts and a
+permanent circular minimap at bottom-left. The minimap contains world geometry
+and markers only: no N, heading, distance, legend, footer, expand or close buttons.
+Controls and cabin actions remain on demand. The world, approved character,
 movement and multiplayer behavior are unchanged by this visual update.
 Earlier cool-neutral component descriptions below are historical prototype
 notes; this section and the shipped UI supersede them on public game surfaces.

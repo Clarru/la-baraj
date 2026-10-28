@@ -88,10 +88,8 @@ export function GameDialog({
 export function GameMenu({
   nickname,
   homeIndex,
-  mapOpen,
   canLookHome = true,
   onRename,
-  onMap,
   onControls,
   onHome,
   onReset,
@@ -99,10 +97,8 @@ export function GameMenu({
 }: {
   nickname: string;
   homeIndex: number | null;
-  mapOpen: boolean;
   canLookHome?: boolean;
   onRename: (name: string) => void;
-  onMap: () => void;
   onControls: () => void;
   onHome: () => void;
   onReset: () => void;
@@ -145,11 +141,6 @@ export function GameMenu({
         </span>
       </p>
       <div className="game-menu-actions">
-        <button onClick={onMap}>
-          <GameIcon name="map" size={29} />
-          <span>{mapOpen ? "Hide map" : "Show map"}</span>
-          <kbd>M</kbd>
-        </button>
         <button onClick={onControls}>
           <GameIcon name="controls" size={29} />
           <span>Controls</span>
@@ -194,7 +185,6 @@ const controlRows = [
   ["F", "Sit or stand beside a bench"],
   ["A / D while seated", "Shift to the next seat"],
   ["V", "Ride a nearby scooter or park"],
-  ["M", "Show or hide the map"],
   ["H", "Outside: look at your cabin; move to resume walking"],
   ["R", "Return outside your cabin"],
   ["? / Escape", "Open controls / close this panel"],
