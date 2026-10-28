@@ -1,0 +1,565 @@
+{
+  "releaseCommit": "be7a4690b2ae39a7473a976a04afbdfc73a8f083",
+  "doorwaySamples": [
+    {
+      "local": {
+        "status": "online",
+        "selfId": "db9718cf-9dc7-437f-8470-0cbd4aef804f",
+        "nickname": "Blue Finch 46",
+        "ids": [
+          "1423c6e9-6c91-4e6f-860a-155245bbb8a2"
+        ],
+        "count": 2,
+        "error": "",
+        "fireLit": true,
+        "roomId": "552dd0549f954b5c8d895cfc27a3b12f",
+        "inviteUrl": "https://la-baraj.vercel.app/?room=552dd0549f954b5c8d895cfc27a3b12f",
+        "remotes": [
+          {
+            "id": "1423c6e9-6c91-4e6f-860a-155245bbb8a2",
+            "nickname": "Sunny Finch 2",
+            "position": [
+              44.994,
+              1,
+              26.825
+            ],
+            "yaw": -3.105,
+            "animation": "Idle_Neutral",
+            "activity": "none",
+            "vehicle": "none",
+            "speed": 0,
+            "jumpPhase": "grounded"
+          }
+        ],
+        "localPose": {
+          "position": [
+            63.676,
+            2.957,
+            24.462
+          ],
+          "yaw": -0.007,
+          "animation": "Idle_Neutral",
+          "activity": "none",
+          "vehicle": "none",
+          "jumpPhase": "grounded",
+          "speed": 0
+        },
+        "sentPoses": 23,
+        "receivedPoses": 8,
+        "pendingSeatClaims": 0,
+        "seats": {}
+      },
+      "peer": {
+        "status": "online",
+        "selfId": "1423c6e9-6c91-4e6f-860a-155245bbb8a2",
+        "nickname": "Sunny Finch 2",
+        "ids": [
+          "db9718cf-9dc7-437f-8470-0cbd4aef804f"
+        ],
+        "count": 2,
+        "error": "",
+        "fireLit": true,
+        "roomId": "552dd0549f954b5c8d895cfc27a3b12f",
+        "inviteUrl": "https://la-baraj.vercel.app/?room=552dd0549f954b5c8d895cfc27a3b12f",
+        "remotes": [
+          {
+            "id": "db9718cf-9dc7-437f-8470-0cbd4aef804f",
+            "nickname": "Blue Finch 46",
+            "position": [
+              63.676,
+              2.957,
+              24.462
+            ],
+            "yaw": -0.006999999999999999,
+            "animation": "Idle_Neutral",
+            "activity": "none",
+            "vehicle": "none",
+            "speed": 0,
+            "jumpPhase": "grounded"
+          }
+        ],
+        "localPose": {
+          "position": [
+            44.994,
+            1,
+            26.825
+          ],
+          "yaw": -3.105,
+          "animation": "Idle_Neutral",
+          "activity": "none",
+          "vehicle": "none",
+          "jumpPhase": "grounded",
+          "speed": 0
+        },
+        "sentPoses": 7,
+        "receivedPoses": 26,
+        "pendingSeatClaims": 0,
+        "seats": {}
+      }
+    },
+    {
+      "local": {
+        "status": "online",
+        "selfId": "db9718cf-9dc7-437f-8470-0cbd4aef804f",
+        "nickname": "Blue Finch 46",
+        "ids": [
+          "1423c6e9-6c91-4e6f-860a-155245bbb8a2"
+        ],
+        "count": 2,
+        "error": "",
+        "fireLit": true,
+        "roomId": "552dd0549f954b5c8d895cfc27a3b12f",
+        "inviteUrl": "https://la-baraj.vercel.app/?room=552dd0549f954b5c8d895cfc27a3b12f",
+        "remotes": [
+          {
+            "id": "1423c6e9-6c91-4e6f-860a-155245bbb8a2",
+            "nickname": "Sunny Finch 2",
+            "position": [
+              44.994,
+              1,
+              26.825
+            ],
+            "yaw": -3.105,
+            "animation": "Idle_Neutral",
+            "activity": "none",
+            "vehicle": "none",
+            "speed": 0,
+            "jumpPhase": "grounded"
+          }
+        ],
+        "localPose": {
+          "position": [
+            63.677,
+            2.957,
+            24.264
+          ],
+          "yaw": 3.135,
+          "animation": "Walk",
+          "activity": "none",
+          "vehicle": "none",
+          "jumpPhase": "grounded",
+          "speed": 2.54
+        },
+        "sentPoses": 25,
+        "receivedPoses": 8,
+        "pendingSeatClaims": 0,
+        "seats": {}
+      },
+      "peer": {
+        "status": "online",
+        "selfId": "1423c6e9-6c91-4e6f-860a-155245bbb8a2",
+        "nickname": "Sunny Finch 2",
+        "ids": [
+          "db9718cf-9dc7-437f-8470-0cbd4aef804f"
+        ],
+        "count": 2,
+        "error": "",
+        "fireLit": true,
+        "roomId": "552dd0549f954b5c8d895cfc27a3b12f",
+        "inviteUrl": "https://la-baraj.vercel.app/?room=552dd0549f954b5c8d895cfc27a3b12f",
+        "remotes": [
+          {
+            "id": "db9718cf-9dc7-437f-8470-0cbd4aef804f",
+            "nickname": "Blue Finch 46",
+            "position": [
+              63.676,
+              2.957,
+              24.462
+            ],
+            "yaw": 3.135,
+            "animation": "Walk",
+            "activity": "none",
+            "vehicle": "none",
+            "speed": 0,
+            "jumpPhase": "grounded"
+          }
+        ],
+        "localPose": {
+          "position": [
+            44.994,
+            1,
+            26.825
+          ],
+          "yaw": -3.105,
+          "animation": "Idle_Neutral",
+          "activity": "none",
+          "vehicle": "none",
+          "jumpPhase": "grounded",
+          "speed": 0
+        },
+        "sentPoses": 7,
+        "receivedPoses": 27,
+        "pendingSeatClaims": 0,
+        "seats": {}
+      }
+    },
+    {
+      "local": {
+        "status": "online",
+        "selfId": "db9718cf-9dc7-437f-8470-0cbd4aef804f",
+        "nickname": "Blue Finch 46",
+        "ids": [
+          "1423c6e9-6c91-4e6f-860a-155245bbb8a2"
+        ],
+        "count": 2,
+        "error": "",
+        "fireLit": true,
+        "roomId": "552dd0549f954b5c8d895cfc27a3b12f",
+        "inviteUrl": "https://la-baraj.vercel.app/?room=552dd0549f954b5c8d895cfc27a3b12f",
+        "remotes": [
+          {
+            "id": "1423c6e9-6c91-4e6f-860a-155245bbb8a2",
+            "nickname": "Sunny Finch 2",
+            "position": [
+              44.994,
+              1,
+              26.825
+            ],
+            "yaw": -3.105,
+            "animation": "Idle_Neutral",
+            "activity": "none",
+            "vehicle": "none",
+            "speed": 0,
+            "jumpPhase": "grounded"
+          }
+        ],
+        "localPose": {
+          "position": [
+            63.677,
+            2.957,
+            24.264
+          ],
+          "yaw": 3.135,
+          "animation": "Walk",
+          "activity": "none",
+          "vehicle": "none",
+          "jumpPhase": "grounded",
+          "speed": 2.54
+        },
+        "sentPoses": 25,
+        "receivedPoses": 8,
+        "pendingSeatClaims": 0,
+        "seats": {}
+      },
+      "peer": {
+        "status": "online",
+        "selfId": "1423c6e9-6c91-4e6f-860a-155245bbb8a2",
+        "nickname": "Sunny Finch 2",
+        "ids": [
+          "db9718cf-9dc7-437f-8470-0cbd4aef804f"
+        ],
+        "count": 2,
+        "error": "",
+        "fireLit": true,
+        "roomId": "552dd0549f954b5c8d895cfc27a3b12f",
+        "inviteUrl": "https://la-baraj.vercel.app/?room=552dd0549f954b5c8d895cfc27a3b12f",
+        "remotes": [
+          {
+            "id": "db9718cf-9dc7-437f-8470-0cbd4aef804f",
+            "nickname": "Blue Finch 46",
+            "position": [
+              63.677,
+              2.957,
+              24.264
+            ],
+            "yaw": 3.135,
+            "animation": "Walk",
+            "activity": "none",
+            "vehicle": "none",
+            "speed": 2.54,
+            "jumpPhase": "grounded"
+          }
+        ],
+        "localPose": {
+          "position": [
+            44.994,
+            1,
+            26.825
+          ],
+          "yaw": -3.105,
+          "animation": "Idle_Neutral",
+          "activity": "none",
+          "vehicle": "none",
+          "jumpPhase": "grounded",
+          "speed": 0
+        },
+        "sentPoses": 7,
+        "receivedPoses": 28,
+        "pendingSeatClaims": 0,
+        "seats": {}
+      }
+    },
+    {
+      "local": {
+        "status": "online",
+        "selfId": "db9718cf-9dc7-437f-8470-0cbd4aef804f",
+        "nickname": "Blue Finch 46",
+        "ids": [
+          "1423c6e9-6c91-4e6f-860a-155245bbb8a2"
+        ],
+        "count": 2,
+        "error": "",
+        "fireLit": true,
+        "roomId": "552dd0549f954b5c8d895cfc27a3b12f",
+        "inviteUrl": "https://la-baraj.vercel.app/?room=552dd0549f954b5c8d895cfc27a3b12f",
+        "remotes": [
+          {
+            "id": "1423c6e9-6c91-4e6f-860a-155245bbb8a2",
+            "nickname": "Sunny Finch 2",
+            "position": [
+              44.994,
+              1,
+              26.825
+            ],
+            "yaw": -3.105,
+            "animation": "Idle_Neutral",
+            "activity": "none",
+            "vehicle": "none",
+            "speed": 0,
+            "jumpPhase": "grounded"
+          }
+        ],
+        "localPose": {
+          "position": [
+            63.677,
+            2.957,
+            24.264
+          ],
+          "yaw": 3.135,
+          "animation": "Walk",
+          "activity": "none",
+          "vehicle": "none",
+          "jumpPhase": "grounded",
+          "speed": 2.54
+        },
+        "sentPoses": 25,
+        "receivedPoses": 8,
+        "pendingSeatClaims": 0,
+        "seats": {}
+      },
+      "peer": {
+        "status": "online",
+        "selfId": "1423c6e9-6c91-4e6f-860a-155245bbb8a2",
+        "nickname": "Sunny Finch 2",
+        "ids": [
+          "db9718cf-9dc7-437f-8470-0cbd4aef804f"
+        ],
+        "count": 2,
+        "error": "",
+        "fireLit": true,
+        "roomId": "552dd0549f954b5c8d895cfc27a3b12f",
+        "inviteUrl": "https://la-baraj.vercel.app/?room=552dd0549f954b5c8d895cfc27a3b12f",
+        "remotes": [
+          {
+            "id": "db9718cf-9dc7-437f-8470-0cbd4aef804f",
+            "nickname": "Blue Finch 46",
+            "position": [
+              63.677,
+              2.957,
+              24.264
+            ],
+            "yaw": 3.135,
+            "animation": "Walk",
+            "activity": "none",
+            "vehicle": "none",
+            "speed": 2.54,
+            "jumpPhase": "grounded"
+          }
+        ],
+        "localPose": {
+          "position": [
+            44.994,
+            1,
+            26.825
+          ],
+          "yaw": -3.105,
+          "animation": "Idle_Neutral",
+          "activity": "none",
+          "vehicle": "none",
+          "jumpPhase": "grounded",
+          "speed": 0
+        },
+        "sentPoses": 7,
+        "receivedPoses": 28,
+        "pendingSeatClaims": 0,
+        "seats": {}
+      }
+    }
+  ],
+  "finalLocal": {
+    "status": "online",
+    "selfId": "db9718cf-9dc7-437f-8470-0cbd4aef804f",
+    "nickname": "Blue Finch 46",
+    "ids": [
+      "1423c6e9-6c91-4e6f-860a-155245bbb8a2"
+    ],
+    "count": 2,
+    "error": "",
+    "fireLit": true,
+    "roomId": "552dd0549f954b5c8d895cfc27a3b12f",
+    "inviteUrl": "https://la-baraj.vercel.app/?room=552dd0549f954b5c8d895cfc27a3b12f",
+    "remotes": [
+      {
+        "id": "1423c6e9-6c91-4e6f-860a-155245bbb8a2",
+        "nickname": "Sunny Finch 2",
+        "position": [
+          44.994,
+          1,
+          26.825
+        ],
+        "yaw": -3.105,
+        "animation": "Idle_Neutral",
+        "activity": "none",
+        "vehicle": "none",
+        "speed": 0,
+        "jumpPhase": "grounded"
+      }
+    ],
+    "localPose": {
+      "position": [
+        63.689,
+        2.937,
+        22.562
+      ],
+      "yaw": 3.135,
+      "animation": "Idle_Neutral",
+      "activity": "none",
+      "vehicle": "none",
+      "jumpPhase": "grounded",
+      "speed": 0
+    },
+    "sentPoses": 32,
+    "receivedPoses": 8,
+    "pendingSeatClaims": 0,
+    "seats": {}
+  },
+  "finalPeer": {
+    "status": "online",
+    "selfId": "1423c6e9-6c91-4e6f-860a-155245bbb8a2",
+    "nickname": "Sunny Finch 2",
+    "ids": [
+      "db9718cf-9dc7-437f-8470-0cbd4aef804f"
+    ],
+    "count": 2,
+    "error": "",
+    "fireLit": true,
+    "roomId": "552dd0549f954b5c8d895cfc27a3b12f",
+    "inviteUrl": "https://la-baraj.vercel.app/?room=552dd0549f954b5c8d895cfc27a3b12f",
+    "remotes": [
+      {
+        "id": "db9718cf-9dc7-437f-8470-0cbd4aef804f",
+        "nickname": "Blue Finch 46",
+        "position": [
+          63.689,
+          2.937,
+          22.562
+        ],
+        "yaw": 3.135,
+        "animation": "Idle_Neutral",
+        "activity": "none",
+        "vehicle": "none",
+        "speed": 0,
+        "jumpPhase": "grounded"
+      }
+    ],
+    "localPose": {
+      "position": [
+        44.994,
+        1,
+        26.825
+      ],
+      "yaw": -3.105,
+      "animation": "Idle_Neutral",
+      "activity": "none",
+      "vehicle": "none",
+      "jumpPhase": "grounded",
+      "speed": 0
+    },
+    "sentPoses": 7,
+    "receivedPoses": 35,
+    "pendingSeatClaims": 0,
+    "seats": {}
+  },
+  "motion": {
+    "vehicle": null,
+    "vehicleSpeed": 0,
+    "jumpPhase": "grounded",
+    "jumpStyle": "walk",
+    "animationHistory": [
+      {
+        "animation": "Walk",
+        "at": 22466.600000023842,
+        "y": 1.6006903648376465
+      },
+      {
+        "animation": "Idle_Neutral",
+        "at": 22925.100000023842,
+        "y": 2.1204257011413574
+      },
+      {
+        "animation": "Walk",
+        "at": 50786.10000002384,
+        "y": 1.9315638542175293
+      },
+      {
+        "animation": "Run",
+        "at": 50889.80000001192,
+        "y": 1.9108033180236816
+      },
+      {
+        "animation": "Jump_RunStart",
+        "at": 51432.80000001192,
+        "y": 1.6159071922302246
+      },
+      {
+        "animation": "Jump_RunAir",
+        "at": 51639.69999998808,
+        "y": 2.5072696208953857
+      },
+      {
+        "animation": "Jump_RunLand",
+        "at": 52241.30000001192,
+        "y": 1.0872703790664673
+      },
+      {
+        "animation": "Idle_Neutral",
+        "at": 52409.10000002384,
+        "y": 1.0256785154342651
+      }
+    ],
+    "position": [
+      63.688697814941406,
+      3.8717310428619385,
+      22.56249237060547
+    ],
+    "feet": [
+      63.688697814941406,
+      2.9366912984848024,
+      22.56249237060547
+    ],
+    "contact": [
+      63.68868637084961,
+      2.921691417694092,
+      22.562536239624023
+    ],
+    "grounded": true,
+    "activity": "none",
+    "animation": "Idle_Neutral",
+    "groundY": 2.9216912984848022,
+    "velocity": [
+      0,
+      -0.0000232855454669334,
+      0
+    ],
+    "facing": [
+      0.0067620717504871175,
+      0,
+      -0.999977136931461
+    ],
+    "inWater": false,
+    "lastMovingAlignment": 0.8319613093957119,
+    "facingDot": null
+  },
+  "localErrors": [],
+  "peerErrors": []
+}

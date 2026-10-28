@@ -30,3 +30,21 @@ The two initial commits were corrected to GitHub account `Clarru`'s noreply iden
 Presence, movement, facing, animation/activity, scooter state, campfire state and seat occupancy are shared. Seat authority, conflicts, disconnect release, room isolation, reconnect snapshots and fire state are covered by the deployed socket harness. Catch inventory and cabin interior presentation remain local. This is not a 30-browser load test and does not provide authoritative movement physics or anti-cheat.
 
 Vercel Hobby and Cloudflare's free configuration are in use; no paid plan was enabled. Original sibling game development remains separate until deliberately integrated into this release snapshot.
+
+
+## Follow-up integration — completed parallel work
+
+The GitHub transition and ready feature ports are integrated through:
+
+- [PR #1](https://github.com/Clarru/la-baraj/pull/1): running jump holds one extended stride, walking jump is preserved, Shift is held to run, and remote avatars use the same derived jump clips.
+- [PR #2](https://github.com/Clarru/la-baraj/pull/2): continuous cabin cutaways and same-door traversal, with 7Hz pose publication during scripted entry/exit. The integration review found and resolved a gap where the doorway branch bypassed pose updates.
+
+Verified runtime source: `be7a4690b2ae39a7473a976a04afbdfc73a8f083`. Vercel production deployment `dpl_FKup89DDUrGtJVbnojEnLEHzzD4C` is Ready; GitHub main checks pass at https://github.com/Clarru/la-baraj/actions/runs/40723461837.
+
+The combined checkout passes97 frontend tests across18 files,9 protocol tests, server TypeScript and the production build. The existing bundle-size advisory remains. An independent read-only review of movement PR#1 found no material issue.
+
+Two production browser sessions in a separate QA room verified distinct player identities, Online2/30 on both clients, `Jump_RunStart` → `Jump_RunAir` → `Jump_RunLand` → idle locally, and a received remote `Jump_RunAir` pose. Cabin entry kept the landscape visible and arrived grounded inside the room. Exit sent intermediate `Walk` poses to the peer before the final outdoor idle pose. Both browser error logs were empty.
+
+Authored diagnostics are preserved in `integrated-browser-check.json`; `captures/integrated-cutaway-online.png` shows the cutaway and Online2/30. QA tabs were separate from the user's shared friends room. This does not establish30-client performance or cabin access permissions.
+
+The unfinished reference-led campfire revision is pushed separately as [draft PR#3](https://github.com/Clarru/la-baraj/pull/3). It remains outside production until its owning chat completes visual QA and marks it ready. The single local preview publication is reserved for that chat during its final check; no new local listener was started by this release process.
