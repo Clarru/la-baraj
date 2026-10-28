@@ -549,11 +549,14 @@ export function Player({
       undefined,
       c.body,
     );
+    const rayGroundY = ground ? p.y - ground.timeOfImpact : null;
+    const contactGroundY = c.standPoint.y;
+    const groundedEdge = c.isOnGround && p.y - contactGroundY > 0.55 && p.y - contactGroundY < 1.4;
     const groundY = holding
       ? pose.anchor![1]
-      : ground
-        ? p.y - ground.timeOfImpact
-        : null;
+      : groundedEdge && (rayGroundY === null || contactGroundY - rayGroundY > 0.25)
+        ? contactGroundY
+        : rayGroundY;
     if (visual.current) {
       visual.current.parent?.getWorldPosition(playerViewPosition);
       const offset = holding
