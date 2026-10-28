@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
-import { useTexture } from "@react-three/drei";
 import * as THREE from "three";
 
 export type FireMetrics = {
@@ -13,7 +12,188 @@ export type FireMetrics = {
   textures: number;
   geometries: number;
 };
-/** CC0 Ben Hickling flame atlases. Keep resources and light mounted across toggles. */
+
+const tongues = [
+  {
+    x: -0.28,
+    z: -0.08,
+    width: 0.5,
+    height: 1.12,
+    bend: -0.12,
+    color: "#ff6409",
+    layer: 2,
+  },
+  {
+    x: 0.23,
+    z: -0.12,
+    width: 0.5,
+    height: 1.25,
+    bend: 0.12,
+    color: "#ff8606",
+    layer: 2,
+  },
+  {
+    x: -0.4,
+    z: 0.08,
+    width: 0.37,
+    height: 0.82,
+    bend: -0.1,
+    color: "#ff7908",
+    layer: 2,
+  },
+  {
+    x: 0.37,
+    z: 0.1,
+    width: 0.37,
+    height: 0.78,
+    bend: 0.12,
+    color: "#ff6409",
+    layer: 2,
+  },
+  {
+    x: -0.06,
+    z: -0.15,
+    width: 0.44,
+    height: 1.48,
+    bend: 0.09,
+    color: "#ffb21b",
+    layer: 3,
+  },
+  {
+    x: 0.13,
+    z: 0.07,
+    width: 0.44,
+    height: 1.13,
+    bend: -0.12,
+    color: "#ffc629",
+    layer: 3,
+  },
+  {
+    x: -0.13,
+    z: 0.15,
+    width: 0.47,
+    height: 0.85,
+    bend: -0.07,
+    color: "#ffdc45",
+    layer: 4,
+  },
+  {
+    x: 0.12,
+    z: 0.17,
+    width: 0.41,
+    height: 0.72,
+    bend: 0.06,
+    color: "#fff18a",
+    layer: 4,
+  },
+  {
+    x: 0,
+    z: 0.2,
+    width: 0.36,
+    height: 1.01,
+    bend: -0.05,
+    color: "#fff5a0",
+    layer: 4,
+  },
+];
+
+/** Hard facets around a shallow ridge, following the user's angular flame reference. */
+function flameGeometry(
+  width: number,
+  height: number,
+  bend: number,
+  color: string,
+) {
+  const rim = [
+    [-width * 0.2, 0, 0],
+    [-width * 0.5, height * 0.34, 0],
+    [-width * 0.2 + bend * 0.35, height * 0.62, 0],
+    [bend, height, 0],
+    [width * 0.5, height * 0.43, 0],
+    [width * 0.2, 0, 0],
+  ];
+  const ridge = [bend * 0.15, height * 0.35, 0.045];
+  const positions: number[] = [],
+    colors: number[] = [];
+  const base = new THREE.Color(color);
+  for (let face = 0; face < rim.length; face++) {
+    const shade = base.clone().multiplyScalar([0.94, 1, 0.85, 1][face % 4]);
+    for (const point of [rim[face], rim[(face + 1) % rim.length], ridge]) {
+      positions.push(...point);
+      colors.push(shade.r, shade.g, shade.b);
+    }
+  }
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute(
+    "position",
+    new THREE.Float32BufferAttribute(positions, 3),
+  );
+  geometry.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
+  geometry.computeVertexNormals();
+  return geometry;
+}
+
+/** Static radial logs remain visible when the fire is out. Coordinates are relative to pit floor. */
+export function CampfireLogs() {
+  const logs = useMemo(
+    () =>
+      Array.from({ length: 6 }, (_, i) => {
+        const angle = (i * Math.PI) / 3 + 0.22;
+        const bottom = new THREE.Vector3(
+          Math.sin(angle) * 0.72,
+          0.12,
+          Math.cos(angle) * 0.72,
+        );
+        const top = new THREE.Vector3(
+          -Math.sin(angle) * 0.08,
+          0.58 + (i % 2) * 0.06,
+          -Math.cos(angle) * 0.08,
+        );
+        const direction = top.clone().sub(bottom);
+        return {
+          center: bottom.clone().add(top).multiplyScalar(0.5),
+          length: direction.length(),
+          rotation: new THREE.Quaternion().setFromUnitVectors(
+            new THREE.Vector3(0, 1, 0),
+            direction.normalize(),
+          ),
+        };
+      }),
+    [],
+  );
+  return (
+    <group>
+      {logs.map((log, i) => (
+        <mesh
+          key={i}
+          position={log.center}
+          quaternion={log.rotation}
+          castShadow
+          receiveShadow
+        >
+          <cylinderGeometry args={[0.105, 0.14, log.length, 7]} />
+          <meshStandardMaterial
+            attach="material-0"
+            color={i % 2 ? "#65331a" : "#713b1d"}
+            roughness={1}
+          />
+          <meshStandardMaterial
+            attach="material-1"
+            color="#3d2414"
+            roughness={1}
+          />
+          <meshStandardMaterial
+            attach="material-2"
+            color="#462615"
+            roughness={1}
+          />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+/** Reference-led faceted flames and diamond embers; resources stay mounted across toggles. */
 export function Campfire({
   position,
   active,
@@ -23,26 +203,24 @@ export function Campfire({
   active: boolean;
   onMetrics?: (sample: FireMetrics) => void;
 }) {
-  const source = useTexture([
-    "/assets/fire/fire1_64.png",
-    "/assets/fire/fire5_64.png",
-  ]);
-  const textures = useMemo(
+  const geometries = useMemo(
     () =>
-      source.map((base) => {
-        const texture = base.clone();
-        texture.colorSpace = THREE.SRGBColorSpace;
-        texture.repeat.set(0.1, 1 / 6);
-        texture.minFilter = texture.magFilter = THREE.LinearFilter;
-        texture.generateMipmaps = false;
-        texture.needsUpdate = true;
-        return texture;
-      }),
-    [source],
+      tongues.map((flame) =>
+        flameGeometry(flame.width, flame.height, flame.bend, flame.color),
+      ),
+    [],
   );
-  const planes = useRef<THREE.Group>(null);
-  const light = useRef<THREE.PointLight>(null);
+  useEffect(
+    () => () => geometries.forEach((geometry) => geometry.dispose()),
+    [geometries],
+  );
+  const flameGroup = useRef<THREE.Group>(null);
+  const flames = useRef<(THREE.Mesh | null)[]>([]);
   const materials = useRef<(THREE.MeshBasicMaterial | null)[]>([]);
+  const embers = useRef<THREE.InstancedMesh>(null);
+  const emberMaterial = useRef<THREE.MeshBasicMaterial>(null);
+  const transform = useMemo(() => new THREE.Object3D(), []);
+  const light = useRef<THREE.PointLight>(null);
   const fade = useRef(0),
     time = useRef(0);
   const reduced = useRef(
@@ -56,10 +234,6 @@ export function Campfire({
     slow: 0,
     frames: 0,
   });
-  useEffect(
-    () => () => textures.forEach((texture) => texture.dispose()),
-    [textures],
-  );
   useEffect(() => {
     const query = window.matchMedia("(prefers-reduced-motion: reduce)");
     const update = () => {
@@ -70,8 +244,8 @@ export function Campfire({
   }, []);
   useFrame(({ camera, gl }, dt) => {
     if (document.hidden) return;
-    const now = performance.now();
-    const sample = measurement.current;
+    const now = performance.now(),
+      sample = measurement.current;
     if (previous.current !== active) {
       previous.current = active;
       sample.until = now + 1000;
@@ -98,6 +272,7 @@ export function Campfire({
         sample.until = 0;
       }
     }
+
     time.current += Math.min(dt, 0.05);
     fade.current = THREE.MathUtils.damp(
       fade.current,
@@ -105,62 +280,100 @@ export function Campfire({
       10,
       Math.min(dt, 0.05),
     );
-    if (planes.current)
-      planes.current.rotation.y = Math.atan2(
-        camera.position.x - position[0],
-        camera.position.z - position[2],
+    const t = reduced.current ? 0 : time.current;
+    const yaw = Math.atan2(
+      camera.position.x - position[0],
+      camera.position.z - position[2],
+    );
+    if (flameGroup.current) flameGroup.current.rotation.y = yaw;
+    flames.current.forEach((mesh, i) => {
+      if (!mesh) return;
+      const phase = i * 1.73;
+      mesh.rotation.set(
+        0,
+        0,
+        reduced.current ? 0 : Math.sin(t * 3.7 + phase) * 0.035,
       );
-    textures.forEach((texture, i) => {
-      const frame = reduced.current
-        ? 23
-        : (Math.floor(time.current * 30) + i * 19) % 60;
-      texture.offset.set((frame % 10) / 10, (5 - Math.floor(frame / 10)) / 6);
+      mesh.scale.set(
+        1 + Math.sin(t * 4.1 + phase) * 0.055,
+        1 + Math.sin(t * 3.4 + phase) * 0.075,
+        1,
+      );
       if (materials.current[i])
-        materials.current[i]!.opacity = fade.current * (i ? 0.72 : 0.95);
+        materials.current[i]!.opacity = fade.current * 0.96;
     });
-    // Zero intensity retains the same scene light count and shader variants while off.
+    if (embers.current) {
+      for (let i = 0; i < 8; i++) {
+        const life = (t * (0.27 + (i % 3) * 0.025) + i * 0.618034) % 1;
+        const angle = i * 2.39996;
+        transform.position.set(
+          Math.sin(angle + life) * (0.21 + life * 0.28),
+          0.48 + life * 1.6,
+          Math.cos(angle + life) * (0.21 + life * 0.28),
+        );
+        const size = Math.sin(life * Math.PI) * (0.035 + (i % 3) * 0.008);
+        transform.scale.set(size * 0.7, size * 1.4, size * 0.7);
+        transform.rotation.set(0, yaw, 0.1 * Math.sin(i));
+        transform.updateMatrix();
+        embers.current.setMatrixAt(i, transform.matrix);
+      }
+      embers.current.instanceMatrix.needsUpdate = true;
+    }
+    if (emberMaterial.current)
+      emberMaterial.current.opacity = reduced.current ? 0 : fade.current;
+    // Keep this zero-intensity light mounted when off to avoid global shader recompilation.
     if (light.current)
       light.current.intensity =
-        fade.current *
-        (reduced.current ? 7 : 7 + Math.sin(time.current * 9) * 0.35);
+        fade.current * (reduced.current ? 5 : 5 + Math.sin(t * 8.3) * 0.25);
   });
   return (
     <group position={position}>
-      <group ref={planes}>
-        <mesh position={[0, 0.64, 0.01]} renderOrder={2}>
-          <planeGeometry args={[1.55, 1.5]} />
-          <meshBasicMaterial
-            ref={(m) => {
-              materials.current[0] = m;
+      <group ref={flameGroup}>
+        {tongues.map((flame, i) => (
+          <mesh
+            key={i}
+            ref={(mesh) => {
+              flames.current[i] = mesh;
             }}
-            map={textures[0]}
-            transparent
-            opacity={0}
-            depthWrite={false}
-            toneMapped={false}
-            side={THREE.DoubleSide}
-          />
-        </mesh>
-        <mesh position={[-0.24, 0.43, -0.02]} renderOrder={1}>
-          <planeGeometry args={[1.05, 1.1]} />
-          <meshBasicMaterial
-            ref={(m) => {
-              materials.current[1] = m;
-            }}
-            map={textures[1]}
-            transparent
-            opacity={0}
-            depthWrite={false}
-            toneMapped={false}
-            side={THREE.DoubleSide}
-          />
-        </mesh>
+            geometry={geometries[i]}
+            position={[flame.x, 0, flame.z]}
+            renderOrder={flame.layer}
+          >
+            <meshBasicMaterial
+              ref={(material) => {
+                materials.current[i] = material;
+              }}
+              vertexColors
+              transparent
+              opacity={0}
+              depthWrite={false}
+              side={THREE.DoubleSide}
+              toneMapped={false}
+            />
+          </mesh>
+        ))}
       </group>
+      <instancedMesh
+        ref={embers}
+        args={[undefined, undefined, 8]}
+        frustumCulled={false}
+      >
+        <octahedronGeometry args={[1, 0]} />
+        <meshBasicMaterial
+          ref={emberMaterial}
+          color="#ffb62e"
+          depthWrite={false}
+          transparent
+          opacity={0}
+          toneMapped={false}
+        />
+      </instancedMesh>
       <pointLight
         ref={light}
-        color="#ffae66"
+        position={[0, 0.1, 0]}
+        color="#ff9b32"
         intensity={0}
-        distance={12}
+        distance={8}
         decay={2}
         castShadow={false}
       />

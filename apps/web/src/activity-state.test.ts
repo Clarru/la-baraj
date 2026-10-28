@@ -27,6 +27,19 @@ describe("seated shift anchors", () => {
       previous = x;
     }
   });
+  it("keeps the fire approach at walking speed and holds its final floor anchor", () => {
+    const approach: ActivityPose = {
+      kind: "fire-approach",
+      startedAt: 1000,
+      fromAnchor: [0, 2, 5],
+      anchor: [0, 2, 1.65],
+      shiftDuration: 1,
+      facing: Math.PI,
+    };
+    expect(sampleActivityPose(approach, 1250).anchor).toEqual([0, 2, 4.1625]);
+    expect(sampleActivityPose(approach, 2000).anchor).toEqual([0, 2, 1.65]);
+    expect(sampleActivityPose(approach, 2500).anchor).toEqual([0, 2, 1.65]);
+  });
   it("does not alter other activities and safely completes invalid durations", () => {
     const sit = { ...pose, kind: "sit" as const };
     expect(sampleActivityPose(sit, 1200)).toBe(sit);

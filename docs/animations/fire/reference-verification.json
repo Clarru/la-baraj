@@ -1,0 +1,135 @@
+{
+  "servedCommit": "356d2b7",
+  "bundle": "index-DbXUvspH.js",
+  "url": "http://127.0.0.1:4173/",
+  "mode": "offline visual QA",
+  "samples": [
+    {
+      "active": false,
+      "toggles": 4,
+      "maxFrameMs": 10.8,
+      "framesOver33ms": 0,
+      "frames": 122,
+      "programs": 64,
+      "textures": 80,
+      "geometries": 322
+    },
+    {
+      "active": true,
+      "toggles": 5,
+      "maxFrameMs": 11.7,
+      "framesOver33ms": 0,
+      "frames": 121,
+      "programs": 64,
+      "textures": 80,
+      "geometries": 322
+    }
+  ],
+  "motion": {
+    "vehicle": null,
+    "vehicleSpeed": 0,
+    "jumpPhase": "grounded",
+    "jumpStyle": "walk",
+    "animationHistory": [
+      {
+        "animation": "Idle_Neutral",
+        "at": 30729.5,
+        "y": 2.30861759185791
+      },
+      {
+        "animation": "Walk",
+        "at": 30739.399999976158,
+        "y": 2.30861759185791
+      },
+      {
+        "animation": "Idle_Neutral",
+        "at": 31037.19999998808,
+        "y": 2.309671401977539
+      },
+      {
+        "animation": "Walk",
+        "at": 31519.69999998808,
+        "y": 2.3098955154418945
+      },
+      {
+        "animation": "Walk",
+        "at": 32355.599999964237,
+        "y": 2.314319610595703
+      },
+      {
+        "animation": "Activity_LightFire",
+        "at": 32512.099999964237,
+        "y": 2.314319610595703
+      },
+      {
+        "animation": "Idle_Neutral",
+        "at": 35520.19999998808,
+        "y": 2.314319610595703
+      },
+      {
+        "animation": "Walk",
+        "at": 35687.69999998808,
+        "y": 2.314342498779297
+      },
+      {
+        "animation": "Idle_Neutral",
+        "at": 35960.80000001192,
+        "y": 2.314340591430664
+      },
+      {
+        "animation": "Walk",
+        "at": 105778.5,
+        "y": 2.314319610595703
+      },
+      {
+        "animation": "Activity_LightFire",
+        "at": 105936.5,
+        "y": 2.314319610595703
+      },
+      {
+        "animation": "Idle_Neutral",
+        "at": 108937.5,
+        "y": 2.314319610595703
+      }
+    ],
+    "position": [
+      36.364646911621094,
+      2.314345359802246,
+      38.76700973510742
+    ],
+    "feet": [
+      36.364646911621094,
+      1.3793196820909404,
+      38.76700973510742
+    ],
+    "contact": [
+      36.36465072631836,
+      1.3643196821212769,
+      38.76690673828125
+    ],
+    "grounded": true,
+    "activity": "none",
+    "animation": "Idle_Neutral",
+    "groundY": 1.3643196821212769,
+    "velocity": [
+      0,
+      0.000011682511285471264,
+      0
+    ],
+    "facing": [
+      -0.22099722794993307,
+      0,
+      0.9752744358581564
+    ],
+    "inWater": false,
+    "lastMovingAlignment": 0.9838136705555748,
+    "facingDot": null
+  },
+  "errors": [],
+  "rect": {
+    "height": 1024,
+    "width": 802.6666870117188,
+    "x": 0,
+    "y": 0
+  }
+}
