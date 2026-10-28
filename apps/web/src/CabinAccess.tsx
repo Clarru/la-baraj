@@ -190,7 +190,7 @@ export function CabinAccess({
             {cabinDesignForPlot(target).label} ·{" "}
             {target === homeIndex
               ? "make yourself at home"
-              : "unclaimed local preview"}
+              : "shared playtest access"}
           </span>
         </div>
         <button
