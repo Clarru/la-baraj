@@ -131,6 +131,141 @@ describe("squared-paper planes rules", () => {
   });
 });
 describe("persistent private table", () => {
+  it("does not deadlock readiness when the other player reconnects during setup", async () => {
+    const f = tableFixture();
+    await f.table.join(a, 0, 0);
+    await f.table.join(b, 1, 0);
+    await f.act(b, { kind: "ready", planes: fleet() });
+    await f.table.disconnect(b, 2000);
+    await expect(
+      f.act(a, { kind: "ready", planes: fleet() }, "ready-while-away", 3000),
+    ).rejects.toThrow("reconnecting");
+    expect(f.table.view(a).players[0]?.ready).toBe(false);
+    const returning = { ...b, socket: "bob-back" };
+    await f.table.resume(returning, 4000);
+    await f.act(
+      a,
+      { kind: "ready", planes: fleet() },
+      "ready-after-return",
+      5000,
+    );
+    expect(f.table.view(a).phase).toBe("playing");
+  });
+
+  it("recovers an already-stored both-ready setup when its missing player resumes", async () => {
+    const f = tableFixture();
+    await f.table.join(a, 0, 0);
+    await f.table.join(b, 1, 0);
+    await f.table.disconnect(b, 2000);
+    const stored = structuredClone(f.saved.at(-1)!);
+    stored.members.forEach((m) => {
+      if (m) m.ready = true;
+    });
+    const table = new PlanesTable(
+      { save: async () => {}, random: () => 0.3 },
+      stored,
+    );
+    await table.resume({ ...b, socket: "restored" }, 3000);
+    expect(table.view(a)).toMatchObject({
+      phase: "playing",
+      round: 1,
+      deadline: 63000,
+    });
+  });
+  it("never readies a rematch against an offline opponent", async () => {
+    const f = tableFixture();
+    await f.start();
+    await f.table.leave(a, 2000);
+    await f.table.join(a, 0, 3000);
+    await f.act(a, { kind: "ready", planes: fleet() }, "a-again", 4000);
+    await f.act(b, { kind: "ready", planes: fleet() }, "b-again", 4000);
+    for (let i = 0; i < 3; i++) {
+      const p = fleet()[i];
+      await f.act(a, { kind: "shot", x: p.x, y: p.y }, `a-${i}`, 5000);
+      if (i < 2)
+        await f.act(b, { kind: "shot", x: p.x, y: p.y }, `b-${i}`, 5000);
+    }
+    await f.table.disconnect(b, 6000);
+    await expect(
+      f.act(a, { kind: "rematch", planes: fleet() }, "offline-rematch", 7000),
+    ).rejects.toThrow("reconnecting");
+  });
+  it("releases an unready setup seat at its deadline and admits a replacement without stale readiness", async () => {
+    const f = tableFixture();
+    await f.table.join(a, 0, 0);
+    await f.table.join(b, 1, 0);
+    await f.act(a, { kind: "ready", planes: fleet() });
+    expect(await f.table.expire(119999)).toBe(false);
+    expect(await f.table.expire(120000)).toBe(true);
+    expect(f.table.view(a)).toMatchObject({ phase: "lobby", deadline: null });
+    expect(f.table.view(a).players[0]?.ready).toBe(false);
+    expect(f.table.view(b).you).toBeNull();
+    await f.table.join(
+      { owner: "charlie", socket: "charlie", name: "Charlie" },
+      1,
+      121000,
+    );
+    expect(f.table.view(a).phase).toBe("setup");
+  });
+  it("expires both missing players, and explicit departure forfeits to the remaining player", async () => {
+    const f = tableFixture();
+    await f.start();
+    await f.table.disconnect(a, 2000);
+    await f.table.disconnect(b, 2001);
+    await f.table.expire(32001);
+    expect(f.table.view(null)).toMatchObject({
+      phase: "lobby",
+      players: [null, null],
+      deadline: null,
+    });
+    const g = tableFixture();
+    await g.start();
+    await g.table.leave(a, 2000);
+    expect(g.table.view(b)).toMatchObject({
+      phase: "finished",
+      winner: 1,
+      reason: "left",
+    });
+  });
+  it("rejects repeated targets and simultaneous duplicate shots without advancing twice", async () => {
+    const f = tableFixture();
+    await f.start();
+    const p = fleet()[0],
+      revision = f.table.view(a).revision;
+    const results = await Promise.allSettled([
+      f.table.act(a, { kind: "shot", x: p.x, y: p.y }, "first", revision, 2000),
+      f.table.act(
+        a,
+        { kind: "shot", x: p.x, y: p.y },
+        "second",
+        revision,
+        2000,
+      ),
+    ]);
+    expect(results.map((r) => r.status)).toEqual(["fulfilled", "rejected"]);
+    expect(f.table.view(a).shots[0]).toHaveLength(1);
+    const other = fleet()[1];
+    await f.act(b, { kind: "shot", x: other.x, y: other.y }, "reply", 3000);
+    const before = f.table.view(a);
+    await expect(
+      f.act(a, { kind: "shot", x: p.x, y: p.y }, "repeated", 4000),
+    ).rejects.toThrow("unmarked");
+    expect(f.table.view(a)).toEqual(before);
+  });
+  it("does not let a client mutate the saved fleet or public shot history through a projection", async () => {
+    const f = tableFixture();
+    await f.start();
+    const privateView = f.table.view(a);
+    privateView.ownPlanes![0].x = -99;
+    privateView.players[0]!.ready = false;
+    expect(f.table.view(a).ownPlanes).toEqual(fleet());
+    expect(f.table.view(a).players[0]?.ready).toBe(true);
+    const p = fleet()[0];
+    await f.act(a, { kind: "shot", x: p.x, y: p.y });
+    const publicView = f.table.view(null);
+    publicView.shots[0][0].revealed!.x = -99;
+    expect(f.table.view(null).shots[0][0].revealed?.x).toBe(p.x);
+  });
   it("shares public progress, never opponents' hidden planes or internal owners", async () => {
     const f = tableFixture();
     await f.table.join(a, 0, 0);
@@ -701,5 +836,153 @@ describe("world/table integration", () => {
     expect(returning.state!.player.seatId).toBe(PLANES_SEATS[0]);
     expect(returning.state!.resumeTable).toBe(false);
     expect(homes.publicCabins()).toHaveLength(1);
+  });
+});
+
+describe("seeded full-match stress", () => {
+  it("completes 60 legal random games with private fleets, alternating turns and exactly three kills", async () => {
+    const winners = new Set<number>();
+    let totalShots = 0;
+    for (let seed = 1; seed <= 60; seed++) {
+      let rng = seed;
+      const random = () => {
+        rng = (Math.imul(rng, 1664525) + 1013904223) >>> 0;
+        return rng / 4294967296;
+      };
+      const table = new PlanesTable({ save: async () => {}, random }),
+        actors = [a, b],
+        fleets = [randomFleet(random), randomFleet(random)];
+      await table.join(a, 0, 0);
+      await table.join(b, 1, 0);
+      for (const side of [0, 1] as Side[])
+        await table.act(
+          actors[side],
+          { kind: "ready", planes: fleets[side] },
+          `ready-${side}`,
+          table.view(actors[side]).revision,
+          1000,
+        );
+      const targets = ([0, 1] as Side[]).map(() =>
+        Array.from({ length: 100 }, (_, i) => i).sort(() => random() - 0.5),
+      );
+      let count = 0;
+      while (table.view(null).phase === "playing" && count < 200) {
+        const view = table.view(null),
+          side = view.turn!,
+          actor = actors[side];
+        const index = targets[side].find(
+          (i) =>
+            !targetUnavailable(i % 10, Math.floor(i / 10), view.shots[side]),
+        );
+        expect(index).toBeDefined();
+        await table.act(
+          actor,
+          { kind: "shot", x: index! % 10, y: Math.floor(index! / 10) },
+          `shot-${count}`,
+          view.revision,
+          2000 + count * 10,
+        );
+        const next = table.view(null);
+        expect(next.ownPlanes).toBeNull();
+        expect(JSON.stringify(next)).not.toContain('"owner"');
+        expect(table.view(actor).ownPlanes).toEqual(fleets[side]);
+        if (next.phase === "playing") expect(next.turn).toBe(1 - side);
+        count++;
+      }
+      const final = table.view(null);
+      expect(final.phase).toBe("finished");
+      expect(final.winner).not.toBeNull();
+      expect(
+        final.shots[final.winner!].filter((s) => s.result === "head"),
+      ).toHaveLength(3);
+      expect(final.players[1 - final.winner!]!.remaining).toBe(0);
+      winners.add(final.winner!);
+      totalShots += count;
+    }
+    expect(winners).toEqual(new Set([0, 1]));
+    expect(totalShots).toBeGreaterThan(4000);
+  }, 20000);
+});
+
+describe("full-room Planes fanout", () => {
+  it("supports two players and 48 private-state-free spectators without creating cabins", async () => {
+    const f = roomFixture(),
+      clients: Connection[] = [];
+    for (let i = 0; i < 50; i++) clients.push(await f.named(`Person ${i}`));
+    expect(f.connect("overflow").closed).toBe(true);
+    await f.pose(clients[0], 0);
+    await f.pose(clients[1], 1);
+    for (const side of [0, 1] as Side[])
+      await f.send(
+        clients[side],
+        { type: "seat", seatId: PLANES_SEATS[side], requestId: `seat-${side}` },
+        1000,
+      );
+    for (const side of [0, 1] as Side[])
+      await f.send(
+        clients[side],
+        {
+          type: "planes-action",
+          requestId: `ready-${side}`,
+          revision: f.planes.view(null).revision,
+          action: { kind: "ready", planes: fleet() },
+        },
+        2000,
+      );
+    const turn = f.planes.view(null).turn!,
+      p = fleet()[0];
+    await f.send(
+      clients[turn],
+      {
+        type: "planes-action",
+        requestId: "head",
+        revision: f.planes.view(null).revision,
+        action: { kind: "shot", x: p.x, y: p.y },
+      },
+      3000,
+    );
+
+    const other = turn === 0 ? 1 : 0,
+      reply = fleet()[1];
+    await f.send(
+      clients[other],
+      {
+        type: "planes-action",
+        requestId: "reply",
+        revision: f.planes.view(null).revision,
+        action: { kind: "shot", x: reply.x, y: reply.y },
+      },
+      4000,
+    );
+    const revision = f.planes.view(null).revision;
+    await f.send(
+      clients[turn],
+      {
+        type: "planes-action",
+        requestId: "repeat",
+        revision,
+        action: { kind: "shot", x: p.x, y: p.y },
+      },
+      5000,
+    );
+    const rejected = clients[turn].messages.at(-1)!;
+    expect(rejected.type === "planes" && rejected.error).toBe(
+      "Choose an unmarked square.",
+    );
+    expect(f.planes.view(null).revision).toBe(revision);
+    for (let i = 0; i < 50; i++) {
+      const message = clients[i].messages
+        .filter((m) => m.type === "planes")
+        .at(-1)!;
+      expect(message.type).toBe("planes");
+      if (message.type !== "planes") continue;
+      expect(message.view.shots[turn]).toHaveLength(1);
+      if (i < 2) expect(message.view.ownPlanes).toEqual(fleet());
+      else {
+        expect(message.view.ownPlanes).toBeNull();
+        expect(message.view.you).toBeNull();
+      }
+    }
+    expect(f.homes.publicCabins()).toHaveLength(0);
   });
 });

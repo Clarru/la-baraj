@@ -2,6 +2,7 @@ import {
   legalFleet,
   randomFleet,
   resolveShot,
+  targetUnavailable,
   destroyed,
   otherSide,
   isGridPoint,
@@ -251,6 +252,24 @@ export class PlanesTable {
       }
     next.deadline = next.phase === "setup" ? now + 120_000 : null;
   }
+  private startPlaying(next: PlanesRecord, now: number) {
+    next.phase = "playing";
+    next.round++;
+    next.shots = [[], []];
+    next.reason = null;
+    next.winner = null;
+    next.event = null;
+    next.turn = (this.runtime.random ?? Math.random)() < 0.5 ? 0 : 1;
+    next.deadline = now + 60_000;
+  }
+  private resumeClock(next: PlanesRecord, now: number) {
+    if (!next.members.every((m) => m && m.awayUntil === null)) return;
+    // Also recover an already-saved setup from the earlier readiness race.
+    if (next.phase === "setup" && next.members.every((m) => m?.ready))
+      this.startPlaying(next, now);
+    else if (next.phase === "playing" || next.phase === "setup")
+      next.deadline = now + (next.phase === "playing" ? 60_000 : 120_000);
+  }
   private finish(
     next: PlanesRecord,
     winner: Side | null,
@@ -300,11 +319,7 @@ export class PlanesTable {
           name: actor.name,
           awayUntil: null,
         });
-        if (
-          next.members.every((m) => m && m.awayUntil === null) &&
-          (next.phase === "playing" || next.phase === "setup")
-        )
-          next.deadline = now + (next.phase === "playing" ? 60_000 : 120_000);
+        this.resumeClock(next, now);
       } else {
         if (next.phase === "playing")
           throw new TableError("Wait for this round to finish.");
@@ -333,11 +348,7 @@ export class PlanesTable {
         name: actor.name,
         awayUntil: null,
       });
-      if (
-        next.members.every((m) => m && m.awayUntil === null) &&
-        (next.phase === "playing" || next.phase === "setup")
-      )
-        next.deadline = now + (next.phase === "playing" ? 60_000 : 120_000);
+      this.resumeClock(next, now);
       await this.commit(next);
       return side as Side;
     });
@@ -463,6 +474,10 @@ export class PlanesTable {
           throw new TableError("That round has already started.");
         if (!opponent)
           throw new TableError("Waiting for someone in the opposite seat.");
+        if (opponent.awayUntil !== null)
+          throw new TableError(
+            "Your opponent is reconnecting. Ready up when they return.",
+          );
         if (member.ready)
           throw new TableError("You're ready. Waiting for your opponent.");
         if (!legalFleet(action.planes))
@@ -472,20 +487,18 @@ export class PlanesTable {
         member.planes = action.planes.map((p) => ({ ...p }));
         member.ready = true;
         if (next.members.every((m) => m?.ready && m.awayUntil === null)) {
-          next.phase = "playing";
-          next.round++;
-          next.shots = [[], []];
-          next.reason = null;
-          next.winner = null;
-          next.event = null;
-          next.turn = (this.runtime.random ?? Math.random)() < 0.5 ? 0 : 1;
-          next.deadline = now + 60_000;
+          this.startPlaying(next, now);
         }
       } else {
         if (next.phase !== "playing" || next.turn !== side)
           throw new TableError("Wait for your turn.");
         if (!opponent || opponent.awayUntil !== null)
           throw new TableError("Your opponent is reconnecting.");
+        if (
+          !isGridPoint(action.x, action.y) ||
+          targetUnavailable(action.x, action.y, next.shots[side])
+        )
+          throw new TableError("Choose an unmarked square.");
         const shot = resolveShot(
           opponent.planes,
           next.shots[side],

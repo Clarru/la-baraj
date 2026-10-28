@@ -43,7 +43,7 @@ async function connect() {
       waiter.resolve(message);
     } else queue.push(message);
   });
-  client.next = (matches) =>
+  client.next = (matches, timeoutMs = 8000) =>
     new Promise((resolve, reject) => {
       const index = queue.findIndex(matches);
       if (index >= 0) {
@@ -56,7 +56,7 @@ async function connect() {
         timer: setTimeout(() => {
           waiters.splice(waiters.indexOf(waiter), 1);
           reject(Error("Table check timed out"));
-        }, 8000),
+        }, timeoutMs),
       };
       waiters.push(waiter);
     });
@@ -180,9 +180,60 @@ try {
   const finished = await spectator.sync();
   assert.equal(finished.planes.phase, "finished");
   assert.equal(finished.planes.ownPlanes, null);
+
+  const timerChecks = [];
+  if (process.argv.includes("--timers")) {
+    await a.action({ kind: "rematch", planes: fleets[0] });
+    await b.action({ kind: "rematch", planes: fleets[1] });
+    const rematch = (await a.sync()).planes;
+    assert.equal(rematch.phase, "playing");
+    assert.deepEqual(rematch.shots, [[], []]);
+    timerChecks.push("fresh-rematch");
+    await new Promise((resolve) => {
+      b.socket.once("close", resolve);
+      b.socket.close(1000, "Testing reconnect expiry");
+    });
+    b.joined = false;
+    const away = await a.next(
+      (m) =>
+        m.type === "planes" &&
+        m.view.round === rematch.round &&
+        m.view.players[1]?.online === false,
+    );
+    assert.equal(away.view.deadline, null);
+    const expired = await a.next(
+      (m) =>
+        m.type === "planes" &&
+        m.view.round === rematch.round &&
+        m.view.phase === "finished" &&
+        m.view.reason === "connection",
+      35000,
+    );
+    assert.equal(expired.view.winner, 0);
+    assert.equal(expired.view.players[1], null);
+    timerChecks.push("30s-connection-alarm-without-traffic");
+    const replacement = await connect();
+    await join(replacement, 1);
+    await a.action({ kind: "ready", planes: fleets[0] });
+    await replacement.action({ kind: "ready", planes: fleets[1] });
+    const timed = (await a.sync()).planes;
+    const timeout = await a.next(
+      (m) =>
+        m.type === "planes" &&
+        m.view.round === timed.round &&
+        m.view.phase === "finished" &&
+        m.view.reason === "timeout",
+      65000,
+    );
+    assert.equal(timeout.view.players[timed.turn], null);
+    assert.equal(timeout.view.winner, 1 - timed.turn);
+    timerChecks.push("60s-turn-alarm-without-traffic");
+    await replacement.action({ kind: "leave" });
+    replacement.joined = false;
+  }
   await a.action({ kind: "leave" });
   a.joined = false;
-  await b.action({ kind: "leave" });
+  if (b.socket.readyState === WebSocket.OPEN) await b.action({ kind: "leave" });
   b.joined = false;
   const after = await spectator.sync();
   assert.deepEqual(after.planes.players, [null, null]);
@@ -212,6 +263,7 @@ try {
           "empty-table-cleanup",
           "no-home-allocation",
           "preserved-village-and-fire",
+          ...timerChecks,
         ],
       },
       null,

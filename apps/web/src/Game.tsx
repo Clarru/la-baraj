@@ -471,11 +471,12 @@ export default function Game({ initialName }: { initialName: string }) {
                 onOpen={openPlanes}
               />
             )}
-          {planesOpen && panel === null && (
+          {(planesOpen || ownGameSide !== null) && (
             <Suspense
               fallback={<div className="planes-entry">Opening the paper…</div>}
             >
               <PlanesBoard
+                open={planesOpen && panel === null}
                 view={roomView.planes}
                 connected={roomView.status === "online"}
                 onAction={(action, revision) =>

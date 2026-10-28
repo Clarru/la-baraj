@@ -39,5 +39,40 @@
     "sceneFirstFrameMs": 2248.8,
     "scope": "two seated avatars, board open; local synthetic fixture, not a claim for all hardware"
   },
-  "unchangedCharacterSha256": "1c89c5710998736679a7a10403e89f998a912624c1fe674959668364bd2ba520"
+  "unchangedCharacterSha256": "1c89c5710998736679a7a10403e89f998a912624c1fe674959668364bd2ba520",
+  "followUpTesting": {
+    "date": "2026-10-29",
+    "frontendTests": 138,
+    "serverTests": 69,
+    "seededFullMatches": 60,
+    "acceptedSimulatedShots": ">4000",
+    "roomLoad": {
+      "players": 2,
+      "spectators": 48
+    },
+    "browserClients": 3,
+    "browserConsoleErrors": 0,
+    "fixedDefects": [
+      "ready during opponent reconnect could stall setup",
+      "folding or Menu discarded edited placement",
+      "repeated-square rejection misleadingly reported storage failure"
+    ],
+    "productionBuild": "passed; no test-worker, fixtures, controls or diagnostics emitted",
+    "liveWorkerVersion": "5d07366b-d29f-4edb-9bc5-eacac15d254a",
+    "liveWebSocketChecks": [
+      "full round",
+      "private fleets and spectator views",
+      "fresh rematch",
+      "30-second disconnect alarm without client traffic",
+      "60-second turn alarm without client traffic",
+      "table empty after cleanup"
+    ],
+    "cabinsBeforeAndAfter": 1,
+    "fireBeforeAndAfter": {
+      "lit": true,
+      "revision": 26
+    },
+    "homesAllocated": 0,
+    "report": "docs/testing/planes-2026-10-29.md"
+  }
 }
