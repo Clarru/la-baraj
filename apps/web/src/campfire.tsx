@@ -97,7 +97,7 @@ const tongues = [
   },
 ];
 
-/** Four hard facets around a shallow ridge, following the user's angular flame reference. */
+/** Hard facets around a shallow ridge, following the user's angular flame reference. */
 function flameGeometry(
   width: number,
   height: number,
@@ -105,18 +105,20 @@ function flameGeometry(
   color: string,
 ) {
   const rim = [
-    [0, 0, 0],
+    [-width * 0.2, 0, 0],
     [-width * 0.5, height * 0.34, 0],
+    [-width * 0.2 + bend * 0.35, height * 0.62, 0],
     [bend, height, 0],
     [width * 0.5, height * 0.43, 0],
+    [width * 0.2, 0, 0],
   ];
   const ridge = [bend * 0.15, height * 0.35, 0.045];
   const positions: number[] = [],
     colors: number[] = [];
   const base = new THREE.Color(color);
-  for (let face = 0; face < 4; face++) {
-    const shade = base.clone().multiplyScalar([0.94, 1, 0.85, 1][face]);
-    for (const point of [rim[face], rim[(face + 1) % 4], ridge]) {
+  for (let face = 0; face < rim.length; face++) {
+    const shade = base.clone().multiplyScalar([0.94, 1, 0.85, 1][face % 4]);
+    for (const point of [rim[face], rim[(face + 1) % rim.length], ridge]) {
       positions.push(...point);
       colors.push(shade.r, shade.g, shade.b);
     }
@@ -212,6 +214,7 @@ export function Campfire({
     () => () => geometries.forEach((geometry) => geometry.dispose()),
     [geometries],
   );
+  const flameGroup = useRef<THREE.Group>(null);
   const flames = useRef<(THREE.Mesh | null)[]>([]);
   const materials = useRef<(THREE.MeshBasicMaterial | null)[]>([]);
   const embers = useRef<THREE.InstancedMesh>(null);
@@ -282,12 +285,13 @@ export function Campfire({
       camera.position.x - position[0],
       camera.position.z - position[2],
     );
+    if (flameGroup.current) flameGroup.current.rotation.y = yaw;
     flames.current.forEach((mesh, i) => {
       if (!mesh) return;
       const phase = i * 1.73;
       mesh.rotation.set(
         0,
-        yaw,
+        0,
         reduced.current ? 0 : Math.sin(t * 3.7 + phase) * 0.035,
       );
       mesh.scale.set(
@@ -324,29 +328,31 @@ export function Campfire({
   });
   return (
     <group position={position}>
-      {tongues.map((flame, i) => (
-        <mesh
-          key={i}
-          ref={(mesh) => {
-            flames.current[i] = mesh;
-          }}
-          geometry={geometries[i]}
-          position={[flame.x, 0, flame.z]}
-          renderOrder={flame.layer}
-        >
-          <meshBasicMaterial
-            ref={(material) => {
-              materials.current[i] = material;
+      <group ref={flameGroup}>
+        {tongues.map((flame, i) => (
+          <mesh
+            key={i}
+            ref={(mesh) => {
+              flames.current[i] = mesh;
             }}
-            vertexColors
-            transparent
-            opacity={0}
-            depthWrite={false}
-            side={THREE.DoubleSide}
-            toneMapped={false}
-          />
-        </mesh>
-      ))}
+            geometry={geometries[i]}
+            position={[flame.x, 0, flame.z]}
+            renderOrder={flame.layer}
+          >
+            <meshBasicMaterial
+              ref={(material) => {
+                materials.current[i] = material;
+              }}
+              vertexColors
+              transparent
+              opacity={0}
+              depthWrite={false}
+              side={THREE.DoubleSide}
+              toneMapped={false}
+            />
+          </mesh>
+        ))}
+      </group>
       <instancedMesh
         ref={embers}
         args={[undefined, undefined, 8]}
