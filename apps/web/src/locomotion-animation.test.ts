@@ -91,7 +91,7 @@ describe("jump clip lifecycle", () => {
   });
   it("clears animation for an anchored activity or reset", () => {
     const s = advanceJumpMotion(
-      { phase: "airborne", startedAt: 1, leftGround: true },
+      { phase: "airborne", startedAt: 1, leftGround: true, style: "run" },
       {
         now: 2,
         grounded: false,
@@ -101,5 +101,58 @@ describe("jump clip lifecycle", () => {
       },
     );
     expect(s).toEqual(initialJumpMotion());
+  });
+  it("locks the running bound at takeoff even when speed changes in the air", () => {
+    let state = advanceJumpMotion(initialJumpMotion(), {
+      now: 0,
+      grounded: true,
+      verticalSpeed: 0,
+      jumpStarted: true,
+      horizontalSpeed: 6.5,
+    });
+    expect(state.style).toBe("run");
+    state = advanceJumpMotion(state, {
+      now: 0.3,
+      grounded: false,
+      verticalSpeed: 2,
+      jumpStarted: false,
+      horizontalSpeed: 0,
+    });
+    expect(jumpAnimation(state.phase, state.style)).toEqual({
+      name: "Jump_RunAir",
+      duration: 0.65,
+      loop: false,
+    });
+    state = advanceJumpMotion(state, {
+      now: 0.7,
+      grounded: true,
+      verticalSpeed: -1,
+      jumpStarted: false,
+    });
+    expect(jumpAnimation(state.phase, state.style)?.name).toBe("Jump_RunLand");
+    state = advanceJumpMotion(state, {
+      now: 0.87,
+      grounded: true,
+      verticalSpeed: 0,
+      jumpStarted: false,
+    });
+    expect(state.phase).toBe("grounded");
+    const fall = advanceJumpMotion(state, {
+      now: 0.9,
+      grounded: false,
+      verticalSpeed: -1,
+      jumpStarted: false,
+      horizontalSpeed: 3.8,
+    });
+    expect(fall.style).toBe("walk");
+    state = advanceJumpMotion(state, {
+      now: 1,
+      grounded: true,
+      verticalSpeed: 0,
+      jumpStarted: true,
+      horizontalSpeed: 3.8,
+    });
+    expect(state.style).toBe("walk");
+    expect(jumpAnimation(state.phase, state.style)?.name).toBe("Jump_Start");
   });
 });
