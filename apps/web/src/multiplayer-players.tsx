@@ -24,6 +24,8 @@ import { createScooterRiderRig } from "./scooter-rider";
 import type { ScooterHandle } from "./scooter";
 import { RemoteScooter, RemoteScooterFleet } from "./RemoteScooterFleet";
 import type { MultiplayerRoom } from "./multiplayer";
+import { createTableReactionRig } from "./table-reactions";
+import { planesSeatSide } from "../../../packages/shared/planes-station";
 
 /** Membership alone reconciles React. Pose packets update mutable targets read by each rig. */
 export function MultiplayerPlayers({ room }: { room: MultiplayerRoom }) {
@@ -77,6 +79,8 @@ function RemoteAvatarRig({
     "/assets/animations/character-actions.json",
   );
   const object = useMemo(() => cloneCharacter(scene), [scene]);
+  const tableReaction = useMemo(() => createTableReactionRig(object), [object]);
+  useEffect(() => () => tableReaction.dispose(), [tableReaction]);
   const clips = useMemo(() => {
     return characterClips(animations, String(supplemental));
   }, [animations, supplemental]);
@@ -124,6 +128,7 @@ function RemoteAvatarRig({
     };
   }, [rig, object, animations]);
   useFrame((_, delta) => {
+    tableReaction.beginFrame();
     const remote = room.remotes.get(id),
       group = root.current;
     if (!remote || !group) return;
@@ -219,6 +224,11 @@ function RemoteAvatarRig({
       helpers.current?.rider.update({ speed: player.speed ?? 0, steer: 0 });
     }
     wasRiding.current = riding;
+    if (planesSeatSide(player.seatId) !== null && "planesReaction" in room)
+      tableReaction.update(
+        (room as MultiplayerRoom).planesReaction(id),
+        performance.now(),
+      );
     // This DOM is an authored diagnostic surface for automated and manual multiplayer checks.
     if (import.meta.env.DEV || import.meta.env.VITE_GAME_DIAGNOSTICS === "1") {
       badge.current?.setAttribute("data-animation", next);
@@ -238,7 +248,7 @@ function RemoteAvatarRig({
       <Html
         center
         position={[0, 2.15, 0]}
-        distanceFactor={12}
+        distanceFactor={planesSeatSide(player?.seatId) !== null ? 5 : 12}
         zIndexRange={[5, 0]}
         style={{ pointerEvents: "none" }}
       >

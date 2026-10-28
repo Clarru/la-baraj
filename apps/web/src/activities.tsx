@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Model } from "./assets";
 import { playerPosition } from "./player";
@@ -34,6 +40,8 @@ import {
 } from "./bench-registry";
 import type { MultiplayerRoom } from "./multiplayer";
 import type { RegisteredBench } from "./seating-types";
+import { planesSeatSide } from "../../../packages/shared/planes-station";
+import { takeTableStandRequest } from "./planes-activity";
 
 export type ActivityPrompt = {
   main: string;
@@ -63,7 +71,9 @@ export function WorldActivities({
   const [localLit, setLocalLit] = useState(false);
   const network = useSyncExternalStore(room.subscribe, room.getSnapshot);
   const lit = network.status === "offline" ? localLit : network.fireLit;
-  const seatAttempt = useRef(0), seatPending = useRef(false), fireSent = useRef(false);
+  const seatAttempt = useRef(0),
+    seatPending = useRef(false),
+    fireSent = useRef(false);
   const pendingLight = useRef(false);
   const [phase, setPhase] = useState<ActivityKind>("none");
   const state = useRef<ActivityInteraction>(idleActivity());
@@ -77,24 +87,36 @@ export function WorldActivities({
   const lastPrompt = useRef("");
   const promptTick = useRef(0);
   const ground = terrainHeight(fireCircleSpot.x, fireCircleSpot.z);
+  const previousReset = useRef(resetKey);
+  const tableExitPending = useRef(false),
+    pendingTableSeat = useRef(false);
+  const isTableSeat = () => planesSeatSide(state.current.seatId) !== null;
 
-  const commit = useCallback((next: ActivityInteraction) => {
-    if (next === state.current) return;
-    if (next.kind === "none") {
-      if (state.current.seatId || seatPending.current) room.releaseSeat();
-      seatPending.current = false;
-      releaseSeat(localSeatedActorId);
-    }
-    const previous = state.current;
-    const preserveShiftClock =
-      (next.kind === "scoot-left" || next.kind === "scoot-right") &&
-      next.kind === previous.kind &&
-      next.pose === previous.pose;
-    state.current = next;
-    setPhase(next.kind);
-    if (!preserveShiftClock) setActivityPose(next.kind, next.pose);
-    callbacks.current.onBusy(next.kind !== "none");
-  }, [room]);
+  const commit = useCallback(
+    (next: ActivityInteraction) => {
+      if (next === state.current) return;
+      if (next.kind === "none") {
+        if (
+          planesSeatSide(state.current.seatId) !== null ||
+          pendingTableSeat.current
+        )
+          tableExitPending.current = true;
+        if (state.current.seatId || seatPending.current) room.releaseSeat();
+        seatPending.current = false;
+        releaseSeat(localSeatedActorId);
+      }
+      const previous = state.current;
+      const preserveShiftClock =
+        (next.kind === "scoot-left" || next.kind === "scoot-right") &&
+        next.kind === previous.kind &&
+        next.pose === previous.pose;
+      state.current = next;
+      setPhase(next.kind);
+      if (!preserveShiftClock) setActivityPose(next.kind, next.pose);
+      callbacks.current.onBusy(next.kind !== "none");
+    },
+    [room],
+  );
   const clear = useCallback(() => {
     seatAttempt.current++;
     pendingLight.current = false;
@@ -103,21 +125,28 @@ export function WorldActivities({
     callbacks.current.onPrompt(null);
   }, [commit]);
 
-  const requestSeat = useCallback((seatId: string, accepted: () => void, rejected: () => void) => {
-    const attempt = ++seatAttempt.current;
-    seatPending.current = true;
-    callbacks.current.onBusy(true);
-    void room.claimSeat(seatId).then((ok) => {
-      if (attempt !== seatAttempt.current) {
-        if (ok && !seatPending.current && !state.current.seatId) room.releaseSeat();
-        return;
-      }
-      seatPending.current = false;
-      if (ok) accepted();
-      else rejected();
-      callbacks.current.onBusy(state.current.kind !== "none");
-    });
-  }, [room]);
+  const requestSeat = useCallback(
+    (seatId: string, accepted: () => void, rejected: () => void) => {
+      pendingTableSeat.current = planesSeatSide(seatId) !== null;
+      if (pendingTableSeat.current) tableExitPending.current = false;
+      const attempt = ++seatAttempt.current;
+      seatPending.current = true;
+      callbacks.current.onBusy(true);
+      void room.claimSeat(seatId).then((ok) => {
+        if (attempt !== seatAttempt.current) {
+          if (ok && !seatPending.current && !state.current.seatId)
+            room.releaseSeat();
+          return;
+        }
+        seatPending.current = false;
+        pendingTableSeat.current = false;
+        if (ok) accepted();
+        else rejected();
+        callbacks.current.onBusy(state.current.kind !== "none");
+      });
+    },
+    [room],
+  );
 
   const startLighting = useCallback(
     (now: number) => {
@@ -160,22 +189,55 @@ export function WorldActivities({
       callbacks.current.onPrompt(null);
     };
   }, []);
-  useEffect(() => room.subscribeWorld(() => {
-    const status = room.getSnapshot().status;
-    if (status !== "online" && status !== "offline") clear();
-    else if (!seatPending.current && state.current.seatId && !activitySeatIsValid(state.current, getSeat(state.current.seatId), localSeatedActorId)) clear();
-  }), [room, clear]);
   useEffect(() => {
-    if (paused) clear();
+    const sync = () => {
+      if (!room.ownSeatId()) tableExitPending.current = false;
+      const status = room.getSnapshot().status;
+      if (status !== "online" && status !== "offline") clear();
+      else if (
+        !seatPending.current &&
+        state.current.seatId &&
+        !activitySeatIsValid(
+          state.current,
+          getSeat(state.current.seatId),
+          localSeatedActorId,
+        )
+      )
+        clear();
+      else if (
+        status === "online" &&
+        !state.current.seatId &&
+        !seatPending.current &&
+        !tableExitPending.current
+      ) {
+        const own = room.ownSeatId();
+        if (planesSeatSide(own) !== null && own) {
+          const seat = getSeat(own);
+          if (seat) {
+            const claimed = claimSeat(own, localSeatedActorId);
+            if (claimed) commit(beginSitting(claimed, performance.now()));
+          }
+        }
+      }
+    };
+    sync();
+    return room.subscribeWorld(sync);
+  }, [room, clear, commit]);
+  useEffect(() => {
+    if (paused && !isTableSeat()) clear();
   }, [paused, clear]);
   useEffect(() => {
+    if (previousReset.current === resetKey) return;
+    previousReset.current = resetKey;
     clear();
     messageUntil.current = 0;
   }, [resetKey, clear]);
   useEffect(() => {
-    const onBlur = () => clear();
+    const onBlur = () => {
+      if (!isTableSeat()) clear();
+    };
     const onVisibility = () => {
-      if (document.hidden) clear();
+      if (document.hidden && !isTableSeat()) clear();
     };
     window.addEventListener("blur", onBlur);
     document.addEventListener("visibilitychange", onVisibility);
@@ -199,7 +261,10 @@ export function WorldActivities({
         return;
       const now = performance.now();
       if (seatPending.current) {
-        if (["Escape", "KeyF"].includes(event.code)) { event.preventDefault(); clear(); }
+        if (["Escape", "KeyF"].includes(event.code)) {
+          event.preventDefault();
+          clear();
+        }
         return;
       }
       const current = state.current;
@@ -218,6 +283,7 @@ export function WorldActivities({
         }
         return;
       }
+      if (isTableSeat()) return;
       if (
         (event.code === "KeyA" || event.code === "KeyD") &&
         current.kind === "sit" &&
@@ -236,15 +302,28 @@ export function WorldActivities({
           const destination = adjacent && getSeat(adjacent.id);
           if (moved || destination?.occupantId === localSeatedActorId) {
             seatFeedback.current.until = 0;
-            commit(beginSeatMove(moved?.from ?? seat, moved?.to ?? destination!, performance.now()));
+            commit(
+              beginSeatMove(
+                moved?.from ?? seat,
+                moved?.to ?? destination!,
+                performance.now(),
+              ),
+            );
           } else {
             room.releaseSeat();
             clear();
           }
         };
-        const blocked = () => { seatFeedback.current = { message: adjacent ? "That seat is taken." : "End of the bench.", until: performance.now() + 1200 }; };
-        if (!adjacent || adjacent.occupantId !== null || adjacent.reservedBy) blocked();
-        else if (room.getSnapshot().status === "online") requestSeat(adjacent.id, shift, blocked);
+        const blocked = () => {
+          seatFeedback.current = {
+            message: adjacent ? "That seat is taken." : "End of the bench.",
+            until: performance.now() + 1200,
+          };
+        };
+        if (!adjacent || adjacent.occupantId !== null || adjacent.reservedBy)
+          blocked();
+        else if (room.getSnapshot().status === "online")
+          requestSeat(adjacent.id, shift, blocked);
         else if (room.getSnapshot().status === "offline") shift();
         else blocked();
         return;
@@ -259,7 +338,8 @@ export function WorldActivities({
             localSeatedActorId,
           );
           const sit = () => {
-            const seat = available && claimSeat(available.id, localSeatedActorId);
+            const seat =
+              available && claimSeat(available.id, localSeatedActorId);
             if (seat) {
               messageUntil.current = 0;
               commit(beginSitting(seat, performance.now()));
@@ -272,7 +352,8 @@ export function WorldActivities({
             message.current = `${bench.label} · Seat unavailable`;
             messageUntil.current = performance.now() + 2500;
           };
-          if (available && room.getSnapshot().status === "online") requestSeat(available.id, sit, blocked);
+          if (available && room.getSnapshot().status === "online")
+            requestSeat(available.id, sit, blocked);
           else if (available && room.getSnapshot().status === "offline") sit();
           else blocked();
         }
@@ -328,8 +409,7 @@ export function WorldActivities({
         if (lit) {
           if (room.getSnapshot().status === "offline") setLocalLit(false);
           else room.setFire(false);
-        }
-        else if (seated) {
+        } else if (seated) {
           pendingLight.current = true;
           commit(cancelActivity(current, now));
         } else startLighting(now);
@@ -345,6 +425,25 @@ export function WorldActivities({
       return;
     }
     const now = performance.now();
+    if (!room.ownSeatId()) tableExitPending.current = false;
+    if (takeTableStandRequest() && isTableSeat())
+      commit(cancelActivity(state.current, now));
+    // The server can restore a saved match before the bench assets finish mounting.
+    if (
+      !state.current.seatId &&
+      !seatPending.current &&
+      !tableExitPending.current &&
+      room.getSnapshot().status === "online"
+    ) {
+      const own = room.ownSeatId();
+      if (own && planesSeatSide(own) !== null) {
+        const seat = getSeat(own);
+        if (seat) {
+          const claimed = claimSeat(own, localSeatedActorId);
+          if (claimed) commit(beginSitting(claimed, now));
+        }
+      }
+    }
     if (
       !seatPending.current &&
       state.current.seatId &&
@@ -364,8 +463,13 @@ export function WorldActivities({
         now >=
           current.deadline - (fireLightingDuration - fireIgnitionTime) * 1000
       ) {
-        if (room.getSnapshot().status === "offline") { setLocalLit(true); fireSent.current = true; }
-        else if (room.getSnapshot().status === "online") { room.setFire(true); fireSent.current = true; }
+        if (room.getSnapshot().status === "offline") {
+          setLocalLit(true);
+          fireSent.current = true;
+        } else if (room.getSnapshot().status === "online") {
+          room.setFire(true);
+          fireSent.current = true;
+        }
       }
       const next = advanceActivity(current, now);
       if (next.outcome === "seat-moved") finishSeatMove(localSeatedActorId);
@@ -434,7 +538,11 @@ export function WorldActivities({
         : "";
     if (!paused) {
       if (seatPending.current)
-        prompt = { main: "Reserving a seat…", detail: "Waiting for the room · F or Escape to cancel", key: "F" };
+        prompt = {
+          main: "Reserving a seat…",
+          detail: "Waiting for the room · F or Escape to cancel",
+          key: "F",
+        };
       else if (current.kind === "fire-approach")
         prompt = { main: "Walking to the fire…", detail: "Escape to cancel" };
       else if (current.kind === "light-fire")
@@ -448,7 +556,9 @@ export function WorldActivities({
       else if (current.kind === "sit")
         prompt = {
           main: seatDescription,
-          detail: `${now < seatFeedback.current.until ? seatFeedback.current.message : "A/D to shift"} · F or Escape to stand${nearFire ? ` · E to ${lit ? "put out" : "light"} the fire` : ""}`,
+          detail: isTableSeat()
+            ? "Open the paper to play · F leaves the table"
+            : `${now < seatFeedback.current.until ? seatFeedback.current.message : "A/D to shift"} · F or Escape to stand${nearFire ? ` · E to ${lit ? "put out" : "light"} the fire` : ""}`,
           key: "F",
         };
       else if (current.kind === "scoot-left" || current.kind === "scoot-right")
@@ -485,6 +595,9 @@ export function WorldActivities({
           free > 0
             ? {
                 main: `Sit · ${nearbyBench.label}`,
+                ...(nearbyBench.id.startsWith("planes-")
+                  ? { main: "Play Planes" }
+                  : {}),
                 detail: secondaryAction || "Take a seat.",
                 key: "F",
               }

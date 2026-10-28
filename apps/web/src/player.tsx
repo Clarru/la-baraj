@@ -10,6 +10,12 @@ import {
   disposeCharacterSkeletons,
 } from "./character-resources";
 import { assetUrl } from "./assets";
+import { currentMultiplayerRoom } from "./multiplayer";
+import { createTableReactionRig } from "./table-reactions";
+import {
+  PLANES_TABLE,
+  planesSeatSide,
+} from "../../../packages/shared/planes-station";
 import {
   takeCabinTransfer,
   interiorFloorOffset,
@@ -154,6 +160,9 @@ export function Player({
     [animations, supplemental],
   );
   const { actions, mixer } = useAnimations(allAnimations, object);
+  const tableReaction = useMemo(() => createTableReactionRig(object), [object]);
+  useFrame(() => tableReaction.beginFrame(), -2);
+  useEffect(() => () => tableReaction.dispose(), [tableReaction]);
   useEffect(() => () => disposeCharacterSkeletons(object), [object]);
   const activityRig = useRef<ReturnType<
     typeof createCharacterActivityRig
@@ -658,6 +667,14 @@ export function Player({
       visual.current.parent.getWorldPosition(playerViewPosition);
     else playerViewPosition.copy(playerPosition);
     activityRig.current?.update(pose, elapsed);
+    if (pose.kind === "sit" || pose.kind === "sit-down") {
+      const room = currentMultiplayerRoom();
+      if (room && planesSeatSide(room.ownSeatId()) !== null)
+        tableReaction.update(
+          room.planesReaction(room.getSnapshot().selfId),
+          performance.now(),
+        );
+    }
     if (mounted) {
       const signedSpeed =
         c.currLinVel.x * Math.sin(rideYaw.current) +
@@ -762,6 +779,7 @@ export function CameraRig({
   interiorIndex = null,
   onFocusCabin,
   transitioning = false,
+  tableSeat = null,
 }: {
   mode: ViewMode;
   resetKey: number;
@@ -769,6 +787,7 @@ export function CameraRig({
   interiorIndex?: number | null;
   onFocusCabin?: (index: number) => void;
   transitioning?: boolean;
+  tableSeat?: 0 | 1 | null;
 }) {
   const controls = useRef<React.ComponentRef<typeof OrbitControls>>(null);
   const [cabinVariant, setCabinVariant] = useState(0);
@@ -788,6 +807,7 @@ export function CameraRig({
   const { camera } = useThree();
   const last = useRef(new THREE.Vector3());
   const priorInterior = useRef<number | null>(null);
+  const priorTable = useRef<number | null>(null);
   const blend = useRef<{
     from: THREE.Vector3;
     to: THREE.Vector3;
@@ -803,8 +823,23 @@ export function CameraRig({
     const leaving = priorInterior.current !== null && interiorIndex === null;
     const changingRoom = priorInterior.current !== interiorIndex;
     const exitedIndex = priorInterior.current;
+    const changingTable = priorTable.current !== tableSeat;
+    priorTable.current = tableSeat;
     priorInterior.current = interiorIndex;
-    if (interiorIndex !== null) {
+    if (tableSeat !== null) {
+      // Keep the seated pair in the clear space to the left of the paper.
+      const panZ = tableSeat === 0 ? 0.82 : -0.82;
+      camera.position.set(
+        PLANES_TABLE.x + (tableSeat === 0 ? -3.4 : 3.4) + 0.55,
+        PLANES_TABLE.ground + 2.1,
+        PLANES_TABLE.z + 2.3 + panZ,
+      );
+      c.target.set(
+        PLANES_TABLE.x + 0.55,
+        PLANES_TABLE.ground + 1,
+        PLANES_TABLE.z + panZ,
+      );
+    } else if (interiorIndex !== null) {
       const plot = cabinSpots[interiorIndex],
         yaw = cabinYaw(interiorIndex),
         x = 6.2,
@@ -856,7 +891,7 @@ export function CameraRig({
         .add(new THREE.Vector3(...homeWalkCameraOffset(homeIndex)));
       c.target.copy(playerViewPosition).add(new THREE.Vector3(0, 0.8, 0));
     }
-    if (changingRoom) {
+    if (changingRoom || changingTable) {
       blend.current = {
         from,
         fromTarget,
@@ -877,6 +912,7 @@ export function CameraRig({
     homeIndex,
     interiorIndex,
     onFocusCabin,
+    tableSeat,
   ]);
   useFrame((_, dt) => {
     const c = controls.current;
@@ -893,7 +929,11 @@ export function CameraRig({
       if (t === 1) blend.current = null;
       return;
     }
-    if (interiorIndex === null && (mode === "walk" || mode === "study")) {
+    if (
+      tableSeat === null &&
+      interiorIndex === null &&
+      (mode === "walk" || mode === "study")
+    ) {
       const delta = playerViewPosition.clone().sub(last.current);
       camera.position.add(delta);
       c.target
@@ -908,22 +948,27 @@ export function CameraRig({
       makeDefault
       enabled={!transitioning}
       enablePan={
+        tableSeat === null &&
         interiorIndex === null &&
         (mode === "overview" || mode === "settlement" || mode === "home")
       }
       minDistance={
-        interiorIndex !== null
-          ? 9
-          : mode === "overview" || mode === "settlement" || mode === "home"
-            ? 8
-            : 2.5
+        tableSeat !== null
+          ? 2
+          : interiorIndex !== null
+            ? 9
+            : mode === "overview" || mode === "settlement" || mode === "home"
+              ? 8
+              : 2.5
       }
       maxDistance={
-        interiorIndex !== null
-          ? 18
-          : mode === "overview" || mode === "settlement" || mode === "home"
-            ? 1600
-            : 22
+        tableSeat !== null
+          ? 6
+          : interiorIndex !== null
+            ? 18
+            : mode === "overview" || mode === "settlement" || mode === "home"
+              ? 1600
+              : 22
       }
       maxPolarAngle={Math.PI * 0.47}
       minPolarAngle={0.15}

@@ -7,8 +7,16 @@ import {
   type HomeAssignment,
   type PlayerPresence,
   type ServerMessage,
+  type ClientMessage,
 } from "../../packages/shared/protocol";
 import { HomeAllocationError, type HomeAssignments } from "./home-assignments";
+import { PlanesTable, TableError, type TableActor } from "./planes-table";
+import {
+  PLANES_TABLE,
+  PLANES_SEATS,
+  planesSeatSide,
+  planesSeatPose,
+} from "../../packages/shared/planes-station";
 
 type Bucket = { tokens: number; at: number };
 export type SessionState = {
@@ -21,6 +29,7 @@ export type SessionState = {
   home?: HomeAssignment;
   nameAt?: number;
   housingEpoch?: number;
+  resumeTable?: boolean;
 };
 export interface RoomConnection {
   readonly state: Readonly<SessionState> | null;
@@ -32,6 +41,8 @@ export type RoomRuntime = {
   connections(): Iterable<RoomConnection>;
   saveFire(fire: FireState): Promise<void>;
   homes: HomeAssignments;
+  planes?: PlanesTable;
+  retryPlaneCleanup?: () => Promise<void>;
 };
 /** These buckets are stored in the websocket attachment and survive hibernation. */
 export function consume(
@@ -50,11 +61,89 @@ export function consume(
 export class RoomCore {
   fire: FireState;
   private homeClaims = new WeakMap<RoomConnection, Promise<HomeAssignment>>();
+  private planes: PlanesTable;
+  private cleanupRetryAt = 0;
+  private seatQueues = new WeakMap<RoomConnection, Promise<void>>();
   constructor(
     private runtime: RoomRuntime,
     fire: FireState = { lit: true, revision: 0 },
   ) {
     this.fire = fire;
+    this.planes = runtime.planes ?? new PlanesTable({ save: async () => {} });
+  }
+  private tableActor(connection: RoomConnection): TableActor | null {
+    const state = connection.state;
+    if (!state || state.nameAt === undefined) return null;
+    return {
+      owner: state.home
+        ? `home:${HOUSING_EPOCH}:${state.home.index}`
+        : `session:${state.player.id}`,
+      socket: state.player.id,
+      name: state.player.nickname,
+    };
+  }
+  private broadcastPlanes() {
+    for (const c of this.active())
+      this.send(c, {
+        type: "planes",
+        view: this.planes.view(this.tableActor(c)),
+      });
+  }
+  private restoreGameSeat(connection: RoomConnection, side: 0 | 1) {
+    if (!this.active().includes(connection)) return;
+    const pose = planesSeatPose(side);
+    connection.setState({
+      ...connection.state!,
+      resumeTable: false,
+      player: {
+        ...connection.state!.player,
+        ...pose,
+        seatId: PLANES_SEATS[side],
+        activity: "sit",
+        animation: "Activity_Sit",
+      },
+    });
+    this.broadcast({ type: "seats", seats: this.seats() });
+    this.broadcast(
+      { type: "pose", player: connection.state!.player },
+      connection,
+    );
+    this.snapshot(connection);
+  }
+  private async resumeWaitingActors(now = Date.now()) {
+    let restored = false;
+    for (const c of this.active()) {
+      if (!c.state!.resumeTable) continue;
+      const actor = this.tableActor(c);
+      if (!actor) continue;
+      const side = await this.planes.resume(actor, now);
+      if (side !== null) {
+        this.restoreGameSeat(c, side);
+        restored = true;
+      } else if (
+        !this.planes.canResume(actor, now) &&
+        !this.planes.hasOtherSocket(actor)
+      )
+        c.setState({ ...c.state!, resumeTable: false });
+    }
+    if (restored) this.broadcastPlanes();
+  }
+  private reconcileGameSeats() {
+    let changed = false;
+    for (const c of this.active()) {
+      const side = planesSeatSide(c.state!.player.seatId),
+        actor = this.tableActor(c);
+      if (side !== null && (!actor || this.planes.sideFor(actor) !== side)) {
+        const { seatId: _seat, ...player } = c.state!.player;
+        c.setState({
+          ...c.state!,
+          player: { ...player, activity: "none", animation: "Idle_Neutral" },
+        });
+        changed = true;
+        this.broadcast({ type: "pose", player: c.state!.player }, c);
+      }
+    }
+    if (changed) this.broadcast({ type: "seats", seats: this.seats() });
   }
   private send(connection: RoomConnection, message: ServerMessage) {
     connection.send(JSON.stringify(message));
@@ -89,11 +178,18 @@ export class RoomCore {
       players: this.active().map((c) => c.state!.player),
       fire: this.fire,
       seats: this.seats(),
+      planes: this.planes.view(this.tableActor(connection)),
       ...(connection.state.home ? { home: connection.state.home } : {}),
     });
   }
   async commitNames(now = Date.now()) {
     if (await this.runtime.homes.commitDueNames(now)) this.broadcastVillage();
+    await this.planes.flush();
+    await this.resumeWaitingActors(now);
+    if (await this.planes.expire(now)) {
+      this.reconcileGameSeats();
+      this.broadcastPlanes();
+    }
   }
   private broadcastVillage() {
     this.broadcast({
@@ -171,6 +267,25 @@ export class RoomCore {
       );
       return;
     }
+    // Recover an observed disconnect even if an outage also prevented scheduling
+    // its alarm. Ordinary live traffic retries at most once per second.
+    if (
+      (this.planes.needsFlush ||
+        this.active().some((c) => c.state!.resumeTable)) &&
+      now >= this.cleanupRetryAt
+    ) {
+      this.cleanupRetryAt = now + 1000;
+      try {
+        await this.planes.flush();
+        await this.resumeWaitingActors(now);
+        if (await this.planes.expire(now)) this.reconcileGameSeats();
+        this.broadcastPlanes();
+      } catch {
+        try {
+          await this.runtime.retryPlaneCleanup?.();
+        } catch {}
+      }
+    }
     const current = connection.state!;
     if (message.type === "pose") {
       const pose = consume(current.pose, now, 10, 3);
@@ -188,6 +303,39 @@ export class RoomCore {
       return;
     }
     connection.setState({ ...current, action });
+    if (message.type === "planes-action") {
+      const actor = this.tableActor(connection);
+      let error: string | undefined;
+      try {
+        if (!actor)
+          throw new TableError("Choose a name and sit at the table first.");
+        if (await this.planes.expire(now)) {
+          this.reconcileGameSeats();
+          this.broadcastPlanes();
+        }
+        await this.planes.act(
+          actor,
+          message.action,
+          message.requestId,
+          message.revision,
+          now,
+        );
+        this.reconcileGameSeats();
+        this.broadcastPlanes();
+      } catch (e) {
+        error =
+          e instanceof TableError
+            ? e.message
+            : "The table couldn't save that move. Please try again.";
+      }
+      this.send(connection, {
+        type: "planes",
+        view: this.planes.view(actor),
+        requestId: message.requestId,
+        ...(error ? { error } : {}),
+      });
+      return;
+    }
     if (message.type === "sync") {
       this.snapshot(connection);
       return;
@@ -290,6 +438,29 @@ export class RoomCore {
         }
         this.broadcastVillage();
       }
+      const actor = this.tableActor(connection);
+      if (actor) {
+        if (
+          this.planes.canResume(actor, now) ||
+          this.planes.hasOtherSocket(actor)
+        )
+          connection.setState({ ...connection.state!, resumeTable: true });
+        try {
+          await this.planes.bindActor(actor);
+          const side = await this.planes.resume(actor, now);
+          if (side !== null && this.active().includes(connection)) {
+            this.restoreGameSeat(connection, side);
+            this.broadcast({ type: "seats", seats: this.seats() });
+            this.broadcastPlanes();
+          } else if (this.planes.hasOtherSocket(actor))
+            connection.setState({ ...connection.state!, resumeTable: true });
+        } catch {
+          // Retain the waiting marker when an authenticated resume cannot save.
+          try {
+            await this.runtime.retryPlaneCleanup?.();
+          } catch {}
+        }
+      }
       this.broadcast({ type: "pose", player: connection.state!.player });
       if (message.requestHome) this.snapshot(connection);
       return;
@@ -314,6 +485,20 @@ export class RoomCore {
       this.broadcast({ type: "fire", fire: next });
       return;
     }
+    const prior = this.seatQueues.get(connection) ?? Promise.resolve();
+    const next = prior.then(() => this.changeSeat(connection, message, now));
+    this.seatQueues.set(
+      connection,
+      next.catch(() => {}),
+    );
+    return next;
+  }
+  private async changeSeat(
+    connection: RoomConnection,
+    message: Extract<ClientMessage, { type: "seat" }>,
+    now: number,
+  ) {
+    if (!this.active().includes(connection)) return;
     const cabinSeat = message.seatId?.match(/^cabin-(\d+):/);
     if (
       cabinSeat &&
@@ -343,7 +528,43 @@ export class RoomCore {
       this.send(connection, { type: "seats", seats: this.seats() });
       return;
     }
-    const { seatId: _oldSeat, ...standing } = player;
+    const gameSide = planesSeatSide(message.seatId),
+      actor = this.tableActor(connection);
+    try {
+      if (gameSide !== null) {
+        if (!actor)
+          throw new TableError("Choose a name before joining the table.");
+        if (await this.planes.expire(now)) {
+          this.reconcileGameSeats();
+          this.broadcastPlanes();
+        }
+        const p = connection.state!.player.position;
+        if (
+          !this.planes.canResume(actor, now) &&
+          Math.hypot(p[0] - PLANES_TABLE.x, p[2] - PLANES_TABLE.z) > 8
+        )
+          throw new TableError("Walk up to the Planes table first.");
+        await this.planes.join(actor, gameSide, now);
+        if (!this.active().includes(connection)) {
+          await this.planes.disconnect(actor, now);
+          return;
+        }
+      } else if (actor && this.planes.hasSocket(actor.socket))
+        await this.planes.leave(actor, now);
+    } catch (e) {
+      this.send(connection, {
+        type: "seat-result",
+        requestId: message.requestId,
+        accepted: false,
+        seatId: connection.state!.player.seatId ?? null,
+        reason:
+          e instanceof TableError
+            ? e.message
+            : "The table couldn't save your seat. Try again.",
+      });
+      return;
+    }
+    const { seatId: _oldSeat, ...standing } = connection.state!.player;
     const nextPlayer =
       message.seatId === null
         ? standing
@@ -357,6 +578,8 @@ export class RoomCore {
     });
     this.broadcast({ type: "seats", seats: this.seats() });
     this.broadcast({ type: "pose", player: nextPlayer }, connection);
+    if (gameSide !== null || planesSeatSide(player.seatId) !== null)
+      this.broadcastPlanes();
   }
   disconnect(connection: RoomConnection) {
     if (!connection.state) return;
@@ -366,5 +589,27 @@ export class RoomCore {
     );
     // The PartyServer iterator no longer contains the closed connection.
     this.broadcast({ type: "seats", seats: this.seats() }, connection);
+    const actor = this.tableActor(connection);
+    if (actor && this.planes.hasSocket(actor.socket))
+      return this.planes
+        .disconnect(actor)
+        .catch(async () => {
+          try {
+            await this.runtime.retryPlaneCleanup?.();
+          } catch {
+            /* A later message/wake retries after a storage outage. */
+          }
+        })
+        .then(async () => {
+          this.broadcastPlanes();
+          try {
+            await this.resumeWaitingActors();
+            this.broadcastPlanes();
+          } catch {
+            try {
+              await this.runtime.retryPlaneCleanup?.();
+            } catch {}
+          }
+        });
   }
 }

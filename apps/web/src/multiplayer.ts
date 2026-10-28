@@ -12,6 +12,7 @@ import {
 import { syncOnlineSeats } from "./bench-registry";
 import { readPlayerName, savePlayerName } from "./player-name";
 import { isHomeIndex, shouldSpawnAtHome } from "./home";
+import type { PlanesView, PlanesAction } from "../../../packages/shared/planes";
 
 export type NetworkStatus =
   "connecting" | "online" | "reconnecting" | "full" | "error" | "offline";
@@ -26,6 +27,7 @@ type RoomView = {
   fireLit: boolean;
   homeIndex: number | null;
   cabins: PublicCabin[];
+  planes: PlanesView | null;
 };
 export type RemotePlayer = {
   player: PlayerPresence;
@@ -102,6 +104,14 @@ export class MultiplayerRoom {
   >();
   private diagnostic: HTMLOutputElement | null = null;
   private lastDiagnosticAt = 0;
+  private planesEventAt = 0;
+  private planeRequests = new Map<
+    string,
+    {
+      resolve: (error: string | null) => void;
+      timer: ReturnType<typeof setTimeout>;
+    }
+  >();
   private view: RoomView = {
     status: "connecting",
     selfId: "",
@@ -113,8 +123,12 @@ export class MultiplayerRoom {
     fireLit: false,
     homeIndex: null,
     cabins: [],
+    planes: null,
   };
-  constructor(initialName?: string) {
+  constructor(
+    initialName?: string,
+    private readonly persistHome = true,
+  ) {
     if (initialName) this.view = { ...this.view, nickname: initialName };
   }
   subscribe = (listener: () => void) => {
@@ -255,7 +269,7 @@ export class MultiplayerRoom {
         : {}),
     });
   }
-  private send(message: ClientMessage) {
+  protected send(message: ClientMessage) {
     if (this.socket?.readyState === WebSocket.OPEN)
       this.socket.send(JSON.stringify(message));
   }
@@ -278,14 +292,27 @@ export class MultiplayerRoom {
         count: this.remotes.size + 1,
       });
   }
-  private receive(message: ServerMessage) {
+  protected receive(message: ServerMessage) {
     switch (message.type) {
+      case "planes": {
+        this.acceptPlanes(message.view);
+        if (message.requestId) {
+          const pending = this.planeRequests.get(message.requestId);
+          if (pending) {
+            clearTimeout(pending.timer);
+            this.planeRequests.delete(message.requestId);
+            pending.resolve(message.error ?? null);
+          }
+        }
+        break;
+      }
       case "village": {
         if (message.village.epoch === HOUSING_EPOCH)
           this.publish({ cabins: message.village.cabins });
         break;
       }
       case "snapshot": {
+        if (message.planes) this.acceptPlanes(message.planes);
         if (message.village && message.village.epoch !== HOUSING_EPOCH) {
           this.publish({
             status: "error",
@@ -308,7 +335,8 @@ export class MultiplayerRoom {
             resumeToken: message.home.resumeToken,
             createHome: false,
           };
-          saveHomeCredential(this.roomId, this.homeCredential);
+          if (this.persistHome)
+            saveHomeCredential(this.roomId, this.homeCredential);
           this.view = { ...this.view, homeIndex: message.home.index };
           // A pre-assignment local pose belongs to the preview arrival, not the assigned cabin.
           if (shouldSpawnAtHome(previousHome, message.home.index))
@@ -477,6 +505,52 @@ export class MultiplayerRoom {
       this.send({ type: "seat", seatId, requestId });
     });
   }
+  ownSeatId() {
+    return (
+      Object.entries(this.seats).find(
+        ([, owner]) => owner === this.view.selfId,
+      )?.[0] ?? null
+    );
+  }
+  private acceptPlanes(view: PlanesView) {
+    if (view.event && view.event.id !== this.view.planes?.event?.id)
+      this.planesEventAt =
+        performance.now() -
+        Math.max(0, Math.min(2500, Date.now() - view.event.at));
+    this.publish({ planes: view });
+  }
+  planesAction(action: PlanesAction, revision: number): Promise<string | null> {
+    if (this.view.status !== "online")
+      return Promise.resolve("Connect to the lake to play with a friend.");
+    const requestId = crypto.randomUUID();
+    return new Promise((resolve) => {
+      const timer = setTimeout(() => {
+        this.planeRequests.delete(requestId);
+        resolve("The table didn't answer. Please try again.");
+      }, 6000);
+      this.planeRequests.set(requestId, { resolve, timer });
+      this.send({ type: "planes-action", requestId, revision, action });
+    });
+  }
+  planesReaction(
+    id: string,
+  ): { kind: "point" | "hit" | "win" | "lose"; startedAt: number } | null {
+    const event = this.view.planes?.event;
+    if (!event || performance.now() - this.planesEventAt > 1600) return null;
+    const kind =
+      event.actor === id
+        ? event.winner !== null
+          ? "win"
+          : "point"
+        : event.target === id
+          ? event.winner !== null
+            ? "lose"
+            : event.result !== "miss"
+              ? "hit"
+              : null
+          : null;
+    return kind ? { kind, startedAt: this.planesEventAt } : null;
+  }
   releaseSeat() {
     // Clear request lifetimes as well as the server lease when Escape/blur cancels.
     this.resolvePending();
@@ -494,5 +568,10 @@ export class MultiplayerRoom {
       resolve(false);
     });
     this.pending.clear();
+    this.planeRequests.forEach(({ resolve, timer }) => {
+      clearTimeout(timer);
+      resolve("Connection interrupted. Your match will wait briefly for you.");
+    });
+    this.planeRequests.clear();
   }
 }

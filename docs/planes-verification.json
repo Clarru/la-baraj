@@ -1,0 +1,43 @@
+{
+  "date": "2026-10-29",
+  "frontendTests": 134,
+  "serverTests": 55,
+  "typescript": "passed (frontend and Worker)",
+  "productionBuild": "passed; lab controls, diagnostics and fixture server code absent",
+  "visualReview": "ship; desktop 1707x960, placement, battle and result captures",
+  "liveWorkerVersion": "2059808d-9173-4759-9c0e-7a4052c8efcd",
+  "liveWebSocketCheck": {
+    "passed": true,
+    "players": 2,
+    "spectators": 1,
+    "outcomes": [
+      "miss",
+      "body",
+      "head",
+      "finished"
+    ],
+    "tableLeftEmpty": true,
+    "cabinsBeforeAndAfter": 1,
+    "fireBeforeAndAfter": {
+      "lit": true,
+      "revision": 26
+    },
+    "homesAllocated": 0
+  },
+  "localTablePerformance": {
+    "device": "local Apple M4 Pro",
+    "viewport": [
+      1707,
+      960
+    ],
+    "dpr": 1.5,
+    "sampleFrames": 600,
+    "fps": 120.0192,
+    "p95Ms": 9.8,
+    "framesOver33Ms": 0,
+    "physicsMeanMs": 0.058,
+    "sceneFirstFrameMs": 2248.8,
+    "scope": "two seated avatars, board open; local synthetic fixture, not a claim for all hardware"
+  },
+  "unchangedCharacterSha256": "1c89c5710998736679a7a10403e89f998a912624c1fe674959668364bd2ba520"
+}
