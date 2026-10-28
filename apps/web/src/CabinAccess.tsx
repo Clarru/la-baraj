@@ -151,6 +151,7 @@ export function CabinAccess({
     />
   );
   if (paused) return curtain;
+  if (!import.meta.env.DEV && interiorIndex !== null && !nearExit) return curtain;
   if (interiorIndex !== null)
     return (
       <>
