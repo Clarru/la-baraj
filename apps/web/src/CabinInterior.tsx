@@ -10,6 +10,7 @@ import {
   interiorFloorOffset,
   cabinDoor,
 } from "./cabin-interior-state";
+import { roomCutawayFront } from "./cabin-cutaway";
 import { assetUrl } from "./assets";
 export function CabinInterior({ index }: { index: number }) {
   const cabin = cabinSpots[index],
@@ -19,7 +20,7 @@ export function CabinInterior({ index }: { index: number }) {
     assetUrl("Lake_Interior_" + roomNames[design.family]),
   );
   const object = useMemo(() => {
-    const clone = scene.clone(true);
+    const clone = roomCutawayFront(scene, size.depth / 2);
     clone.traverse((o) => {
       if (o instanceof THREE.Mesh) {
         o.castShadow = true;
@@ -27,7 +28,7 @@ export function CabinInterior({ index }: { index: number }) {
       }
     });
     return clone;
-  }, [scene]);
+  }, [scene, size.depth]);
   const door = cabinDoor(index);
   return (
     <group

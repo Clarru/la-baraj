@@ -953,27 +953,7 @@ a {
   display: none;
 }
 
-/* A short covered doorway exchange, then reveal the room from its own camera. */
-.cabin-transition {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  background: #121918;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 240ms ease-in;
-}
-.cabin-transition--closing {
-  opacity: 1;
-  pointer-events: auto;
-}
-.cabin-transition--opening {
-  opacity: 0;
-  pointer-events: auto;
-  transition: opacity 500ms ease-out;
-}
-@media (prefers-reduced-motion: reduce) {
-  .cabin-transition {
-    transition-duration: 80ms;
-  }
+/* Diagnostic state has no visual overlay: cabin entry stays in the world. */
+.door-transition-state {
+  display: none;
 }

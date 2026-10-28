@@ -10,6 +10,8 @@ export const interiorFloorOffset = 0.64;
 export type CabinTransfer = {
   position: [number, number, number];
   facing: number;
+  from?: [number, number, number];
+  duration?: number;
 };
 let pending: CabinTransfer | null = null;
 export function cabinLocalToWorld(
@@ -46,14 +48,33 @@ export function cabinTransfer(index: number, entering: boolean): CabinTransfer {
   return {
     position: [
       p.x,
-      terrainHeight(cabin.x, cabin.z) + interiorFloorOffset + 1.05,
+      terrainHeight(cabin.x, cabin.z) + interiorFloorOffset + 0.95,
       p.z,
     ],
     facing: cabinYaw(index) + (entering ? Math.PI : 0),
   };
 }
-export function queueCabinTransfer(index: number, entering: boolean) {
+export function queueCabinTransfer(
+  index: number,
+  entering: boolean,
+  walkThrough = false,
+) {
   pending = cabinTransfer(index, entering);
+  if (walkThrough) {
+    pending.from = cabinTransfer(index, !entering).position;
+    pending.duration = 0.72;
+  }
+}
+export function sampleCabinTransfer(
+  transfer: CabinTransfer,
+  elapsed: number,
+): [number, number, number] {
+  if (!transfer.from || !transfer.duration) return transfer.position;
+  const t = Math.max(0, Math.min(1, elapsed / transfer.duration));
+  const eased = t * t * (3 - 2 * t);
+  return transfer.position.map(
+    (value, i) => transfer.from![i] + (value - transfer.from![i]) * eased,
+  ) as [number, number, number];
 }
 export function takeCabinTransfer() {
   const next = pending;
