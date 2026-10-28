@@ -11,6 +11,7 @@ vi.mock("partysocket", () => ({ default: class extends EventTarget {
   close() { this.readyState = 3; this.dispatchEvent(new Event("close")); }
 } }));
 import { MultiplayerRoom } from "./multiplayer";
+import { queueCabinTransfer, takeCabinTransfer, sampleCabinMotion } from "./cabin-interior-state";
 const roomId = "friends_room_with_128bits_12345";
 const self = { id: "self-1", nickname: "Me", position: [45, 2, 27], yaw: 0, animation: "Idle_Neutral", activity: "none", vehicle: "none" };
 const friend = { ...self, id: "friend-1", nickname: "Friend" };
@@ -36,6 +37,29 @@ describe("friends room client", () => {
     socket.open(); snapshot(socket);
     expect(room.getSnapshot()).toMatchObject({ status: "online", count: 2, selfId: "self-1", ids: ["friend-1"], fireLit: true });
     expect(socket.sent.find((message) => message.type === "pose")).toEqual({ type: "pose", pose: { position: [45, 2, 27], yaw: 0, animation: "Walk", activity: "none", vehicle: "none", jumpPhase: "grounded", speed: 3 } });
+    disconnect();
+  });
+  it.each([true, false])("publishes intermediate doorway feet and Walk/Idle for entering=%s", (entering) => {
+    const room = new MultiplayerRoom(), disconnect = room.connect(), socket = sockets[0];
+    socket.open(); snapshot(socket);
+    queueCabinTransfer(18, entering, true);
+    const transfer = takeCabinTransfer()!;
+    const poses: Array<{position: number[]; animation: string; yaw: number; speed: number}> = [];
+    for (const [i, elapsed] of [.16, .32, .48, .8].entries()) {
+      vi.mocked(performance.now).mockReturnValue(1200 + i * 160);
+      const motion = sampleCabinMotion(transfer, elapsed);
+      room.publishMotion(motion);
+      const packet = socket.sent.at(-1)! as { type: string; pose: typeof poses[number] };
+      expect(packet.type).toBe("pose");
+      expect(packet.pose.position).toEqual(motion.feet.map(v => Math.round(v * 1000) / 1000));
+      expect(motion.feet[1]).toBeCloseTo(transfer.position[1] - .95 + .015);
+      expect(packet.pose.yaw).toBeCloseTo(Math.atan2(motion.facing[0], motion.facing[2]), 2);
+      poses.push(packet.pose);
+    }
+    expect(new Set(poses.map(p => p.position.join(','))).size).toBe(4);
+    expect(poses.slice(0, 3).map(p => p.animation)).toEqual(["Walk", "Walk", "Walk"]);
+    expect(poses[1].speed).toBeGreaterThan(0);
+    expect(poses[3]).toMatchObject({animation: "Idle_Neutral", speed: 0});
     disconnect();
   });
   it("generates a random shareable room when the URL has no valid room", () => {

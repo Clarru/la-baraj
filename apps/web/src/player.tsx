@@ -10,7 +10,8 @@ import {
   takeCabinTransfer,
   interiorFloorOffset,
   cabinTransfer,
-  sampleCabinTransfer,
+  sampleCabinMotion,
+  cabinSoleOffset,
 } from "./cabin-interior-state";
 import { cabinDesigns, cabinDesignForPlot, cabinYaw } from "./cabin-designs";
 import { terrainHeight, inWater, southShore, cabinSpots } from "./geography";
@@ -367,10 +368,11 @@ export function Player({
     const transfer = doorArrival.current;
     if (transfer && (requestedTransfer || doorTransition)) {
       c.body.setBodyType(rapier.RigidBodyType.KinematicPositionBased, true);
-      const arrivalPosition = sampleCabinTransfer(
+      const doorMotion = sampleCabinMotion(
         transfer,
         (performance.now() - doorArrivalStarted.current) / 1000,
       );
+      const arrivalPosition = doorMotion.position;
       c.body.setTranslation(
         {
           x: arrivalPosition[0],
@@ -404,19 +406,20 @@ export function Player({
         localFacing(transfer.facing, facingParent, facingTarget);
         visual.current.quaternion.copy(facingTarget);
       }
-      if (visual.current) visual.current.position.y = -0.935;
+      if (visual.current) visual.current.position.y = cabinSoleOffset;
       jumpState.current = initialJumpMotion();
       setJumping(false);
-      const walkingThrough = Boolean(
-        transfer.duration &&
-        (performance.now() - doorArrivalStarted.current) / 1000 <
-          transfer.duration,
-      );
-      const doorAnimation = walkingThrough ? "Walk" : "Idle_Neutral";
+      const doorAnimation = doorMotion.animation;
       if (requestedTransfer || animation.current !== doorAnimation) {
         actions[animation.current]?.fadeOut(0.12);
         actions[doorAnimation]?.reset().fadeIn(0.12).play();
         animation.current = doorAnimation;
+      }
+      // Keep peers moving during the scripted walk; normal locomotion stays bypassed.
+      sampleClock.current += dt;
+      if (sampleClock.current > 1 / 7) {
+        sampleClock.current = 0;
+        onMotion({ ...doorMotion, animationHistory: animationHistory.current });
       }
       return;
     }

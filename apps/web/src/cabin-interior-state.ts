@@ -7,6 +7,7 @@ export const roomSizes = [
   { width: 5.9, depth: 5.3 },
 ] as const;
 export const interiorFloorOffset = 0.64;
+export const cabinSoleOffset = -0.935;
 export type CabinTransfer = {
   position: [number, number, number];
   facing: number;
@@ -75,6 +76,32 @@ export function sampleCabinTransfer(
   return transfer.position.map(
     (value, i) => transfer.from![i] + (value - transfer.from![i]) * eased,
   ) as [number, number, number];
+}
+/** Same world-space feet/heading contract used by ordinary movement and remote avatars. */
+export function sampleCabinMotion(transfer: CabinTransfer, elapsed: number) {
+  const position = sampleCabinTransfer(transfer, elapsed);
+  const walking = Boolean(
+    transfer.from && transfer.duration && elapsed < transfer.duration,
+  );
+  const t = transfer.duration
+    ? Math.max(0, Math.min(1, elapsed / transfer.duration))
+    : 1;
+  const rate = walking ? (6 * t * (1 - t)) / transfer.duration! : 0;
+  return {
+    position,
+    feet: [position[0], position[1] + cabinSoleOffset, position[2]],
+    facing: [Math.sin(transfer.facing), 0, Math.cos(transfer.facing)],
+    animation: walking ? "Walk" : "Idle_Neutral",
+    activity: "none",
+    vehicle: null,
+    vehicleSpeed: 0,
+    jumpPhase: "grounded",
+    grounded: true,
+    groundY: position[1] - 0.95,
+    velocity: position.map((_, i) =>
+      transfer.from ? (transfer.position[i] - transfer.from[i]) * rate : 0,
+    ),
+  };
 }
 export function takeCabinTransfer() {
   const next = pending;
