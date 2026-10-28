@@ -1,0 +1,96 @@
+{
+  "one": {
+    "status": "online",
+    "selfId": "09afcefc-c40d-490e-bf2a-ae5e2fb62daa",
+    "nickname": "Silver Finch 48",
+    "ids": [
+      "5c1af194-5171-4963-b328-acb2925bf4f1"
+    ],
+    "count": 2,
+    "error": "",
+    "fireLit": true,
+    "roomId": "7ed351d159534d08a04dab72d8e32e0c",
+    "inviteUrl": "https://la-baraj.vercel.app/?room=7ed351d159534d08a04dab72d8e32e0c",
+    "remotes": [
+      {
+        "id": "5c1af194-5171-4963-b328-acb2925bf4f1",
+        "nickname": "Blue Finch 89",
+        "position": [
+          49.324,
+          1.063,
+          23.646
+        ],
+        "yaw": 2.191,
+        "animation": "Idle_Neutral",
+        "activity": "none",
+        "vehicle": "none",
+        "speed": 0,
+        "jumpPhase": "grounded"
+      }
+    ],
+    "localPose": {
+      "position": [
+        44.996,
+        1.005,
+        26.884
+      ],
+      "yaw": -3.105,
+      "animation": "Idle_Neutral",
+      "activity": "none",
+      "vehicle": "none",
+      "jumpPhase": "grounded",
+      "speed": 0
+    },
+    "sentPoses": 5,
+    "receivedPoses": 26,
+    "pendingSeatClaims": 0,
+    "seats": {}
+  },
+  "two": {
+    "status": "online",
+    "selfId": "5c1af194-5171-4963-b328-acb2925bf4f1",
+    "nickname": "Blue Finch 89",
+    "ids": [
+      "09afcefc-c40d-490e-bf2a-ae5e2fb62daa"
+    ],
+    "count": 2,
+    "error": "",
+    "fireLit": true,
+    "roomId": "7ed351d159534d08a04dab72d8e32e0c",
+    "inviteUrl": "https://la-baraj.vercel.app/?room=7ed351d159534d08a04dab72d8e32e0c",
+    "remotes": [
+      {
+        "id": "09afcefc-c40d-490e-bf2a-ae5e2fb62daa",
+        "nickname": "Silver Finch 48",
+        "position": [
+          44.996,
+          1.005,
+          26.884
+        ],
+        "yaw": -3.105,
+        "animation": "Idle_Neutral",
+        "activity": "none",
+        "vehicle": "none",
+        "speed": 0,
+        "jumpPhase": "grounded"
+      }
+    ],
+    "localPose": {
+      "position": [
+        49.324,
+        1.063,
+        23.646
+      ],
+      "yaw": 2.191,
+      "animation": "Idle_Neutral",
+      "activity": "none",
+      "vehicle": "none",
+      "jumpPhase": "grounded",
+      "speed": 0
+    },
+    "sentPoses": 23,
+    "receivedPoses": 1,
+    "pendingSeatClaims": 0,
+    "seats": {}
+  }
+}
