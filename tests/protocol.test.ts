@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { MAX_PLAYERS, parseClientMessage, type PlayerPose, type ServerMessage } from "../packages/shared/protocol";
+import { CANONICAL_WORLD_ID, MAX_HOMES, MAX_PLAYERS, parseClientMessage, type PlayerPose, type ServerMessage } from "../packages/shared/protocol";
 import { RoomCore, type RoomConnection, type SessionState } from "../apps/server/room-core";
-import { allowedOrigin, validRoomPath } from "../apps/server/request-policy";
+import { allowedOrigin, canonicalWorldUrl, retireLegacyConnections, validRoomPath } from "../apps/server/request-policy";
 import { HomeAssignments, readHomeLedger, type HomeLedger } from "../apps/server/home-assignments";
 
 const pose: PlayerPose = { position: [7, 2, 10], yaw: 0.5, animation: "Walk", activity: "none", vehicle: "none" };
+const firstFixtureHome = Math.floor(MAX_HOMES * 0.6);
 class FakeConnection implements RoomConnection {
   state: SessionState | null = null;
   messages: ServerMessage[] = [];
@@ -45,6 +46,27 @@ describe("bounded friend-room protocol", () => {
     expect(parseClientMessage(JSON.stringify({ ...homeHello(1), homeIndex: 25 }))).toEqual(homeHello(1));
     for (const message of [{ ...homeHello(1), resumeToken: "short" }, { type: "hello", nickname: "A", requestHome: true }, { type: "hello", nickname: "A", createHome: true }, { ...homeHello(1), requestHome: false }]) expect(parseClientMessage(JSON.stringify(message))).toBeNull();
   });
+  it("routes the canonical address and every accepted legacy link to one preserved world", () => {
+    expect(CANONICAL_WORLD_ID).toBe("27f6361b353f4b5db885fd37fac89eda");
+    for (const id of [CANONICAL_WORLD_ID, "qwertyuiopasdfghjklzxcv", "a".repeat(80)]) {
+      const original = new URL(`https://world.example/parties/world-room/${id}?_pk=client-id`);
+      const routed = canonicalWorldUrl(original)!;
+      expect(routed.pathname).toBe(`/parties/world-room/${CANONICAL_WORLD_ID}`);
+      expect(routed.search).toBe("?_pk=client-id");
+      expect(original.pathname).toBe(`/parties/world-room/${id}`);
+    }
+    for (const path of ["/parties/world-room/public", "/parties/other/qwertyuiopasdfghjklzxcv", "/parties/world-room/qwertyuiopasdfghjklzxcv/extra"]) expect(canonicalWorldUrl(new URL(path, "https://world.example"))).toBeNull();
+  });
+  it("retires only archived worlds and leaves canonical connections untouched", () => {
+    const a = new FakeConnection(), b = new FakeConnection();
+    expect(retireLegacyConnections(CANONICAL_WORLD_ID, [a, b])).toBe(false);
+    expect(a.closed).toBeNull();
+    expect(b.closed).toBeNull();
+    expect(retireLegacyConnections("qwertyuiopasdfghjklzxcv", [a, b])).toBe(true);
+    expect(a.closed?.[0]).toBe(1012);
+    expect(b.closed?.[0]).toBe(1012);
+    expect(retireLegacyConnections("qwertyuiopasdfghjklzxcv", [])).toBe(true);
+  });
 });
 
 describe("persistent cabin ownership", () => {
@@ -56,17 +78,17 @@ describe("persistent cabin ownership", () => {
     expect(f.homeSaves).toHaveLength(0);
     expect(a.closed).toBeNull();
     await f.send(a, homeHello(1), 1000);
-    expect(a.state!.player.homeIndex).toBe(18);
+    expect(a.state!.player.homeIndex).toBe(firstFixtureHome);
     expect(f.homeSaves).toHaveLength(1);
   });
   it("assigns distinct random unused homes concurrently and never publishes credentials", async () => {
     const f = fixture(), a = f.connect("public-a"), b = f.connect("public-b");
     await Promise.all([f.send(a, homeHello(1)), f.send(b, homeHello(2))]);
-    expect(a.state!.home!.index).toBe(18);
-    expect(b.state!.home!.index).not.toBe(18);
+    expect(a.state!.home!.index).toBe(firstFixtureHome);
+    expect(b.state!.home!.index).not.toBe(firstFixtureHome);
     expect(a.state!.home!.index).not.toBe(b.state!.home!.index);
     const aSnapshot = a.messages.findLast((message) => message.type === "snapshot");
-    expect(aSnapshot).toMatchObject({ home: { index: 18, resumeToken: token(1) } });
+    expect(aSnapshot).toMatchObject({ home: { index: firstFixtureHome, resumeToken: token(1) } });
     expect(JSON.stringify(a.messages)).not.toContain(token(2));
     expect(JSON.stringify(b.messages)).not.toContain(token(1));
     expect(JSON.stringify(f.homeSaves)).not.toContain(token(1));
@@ -138,16 +160,31 @@ describe("persistent cabin ownership", () => {
     expect(b.state!.home!.index).toBe(a.state!.home!.index);
     expect(b.messages.at(-1)).toMatchObject({ type: "snapshot", home: a.state!.home });
   });
-  it("retains offline homes and resumes existing owners when all thirty plots are reserved", async () => {
+  it("retains fifty offline homes, rejects a new owner, and resumes existing owners", async () => {
     let stored: HomeLedger | undefined;
     const homes = new HomeAssignments({ save: async (ledger) => { stored = structuredClone(ledger); } });
-    const results = await Promise.all(Array.from({ length: 30 }, (_, i) => homes.claim(token(i), true)));
-    expect(new Set(results.map((home) => home.index)).size).toBe(30);
-    expect(stored!.owners).toHaveLength(30);
+    expect(MAX_HOMES).toBe(50);
+    const results = await Promise.all(Array.from({ length: MAX_HOMES }, (_, i) => homes.claim(token(i), true)));
+    expect(new Set(results.map((home) => home.index)).size).toBe(50);
+    expect(stored!.owners).toHaveLength(50);
     const recovered = new HomeAssignments({ save: async () => { throw Error("No new writes expected"); } }, stored);
-    await expect(recovered.claim(token(31), true)).rejects.toMatchObject({ code: "homes-full" });
+    await expect(recovered.claim(token(50), true)).rejects.toMatchObject({ code: "homes-full" });
     await expect(recovered.claim(token(5), false)).resolves.toEqual(results[5]);
     await expect(recovered.claim(token(5), true)).resolves.toEqual(results[5]);
+  });
+  it("preserves an original thirty-owner ledger and opens the added plots without reassignment", async () => {
+    let stored: HomeLedger | undefined;
+    const original = new HomeAssignments({ save: async (ledger) => { stored = structuredClone(ledger); }, random: () => 0 });
+    const firstOwners = await Promise.all(Array.from({ length: 30 }, (_, i) => original.claim(token(i), true)));
+    expect(firstOwners.map((home) => home.index)).toEqual(Array.from({ length: 30 }, (_, index) => index));
+    const originalLedger = structuredClone(stored!);
+    const expanded = new HomeAssignments({ save: async (ledger) => { stored = structuredClone(ledger); }, random: () => 0 }, originalLedger);
+    expect(await expanded.claim(token(0))).toEqual(firstOwners[0]);
+    const added = await expanded.claim(token(30), true);
+    expect(added.index).toBe(30);
+    expect(stored!.version).toBe(1);
+    expect(stored!.owners.slice(0, 30)).toEqual(originalLedger.owners);
+    expect(await expanded.claim(token(29))).toEqual(firstOwners[29]);
   });
   it("rejects unknown resume and attempts to override or switch ownership", async () => {
     const f = fixture(), a = f.connect("a"), b = f.connect("b");
@@ -174,8 +211,8 @@ describe("persistent cabin ownership", () => {
     const homes = new HomeAssignments({ save: async () => { if (fail) throw Error("Storage unavailable"); }, random: () => 0.1 });
     await expect(homes.claim(token(1), true)).rejects.toThrow("Storage unavailable");
     fail = false;
-    await expect(homes.claim(token(1), true)).resolves.toMatchObject({ index: 3 });
-    await expect(homes.claim(token(2), true)).resolves.toMatchObject({ index: 2 });
+    await expect(homes.claim(token(1), true)).resolves.toMatchObject({ index: 5 });
+    await expect(homes.claim(token(2), true)).resolves.toMatchObject({ index: 4 });
     const duplicate = { version: 1, owners: [{ digest: "a".repeat(64), index: 0 }, { digest: "b".repeat(64), index: 0 }] };
     expect(() => readHomeLedger(duplicate)).toThrow("Invalid stored home ledger");
   });
@@ -189,10 +226,13 @@ describe("room behavior", () => {
     await f.send(a, { type: "pose", id: "server-b", pose: { ...pose, id: "server-b", seatId: "bench:seat:0" } });
     expect(b.messages.at(-1)).toEqual({ type: "pose", player: { ...pose, id: "server-a", nickname: "Guest" } });
   });
-  it("caps active connections at thirty", () => {
+  it("accepts fifty active connections and gives the next connection a generic busy error", () => {
     const f = fixture();
+    expect(MAX_PLAYERS).toBe(50);
     for (let i = 0; i < MAX_PLAYERS; i++) expect(f.connect(String(i)).closed).toBeNull();
-    expect(f.connect("overflow").closed?.[0]).toBe(1008);
+    const overflow = f.connect("overflow");
+    expect(overflow.closed?.[0]).toBe(1008);
+    expect(overflow.messages.at(-1)).toMatchObject({ type: "error", code: "room-full", message: "The world is busy. Please try again shortly." });
   });
   it("rejects duplicate seats, preserves an old claim on rejection, and releases on departure", async () => {
     const f = fixture(), a = f.connect("a"), b = f.connect("b");

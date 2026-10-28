@@ -9,28 +9,28 @@ function memoryStorage() {
 describe("assigned home and navigation", () => {
   it("restores valid offline homes, selects a random fallback per room, and recovers blocked storage", () => {
     const store = memoryStorage();
-    expect(readLocalHome(store, { roomId: "offline-one", random: () => 0.2 })).toBe(6);
-    expect(readLocalHome(store, { roomId: "offline-one", random: () => 0.9 })).toBe(6);
-    expect(readLocalHome(store, { roomId: "offline-two", random: () => 0.9 })).toBe(27);
+    expect(readLocalHome(store, { roomId: "offline-one", random: () => 0.2 })).toBe(10);
+    expect(readLocalHome(store, { roomId: "offline-one", random: () => 0.9 })).toBe(10);
+    expect(readLocalHome(store, { roomId: "offline-two", random: () => 0.9 })).toBe(45);
     store.setItem("lake-cincis-home-v1", JSON.stringify({ plotIndex: 4 }));
     expect(readLocalHome(store)).toBe(4);
     store.setItem("lake-cincis-home-v1:corrupt", "not-json");
-    expect(readLocalHome(store, { roomId: "corrupt", random: () => 0.5 })).toBe(15);
+    expect(readLocalHome(store, { roomId: "corrupt", random: () => 0.5 })).toBe(25);
     const blocked = { getItem: () => { throw new Error("blocked"); }, setItem: () => {} };
-    expect(readLocalHome(blocked, { roomId: "blocked", random: () => 0.3 })).toBe(9);
-    expect(readLocalHome(blocked, { roomId: "blocked", random: () => 0.8 })).toBe(9);
+    expect(readLocalHome(blocked, { roomId: "blocked", random: () => 0.3 })).toBe(15);
+    expect(readLocalHome(blocked, { roomId: "blocked", random: () => 0.8 })).toBe(15);
   });
   it("uses each server assignment for UI and only changes spawn when the assigned plot changes", () => {
     expect(displayedHomeIndex(2, 18)).toBe(2);
     expect(displayedHomeIndex(25, 18)).toBe(25);
     expect(displayedHomeIndex(null, 6)).toBe(6);
-    expect(displayedHomeIndex(32, 6)).toBe(6);
+    expect(displayedHomeIndex(52, 6)).toBe(6);
     expect(shouldSpawnAtHome(null, 2)).toBe(true);
     expect(shouldSpawnAtHome(2, 2)).toBe(false);
     expect(shouldSpawnAtHome(2, 25)).toBe(true);
     expect(shouldSpawnAtHome(2, -1)).toBe(false);
   });
-  it("places all 30 arrivals and scooters on dry ground beyond front steps, clear of roads and house bodies", () => {
+  it("places all 50 arrivals and scooters on dry ground beyond front steps, clear of roads and house bodies", () => {
     const designs = new Set<string>();
     for (const plot of cabinSpots) {
       const spawn = homeSpawn(plot.i), design = cabinDesignForPlot(plot.i), yaw = cabinYaw(plot.i);
@@ -61,7 +61,7 @@ describe("assigned home and navigation", () => {
       expect(Math.hypot(spawn.position[0] - spawn.scooter[0], spawn.position[2] - spawn.scooter[2])).toBeGreaterThan(1.5);
     }
     expect(designs.size).toBe(6);
-    expect(() => homeSpawn(30)).toThrow("Unknown home");
+    expect(() => homeSpawn(50)).toThrow("Unknown home");
   });
   it("keeps an offscreen home at the correct edge bearing and maps north/east/south correctly", () => {
     const point = mapHomePosition({ x: 300, z: 150 }, { x: 0, z: 0 }, 220);

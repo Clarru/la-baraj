@@ -1,3 +1,4 @@
+import { MAX_HOMES } from "../../../packages/shared/protocol";
 import shoreline from "../../../assets/geography/lake-cincis-shoreline.geojson?raw";
 import roadData from "../../../assets/geography/lake-cincis-roads.geojson?raw";
 export type Point = [number, number];
@@ -131,10 +132,9 @@ export const sharedGrounds = [
   { x: 0, z: southShore(0) + 9 },
   { x: 36, z: southShore(36) + 17 },
 ].map((p) => ({ ...p, ground: baseTerrainHeight(p.x, p.z) }));
-export const cabinSpots = Array.from({ length: 30 }, (_, i) => {
-  const random = rng(8100 + i * 137),
-    uphill = i % 2 === 1;
-  const x = -420 + Math.floor(i / 2) * 54 + (random() - 0.5) * 10;
+function makePlot(i: number, column: number, uphill: boolean) {
+  const random = rng(8100 + i * 137);
+  const x = -420 + column * 54 + (random() - 0.5) * 10;
   const roadZ = settlementRoadZ(x);
   const z = uphill
     ? roadZ + 22 + random() * 8
@@ -148,7 +148,18 @@ export const cabinSpots = Array.from({ length: 30 }, (_, i) => {
     ground: baseTerrainHeight(x, z),
     seed: 8100 + i * 137,
   };
-});
+}
+// Preserve every existing plot/design identity; infill existing southern-road gaps.
+export const cabinSpots = (() => {
+  const plots = Array.from({ length: 30 }, (_, i) => makePlot(i, Math.floor(i / 2), i % 2 === 1));
+  for (let column = 0; column < 14 && plots.length < MAX_HOMES; column++) {
+    const pair = [makePlot(plots.length, column + .5, false), makePlot(plots.length + 1, column + .5, true)];
+    if (pair.some(p => inWater(p.x, p.z) || !activityClearance(p.x, p.z) || plots.some(q => Math.hypot(p.x-q.x,p.z-q.z) < 17))) continue;
+    plots.push(...pair);
+  }
+  if (plots.length !== MAX_HOMES) throw new Error("The shared world needs clear cabin plots for every owner");
+  return plots;
+})();
 export function terrainHeight(
   x: number,
   z: number,

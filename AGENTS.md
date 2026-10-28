@@ -15,6 +15,12 @@
 - The old shared folder `/Users/claumarin/Documents/ChatGPT/multiplayer-game` is preserved legacy source/preview, not a GitHub checkout. Do not pull/reset/clean/checkout/stage/commit/push there. Port only completed owned changes into your assigned worktree while preserving current multiplayer integration.
 - Do not start per-worktree servers. Keep the single localhost:4173 preview rule below.
 
+## One shared production world
+
+- Production is https://la-baraj.vercel.app/ for everyone. No room selection, generated room IDs, invite-copy UI, or visible capacity denominator.
+- CANONICAL_WORLD_ID is the preserved existing world in packages/shared/protocol.ts. Accepted legacy room URLs are aliases, not separate worlds. Preserve its ownership and fire state.
+- Player-facing UI is the game, a transparent title banner, compact status, Menu and contextual actions. Inspection/debug tools are development-only; map/help are on demand.
+
 ## One local game URL
 
 The user explicitly requires **one running local game server** for all chats working on this project.

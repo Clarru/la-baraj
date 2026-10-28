@@ -15,12 +15,12 @@ export function SceneLoading() {
 
   return (
     <div className="scene-loading" aria-busy="true">
-      <div className="scene-loading__location" aria-hidden="true">
+      {import.meta.env.DEV && <div className="scene-loading__location" aria-hidden="true">
         <span>La Baraj</span>
         <span>Lake Cinciș / South shore</span>
-      </div>
+      </div>}
       <section className="scene-loading__content" aria-label="Loading La Baraj">
-        <div className="scene-loading__drawing" aria-hidden="true">
+        {import.meta.env.DEV && <div className="scene-loading__drawing" aria-hidden="true">
           <svg viewBox="0 0 240 112" fill="none">
             <path
               className="scene-loading__ridge scene-loading__ridge--far"
@@ -34,10 +34,10 @@ export function SceneLoading() {
             <path className="scene-loading__water" d="M61 88H179M85 97H155" />
             <path className="scene-loading__glint" d="M102 88H138" />
           </svg>
-        </div>
-        <h1 className="scene-loading__title">Down by the lake.</h1>
+        </div>}
+        <h1 className="scene-loading__title"><img className="scene-loading__logo" src="/assets/brand/la-baraj-banner.webp" alt="La Baraj" width={768} height={256} /></h1>
         <p className="scene-loading__description" role="status">
-          {resourcesReady ? "Preparing your view" : "Unpacking the south shore"}
+          {resourcesReady ? "Nearly there…" : "Loading the lake…"}
         </p>
         <div
           className="scene-loading__track"
@@ -63,14 +63,10 @@ export function SceneLoading() {
           />
         </div>
         <div className="scene-loading__readout" aria-hidden="true">
-          <span>
-            {determinate
-              ? `${loaded} / ${total} resources`
-              : "Gathering resources"}
-          </span>
+          {import.meta.env.DEV && <span>{determinate ? `${loaded} / ${total} resources` : "Gathering resources"}</span>}
           <span>{determinate ? `${Math.round(percent)}%` : "Please wait"}</span>
         </div>
-        <span
+        {import.meta.env.DEV && <span
           className="scene-loading__detail"
           title={filename}
           aria-hidden="true"
@@ -78,12 +74,12 @@ export function SceneLoading() {
           {resourcesReady
             ? "Setting the scene"
             : filename || "Connecting to the shore"}
-        </span>
+        </span>}
       </section>
-      <div className="scene-loading__footer" aria-hidden="true">
+      {import.meta.env.DEV && <div className="scene-loading__footer" aria-hidden="true">
         <span className="scene-loading__signal" />
         Local world prototype
-      </div>
+      </div>}
     </div>
   );
 }

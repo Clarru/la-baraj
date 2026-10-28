@@ -11,7 +11,7 @@ export function isHomeIndex(value: unknown): value is number {
 /** Offline preview only. Online assignments always come from the room authority. */
 export function readLocalHome(storage?: HomeStorage, options: { roomId?: string; random?: () => number } = {}): number {
   const storageKey = options.roomId ? `${key}:${options.roomId}` : key;
-  const randomHome = () => Math.max(0, Math.min(29, Math.floor((options.random?.() ?? crypto.getRandomValues(new Uint32Array(1))[0] / 4294967296) * 30)));
+  const randomHome = () => Math.max(0, Math.min(cabinSpots.length - 1, Math.floor((options.random?.() ?? crypto.getRandomValues(new Uint32Array(1))[0] / 4294967296) * cabinSpots.length)));
   try {
     const store = storage ?? window.localStorage;
     const saved = JSON.parse(store.getItem(storageKey) ?? "null");

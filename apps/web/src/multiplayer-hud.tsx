@@ -1,41 +1,67 @@
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { Check, Copy, PencilSimple, UsersThree, WifiSlash } from "@phosphor-icons/react";
-import type { MultiplayerRoom } from "./multiplayer";
+import { useSyncExternalStore } from "react";
+import { UsersThree, WifiSlash } from "@phosphor-icons/react";
+import type { MultiplayerRoom, NetworkStatus } from "./multiplayer";
 import "./multiplayer.css";
 
+export function onlineLabel(status: NetworkStatus, count: number) {
+  if (status === "online") return `${count} online`;
+  if (status === "connecting") return "Joining…";
+  if (status === "reconnecting") return "Reconnecting…";
+  if (status === "offline") return "Offline";
+  return status === "full" ? "World is busy" : "Connection lost";
+}
 export function MultiplayerHud({ room }: { room: MultiplayerRoom }) {
-  const view = useSyncExternalStore(room.subscribe, room.getSnapshot);
-  const [editing, setEditing] = useState(false), [copied, setCopied] = useState(false), [copyError, setCopyError] = useState(false);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
-  const label = view.status === "online" ? `Online ${view.count}/30` : view.status === "full" ? "Room full · 30/30" : view.status === "connecting" ? "Joining friends…" : view.status === "reconnecting" ? "Reconnecting…" : view.status === "offline" ? "Offline · local play" : "Connection error";
-  async function copyInvite() {
-    try { await navigator.clipboard.writeText(location.href); setCopied(true); setCopyError(false); }
-    catch { setCopyError(true); }
-    if (timer.current) clearTimeout(timer.current);
-    timer.current = setTimeout(() => { setCopied(false); setCopyError(false); }, 3500);
-  }
-  return <div className="multiplayer-hud" data-testid="multiplayer-hud" data-status={view.status}>
-    <div className="multiplayer-row">
-      <span className={`multiplayer-status ${view.status}`} role="status" title={view.error || "Friends in this room"}>
-        {view.status === "online" ? <UsersThree size={17} /> : <WifiSlash size={17} />}<strong>{label}</strong>
+  const view = useSyncExternalStore(
+    room.subscribe,
+    room.getSnapshot,
+    room.getSnapshot,
+  );
+  const homeError =
+    view.errorCode === "homes-full" || view.errorCode === "invalid-resume";
+  const retry =
+    !homeError && ["error", "full", "offline"].includes(view.status);
+  const label = homeError
+    ? "Cabin unavailable"
+    : view.status === "error" && view.errorCode === "storage-unavailable"
+      ? "Save failed"
+      : onlineLabel(view.status, view.count);
+  const message =
+    view.error ||
+    (view.status === "full"
+      ? "The lake is busy. Try joining again shortly."
+      : view.status === "error" || view.status === "offline"
+        ? "Couldn’t connect to the lake. Try again."
+        : "");
+  return (
+    <div
+      className="multiplayer-hud"
+      data-testid="multiplayer-hud"
+      data-status={view.status}
+    >
+      <span className={`multiplayer-status ${view.status}`} role="status">
+        {view.status === "online" ? (
+          <UsersThree size={17} />
+        ) : (
+          <WifiSlash size={17} />
+        )}
+        <strong>{label}</strong>
       </span>
-      <button className="multiplayer-invite" onClick={copyInvite} title="Copy this room’s invite link" aria-label="Copy invite link">
-        {copied ? <Check size={16} /> : <Copy size={16} />}{copied ? "Copied" : "Copy invite"}
-      </button>
+      {(message || retry) && (
+        <div className="multiplayer-notice" role="status">
+          <p>{message}</p>
+          {view.errorCode === "homes-full" && (
+            <p>Please ask the host for help.</p>
+          )}
+          {retry && <button onClick={() => location.reload()}>Retry</button>}
+        </div>
+      )}
+      {import.meta.env.DEV && (
+        <output
+          hidden
+          ref={room.attachDiagnostics}
+          data-testid="multiplayer-metrics"
+        />
+      )}
     </div>
-    <div className="multiplayer-identity">
-      {editing ? <form onSubmit={(event) => { event.preventDefault(); const data = new FormData(event.currentTarget); room.rename(String(data.get("nickname") ?? "")); setEditing(false); }}>
-        <input name="nickname" aria-label="Your nickname" defaultValue={view.nickname} maxLength={24} autoFocus onKeyDown={(event) => { event.stopPropagation(); if (event.key === "Escape") setEditing(false); }} />
-        <button type="submit">Save</button>
-      </form> : <button onClick={() => setEditing(true)} aria-label={`Edit nickname, currently ${view.nickname}`}><span>{view.nickname}</span><PencilSimple size={13} /></button>}
-      {view.homeIndex !== null && <span data-testid="assigned-home">Your cabin · {String(view.homeIndex + 1).padStart(2, "0")}</span>}
-      {view.homeIndex === null && ["connecting", "online"].includes(view.status) && <span>Assigning your cabin…</span>}
-      {copyError && <span role="alert">Copy the address bar link to invite friends.</span>}
-      {view.status === "full" && <span role="alert">Try again when a friend leaves. <button onClick={() => location.reload()}>Retry</button></span>}
-      {view.status === "online" && view.error && <span role="alert">{view.error}</span>}
-      {view.status === "error" && <span role="alert">{view.error} <button onClick={() => location.reload()}>Retry</button></span>}
-    </div>
-    <output hidden ref={room.attachDiagnostics} data-testid="multiplayer-metrics" />
-  </div>;
+  );
 }

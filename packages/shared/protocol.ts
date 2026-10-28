@@ -1,7 +1,9 @@
 /** The intentionally small, versioned friends-playtest wire protocol. */
 export const PROTOCOL_VERSION = 1 as const;
-export const MAX_PLAYERS = 30;
-export const MAX_HOMES = 30;
+/** Retains the existing world's Durable Object and anonymous home ownership. */
+export const CANONICAL_WORLD_ID = "27f6361b353f4b5db885fd37fac89eda";
+export const MAX_PLAYERS = 50;
+export const MAX_HOMES = 50;
 export const MAX_PACKET_BYTES = 1024;
 export const ROOM_ID_PATTERN = /^[A-Za-z0-9_-]{22,80}$/;
 

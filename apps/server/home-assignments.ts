@@ -44,10 +44,10 @@ export class HomeAssignments {
     const digest = await (this.runtime.digest ?? digestToken)(resumeToken);
     const existing = this.ledger.owners.find((owner) => owner.digest === digest);
     if (existing) return { index: existing.index, resumeToken };
-    if (!createHome) throw new HomeAllocationError("invalid-resume", "This home could not be resumed. Keep this browser's saved credential and try the original invite.");
+    if (!createHome) throw new HomeAllocationError("invalid-resume", "Your cabin could not be restored. Try again from your usual browser.");
     const used = new Set(this.ledger.owners.map((owner) => owner.index));
     const free = Array.from({ length: MAX_HOMES }, (_, index) => index).filter((index) => !used.has(index));
-    if (!free.length) throw new HomeAllocationError("homes-full", "All 30 cabins in this room have owners. Ask for a new invite room.");
+    if (!free.length) throw new HomeAllocationError("homes-full", "A cabin is not available right now. Please try again later.");
     const random = this.runtime.random?.() ?? crypto.getRandomValues(new Uint32Array(1))[0] / 0x100000000;
     const index = free[Math.min(free.length - 1, Math.max(0, Math.floor(random * free.length)))];
     const next: HomeLedger = { version: 1, owners: [...this.ledger.owners, { digest, index }] };

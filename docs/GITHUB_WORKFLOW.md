@@ -42,7 +42,7 @@ This chat, **Putting it live**, is the integration/release owner unless the user
 
 A merge/push to main automatically builds and deploys the frontend on Vercel. Verify the deployment is Ready and check the production URL after a runtime change. Deploy Cloudflare only for intentional backend/config changes, after compatibility and protocol checks; frontend pushes do not automatically deploy the Worker. No paid upgrade is authorized.
 
-Existing multiplayer invites remain valid. For a shared playtest, everyone uses the same complete URL including its `?room=` value.
+The game has one shared world at https://la-baraj.vercel.app/. Old room-query links join that same world; do not generate or introduce new invite rooms. Preserve the canonical world and its ownership/fire storage.
 
 ## Local preview remains one server
 
