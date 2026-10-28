@@ -24,9 +24,9 @@ export type ActivityPose = {
   seatHeight?: number;
   /** Optional world-space float for the fishing line. */
   lineTarget?: [number, number, number];
-  /** Starting floor anchor for a seated side-step; anchor remains the destination. */
+  /** Starting floor anchor for a seated shift or fire approach; anchor is the destination. */
   fromAnchor?: [number, number, number];
-  /** Seated shift duration in seconds. */
+  /** Anchor movement duration in seconds. */
   shiftDuration?: number;
 };
 let pose: ActivityPose = { kind: "none", startedAt: 0 };
@@ -47,7 +47,7 @@ export function sampleActivityPose(
     Number.isFinite(duration) && duration > 0
       ? Math.max(0, Math.min(1, (now - current.startedAt) / (duration * 1000)))
       : 1;
-  const eased = t * t * (3 - 2 * t);
+  const eased = current.kind === "fire-approach" ? t : t * t * (3 - 2 * t);
   return {
     ...current,
     anchor: current.fromAnchor.map(
