@@ -848,7 +848,7 @@ export default function App() {
                 The 30-character button adds local rendering test characters.
                 The Online count shows real friends in this room. Invite friends
                 with Copy invite. Fishing catches stay in this browser; cabin
-                ownership and punches are not implemented.
+                assignments persist for this browser in this room; punches are not implemented.
               </p>
               <button
                 className="primary-button"
