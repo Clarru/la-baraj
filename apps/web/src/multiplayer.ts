@@ -233,14 +233,7 @@ export class MultiplayerRoom {
     });
     socket.addEventListener("close", () => {
       if (this.socket !== socket) return;
-      this.homeAcknowledged = false;
-      this.remotes.clear();
-      this.seats = {};
-      syncOnlineSeats({}, "");
-      this.resolvePending();
-      if (!["full", "error"].includes(this.view.status))
-        this.publish({ status: "reconnecting", count: 0, ids: [] });
-      this.publishWorld();
+      this.connectionClosed();
     });
     return () => {
       this.socket = null;
@@ -251,6 +244,17 @@ export class MultiplayerRoom {
       syncOnlineSeats({}, "");
       if (activeRoom === this) activeRoom = null;
     };
+  }
+  /** Shared by the real socket and the isolated browser transport. */
+  protected connectionClosed() {
+    this.homeAcknowledged = false;
+    this.remotes.clear();
+    this.seats = {};
+    syncOnlineSeats({}, "");
+    this.resolvePending();
+    if (!["full", "error"].includes(this.view.status))
+      this.publish({ status: "reconnecting", count: 0, ids: [] });
+    this.publishWorld();
   }
   private sendHello() {
     const savedName = readPlayerName();

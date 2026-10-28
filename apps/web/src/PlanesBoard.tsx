@@ -18,6 +18,7 @@ import "./planes.css";
 export type PlanesBoardProps = {
   view: PlanesView | null;
   connected: boolean;
+  open?: boolean;
   onAction: (action: PlanesAction, revision: number) => Promise<string | null>;
   onClose: () => void;
   onLeave: () => void;
@@ -150,6 +151,7 @@ function PaperGrid({
 export default function PlanesBoard({
   view,
   connected,
+  open = true,
   onAction,
   onClose,
   onLeave,
@@ -163,8 +165,8 @@ export default function PlanesBoard({
   const initialized = useRef<string>("");
   const paperRef = useRef<HTMLElement>(null);
   useEffect(() => {
-    paperRef.current?.focus({ preventScroll: true });
-  }, []);
+    if (open) paperRef.current?.focus({ preventScroll: true });
+  }, [open]);
   const you = view?.you ?? null,
     own = you === null ? null : view?.players[you],
     opponent = you === null ? null : view?.players[otherSide(you)];
@@ -176,9 +178,11 @@ export default function PlanesBoard({
     !pending &&
     connected;
   useEffect(() => {
+    if (!open) return;
+    setNow(Date.now());
     const timer = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(timer);
-  }, []);
+  }, [open]);
   useEffect(() => {
     const key = `${view?.round}:${you}:${phase === "finished" ? "next" : "current"}`;
     if (view?.ownPlanes && initialized.current !== key) {
@@ -284,6 +288,7 @@ export default function PlanesBoard({
   return (
     <section
       ref={paperRef}
+      hidden={!open}
       tabIndex={-1}
       className="planes-notebook"
       aria-label="Planes game"
@@ -459,7 +464,11 @@ export default function PlanesBoard({
                   type="button"
                   className="planes-ready"
                   disabled={
-                    !connected || pending || !opponent || Boolean(own?.ready)
+                    !connected ||
+                    pending ||
+                    !opponent ||
+                    Boolean(away) ||
+                    Boolean(own?.ready)
                   }
                   onClick={() =>
                     void act({
