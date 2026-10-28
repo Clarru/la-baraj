@@ -11,7 +11,7 @@ import {
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Sky } from "@react-three/drei";
 import { Physics } from "@react-three/rapier";
-import { PersonSimpleWalk } from "@phosphor-icons/react";
+import { GameIcon } from "./GameArt";
 import * as THREE from "three";
 import {
   Terrain,
@@ -376,7 +376,7 @@ export default function App() {
           />
           {mode === "home" && panel === null && (
             <button className="return-to-walk" onClick={() => setMode("walk")}>
-              <PersonSimpleWalk size={17} />
+              <GameIcon name="walk" size={25} />
               Back to walking
             </button>
           )}

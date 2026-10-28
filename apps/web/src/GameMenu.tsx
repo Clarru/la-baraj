@@ -1,12 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import {
-  ArrowLeft,
-  HouseLine,
-  List,
-  MapTrifold,
-  Question,
-  X,
-} from "@phosphor-icons/react";
+import { GameIcon } from "./GameArt";
 
 import type { MultiplayerRoom } from "./multiplayer";
 import { MultiplayerHud } from "./multiplayer-hud";
@@ -39,7 +32,7 @@ export function GameHeader({
           aria-expanded={menuOpen}
           onClick={onMenu}
         >
-          <List size={18} />
+          <GameIcon name="menu" size={27} />
           <span>Menu</span>
         </button>
       </div>
@@ -84,7 +77,7 @@ export function GameDialog({
           onClick={onClose}
           aria-label={`Close ${title.toLowerCase()}`}
         >
-          <X size={19} />
+          <GameIcon name="close" size={20} />
         </button>
       </header>
       {children}
@@ -144,7 +137,7 @@ export function GameMenu({
         </div>
       </form>
       <p className="game-home-info" data-testid="assigned-home">
-        <HouseLine size={18} />
+        <GameIcon name="cabin" size={42} />
         <span>
           {homeIndex === null
             ? "Finding your cabin…"
@@ -153,12 +146,12 @@ export function GameMenu({
       </p>
       <div className="game-menu-actions">
         <button onClick={onMap}>
-          <MapTrifold size={18} />
+          <GameIcon name="map" size={29} />
           <span>{mapOpen ? "Hide map" : "Show map"}</span>
           <kbd>M</kbd>
         </button>
         <button onClick={onControls}>
-          <Question size={18} />
+          <GameIcon name="controls" size={29} />
           <span>Controls</span>
           <kbd>?</kbd>
         </button>
@@ -169,14 +162,15 @@ export function GameMenu({
             canLookHome ? "Look at your cabin" : "Available outside a cabin"
           }
         >
-          <HouseLine size={18} />
+          <GameIcon name="cabin" size={29} />
           <span>Look at your cabin</span>
           <kbd>H</kbd>
         </button>
       </div>
       <div className="game-menu-rescue">
         <button onClick={onReset} disabled={homeIndex === null}>
-          Return to your cabin <kbd>R</kbd>
+          <GameIcon name="return" size={23} />
+          <span>Return to your cabin</span> <kbd>R</kbd>
         </button>
         <p>If you’re stuck, return outside your cabin.</p>
       </div>
@@ -230,7 +224,7 @@ export function ControlsHelp({
         boost.
       </p>
       <button className="game-back" onClick={onMenu}>
-        <ArrowLeft size={16} />
+        <GameIcon name="back" size={23} />
         Back to menu
       </button>
     </GameDialog>

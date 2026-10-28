@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { DoorOpen, ArrowUUpLeft } from "@phosphor-icons/react";
+import { GameIcon } from "./GameArt";
 import { playerPosition, type ViewMode } from "./player";
 import {
   cabinDoor,
@@ -157,7 +157,7 @@ export function CabinAccess({
       <>
         {curtain}
         <div className="cabin-entry-panel" data-testid="interior-controls">
-          <DoorOpen size={21} />
+          <GameIcon name="door" size={31} />
           <div>
             <strong>
               Inside cabin {String(interiorIndex + 1).padStart(2, "0")}
@@ -169,7 +169,7 @@ export function CabinAccess({
             </span>
           </div>
           <button onClick={leave} disabled={!nearExit || phase !== "idle"}>
-            <ArrowUUpLeft size={16} />
+            <GameIcon name="return" size={22} />
             Go outside <kbd>Esc</kbd>
           </button>
         </div>
@@ -180,7 +180,7 @@ export function CabinAccess({
     <>
       {curtain}
       <div className="cabin-entry-panel" data-testid="cabin-entry">
-        <DoorOpen size={22} />
+        <GameIcon name="door" size={31} />
         <div>
           <strong>
             {target === homeIndex

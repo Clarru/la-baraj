@@ -1,0 +1,511 @@
+@font-face {
+  font-family: "Alegreya Sans";
+  src: url("/fonts/alegreya-sans-latin-ext-400-normal.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  unicode-range: U+0100-02FF, U+1E00-1EFF, U+20A0-20AB, U+20AD-20CF;
+}
+@font-face {
+  font-family: "Alegreya Sans";
+  src: url("/fonts/alegreya-sans-latin-ext-700-normal.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  unicode-range: U+0100-02FF, U+1E00-1EFF, U+20A0-20AB, U+20AD-20CF;
+}
+@font-face {
+  font-family: "Bree Serif";
+  src: url("/fonts/bree-serif-latin-ext-400-normal.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  unicode-range: U+0100-02FF, U+1E00-1EFF, U+20A0-20AB, U+20AD-20CF;
+}
+@font-face {
+  font-family: "Alegreya Sans";
+  src: url("/fonts/alegreya-sans-latin-400-normal.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+2000-206F, U+20AC, U+2122;
+}
+@font-face {
+  font-family: "Alegreya Sans";
+  src: url("/fonts/alegreya-sans-latin-700-normal.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+2000-206F, U+20AC, U+2122;
+}
+@font-face {
+  font-family: "Bree Serif";
+  src: url("/fonts/bree-serif-latin-400-normal.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+2000-206F, U+20AC, U+2122;
+}
+
+:root {
+  --font-body: "Alegreya Sans", sans-serif;
+  --font-heading: "Bree Serif", serif;
+  --paper: #f3e5c9;
+  --ink: #263b30;
+  --muted: #58604b;
+  --line: #c8b996;
+  --accent: #355e46;
+  --sign-ink: #fff1cf;
+  --sign-muted: #e5d4ac;
+  --sign-art: url("/assets/ui/sign-plaque.webp");
+  --panel-art: url("/assets/ui/parchment-panel.webp");
+  font-family: var(--font-body);
+  background: #dfdfcb;
+  color: var(--ink);
+}
+
+.game-art-icon {
+  display: block;
+  flex: 0 0 auto;
+  pointer-events: none;
+}
+button {
+  transition: filter 120ms ease-out;
+}
+button:focus-visible,
+a:focus-visible,
+input:focus-visible {
+  outline: 3px solid #a8622b;
+  outline-offset: 3px;
+}
+button:disabled {
+  cursor: default;
+}
+::selection {
+  background: #355e46;
+  color: #fff1cf;
+}
+::-webkit-scrollbar-thumb {
+  background: #9c8d68;
+  border-radius: 3px;
+}
+
+/* The artwork supplies both edges and fill; nine-slicing retains the nails
+   and corners as the component's width and content change. */
+.game-menu-toggle,
+.multiplayer-status,
+.game-menu-actions button,
+.game-name-form button,
+.game-back,
+.return-to-walk,
+.cabin-entry-panel button,
+.home-world-marker,
+.multiplayer-notice button {
+  background: transparent;
+  border: 10px solid transparent;
+  border-image: var(--sign-art) 44 120 fill / 10px 22px / 0 stretch;
+  color: var(--sign-ink);
+}
+
+.game-menu-toggle:hover,
+.game-menu-actions button:hover:not(:disabled),
+.game-name-form button:hover:not(:disabled),
+.game-back:hover,
+.return-to-walk:hover,
+.cabin-entry-panel button:hover:not(:disabled),
+.multiplayer-notice button:hover {
+  background: transparent;
+  filter: brightness(1.16);
+}
+
+.play-actions {
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px;
+}
+.game-menu-toggle,
+.multiplayer-status {
+  min-height: 52px;
+  padding: 2px 13px;
+  gap: 9px;
+  font: 700 17px/1.2 var(--font-body);
+}
+.game-menu-toggle {
+  min-width: 125px;
+}
+.multiplayer-status {
+  min-width: 139px;
+}
+.multiplayer-hud {
+  font: 400 16px/1.4 var(--font-body);
+}
+.multiplayer-status strong {
+  font-weight: 700;
+}
+
+.game-dialog,
+.lake-minimap,
+.multiplayer-notice,
+.activity-prompt,
+.cabin-entry-panel,
+.multiplayer-name,
+.interior-exit-label {
+  border: 18px solid transparent;
+  border-image: var(--panel-art) 64 fill / 18px / 0 stretch;
+  border-radius: 0;
+  background: transparent;
+  color: var(--ink);
+}
+
+.game-dialog {
+  inset: 94px 28px auto auto;
+  width: 400px;
+  max-height: calc(100vh - 120px);
+  padding: 13px 16px 17px;
+  box-shadow: none;
+  filter: drop-shadow(0 8px 12px rgb(18 30 20 / 0.23));
+  font-size: 17px;
+  scrollbar-color: #9c8d68 transparent;
+  scrollbar-width: thin;
+}
+.game-dialog::backdrop {
+  background: rgb(20 37 25 / 0.12);
+}
+.game-dialog-heading {
+  margin-bottom: 21px;
+}
+.game-dialog-heading h2 {
+  font: 400 30px/1.1 var(--font-heading);
+}
+.game-close {
+  width: 34px;
+  height: 34px;
+}
+.game-close:hover,
+.map-expand:hover {
+  background: rgb(115 96 54 / 0.1);
+}
+.game-name-form label {
+  font-size: 16px;
+  font-weight: 700;
+}
+.game-name-form > div {
+  gap: 7px;
+}
+.game-name-form input {
+  padding: 9px 10px;
+  border: 1px solid #a69773;
+  background: #fff5df;
+  font: 400 17px/1.2 var(--font-body);
+}
+.game-name-form button {
+  padding: 0 10px;
+  font-size: 17px;
+  font-weight: 700;
+}
+.game-home-info {
+  margin: 19px 0 16px;
+  gap: 12px;
+  font-size: 18px;
+  font-weight: 700;
+}
+.game-menu-actions {
+  gap: 7px;
+  margin-inline: 0;
+}
+.game-menu-actions button {
+  min-height: 54px;
+  padding: 1px 11px;
+  gap: 11px;
+}
+.game-menu-actions button span {
+  font-size: 17px;
+  font-weight: 700;
+}
+.game-dialog kbd {
+  font: 700 14px/1 var(--font-body);
+  color: var(--muted);
+}
+.game-menu-actions kbd {
+  color: var(--sign-muted);
+}
+.game-menu-rescue {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-color: #c0af87;
+}
+.game-menu-rescue button {
+  align-items: center;
+  gap: 9px;
+  font-size: 17px;
+}
+.game-menu-rescue button span {
+  flex: 1;
+}
+.game-menu-rescue p {
+  font-size: 14px;
+  margin-top: 8px;
+}
+.game-attribution {
+  margin-top: 20px;
+  font-size: 12px;
+}
+.game-help-intro,
+.game-help-note {
+  font-size: 16px;
+  line-height: 1.45;
+}
+.game-control-list {
+  margin: 22px 0;
+}
+.game-control-list > div {
+  grid-template-columns: 112px minmax(0, 1fr);
+  gap: 15px;
+  margin-top: 13px;
+  font-size: 15px;
+  line-height: 1.3;
+}
+.game-control-list dt {
+  font-weight: 700;
+}
+.game-back {
+  min-height: 46px;
+  gap: 9px;
+  margin: 20px 0 0;
+  padding: 0 11px;
+  font-size: 17px;
+  font-weight: 700;
+}
+.return-to-walk {
+  padding: 2px 16px;
+  min-height: 50px;
+  font-size: 17px;
+  gap: 9px;
+}
+
+.home-world-marker {
+  padding: 1px 12px;
+  gap: 9px;
+}
+.home-world-marker strong {
+  font: 400 15px/1.15 var(--font-heading);
+}
+.home-world-marker span {
+  color: var(--sign-muted);
+  font: 400 12px/1.1 var(--font-body);
+}
+.multiplayer-name {
+  border-width: 8px;
+  border-image-width: 8px;
+  padding: 0 3px;
+  font: 700 14px/1.1 var(--font-body);
+}
+.multiplayer-notice {
+  top: 62px;
+  width: 265px;
+  padding: 5px 9px 9px;
+  font-size: 16px;
+}
+.multiplayer-notice button {
+  padding: 0 9px;
+  min-height: 41px;
+  font-size: 16px;
+}
+
+.activity-prompt,
+.cabin-entry-panel {
+  padding: 4px 11px;
+  gap: 13px;
+  bottom: 28px;
+}
+.activity-prompt strong,
+.cabin-entry-panel strong {
+  font: 400 19px/1.2 var(--font-heading);
+}
+.activity-prompt span,
+.cabin-entry-panel span {
+  color: var(--muted);
+  font: 400 15px/1.25 var(--font-body);
+  margin-top: 4px;
+}
+.activity-prompt kbd {
+  font: 700 21px/1 var(--font-body);
+  border: 1px solid #ab9870;
+  padding: 8px 11px;
+  background: #fff1d3;
+}
+.cabin-entry-panel button {
+  min-height: 44px;
+  padding: 0 10px;
+  font: 700 16px/1.2 var(--font-body);
+  white-space: nowrap;
+}
+.cabin-entry-panel button:hover {
+  background: transparent;
+}
+.cabin-entry-panel kbd {
+  font-family: var(--font-body);
+  color: var(--sign-muted);
+}
+.interior-exit-label {
+  border-width: 9px;
+  border-image-width: 9px;
+  padding: 1px 4px;
+  font: 700 14px/1.1 var(--font-body);
+}
+
+.lake-minimap,
+.lake-minimap.expanded {
+  top: 110px;
+  padding: 0;
+  max-height: calc(100vh - 145px);
+}
+.lake-minimap {
+  width: 250px;
+}
+.lake-minimap.expanded {
+  width: 460px;
+}
+.lake-minimap header {
+  padding: 3px 5px 9px;
+}
+.lake-minimap header strong {
+  font: 400 18px/1.2 var(--font-heading);
+}
+.map-header-actions {
+  gap: 4px;
+}
+.map-header-actions button {
+  width: 30px;
+  height: 30px;
+}
+.lake-minimap footer {
+  font-size: 15px;
+  padding: 10px 5px 4px;
+}
+.lake-minimap footer > span:last-child {
+  font-size: 14px;
+}
+.map-home-button {
+  gap: 7px;
+}
+.map-north {
+  top: 52px;
+  left: 23px;
+  background: #f3e5c9;
+  color: #263b30;
+  font: 700 13px var(--font-body);
+}
+.map-attribution {
+  padding: 6px 5px 2px;
+  font-size: 11px;
+}
+.map-legend {
+  font-size: 12px;
+  padding: 9px 5px 3px;
+  gap: 4px 9px;
+}
+
+.scene-loading {
+  background: #e4dfca;
+  font-family: var(--font-body);
+}
+.scene-loading__content {
+  width: min(440px, 80vw);
+}
+.scene-loading__logo {
+  width: min(340px, 72vw);
+}
+.scene-loading__vignette {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 6px auto -10px;
+}
+.scene-loading__description {
+  font: 400 22px/1.2 var(--font-heading);
+  color: var(--ink);
+  margin: 15px 0 0;
+}
+.scene-loading__track {
+  height: 17px;
+  margin: 22px 35px 0;
+  border: 5px solid transparent;
+  border-image: var(--sign-art) 44 120 fill / 5px 14px / 0 stretch;
+  background: transparent;
+  overflow: visible;
+}
+.scene-loading__fill {
+  background: #8aaf8a;
+  height: 7px;
+  border-radius: 2px;
+}
+.scene-loading__readout {
+  justify-content: center;
+  gap: 12px;
+  margin-top: 9px;
+  color: var(--muted);
+  font-size: 15px;
+}
+.scene-loading__detail,
+.scene-loading__footer {
+  font-size: 13px;
+}
+.loading-screen {
+  background: #e4dfca;
+  font-family: var(--font-body);
+}
+.loading-screen h1 {
+  font: 400 34px var(--font-heading);
+}
+
+/* Desktop is the target. These bounds keep the same composition usable in
+   narrower windows without introducing a second mobile interface. */
+@media (max-width: 660px) {
+  .play-header {
+    inset: 14px 16px auto;
+    gap: 10px;
+  }
+  .play-logo {
+    width: 160px;
+    height: 54px;
+  }
+  .play-actions {
+    gap: 4px;
+    margin-top: 1px;
+  }
+  .game-menu-toggle,
+  .multiplayer-status {
+    min-width: 0;
+    padding-inline: 5px;
+    gap: 5px;
+    font-size: 15px;
+    min-height: 46px;
+  }
+  .game-menu-toggle .game-art-icon,
+  .multiplayer-status .game-art-icon {
+    width: 22px;
+    height: 22px;
+  }
+  .game-dialog {
+    inset: 83px 16px auto auto;
+    max-width: calc(100vw - 32px);
+    max-height: calc(100vh - 102px);
+    padding-inline: 10px;
+  }
+  .lake-minimap,
+  .lake-minimap.expanded {
+    left: 16px;
+    max-width: calc(100vw - 32px);
+  }
+  .activity-prompt,
+  .cabin-entry-panel {
+    max-width: calc(100vw - 32px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button {
+    transition: none;
+  }
+}

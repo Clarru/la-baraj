@@ -1,14 +1,14 @@
 ---
-name: Lake Cinciș
-description: Provisional cool-neutral HUD for a real-lake asset feasibility test.
+name: La Baraj
+description: ImageGen timber signs and parchment panels extending the approved La Baraj banner.
 colors:
-  surface: "#f0f3f5"
-  ink: "#24313b"
-  muted: "#566672"
-  rule: "#ccd4db"
-  accent: "#5f7f94"
-  world-bg: "#cbdde5"
-  focus: "#688ca4"
+  surface: "#f3e5c9"
+  ink: "#263b30"
+  muted: "#58604b"
+  rule: "#c8b996"
+  accent: "#355e46"
+  world-bg: "#dfdfcb"
+  focus: "#a8622b"
   surface-hover: "#dbe4ea"
   surface-subtle: "#e4eaef"
   white: "#ffffff"
@@ -19,29 +19,29 @@ colors:
   status-map: "#2f7181"
 typography:
   display:
-    fontFamily: "Barlow Condensed, sans-serif"
+    fontFamily: "Bree Serif, serif"
     fontSize: "42px"
     fontWeight: 600
     lineHeight: 1
     letterSpacing: "0.01em"
   headline:
-    fontFamily: "Barlow Condensed, sans-serif"
+    fontFamily: "Bree Serif, serif"
     fontSize: "32px"
     fontWeight: 600
     lineHeight: 1.05
   title:
-    fontFamily: "Barlow Condensed, sans-serif"
+    fontFamily: "Bree Serif, serif"
     fontSize: "28px"
     fontWeight: 600
     lineHeight: 1
     letterSpacing: "0.015em"
   body:
-    fontFamily: "Barlow, sans-serif"
+    fontFamily: "Alegreya Sans, sans-serif"
     fontSize: "12px"
     fontWeight: 400
     lineHeight: 1.8
   label:
-    fontFamily: "Barlow, sans-serif"
+    fontFamily: "Alegreya Sans, sans-serif"
     fontSize: "10px"
     fontWeight: 600
     lineHeight: 1.2
@@ -109,6 +109,24 @@ components:
     rounded: "{rounded.none}"
     padding: "10px"
 ---
+## Public UI update — October 28, 2026
+
+The public HUD extends the approved La Baraj sign: forest-green painted timber,
+worn edges, cream lettering, small brass nails and warm ivory paper. ImageGen
+assets under `apps/web/public/assets/ui/` supply the reusable sign plaque,
+nine-slice parchment frame, sixteen-symbol pictogram atlas and loading vignette.
+`game-art.css` and `GameArt.tsx` apply these assets while keeping all live labels
+as HTML text. Bree Serif supplies short headings; Alegreya Sans 400/700 supplies
+supporting text. Both are self-hosted with Latin Extended support.
+
+Keep the default HUD to logo, online status, Menu and contextual prompts. Map,
+controls and cabin actions remain on demand. The world, approved character,
+movement and multiplayer behavior are unchanged by this visual update.
+Earlier cool-neutral component descriptions below are historical prototype
+notes; this section and the shipped UI supersede them on public game surfaces.
+See `docs/art-direction/ui/README.md` and `prompts.json` for exact asset prompts,
+provenance, files and validation.
+
 
 # Design System: La Baraj
 

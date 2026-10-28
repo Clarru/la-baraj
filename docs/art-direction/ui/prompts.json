@@ -1,0 +1,27 @@
+{
+  "tool": "Built-in image_gen.imagegen",
+  "date": "2026-10-28",
+  "reference": "apps/web/public/assets/brand/la-baraj-banner.webp",
+  "assets": [
+    {
+      "key": "plaque",
+      "prompt": "Use case: stylized-concept. Asset type: production game UI button skin, single blank horizontal wooden sign, transparent background. Input image: visual style reference ONLY, existing La Baraj logo; do not reproduce its text. Create a companion blank button plaque made of the same dark forest-green painted timber, warm worn timber edges, restrained cream pinstripe inset and two small aged brass nail heads near the ends. Straight-on orthographic flat front view, wide 3:1 composition, centered full object with a very small transparent margin. Large uninterrupted very dark green center for real HTML cream text; no writing, no letters, no symbols, no handle, no rope, no leaves. Subtle hand-painted grain and chipped edges, handmade lakeside sign character, sophisticated game UI craft, realistic painted wood detail consistent with reference. Clean silhouette with genuine alpha transparency outside the plaque. Avoid excessive ornament, fantasy RPG scrollwork, gold filigree, shiny plastic, cartoon outlines, baked shadow extending far outside. This is one reusable UI component, not a scene or a mockup.",
+      "output": "apps/web/public/assets/ui/sign-plaque.webp"
+    },
+    {
+      "key": "uiPanel",
+      "prompt": "Use case: stylized-concept. Asset type: reusable production game UI panel skin, square nine-slice texture. Input image is existing La Baraj sign, a STYLE reference. Make one single square panel, perfectly straight-on orthographic, fills nearly entire square canvas edge to edge, small transparent margin no more than 1%. Thin warm weathered timber frame, inset fine worn forest-green painted edge, tiny brass nails only at four corners. Interior is a large completely blank quiet warm ivory parchment surface, matte and almost uniform, very subtle paper texture, 88% of width and height available for HTML text. Frame only 6% of width; flat straight continuous sides and right-angled corners suitable for nine-slice scaling into any rectangle. Subtle crafted irregularities only on outermost edge. Match the sign's mature handmade lakeside character and restrained material realism. No lettering, no icons, no ornaments inside, no page folds, no scroll curls, no scenery, no rope, no objects, no perspective, no cast shadow. Actual transparent background outside frame. It is a usable UI texture, not a mockup.",
+      "output": "apps/web/public/assets/ui/parchment-panel.webp"
+    },
+    {
+      "key": "uiIcons",
+      "prompt": "Use case: stylized-concept. Asset type: game UI sprite atlas, EXACT regular 4 by 4 grid of sixteen separate symbols, no labels, transparent background. Input image is the existing La Baraj logo, a material and palette reference only. Square canvas; every cell exactly one quarter of canvas width and height, each symbol centered precisely at its cell center with equal generous transparent gutters, 60% cell occupancy, no grids visible. Hand-painted sign pictograms, warm pale cream paint, subtle dark timber brown contour and tiny warm shadow for definition, flat front view, simple bold readable silhouettes rather than thin line icons, consistent mature lakeside game craft, not colorful emoji or glossy toys. Reading order symbols: ROW1: a small satchel backpack for menu; a lake cabin with pitched roof for home; a folded paper map with a simple blue lake; a compact computer keyboard for controls. ROW2: a U-turn arrow pointing left for return; a simple diagonal X for close; a straight left arrow for back; two diagonal arrows pointing outward for expand. ROW3: two diagonal arrows pointing inward for collapse; three simple people silhouettes for online friends; a broken radio signal for disconnected; a walking person silhouette. ROW4: one fish silhouette; one campfire flame above two logs; an open doorway; a bench with backrest. No text, letters, numbers, colored tiles, badges, circles, frames, scenery or background. Each cell contains only its one requested recognizable symbol, absolutely no additional items. True alpha transparency.",
+      "output": "apps/web/public/assets/ui/pictograms.webp"
+    },
+    {
+      "key": "uiLake",
+      "prompt": "Use case: stylized-concept. Asset type: transparent loading screen vignette for the game La Baraj. Input image is existing La Baraj logo, a palette and craft reference; do not reproduce any text or sign. Create a quiet hand-painted gouache illustration of a Romanian forest reservoir, blue-green lake between softly wooded hills, one little timber cabin and a simple pier on the near south bank. Wide horizontal composition 3:2, graceful irregular painted silhouette fading to genuine transparent alpha at the edges, no rectangular background or border. Warm cream highlights, deep forest green trees, muted lake teal, touches of terracotta timber. Mature illustrated travel-poster craft, calm and playful, detailed enough to reward looking but not photorealistic, no cartoon faces. Lake and forest are the subject. No text, letters, numbers, UI, people, vehicles, extra logos, frame, watermark or broad shadows. This image sits below the existing logo while the game loads; leave no embedded text.",
+      "output": "apps/web/public/assets/ui/lake-vignette.webp"
+    }
+  ]
+}
