@@ -1,6 +1,7 @@
 /** The intentionally small, versioned friends-playtest wire protocol. */
 export const PROTOCOL_VERSION = 1 as const;
 export const MAX_PLAYERS = 30;
+export const MAX_HOMES = 30;
 export const MAX_PACKET_BYTES = 1024;
 export const ROOM_ID_PATTERN = /^[A-Za-z0-9_-]{22,80}$/;
 
@@ -15,16 +16,18 @@ export type PlayerPose = {
   jumpPhase?: string;
   seatId?: string;
 };
-export type PlayerPresence = PlayerPose & { id: string; nickname: string };
+export type PlayerPresence = PlayerPose & { id: string; nickname: string; homeIndex?: number };
+/** Private to the owning connection; never embed this in public presence. */
+export type HomeAssignment = { index: number; resumeToken: string };
 export type FireState = { lit: boolean; revision: number };
 export type ClientMessage =
-  | { type: "hello"; nickname: string }
+  | { type: "hello"; nickname: string; requestHome?: true; resumeToken?: string; createHome?: true }
   | { type: "pose"; pose: PlayerPose }
   | { type: "fire"; lit: boolean }
   | { type: "seat"; seatId: string | null; requestId: string }
   | { type: "sync" };
 export type ServerMessage =
-  | { type: "snapshot"; version: typeof PROTOCOL_VERSION; selfId: string; players: PlayerPresence[]; fire: FireState; seats: Record<string, string> }
+  | { type: "snapshot"; version: typeof PROTOCOL_VERSION; selfId: string; players: PlayerPresence[]; fire: FireState; seats: Record<string, string>; home?: HomeAssignment }
   | { type: "joined"; player: PlayerPresence }
   | { type: "pose"; player: PlayerPresence }
   | { type: "left"; id: string }
@@ -42,6 +45,9 @@ function label(value: unknown, max = 48): value is string {
 export function isSeatId(value: unknown): value is string {
   return typeof value === "string" && value.length <= 100 && /^[A-Za-z0-9_-]+:seat:[0-9]{1,2}$/.test(value);
 }
+export function isResumeToken(value: unknown): value is string {
+  return typeof value === "string" && /^[A-Za-z0-9_-]{43}$/.test(value);
+}
 /** Validates and copies allowed fields; arbitrary IDs and prototype keys never enter state. */
 export function parseClientMessage(raw: string): ClientMessage | null {
   if (raw.length > MAX_PACKET_BYTES || new TextEncoder().encode(raw).byteLength > MAX_PACKET_BYTES) return null;
@@ -54,7 +60,15 @@ export function parseClientMessage(raw: string): ClientMessage | null {
       if (typeof value.nickname !== "string") return null;
       const nickname = value.nickname.trim();
       if (nickname.length < 1 || nickname.length > 24 || /[\p{C}<>]/u.test(nickname)) return null;
-      return { type: "hello", nickname };
+      if ((value.requestHome !== undefined && value.requestHome !== true) ||
+        (value.createHome !== undefined && value.createHome !== true) ||
+        (value.resumeToken !== undefined && !isResumeToken(value.resumeToken)) ||
+        (value.requestHome === true && !isResumeToken(value.resumeToken)) ||
+        (value.createHome === true && value.requestHome !== true)) return null;
+      return { type: "hello", nickname,
+        ...(value.requestHome === true ? { requestHome: true as const, resumeToken: value.resumeToken as string } : {}),
+        ...(value.createHome === true ? { createHome: true as const } : {}),
+      };
     }
     case "fire": return typeof value.lit === "boolean" ? { type: "fire", lit: value.lit } : null;
     case "seat":

@@ -6,6 +6,7 @@ import {
   useEffect,
   useRef,
   useState,
+  useSyncExternalStore,
   type ReactNode,
 } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
@@ -51,7 +52,7 @@ import { CabinInterior } from "./CabinInterior";
 import { CabinAccess } from "./CabinAccess";
 import { HomeMarker } from "./HomeMarker";
 import { Minimap } from "./Minimap";
-import { readLocalHome, type NavigationSample } from "./home";
+import { displayedHomeIndex, readLocalHome, type NavigationSample } from "./home";
 import {
   CabinGroundContacts,
   type GroundContactsSummary,
@@ -185,6 +186,9 @@ function format(n: number) {
 export default function App() {
   const [room] = useState(() => new MultiplayerRoom());
   useEffect(() => room.connect(), [room]);
+  const roomView = useSyncExternalStore(room.subscribe, room.getSnapshot);
+  const [localHomeIndex] = useState(() => readLocalHome(undefined, { roomId: room.roomId }));
+  const homeIndex = displayedHomeIndex(roomView.homeIndex, localHomeIndex);
   const [mode, setMode] = useState<ViewMode>("walk"),
     [flat, setFlat] = useState(false),
     [evening, setEvening] = useState(false),
@@ -202,7 +206,7 @@ export default function App() {
   const [vehicleMounted, setVehicleMounted] = useState(false),
     [scooterNear, setScooterNear] = useState(false);
   const [interiorIndex, setInteriorIndex] = useState<number | null>(null);
-  const [focusedCabinIndex, setFocusedCabinIndex] = useState(18);
+  const [focusedCabinIndex, setFocusedCabinIndex] = useState(homeIndex);
   const [doorTransition, setDoorTransition] = useState(false);
   const [doorPromptVisible, setDoorPromptVisible] = useState(false);
   const displayedPrompt: ActivityPrompt =
@@ -226,7 +230,7 @@ export default function App() {
     () => crypto.randomUUID(),
     [mode, flat, evening, crowd, resetKey],
   );
-  const [homeIndex] = useState(() => readLocalHome());
+  const homeResetKey = resetKey * 30 + homeIndex;
   const [navigation, setNavigation] = useState<NavigationSample>({
     x: 45,
     z: 27,
@@ -309,6 +313,8 @@ export default function App() {
   return (
     <main
       className="game-shell"
+      data-home={homeIndex + 1}
+      data-home-source={roomView.homeIndex === null ? "local" : "assigned"}
       data-view={mode}
       data-interior={interiorIndex !== null}
     >
@@ -384,6 +390,7 @@ export default function App() {
                 <CabinGroundContacts onReady={setFoundationMetrics} />
               </group>
               <Player
+                homeIndex={homeIndex}
                 mode={mode}
                 resetKey={resetKey}
                 paused={inventoryOpen || info || activityBusy || doorTransition}
@@ -401,7 +408,7 @@ export default function App() {
                 <WorldActivities
                   room={room}
                   onFireMetrics={updateFireMetrics}
-                  resetKey={resetKey}
+                  resetKey={homeResetKey}
                   paused={
                     inventoryOpen ||
                     info ||
@@ -450,7 +457,7 @@ export default function App() {
             homeIndex={homeIndex}
             focusedIndex={focusedCabinIndex}
             mode={mode}
-            resetKey={resetKey}
+            resetKey={homeResetKey}
             paused={inventoryOpen || info}
             busy={activityBusy}
             vehicleMounted={vehicleMounted}

@@ -3,6 +3,7 @@ import { Text, useGLTF } from "@react-three/drei";
 import { RigidBody, CuboidCollider } from "@react-three/rapier";
 import * as THREE from "three";
 import { Model, assetUrl } from "./assets";
+import { StaticCollider } from "./StaticCollider";
 import { Bench, CabinBenchSeats } from "./Bench";
 import { cabinCutawayBase } from "./cabin-cutaway";
 import { cabinDesignForPlot, cabinYaw } from "./cabin-designs";
@@ -75,28 +76,7 @@ export function Cabin({
       position={[x, terrainHeight(x, z), z]}
       rotation={[0, cabinYaw(index), 0]}
     >
-      <RigidBody type="fixed" colliders={false}>
-        {!interiorActive && (
-          <CuboidCollider
-            args={[design.width / 2, 1.35, design.depth / 2]}
-            position={[0, 1.95, 0]}
-          />
-        )}
-        {design.porches.map((p, i) => (
-          <CuboidCollider
-            key={"deck" + i}
-            args={[(p.maxX - p.minX) / 2, 0.15, (p.maxZ - p.minZ) / 2]}
-            position={[(p.minX + p.maxX) / 2, 0.47, (p.minZ + p.maxZ) / 2]}
-          />
-        ))}
-        {[0, 1, 2].map((i) => (
-          <CuboidCollider
-            key={i}
-            args={[0.95, 0.085, 0.24]}
-            position={[design.stairX, 0.39 - i * 0.13, design.stairZ + i * 0.3]}
-          />
-        ))}
-      </RigidBody>
+      <StaticCollider object={interiorActive ? cutaway : scene} />
       <primitive object={interiorActive ? cutaway : model} dispose={null} />
       <CabinBenchSeats index={index} />
       <group visible={!interiorActive}>
@@ -132,7 +112,9 @@ function Dock({ x, flat }: { x: number; flat: boolean }) {
   return (
     <group position={[x, 0.85, z - 4.1]}>
       <RigidBody type="fixed" colliders={false}>
-        <CuboidCollider args={[1.7, 0.12, 7.2]} position={[0, -0.08, 0]} />
+        <CuboidCollider args={[1.7, 0.12, 7.2]} position={[0, -0.08, 0]} friction={1.4} />
+        {[-1.5, 1.5].flatMap(a => [-6, -2, 2, 6].map(b => <CuboidCollider key={`${a}-${b}`} args={[0.16, 1.3, 0.16]} position={[a, -0.7, b]} />))}
+        {[-1.6, 1.6].map(a => <CuboidCollider key={a} args={[0.13, 0.75, 0.13]} position={[a, 0.6, 6]} />)}
       </RigidBody>
       {Array.from({ length: 24 }, (_, i) => (
         <mesh
@@ -248,6 +230,9 @@ function FireCircle() {
     y = terrainHeight(x, z);
   return (
     <group position={[x, y, z]}>
+      <RigidBody type="fixed" colliders={false}>
+        <CuboidCollider args={[1.3, 0.22, 1.3]} position={[0, 0.1, 0]} friction={1.4} />
+      </RigidBody>
       <mesh
         rotation={[-Math.PI / 2, 0, 0]}
         position={[0, 0.015, 0]}

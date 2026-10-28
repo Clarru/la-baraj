@@ -1,9 +1,10 @@
 import PartySocket from "partysocket";
-import type { ClientMessage, PlayerPose, PlayerPresence, ServerMessage } from "../../../packages/shared/protocol";
+import { isResumeToken, type ClientMessage, type PlayerPose, type PlayerPresence, type ServerMessage } from "../../../packages/shared/protocol";
 import { syncOnlineSeats } from "./bench-registry";
+import { isHomeIndex, shouldSpawnAtHome } from "./home";
 
 export type NetworkStatus = "connecting" | "online" | "reconnecting" | "full" | "error" | "offline";
-type RoomView = { status: NetworkStatus; selfId: string; nickname: string; ids: string[]; count: number; error: string; fireLit: boolean };
+type RoomView = { status: NetworkStatus; selfId: string; nickname: string; ids: string[]; count: number; error: string; fireLit: boolean; homeIndex: number | null };
 export type RemotePlayer = { player: PlayerPresence; receivedAt: number; activityAt: number };
 const adjectives = ["Quiet", "Sunny", "Copper", "Wild", "Blue", "Silver"];
 const animals = ["Otter", "Heron", "Fox", "Perch", "Deer", "Finch"];
@@ -23,6 +24,22 @@ export function roomFromLocation() {
   }
   return room;
 }
+type HomeCredential = { resumeToken: string; createHome: boolean };
+const homeCredentialKey = (roomId: string) => `la-baraj-home-resume-v1:${roomId}`;
+function saveHomeCredential(roomId: string, credential: HomeCredential) {
+  try { localStorage.setItem(homeCredentialKey(roomId), JSON.stringify(credential)); } catch { /* Current-session resume remains available when storage is blocked. */ }
+}
+function loadHomeCredential(roomId: string): HomeCredential {
+  try {
+    const saved = JSON.parse(localStorage.getItem(homeCredentialKey(roomId)) ?? "null");
+    if (isResumeToken(saved?.resumeToken) && typeof saved.createHome === "boolean") return { resumeToken: saved.resumeToken, createHome: saved.createHome };
+  } catch { /* A missing or corrupt preference starts an anonymous owner. */ }
+  const bytes = crypto.getRandomValues(new Uint8Array(32));
+  const credential = { resumeToken: btoa(String.fromCharCode(...bytes)).replaceAll("+", "-").replaceAll("/", "_").replace(/=+$/, ""), createHome: true };
+  // Persist before registration so a dropped acknowledgement can retry the same owner.
+  saveHomeCredential(roomId, credential);
+  return credential;
+}
 let activeRoom: MultiplayerRoom | null = null;
 export function currentMultiplayerRoom() { return activeRoom; }
 export class MultiplayerRoom {
@@ -31,6 +48,8 @@ export class MultiplayerRoom {
   private listeners = new Set<() => void>();
   private worldListeners = new Set<() => void>();
   private socket: PartySocket | null = null;
+  private homeCredential: HomeCredential | null = null;
+  private homeAcknowledged = false;
   private lastPose: PlayerPose | null = null;
   private sentPose = "";
   private lastSentAt = 0;
@@ -40,7 +59,7 @@ export class MultiplayerRoom {
   private pending = new Map<string, { resolve: (accepted: boolean) => void; timer: ReturnType<typeof setTimeout> }>();
   private diagnostic: HTMLOutputElement | null = null;
   private lastDiagnosticAt = 0;
-  private view: RoomView = { status: "connecting", selfId: "", nickname: initialNickname(), ids: [], count: 0, error: "", fireLit: false };
+  private view: RoomView = { status: "connecting", selfId: "", nickname: initialNickname(), ids: [], count: 0, error: "", fireLit: false, homeIndex: null };
   subscribe = (listener: () => void) => { this.listeners.add(listener); return () => { this.listeners.delete(listener); }; };
   getSnapshot = () => this.view;
   subscribeWorld = (listener: () => void) => { this.worldListeners.add(listener); return () => { this.worldListeners.delete(listener); }; };
@@ -65,15 +84,17 @@ export class MultiplayerRoom {
     let url: URL;
     try { url = new URL(configured.includes("://") ? configured : `https://${configured}`); }
     catch { this.publish({ status: "error", error: "Room server address is invalid" }); return () => { if (activeRoom === this) activeRoom = null; }; }
+    this.homeCredential ??= loadHomeCredential(this.roomId);
     const socket = new PartySocket({ host: url.host, protocol: ["localhost", "127.0.0.1"].includes(url.hostname) && ["http:", "ws:"].includes(url.protocol) ? "ws" : "wss", party: "world-room", room: this.roomId, maxEnqueuedMessages: 0 });
     this.socket = socket;
-    socket.addEventListener("open", () => { if (this.socket !== socket) return; this.send({ type: "hello", nickname: this.view.nickname }); this.send({ type: "sync" }); });
+    socket.addEventListener("open", () => { if (this.socket !== socket) return; this.homeAcknowledged = false; this.sendHello(); this.send({ type: "sync" }); });
     socket.addEventListener("message", (event) => {
       if (this.socket !== socket || typeof event.data !== "string") return;
       try { this.receive(JSON.parse(event.data) as ServerMessage); } catch { /* Ignore malformed frames without interrupting the world. */ }
     });
     socket.addEventListener("close", () => {
       if (this.socket !== socket) return;
+      this.homeAcknowledged = false;
       this.remotes.clear(); this.seats = {}; syncOnlineSeats({}, ""); this.resolvePending();
       if (!["full", "error"].includes(this.view.status)) this.publish({ status: "reconnecting", count: 0, ids: [] });
       this.publishWorld();
@@ -82,6 +103,10 @@ export class MultiplayerRoom {
       this.socket = null; socket.close(); this.resolvePending(); this.remotes.clear(); this.seats = {}; syncOnlineSeats({}, "");
       if (activeRoom === this) activeRoom = null;
     };
+  }
+  private sendHello() {
+    const credential = this.homeCredential;
+    this.send({ type: "hello", nickname: this.view.nickname, ...(credential ? { requestHome: true as const, resumeToken: credential.resumeToken, ...(credential.createHome ? { createHome: true as const } : {}) } : {}) });
   }
   private send(message: ClientMessage) { if (this.socket?.readyState === WebSocket.OPEN) this.socket.send(JSON.stringify(message)); }
   private updateRemote(player: PlayerPresence) {
@@ -93,24 +118,40 @@ export class MultiplayerRoom {
   }
   private receive(message: ServerMessage) {
     switch (message.type) {
-      case "snapshot":
+      case "snapshot": {
+        const previousHome = this.view.homeIndex;
+        if (message.home && isHomeIndex(message.home.index) && isResumeToken(message.home.resumeToken)) {
+          this.homeAcknowledged = true;
+          this.homeCredential = { resumeToken: message.home.resumeToken, createHome: false };
+          saveHomeCredential(this.roomId, this.homeCredential);
+          this.view = { ...this.view, homeIndex: message.home.index };
+          // A pre-assignment local pose belongs to the preview arrival, not the assigned cabin.
+          if (shouldSpawnAtHome(previousHome, message.home.index)) this.lastPose = null;
+        }
         this.remotes.clear();
         this.view = { ...this.view, selfId: message.selfId };
         for (const player of message.players) this.updateRemote(player);
         this.seats = message.seats; syncOnlineSeats(this.seats, message.selfId);
-        this.publish({ status: "online", error: "", count: message.players.length, ids: [...this.remotes.keys()], fireLit: message.fire.lit });
+        this.publish({ status: this.homeAcknowledged ? "online" : this.view.homeIndex === null ? "connecting" : "reconnecting", error: "", count: message.players.length, ids: [...this.remotes.keys()], fireLit: message.fire.lit });
         this.sentPose = ""; if (this.lastPose) this.publishPose(this.lastPose, true);
         this.publishWorld(); break;
+      }
       case "joined": case "pose": this.receivedPoses++; this.updateRemote(message.player); break;
       case "left": this.remotes.delete(message.id); this.publish({ ids: [...this.remotes.keys()], count: this.remotes.size + 1 }); break;
       case "fire": this.publish({ fireLit: message.fire.lit }); this.publishWorld(); break;
       case "seats": this.seats = message.seats; syncOnlineSeats(this.seats, this.view.selfId); this.publishWorld(); break;
       case "seat-result": { const pending = this.pending.get(message.requestId); if (pending) { clearTimeout(pending.timer); this.pending.delete(message.requestId); pending.resolve(message.accepted); } break; }
-      case "error": this.publish({ status: message.code === "ROOM_FULL" || message.code === "room-full" ? "full" : this.view.status === "online" ? "online" : "error", error: message.message }); if (this.view.status === "full") this.socket?.close(); break;
+      case "error": {
+        const homeError = ["homes-full", "invalid-resume"].includes(message.code);
+        this.publish({ status: message.code === "ROOM_FULL" || message.code === "room-full" ? "full" : homeError ? "error" : this.view.status === "online" ? "online" : "error", error: message.message });
+        if (homeError || this.view.status === "full") this.socket?.close();
+        break;
+      }
     }
     this.writeDiagnostics();
   }
   publishMotion(sample: Record<string, unknown>) {
+    if (this.view.homeIndex !== null && sample.homeIndex !== undefined && sample.homeIndex !== this.view.homeIndex) return;
     if (!Array.isArray(sample.feet) || !Array.isArray(sample.facing)) return;
     const position = sample.feet.map((v) => Math.round(Number(v) * 1000) / 1000) as [number, number, number];
     if (!position.every(Number.isFinite)) return;
@@ -120,7 +161,7 @@ export class MultiplayerRoom {
     this.lastPose = pose; this.publishPose(pose); this.writeDiagnostics();
   }
   private publishPose(pose: PlayerPose, force = false) {
-    if (this.view.status !== "online") return;
+    if (this.view.status !== "online" || this.view.homeIndex === null || !this.homeAcknowledged) return;
     const key = JSON.stringify(pose), now = performance.now();
     if (!force && (key === this.sentPose || now - this.lastSentAt < 120)) return;
     this.send({ type: "pose", pose }); this.sentPose = key; this.lastSentAt = now; this.sentPoses++;
@@ -129,7 +170,7 @@ export class MultiplayerRoom {
     const name = nickname.trim().replace(/[\p{C}<>]/gu, "").slice(0, 24);
     if (!name) return;
     try { localStorage.setItem(nicknameKey, name); } catch { /* Optional preference. */ }
-    this.publish({ nickname: name }); this.send({ type: "hello", nickname: name });
+    this.publish({ nickname: name }); this.sendHello();
   }
   claimSeat(seatId: string): Promise<boolean> {
     if (this.view.status !== "online") return Promise.resolve(false);

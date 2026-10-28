@@ -2,6 +2,7 @@ import { Server, routePartykitRequest, type Connection } from "partyserver";
 import { type FireState } from "../../packages/shared/protocol";
 import { RoomCore, type RoomConnection, type SessionState } from "./room-core";
 import { allowedOrigin, validRoomPath } from "./request-policy";
+import { HomeAssignments } from "./home-assignments";
 
 export interface Env {
   WorldRoom: DurableObjectNamespace<WorldRoom>;
@@ -15,9 +16,11 @@ export class WorldRoom extends Server<Env> {
   async onStart() {
     const stored = await this.ctx.storage.get<FireState>("fire");
     const fire = stored && typeof stored.lit === "boolean" && Number.isSafeInteger(stored.revision) && stored.revision >= 0 ? stored : undefined;
+    const homes = new HomeAssignments({ save: (ledger) => this.ctx.storage.put("home-owners-v1", ledger) }, await this.ctx.storage.get("home-owners-v1"));
     this.room = new RoomCore({
       connections: () => this.getConnections<SessionState>() as unknown as Iterable<RoomConnection>,
       saveFire: (next) => this.ctx.storage.put("fire", next),
+      homes,
     }, fire);
   }
   onConnect(connection: Connection) {

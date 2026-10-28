@@ -47,12 +47,23 @@ try {
   assert.equal(isolated.snapshot.players.length, 1, "rooms must be isolated");
   assert.equal((await a.next((m) => m.type === "joined")).player.id, bId);
   a.send({ type: "hello", nickname: "Smoke friend A" });
-  await b.next((m) => m.type === "pose" && m.player.nickname === "Smoke friend A");
+  const legacy = await b.next((m) => m.type === "pose" && m.player.nickname === "Smoke friend A");
+  assert.equal(legacy.player.homeIndex, undefined, "legacy clients must not reserve homes");
+  // Persist these tokens before sending in a browser. Keep them out of URLs,
+  // console output, assertion payloads, and other clients' public presence.
+  const tokenA = randomBytes(32).toString("base64url"), tokenB = randomBytes(32).toString("base64url");
+  a.send({ type: "hello", nickname: "Smoke friend A", requestHome: true, resumeToken: tokenA, createHome: true });
+  b.send({ type: "hello", nickname: "Smoke friend B", requestHome: true, resumeToken: tokenB, createHome: true });
+  const [homeA, homeB] = await Promise.all([a.next((m) => m.type === "snapshot" && m.home), b.next((m) => m.type === "snapshot" && m.home)]);
+  assert.notEqual(homeA.home.index, homeB.home.index, "distinct anonymous owners must have distinct cabins");
+  assert.ok(homeA.home.resumeToken === tokenA && homeB.home.resumeToken === tokenB, "private home acknowledgements must preserve credentials");
+  assert.ok(!JSON.stringify(homeA.players).includes(tokenA) && !JSON.stringify(homeA.players).includes(tokenB), "public presence must not contain credentials");
   const pose = { position: [14, 2.5, -9], yaw: 1.2, animation: "walk", activity: "none", vehicle: "scooter", speed: 4 };
-  a.send({ type: "pose", id: bId, pose });
+  a.send({ type: "pose", id: bId, homeIndex: homeB.home.index, pose: { ...pose, homeIndex: homeB.home.index } });
   const received = await b.next((m) => m.type === "pose" && m.player.position[0] === 14);
   assert.equal(received.player.id, aId);
   assert.deepEqual(received.player.position, pose.position);
+  assert.equal(received.player.homeIndex, homeA.home.index, "client poses cannot override cabin ownership");
   a.send({ type: "seat", seatId: "campfire:seat:0", requestId: "seat-a" });
   assert.equal((await a.next((m) => m.type === "seat-result" && m.requestId === "seat-a")).accepted, true);
   b.send({ type: "seat", seatId: "campfire:seat:0", requestId: "seat-b" });
@@ -70,7 +81,18 @@ try {
   assert.equal(reconnected.snapshot.players.length, 1);
   assert.deepEqual(reconnected.snapshot.seats, {});
   assert.deepEqual(reconnected.snapshot.fire, { lit: false, revision: 1 });
-  console.log(JSON.stringify({ ok: true, host, room, checks: ["health", "origin-policy", "private-room-id", "independent-connections", "server-identity", "presence", "pose", "room-isolation", "seat-conflict", "departure-seat-release", "shared-fire", "reconnect-snapshot"] }, null, 2));
+  reconnected.send({ type: "hello", nickname: "Returned A", requestHome: true, resumeToken: tokenA });
+  const resumed = await reconnected.next((m) => m.type === "snapshot" && m.home);
+  assert.equal(resumed.home.index, homeA.home.index);
+  const secondTab = await connect();
+  secondTab.send({ type: "hello", nickname: "Second tab A", requestHome: true, resumeToken: tokenA, createHome: true });
+  const tabHome = await secondTab.next((m) => m.type === "snapshot" && m.home);
+  assert.equal(tabHome.home.index, homeA.home.index, "lost acknowledgement retries and multiple tabs must be idempotent");
+  assert.notEqual(secondTab.snapshot.selfId, reconnected.snapshot.selfId);
+  const unknown = await connect();
+  unknown.send({ type: "hello", nickname: "Unknown", requestHome: true, resumeToken: randomBytes(32).toString("base64url") });
+  assert.equal((await unknown.next((m) => m.type === "error")).code, "invalid-resume");
+  console.log(JSON.stringify({ ok: true, host, room, checks: ["health", "origin-policy", "private-room-id", "independent-connections", "server-identity", "presence", "pose", "room-isolation", "seat-conflict", "departure-seat-release", "shared-fire", "reconnect-snapshot", "legacy-home-opt-in", "unique-cabins", "private-home-credentials", "home-override-rejected", "home-resume", "same-owner-tabs", "unknown-home-rejected"] }, null, 2));
 } finally {
   for (const socket of sockets) if (socket.readyState !== WebSocket.CLOSED) socket.close(1000, "Smoke check complete");
 }
