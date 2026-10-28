@@ -4,7 +4,7 @@ A browser multiplayer playtest at Lake Cinciș, Romania. The public game/project
 
 The release adds a Cloudflare PartyServer room for real presence, synchronized movement/activity/scooter presentation, exclusive seat reservations and shared campfire state. The frontend is deployed on Vercel; this repository is the release source. Catches remain local to each browser.
 
-See [live multiplayer and deployment](docs/LIVE_MULTIPLAYER.md) for setup, environment variables, limits and verification.
+See [live multiplayer and deployment](docs/LIVE_MULTIPLAYER.md) for setup, environment variables, limits and verification. Parallel contributors follow [the GitHub workflow](docs/GITHUB_WORKFLOW.md): one feature branch/worktree per chat, PRs to main, and one integration/release owner.
 
 
 A small multiplayer lake playground for a Romanian design community. English throughout. Up to 30 people online together. Real Cinciș geography, fictional cabins and activities.
