@@ -215,3 +215,64 @@ describe("actual Worker lifecycle with durable storage", () => {
     });
   });
 });
+
+describe("weather in the actual Worker lifecycle", () => {
+  it("fetches once, broadcasts to connected players, and restores the shared cache after wake", async () => {
+    const storage = new Storage();
+    const connections = [connection(0)];
+    const pending: Promise<unknown>[] = [];
+    const ctx = {
+      storage,
+      connections,
+      waitUntil: (promise: Promise<unknown>) => pending.push(promise),
+    };
+    const fetcher = vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({
+            current: {
+              time: "1970-01-01T00:00",
+              cloud_cover: 85,
+              weather_code: 3,
+            },
+          }),
+          { status: 200 },
+        ),
+    );
+    vi.stubGlobal("fetch", fetcher);
+    try {
+      const world = new WorldRoom(ctx as never, {} as never);
+      await world.onStart();
+      world.onConnect(connections[0] as never);
+      await Promise.all(pending.splice(0));
+      expect(fetcher).toHaveBeenCalledTimes(1);
+      expect(connections[0].messages).toContainEqual({
+        type: "weather",
+        weather: {
+          cloudCover: 85,
+          weatherCode: 3,
+          observedAt: 0,
+          fetchedAt: 1000,
+        },
+      });
+      await world.onMessage(
+        connections[0] as never,
+        JSON.stringify({ type: "weather-refresh" }),
+      );
+      await Promise.all(pending.splice(0));
+      expect(fetcher).toHaveBeenCalledTimes(1);
+      const recovered = new WorldRoom(ctx as never, {} as never);
+      await recovered.onStart();
+      const guest = connection(1);
+      connections.push(guest);
+      recovered.onConnect(guest as never);
+      await Promise.all(pending.splice(0));
+      expect(fetcher).toHaveBeenCalledTimes(1);
+      expect(guest.messages.find((m) => m.type === "snapshot")).toMatchObject({
+        weather: { cloudCover: 85, weatherCode: 3 },
+      });
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+});

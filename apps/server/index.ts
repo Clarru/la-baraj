@@ -14,6 +14,7 @@ import {
 import { HomeAssignments, type HomeLedger } from "./home-assignments";
 import { PlanesTable, type PlanesRecord } from "./planes-table";
 import { nextWorldDeadline } from "./world-alarm";
+import { LakeWeatherService } from "./lake-weather";
 
 export interface Env {
   WorldRoom: DurableObjectNamespace<WorldRoom>;
@@ -25,6 +26,10 @@ export class WorldRoom extends Server<Env> {
   static options = { hibernate: true };
   private room!: RoomCore;
   private planes!: PlanesTable;
+  private lakeWeather!: LakeWeatherService;
+  private scheduleWeather() {
+    this.ctx.waitUntil(this.lakeWeather.refresh());
+  }
   /** Both systems share one durable alarm; writes inspect both latest records. */
   private async persist(key: string, value: HomeLedger | PlanesRecord) {
     await this.ctx.storage.transaction(async (transaction) => {
@@ -84,9 +89,18 @@ export class WorldRoom extends Server<Env> {
         homes,
         planes,
         retryPlaneCleanup: () => this.retryPlaneCleanup(),
+        requestWeather: () => this.scheduleWeather(),
       },
       fire,
     );
+    this.lakeWeather = new LakeWeatherService(this.ctx.storage, (weather) =>
+      this.room.setWeather(weather),
+    );
+    try {
+      await this.lakeWeather.load();
+    } catch {
+      // Weather is optional; a storage issue must not stop the shared world.
+    }
     for (const connection of this.getConnections<SessionState>())
       if (connection.state?.housingEpoch !== HOUSING_EPOCH)
         connection.close(1012, "The village has been rebuilt. Reload to join.");
@@ -123,6 +137,7 @@ export class WorldRoom extends Server<Env> {
       connection as unknown as RoomConnection,
       crypto.randomUUID(),
     );
+    this.scheduleWeather();
   }
   onMessage(
     connection: Connection,

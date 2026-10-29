@@ -1,3 +1,4 @@
+import type { LakeWeather } from "../../packages/shared/weather";
 import {
   MAX_PLAYERS,
   AFK_AFTER_MS,
@@ -49,6 +50,7 @@ export type RoomRuntime = {
   homes: HomeAssignments;
   planes?: PlanesTable;
   retryPlaneCleanup?: () => Promise<void>;
+  requestWeather?: () => void;
 };
 /** These buckets are stored in the websocket attachment and survive hibernation. */
 export function consume(
@@ -66,6 +68,7 @@ export function consume(
 
 export class RoomCore {
   fire: FireState;
+  private weather: LakeWeather | null = null;
   private homeClaims = new WeakMap<RoomConnection, Promise<HomeAssignment>>();
   private planes: PlanesTable;
   private cleanupRetryAt = 0;
@@ -76,6 +79,11 @@ export class RoomCore {
   ) {
     this.fire = fire;
     this.planes = runtime.planes ?? new PlanesTable({ save: async () => {} });
+  }
+  setWeather(weather: LakeWeather | null) {
+    if (JSON.stringify(this.weather) === JSON.stringify(weather)) return;
+    this.weather = weather;
+    this.broadcast({ type: "weather", weather });
   }
   private tableActor(connection: RoomConnection): TableActor | null {
     const state = connection.state;
@@ -178,6 +186,7 @@ export class RoomCore {
       version: PROTOCOL_VERSION,
       selfId: connection.state.player.id,
       serverTime: now,
+      weather: this.weather,
       village: {
         epoch: HOUSING_EPOCH,
         cabins: this.runtime.homes.publicCabins(),
@@ -334,6 +343,10 @@ export class RoomCore {
         { type: "activity", id: current.player.id, idleMs: message.idleMs },
         connection,
       );
+      return;
+    }
+    if (message.type === "weather-refresh") {
+      this.runtime.requestWeather?.();
       return;
     }
     if (message.type === "punch") {

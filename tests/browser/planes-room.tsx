@@ -77,6 +77,9 @@ export class PairedPlanesRoom extends MultiplayerRoom {
     this.connectionClosed();
     this.worker?.port.postMessage({ kind: "disconnect" });
   }
+  setTestWeather(cloudCover: number | null) {
+    this.worker?.port.postMessage({ kind: "weather", cloudCover });
+  }
   joinTestSeat(side: 0 | 1) {
     this.worker?.port.postMessage({ kind: "seat", side });
   }
@@ -103,9 +106,16 @@ export function PairedPlanesControls({ room }: { room: MultiplayerRoom }) {
       </output>
       <strong>Browser player {room.testPlayer + 1} · isolated test</strong>
       <p>Shared in RAM across local test tabs. No live rooms or saved homes.</p>
-      <button onClick={() => room.joinTestSeat(0)}>
-        Take west test seat
+      <button onClick={() => room.setTestWeather(0)}>
+        Test clear weather
       </button>{" "}
+      <button onClick={() => room.setTestWeather(100)}>
+        Test cloudy weather
+      </button>{" "}
+      <button onClick={() => room.setTestWeather(null)}>
+        Test weather unavailable
+      </button>{" "}
+      <button onClick={() => room.joinTestSeat(0)}>Take west test seat</button>{" "}
       <button onClick={() => room.joinTestSeat(1)}>Take east test seat</button>{" "}
       <button onClick={() => room.disconnectTest()}>
         Disconnect this test player

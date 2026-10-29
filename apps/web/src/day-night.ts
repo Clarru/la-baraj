@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { cloudiness } from "./weather-visual";
 
 let serverClock: { time: number; local: number } | null = null;
 /** An initial server snapshot corrects device clock differences without polling. */
@@ -171,6 +172,7 @@ export type Lighting = {
   sunDirection: THREE.Vector3;
   sunIntensity: number;
   hemiIntensity: number;
+  cloudCover: number;
 };
 export function lightingAt(hour: number): Lighting {
   hour = ((hour % 24) + 24) % 24;
@@ -193,6 +195,7 @@ export function lightingAt(hour: number): Lighting {
       0.16 + Math.max(0, Math.sin(angle)) * 0.8,
       -0.75,
     ).normalize(),
+    cloudCover: 0,
     sunIntensity: THREE.MathUtils.lerp(a.sunIntensity, b.sunIntensity, smooth),
     hemiIntensity: THREE.MathUtils.lerp(
       a.hemiIntensity,
@@ -218,10 +221,20 @@ export function currentLighting(evening = false, forceDay = false) {
         ? 12
         : gameMinutes(now) / 60 +
           (((Math.floor(now / 1000) % 60) + 60) % 60) / 3600;
-  const key = hour.toFixed(3);
+  const cover = cloudiness();
+  const key = `${hour.toFixed(3)}:${cover.toFixed(2)}`;
   if (cacheKey !== key) {
     cacheKey = key;
     cached = lightingAt(hour);
+    cached.cloudCover = cover;
+    const grey = new THREE.Color("#819199");
+    cached.colors.sky.lerp(grey, cover * 0.4);
+    cached.colors.horizon.lerp(grey, cover * 0.36);
+    cached.colors.fog.lerp(grey, cover * 0.22);
+    cached.colors.land.lerp(new THREE.Color("#b0b9b8"), cover * 0.25);
+    cached.colors.sun.lerp(new THREE.Color("#d5dfdf"), cover * 0.45);
+    cached.colors.water.lerp(new THREE.Color("#3d5960"), cover * 0.22);
+    cached.sunIntensity *= 1 - cover * 0.5;
   }
   return cached;
 }
