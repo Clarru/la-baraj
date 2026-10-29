@@ -99,6 +99,7 @@ export function currentMultiplayerRoom() {
   return activeRoom;
 }
 export class MultiplayerRoom {
+  readonly localPreview: boolean = false;
   readonly roomId = roomFromLocation();
   readonly remotes = new Map<string, RemotePlayer>();
   private chatBubbles = new Map<string, { text: string; expiresAt: number }>();
@@ -746,7 +747,9 @@ export class MultiplayerRoom {
     this.planeRequests.clear();
     this.cruceRequests.forEach(({ resolve, timer }) => {
       clearTimeout(timer);
-      resolve("Conexiunea s-a întrerupt. Reconectează-te ca să revii la cărțile tale.");
+      resolve(
+        "Conexiunea s-a întrerupt. Reconectează-te ca să revii la cărțile tale.",
+      );
     });
     this.cruceRequests.clear();
   }

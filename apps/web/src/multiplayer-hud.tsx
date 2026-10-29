@@ -45,7 +45,11 @@ export function MultiplayerHud({ room }: { room: MultiplayerRoom }) {
         ) : (
           <GameIcon name="offline" size={26} />
         )}
-        <strong>{label}</strong>
+        <strong>
+          {room.localPreview
+            ? "Local · aceeași lume în filele acestui browser"
+            : label}
+        </strong>
       </span>
       {(message || retry) && (
         <div className="multiplayer-notice" role="status">

@@ -1,3 +1,5 @@
+import { useCruceCharacter } from "./use-cruce-character";
+import { cruceSeatSide } from "../../../packages/shared/cruce-station";
 import {
   useEffect,
   useMemo,
@@ -90,6 +92,7 @@ function RemoteAvatarRig({
   );
   const object = useMemo(() => cloneCharacter(scene), [scene]);
   const tableReaction = useMemo(() => createTableReactionRig(object), [object]);
+  const cruceCharacter = useCruceCharacter(object);
   useEffect(() => () => tableReaction.dispose(), [tableReaction]);
   const clips = useMemo(() => {
     return characterClips(animations, String(supplemental));
@@ -275,6 +278,13 @@ function RemoteAvatarRig({
     helpers.current?.activity.update(
       { kind: player.activity as ActivityKind, startedAt: remote.activityAt },
       (performance.now() - remote.activityAt) / 1000,
+    );
+    cruceCharacter.update(
+      (room as MultiplayerRoom).getSnapshot().cruce,
+      player.activity === "sit" || player.activity === "sit-down"
+        ? cruceSeatSide(player.seatId)
+        : null,
+      performance.now(),
     );
     if (scooterGroup.current) scooterGroup.current.visible = riding;
     if (riding) {
