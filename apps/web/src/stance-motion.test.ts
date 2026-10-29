@@ -7,6 +7,7 @@ import {
   stanceBottomExtent,
   stanceCandidateY,
   stanceColliderRotation,
+  stanceControllerHeight,
   stanceExpansionAllowed,
   stanceForToggle,
   stanceRayOriginOffset,
@@ -24,6 +25,12 @@ describe("player stance contract", () => {
     expect(STANCE_METRICS.crouching.walkSpeed).toBe(1.5);
     expect(STANCE_METRICS.prone.walkSpeed).toBe(0.65);
     expect(STANCE_METRICS.prone.runSpeed).toBe(0.65);
+    expect(STANCE_METRICS.standing.rayRadius).toBe(0.22);
+    expect(STANCE_METRICS.standing.floatHeight).toBe(0.3);
+    expect(STANCE_METRICS.crouching.rayRadius).toBe(0.12);
+    expect(STANCE_METRICS.crouching.floatHeight).toBe(0.16);
+    expect(STANCE_METRICS.prone.rayRadius).toBe(0.08);
+    expect(STANCE_METRICS.prone.floatHeight).toBe(0.17);
     expect(stanceRayOriginOffset("standing")).toBeCloseTo(-0.35);
     expect(stanceRayOriginOffset("crouching")).toBeCloseTo(-0.18);
     expect(stanceRayOriginOffset("prone")).toBeCloseTo(-0.1);
@@ -51,18 +58,12 @@ describe("player stance contract", () => {
     expect(stanceVisualLift("crouching")).toBe(0);
   });
 
-  it("preserves the capsule's feet while resizing and refuses a blocked stand", () => {
-    const standingY = 0.98;
+  it("uses the measured Ecctrl body envelopes and refuses a blocked stand", () => {
+    const standingY = stanceControllerHeight("standing");
     const crouchingY = stanceCandidateY(standingY, "standing", "crouching");
-    const standingBottom =
-      standingY -
-      (STANCE_METRICS.standing.capsuleHalfHeight +
-        STANCE_METRICS.standing.capsuleRadius);
-    const crouchingBottom =
-      crouchingY -
-      (STANCE_METRICS.crouching.capsuleHalfHeight +
-        STANCE_METRICS.crouching.capsuleRadius);
-    expect(crouchingBottom).toBeCloseTo(standingBottom);
+    expect(standingY).toBeCloseTo(1.09);
+    expect(crouchingY).toBeCloseTo(0.58);
+    expect(stanceControllerHeight("prone")).toBeCloseTo(0.43);
     expect(stanceExpansionAllowed("crouching", "standing", false)).toBe(true);
     expect(stanceExpansionAllowed("crouching", "standing", true)).toBe(false);
     expect(stanceExpansionAllowed("prone", "crouching", true)).toBe(false);

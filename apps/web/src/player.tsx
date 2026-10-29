@@ -1217,10 +1217,10 @@ export function Player({
       slideGripFactor={1.1}
       decDeltaTime={0.3}
       slopeMaxAngle={Math.PI * 0.4}
-      rayRadius={0.22}
+      rayRadius={STANCE_METRICS[stance].rayRadius}
       rayOriginOffest={stanceRayOriginOffset(stance)}
       rayHitForgiveness={jumping ? 0.05 : 0.28}
-      floatHeight={0.3}
+      floatHeight={STANCE_METRICS[stance].floatHeight}
     >
       <group ref={visual} position={[0, -0.9, 0]}>
         <primitive object={object} dispose={null} />

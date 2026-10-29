@@ -1,7 +1,10 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import RAPIER from "@dimforge/rapier3d-compat";
 import { resizeStanceCollider, rotateProneCollider } from "./stance-physics";
-import { stanceColliderRotation } from "./stance-motion";
+import {
+  stanceColliderRotation,
+  stanceControllerHeight,
+} from "./stance-motion";
 
 beforeAll(async () => {
   await RAPIER.init();
@@ -13,7 +16,9 @@ function worldWithBody() {
     RAPIER.ColliderDesc.cuboid(4, 0.05, 4).setTranslation(0, -0.05, 0),
   );
   const body = world.createRigidBody(
-    RAPIER.RigidBodyDesc.dynamic().setTranslation(0, 0.81, 0).lockRotations(),
+    RAPIER.RigidBodyDesc.dynamic()
+      .setTranslation(0, stanceControllerHeight("crouching"), 0)
+      .lockRotations(),
   );
   const collider = world.createCollider(
     RAPIER.ColliderDesc.capsule(0.18, 0.3),
@@ -23,7 +28,7 @@ function worldWithBody() {
 }
 
 describe("stance collider clearance", () => {
-  it("expands the real collider on open ground and keeps its feet planted", () => {
+  it("expands the real collider using the target controller envelope", () => {
     const { world, body, collider } = worldWithBody();
     const before = body.translation().y;
     expect(
@@ -36,7 +41,12 @@ describe("stance collider clearance", () => {
         rapier: RAPIER,
       }),
     ).toBe(true);
-    expect(body.translation().y).toBeCloseTo(before + 0.17, 6);
+    expect(body.translation().y).toBeCloseTo(
+      before +
+        stanceControllerHeight("standing") -
+        stanceControllerHeight("crouching"),
+      6,
+    );
     world.free();
   });
 
@@ -53,7 +63,10 @@ describe("stance collider clearance", () => {
         yaw: Math.PI / 2,
       }),
     ).toBe(true);
-    expect(body.translation().y).toBeCloseTo(0.73, 6);
+    expect(body.translation().y).toBeCloseTo(
+      stanceControllerHeight("prone"),
+      6,
+    );
     expect(Math.abs(collider.rotation().x)).toBeGreaterThan(0.4);
     expect(Math.abs(collider.rotation().y)).toBeGreaterThan(0.4);
     world.free();
@@ -78,7 +91,10 @@ describe("stance collider clearance", () => {
     standingSpace.world.free();
 
     const prone = worldWithBody();
-    prone.body.setTranslation({ x: 0, y: 0.73, z: 0 }, true);
+    prone.body.setTranslation(
+      { x: 0, y: stanceControllerHeight("prone"), z: 0 },
+      true,
+    );
     prone.collider.setShape(new RAPIER.Capsule(0.65, 0.4));
     prone.collider.setRotation(stanceColliderRotation("prone", 0));
     prone.world.createCollider(
@@ -121,6 +137,11 @@ describe("stance collider clearance", () => {
 
   it("checks the target horizontal footprint when entering prone near a wall", () => {
     const { world, body, collider } = worldWithBody();
+    body.setTranslation(
+      { x: 0, y: stanceControllerHeight("standing"), z: 0 },
+      true,
+    );
+    collider.setShape(new RAPIER.Capsule(0.35, 0.3));
     world.createCollider(
       RAPIER.ColliderDesc.cuboid(0.05, 2, 0.05).setTranslation(0, 0.8, 0.9),
     );
@@ -141,7 +162,10 @@ describe("stance collider clearance", () => {
 
   it("blocks prone yaw turns whose rotated footprint would enter a wall", () => {
     const { world, body, collider } = worldWithBody();
-    body.setTranslation({ x: 0, y: 0.73, z: 0 }, true);
+    body.setTranslation(
+      { x: 0, y: stanceControllerHeight("prone"), z: 0 },
+      true,
+    );
     collider.setShape(new RAPIER.Capsule(0.65, 0.4));
     collider.setRotation(stanceColliderRotation("prone", 0));
     world.createCollider(

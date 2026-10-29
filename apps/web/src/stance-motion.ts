@@ -7,6 +7,10 @@ export const STANCE_METRICS: Record<
     capsuleHalfHeight: number;
     capsuleRadius: number;
     capsuleAxis: "vertical" | "horizontal";
+    /** Ecctrl's floating-probe parameters for this posture. */
+    rayRadius: number;
+    floatHeight: number;
+    rayOriginOffset: number;
     walkSpeed: number;
     runSpeed: number;
   }
@@ -16,6 +20,9 @@ export const STANCE_METRICS: Record<
     capsuleHalfHeight: 0.35,
     capsuleRadius: 0.3,
     capsuleAxis: "vertical",
+    rayRadius: 0.22,
+    floatHeight: 0.3,
+    rayOriginOffset: -0.35,
     walkSpeed: 3.8,
     runSpeed: 6.5,
   },
@@ -25,6 +32,9 @@ export const STANCE_METRICS: Record<
     capsuleHalfHeight: 0.18,
     capsuleRadius: 0.3,
     capsuleAxis: "vertical",
+    rayRadius: 0.12,
+    floatHeight: 0.16,
+    rayOriginOffset: -0.18,
     walkSpeed: 1.5,
     runSpeed: 1.5,
   },
@@ -34,6 +44,9 @@ export const STANCE_METRICS: Record<
     capsuleHalfHeight: 0.65,
     capsuleRadius: 0.4,
     capsuleAxis: "horizontal",
+    rayRadius: 0.08,
+    floatHeight: 0.17,
+    rayOriginOffset: -0.1,
     walkSpeed: 0.65,
     runSpeed: 0.65,
   },
@@ -64,7 +77,17 @@ export function stanceVisualLift(stance: Stance) {
 }
 
 export function stanceCandidateY(currentY: number, from: Stance, to: Stance) {
-  return currentY + stanceBottomExtent(to) - stanceBottomExtent(from);
+  return currentY + stanceControllerHeight(to) - stanceControllerHeight(from);
+}
+
+/** Stable Ecctrl body-center height above the ground for each probe envelope. */
+export function stanceControllerHeight(stance: Stance) {
+  const metrics = STANCE_METRICS[stance];
+  return (
+    Math.abs(metrics.rayOriginOffset) +
+    metrics.rayRadius * 2 +
+    metrics.floatHeight
+  );
 }
 
 export function stanceBottomExtent(stance: Stance) {
@@ -75,9 +98,9 @@ export function stanceBottomExtent(stance: Stance) {
   );
 }
 
-/** Keep Ecctrl's spring origin at the same 30cm support gap for each stance. */
-export function stanceRayOriginOffset(stance: Stance, floatHeight = 0.3) {
-  return -(stanceBottomExtent(stance) - floatHeight);
+/** Return the measured Ecctrl probe origin for this stance. */
+export function stanceRayOriginOffset(stance: Stance) {
+  return STANCE_METRICS[stance].rayOriginOffset;
 }
 
 /** Rapier capsules are Y-aligned; rotate the prone capsule onto local +Z. */
