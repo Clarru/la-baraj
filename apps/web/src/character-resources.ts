@@ -25,7 +25,9 @@ export function characterClips(
     ...createRunJumpClips(animations.find((c) => c.name === "Run")),
     ...authored,
     ...createFishingGestureClips(),
-    ...createStanceClips(authored.find((clip) => clip.name === "Swim_Forward")),
+    ...createStanceClips(
+      authored.find((clip) => clip.name === "Swim_Forward"),
+    ).filter((clip) => clip.name !== "Crouch_Pose"),
     createSocialWaveClip(),
   ];
   clipCache.set(animations, { source, clips });

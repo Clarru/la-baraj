@@ -109,6 +109,7 @@ export function stanceBaseAnimation(
   stance: Stance,
   moving: boolean,
 ): string | null {
+  if (stance === "crouching") return moving ? "Crouch_Walk" : "Crouch_Idle";
   if (stance !== "prone") return null;
   return moving ? "Prone_Crawl" : "Prone_Idle";
 }

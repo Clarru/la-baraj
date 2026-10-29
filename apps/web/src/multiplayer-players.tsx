@@ -29,11 +29,7 @@ import { createTableReactionRig } from "./table-reactions";
 import { planesSeatSide } from "../../../packages/shared/planes-station";
 import { SwimWake } from "./SwimWake";
 import { AFK_AFTER_MS } from "../../../packages/shared/protocol";
-import {
-  postureFromAnimation,
-  stanceBaseAnimation,
-  type Stance,
-} from "./stance-motion";
+import { postureFromAnimation, stanceBaseAnimation } from "./stance-motion";
 
 // Only the isolated local browser lab may shorten the visual timeout for QA.
 const displayAfkAfter =
@@ -125,7 +121,6 @@ function RemoteAvatarRig({
   const previousAnimation = useRef(""),
     previousActivityAt = useRef(-1),
     previousGesture = useRef<string | null>(null),
-    previousStance = useRef<Stance>("standing"),
     wasRiding = useRef(false),
     initialized = useRef(false);
   const badge = useRef<HTMLSpanElement>(null);
@@ -257,22 +252,6 @@ function RemoteAvatarRig({
           : waving
             ? "Idle_Neutral"
             : player.animation;
-    const crouchActive =
-      stance === "crouching" &&
-      !nowSwimming &&
-      !riding &&
-      player.activity === "none" &&
-      !stunned &&
-      !punching;
-    const crouchAction = rig.actions.get("Crouch_Pose");
-    if (crouchAction) {
-      if (crouchActive && previousStance.current !== "crouching")
-        crouchAction.reset().setLoop(THREE.LoopRepeat, Infinity).play();
-      crouchAction.setEffectiveWeight(crouchActive ? 1 : 0);
-      if (!crouchActive && previousStance.current === "crouching")
-        crouchAction.fadeOut(0.12);
-    }
-    previousStance.current = crouchActive ? "crouching" : stance;
     const next = rig.actions.has(chosen) ? chosen : "Idle_Neutral";
     if (
       next !== previousAnimation.current ||

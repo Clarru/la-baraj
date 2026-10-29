@@ -211,7 +211,6 @@ export function Player({
   const proneFacing = useMemo(() => new THREE.Vector3(), []);
   const proneOrientation = useMemo(() => new THREE.Quaternion(), []);
   const lastMovingAlignment = useRef<number | null>(null);
-  const crouchOverlayActive = useRef(false);
   const { scene, animations } = useGLTF(assetUrl("Lakeside_Man"));
   const object = useMemo(() => cloneCharacter(scene), [scene]);
   const supplemental = useLoader(
@@ -996,22 +995,6 @@ export function Player({
       ),
       clipConfig = activity ?? jumpClip;
     const stanceAnimation = stanceBaseAnimation(stanceRef.current, speed > 0.3);
-    const crouchActive =
-      stanceRef.current === "crouching" &&
-      !holding &&
-      !nowSwimming &&
-      !mounted &&
-      !stunned &&
-      !punching;
-    const crouchAction = actions.Crouch_Pose;
-    if (crouchAction) {
-      if (crouchActive && !crouchOverlayActive.current)
-        crouchAction.reset().setLoop(THREE.LoopRepeat, Infinity).play();
-      crouchAction.setEffectiveWeight(crouchActive ? 1 : 0);
-      if (!crouchActive && crouchOverlayActive.current)
-        crouchAction.fadeOut(0.12);
-    }
-    crouchOverlayActive.current = crouchActive;
     const next =
       (stunned ? "Punch_Hit" : punching ? "Punch_Jab" : undefined) ??
       activity?.name ??
