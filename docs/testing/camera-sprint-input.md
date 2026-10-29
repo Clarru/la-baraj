@@ -1,0 +1,9 @@
+# Camera and sprint input
+
+The gameplay camera uses `three-stdlib` OrbitControls with panning disabled. Its default Shift + left-drag switches from rotation to panning and then returns without moving the camera. Because Shift is also the sprint key, this looked like a limit on simultaneous keys. [OrbitControls documents the modifier behavior](https://threejs.org/docs/pages/OrbitControls.html).
+
+A capture-phase pointer handler selects the library's matching mouse action before OrbitControls handles the event. With panning disabled, left and right drag rotate with or without modifiers; panning-enabled survey modes keep the library defaults. The binding is removed and the defaults restored on cleanup. It does not block pointer events or change keyboard input.
+
+`camera-mouse.test.ts` runs the real installed OrbitControls against a minimal event target: it reproduces the original Shift-drag failure, verifies both buttons with and without Shift, verifies Shift changes mid-drag, retains survey panning and checks cleanup. In an isolated browser build, synthetic Shift+W+A+D produced all four keyboard events and a Run animation at approximately 6.5 units/second; the browser delivered a Shift-modified pointerdown to the installed handler. The browser automation interface did not provide a held-modifier drag, so that exact simultaneous physical gesture is verified by the real-controls test rather than claimed as a physical keyboard test.
+
+A and D are opposite directions and cancel when held together. Some keyboards also fail to report certain simultaneous combinations; [Microsoft's keyboard ghosting demonstration](https://www.microsoft.com/applied-sciences/projects/anti-ghosting-demo) can help distinguish a device limitation. Synthetic browser input does not test a person's physical keyboard or trackpad.
