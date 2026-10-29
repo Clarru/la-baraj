@@ -16,7 +16,9 @@ npm run server:check
 npm run build
 ```
 
-The frontend can be started with `npm run dev`. Use your own development environment for multiplayer work; do not send test traffic or mutations to the production world. The browser configuration in `.env.example` contains a placeholder, not a secret. Never put credentials in a `VITE_` variable: frontend variables are public.
+The frontend can be started with `npm run dev`. With no `VITE_ROOM_SERVER_URL` configured, the game opens in offline mode; it does not connect to the shared multiplayer world. The address in `.env.example` is a placeholder and is not a working server.
+
+For multiplayer changes, use a separate Worker and separate storage that you control, and configure the exact local browser origin in that Worker’s `ALLOWED_ORIGINS`. Point `VITE_ROOM_SERVER_URL` at your test Worker using a local `.env` file. Do not send test traffic or mutations to the production world. Values prefixed with `VITE_` are included in the frontend and are public: never put passwords, tokens, or other secrets in them.
 
 The local single-port and worktree coordination rules in `AGENTS.md` apply to the shared project workspace; outside contributors can use their own local setup.
 
