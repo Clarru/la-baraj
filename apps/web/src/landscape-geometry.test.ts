@@ -134,7 +134,7 @@ describe("bounded background scenery", () => {
     const forest = makeBackgroundForest(),
       items = Object.values(forest).flat();
     expect(Object.keys(forest)).toEqual([
-      "CommonTree_1",
+      "Cincis_Oak_1",
       "CommonTree_3",
       "Pine_2",
       "Pine_4",

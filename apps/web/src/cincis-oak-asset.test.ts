@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { NodeIO } from "@gltf-transform/core";
 import { fileURLToPath } from "node:url";
+import { readFile } from "node:fs/promises";
+import manifest from "../public/assets/impostors/manifest.json";
 import * as THREE from "three";
 import sharp from "sharp";
 
@@ -27,6 +29,15 @@ describe("experimental Cinciș oak export", () => {
     }
     // Reversing the authored triangle winding made the trunk disappear from outside.
     expect(outward / (indices.getCount() / 3)).toBeGreaterThan(0.95);
+  });
+  it("ships the reviewed model and its matched grounded impostor", async () => {
+    const shippedModel = fileURLToPath(new URL("../public/assets/optimized/Cincis_Oak_1.glb", import.meta.url));
+    const shippedImpostor = fileURLToPath(new URL("../public/assets/impostors/Cincis_Oak_1.png", import.meta.url));
+    const reviewedImpostor = fileURLToPath(new URL("../../../docs/art-direction/trees/oak-v2-impostor-experimental.png", import.meta.url));
+    expect(await readFile(shippedModel)).toEqual(await readFile(file));
+    expect(await readFile(shippedImpostor)).toEqual(await readFile(reviewedImpostor));
+    expect(manifest.Cincis_Oak_1.width).toBeCloseTo(7.6294384);
+    expect(manifest.Cincis_Oak_1.height).toBeCloseTo(11.4441576);
   });
   it("bakes a transparent impostor with the tree grounded at the lower edge", async () => {
     const file = fileURLToPath(new URL("../../../docs/art-direction/trees/oak-v2-impostor-experimental.png", import.meta.url));

@@ -1,6 +1,6 @@
 # Cinciș trees: prototype and asset audit
 
-Status: **v2 rejected as a visual replacement and removed from runtime in the draft branch**. The concept and image-generated cutout informed an editable procedural GLB, but visual comparison found it does not yet improve the game enough. The shared preview and production are unchanged. Studio renders are distinct from gameplay captures; generated images are references/source art, not 3D models.
+Status: **oak v2 restored to the draft branch for further testing after the user said they like the oak**. The user wants other species to share its finish while retaining their distinct identities. The oak still looks dark in game and the distant transition is not approved; the draft is not ready to merge. The shared preview and production are unchanged. Studio renders are distinct from gameplay captures; generated images are references/source art, not 3D models.
 
 ## Regional direction
 
@@ -122,3 +122,10 @@ The 266,868-byte export contains 2,880 foliage triangles and 1,787 wood triangle
 
 
 A follow-up isolated the previous export warning: the decimation pass created duplicate faces; validation removed them but left small holes. A coarser 0.10 voxel remesh without decimation avoids that warning and re-imports with no non-manifold trunk edges after welding split export vertices. `cincis-beech-remesh-coarse-study.glb` and `beech-remesh-coarse-front.png` / `beech-remesh-coarse-side.png` show that variant with cylindrical bark projection. Its 299,940-byte GLB has 2,880 foliage triangles and 4,440 wood triangles, including 12 zero-area wood triangles; Blender re-import drops some degenerate faces. Removing the degenerates with a separate cleanup produced four boundary edges in a re-import test, so neither variant is yet a validated runtime mesh. This higher geometry count, the blunted branch ends and bark texture need further work before acceptance. The remaining foliage texture sampler warning also needs review.
+
+
+## Oak restored for draft game evaluation
+
+Following the user’s later positive feedback on the oak, the `Cincis_Oak_1` near model and its model-derived crossed-card sprite have been restored to the feature branch, with the original placement seed and dedicated trunk collision dimensions. The previous withdrawal was a historical decision; the current draft now changes the branch’s forest. This is not a release or shared-preview change.
+
+After merging the latest `origin/main`, Node 24 `npm test` passed 190 tests and the regular `npm run build` passed. A separate `VITE_PERFORMANCE_LAB=1` build was loaded by request interception at the canonical origin without starting a server or using multiplayer. `oak-current-branch-game.png` and `oak-current-branch-metrics.json` are one warmed 600-frame north-view capture. The oak is very dark compared with the other trees in this scene; it needs lighting/material work and review in additional contexts. The 60 fps capped sample is not a performance comparison. The actual near-to-far transition, sprite silhouette at different angles, collision and real multiplayer play remain to be validated before the draft can be merged.
