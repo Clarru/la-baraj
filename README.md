@@ -8,6 +8,12 @@ The production interface leaves the world visible: the hand-lettered La Baraj ba
 
 Parallel contributors follow [the GitHub workflow](docs/GITHUB_WORKFLOW.md). Backend details and the single-world migration are in [LIVE_MULTIPLAYER.md](docs/LIVE_MULTIPLAYER.md). The banner master, exact built-in image-generation prompt and alpha/optimization notes are in [docs/brand](docs/brand/README.md).
 
+## Contributing and licenses
+
+Contributions are welcome through pull requests; see [CONTRIBUTING.md](CONTRIBUTING.md). The project owner reviews and merges changes. Report security issues privately as described in [SECURITY.md](SECURITY.md).
+
+Original project code is provided under the [MIT License](LICENSE). Third-party code, fonts, models, animations, geographic data, and other assets retain their own licenses and notices; see [asset credits](apps/web/public/assets/CREDITS.md), [third-party notices](third_party/), and [geographic data terms](assets/geography/DATA_LICENSE.md). The MIT License does not override those terms. Rights and provenance must be checked for each asset before redistribution.
+
 ## Project baseline
 
 The product and architecture below are the v1 implementation baseline, dated 28 October 2026. Gameplay numbers are initial tuning values. Changes to scope or architecture should be recorded in these documents rather than silently introduced during implementation.
