@@ -1141,6 +1141,7 @@ export function Player({
           (facing.x * velocity.x + facing.z * velocity.z) / speed;
       const near =
         !indoors &&
+        stanceRef.current === "standing" &&
         mode === "walk" &&
         !paused &&
         !mounted &&
