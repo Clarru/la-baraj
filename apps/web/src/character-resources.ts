@@ -45,6 +45,10 @@ export function cloneCharacter(source: THREE.Object3D) {
       node.receiveShadow = true;
     }
     if (!(node instanceof THREE.SkinnedMesh)) return;
+    // Geometry bounds describe the standing bind pose. Hair, eyes and clothing
+    // can leave those bounds during prone/swim poses; whole avatars already
+    // have distance culling, so retain every animated part of a visible rig.
+    node.frustumCulled = false;
     const skeleton = node.skeleton;
     const shared = skeletons.find(
       (s) =>
