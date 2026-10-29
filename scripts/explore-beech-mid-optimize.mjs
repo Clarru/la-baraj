@@ -1,0 +1,11 @@
+import {NodeIO} from '@gltf-transform/core';
+import {simplifyPrimitive,prune} from '@gltf-transform/functions';
+import {MeshoptSimplifier} from 'meshoptimizer';
+await MeshoptSimplifier.ready;
+const io=new NodeIO(),doc=await io.read(process.argv[2]);
+const wood=doc.getRoot().listMeshes().flatMap(m=>m.listPrimitives()).find(p=>p.getMaterial()?.getName()==='Beech bark');
+if(!wood)throw new Error('Beech wood primitive not found');
+console.log('before',wood.getIndices().getCount()/3);
+simplifyPrimitive(wood,{simplifier:MeshoptSimplifier,ratio:.3,error:.01,lockBorder:true});
+console.log('after',wood.getIndices().getCount()/3);
+await doc.transform(prune());await io.write(process.argv[3],doc);
