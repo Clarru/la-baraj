@@ -112,3 +112,10 @@ The beech was subsequently imported into the interactive Blender comparison scen
 
 
 A follow-up changed only the foliage source and card density: `beech-leaf-spray-generated.png` has five distinct oval leaves without the large twigs baked into the earlier spray. `scripts/explore-beech-spray.mjs` produces `cincis-beech-spray-study.glb`; `beech-spray-front.png` and `beech-spray-side.png` show the actual export. In these studio views the crown reads more clearly as broad leaves and has fewer long twig-shaped streaks, while retaining sharp card edges, repeated leaf groupings, and an unfinished trunk and branch joins. This is a promising isolated change, not a verified game-ready model. The same geometry with blended radial foliage normals was also tested but did not resolve the silhouette, so it was not adopted. The new 238,744-byte export has 360 foliage cards versus 216 in the previous version; test masked-pixel cost and real GPU behavior before drawing any performance conclusion.
+
+
+## Branch-junction remesh study
+
+The separated-leaf beech had visible overlapping tube intersections. A voxel-remesh test of the original tubes initially lost most of the trunk: their ends and seams were open. `scripts/explore-beech-watertight.mjs` generates closed ring-and-cap tubes, and `scripts/explore-beech-remesh.py` uses Blender 4.1.1 to voxel-remesh, smooth, decimate and unwrap the wood. Run the generator with Node 24 and an explicit intermediate output path, then pass that path and an output GLB after `--` to Blender with the Python script. The saved `cincis-beech-remesh-study.glb` and its front and side studio renders show a continuous trunk and softer branch joins; bark mapping is uneven and branch anatomy is still simplistic.
+
+The 266,868-byte export contains 2,880 foliage triangles and 1,787 wood triangles, versus 1,240 wood triangles in the earlier beech. This is not a runtime performance measurement. Blender warned that the remeshed wood mesh may export incorrectly; it appeared in the studio renderer but needs validity, normals, UV seams, texture and actual-game checks before use. This study does not change the runtime.
