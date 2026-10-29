@@ -1,5 +1,6 @@
 /** A stationary middle click on the world canvas punches. Camera drags and wheel remain unchanged. */
 export function bindPunchPointer(element: HTMLElement, punch: () => void) {
+  const view = element.ownerDocument?.defaultView;
   let pressed: { id: number; x: number; y: number } | null = null;
   const cancel = () => {
     pressed = null;
@@ -50,15 +51,19 @@ export function bindPunchPointer(element: HTMLElement, punch: () => void) {
   element.addEventListener("pointermove", move, true);
   element.addEventListener("pointerup", up, true);
   element.addEventListener("pointercancel", cancel);
+  element.addEventListener("lostpointercapture", cancel);
   element.addEventListener("pointerleave", cancel);
   element.addEventListener("auxclick", auxiliary);
+  view?.addEventListener("blur", cancel);
   return () => {
     cancel();
     element.removeEventListener("pointerdown", down, true);
     element.removeEventListener("pointermove", move, true);
     element.removeEventListener("pointerup", up, true);
     element.removeEventListener("pointercancel", cancel);
+    element.removeEventListener("lostpointercapture", cancel);
     element.removeEventListener("pointerleave", cancel);
     element.removeEventListener("auxclick", auxiliary);
+    view?.removeEventListener("blur", cancel);
   };
 }

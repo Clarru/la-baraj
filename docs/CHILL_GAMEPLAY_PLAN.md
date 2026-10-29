@@ -9,16 +9,16 @@ Baseline is main `67c59ab`: one shared world, persistent cabins, benches, tempor
 ## First delivery: posture and comfortable controls
 
 - C toggles crouch; Z toggles prone. Pressing the current stance key returns to standing when there is enough room. Switching between lowered stances should be predictable.
-- Make real poses on the approved rig, with transitions and slower movement appropriate to each posture. Keep feet/body contact coherent on slopes and avoid stretching or flattening the character mesh.
-- Fit collision to posture and refuse an expansion that intersects the world. Verify standing under furniture/roofs, not just open-ground visuals. Prevent vertical pops and invalid body transforms.
+- Make real poses on the approved rig, with transitions and slower movement appropriate to each posture (initial targets: crouch 1.5m/s, prone crawl 0.65m/s; no sprint/jump/punch while lowered). Keep feet/body contact coherent on slopes and avoid stretching or flattening the character mesh.
+- Fit collision to posture and refuse an expansion that intersects the world, using the target collider's overlap/sweep rather than a floor ray. Verify standing under furniture/roofs, not just open-ground visuals. Prevent vertical pops and invalid body transforms. Repeated toggles must not accumulate vertical drift. A blocked stand attempt stays lowered; moving into clear space permits standing.
 - Jump, water, scooter, furniture, cabin doors, stun and reset must have explicit compatible transitions. Text entry, menus and card games own their keys. Window blur must release held input.
-- Other players see the same posture through the existing pose transport; avoid a new persistence subsystem or extra per-frame React state.
+- Other players see the same posture through an additive optional stance enum on the existing pose transport. Missing stance defaults to standing; invalid enums are rejected. The server also rejects lowered players' punch requests. Avoid a new persistence subsystem or extra per-frame React state.
 - Punch uses P or middle click on the world canvas, only while standing. Preserve left/right camera drags and wheel zoom. Keep the existing cooldown and server hit validation.
-- Update on-demand help. Do not add permanent key legends or a large posture HUD.
+- Update on-demand help. Do not add permanent key legends or a large posture HUD. Blur releases all held input and clears incomplete gestures, but never forces a collider expansion into an obstruction.
 
 ## Next delivery: small social expression
 
-The independent product review selected one worthwhile addition after the first delivery works: a wave using the existing Wave clip. Its purpose is visible intent between friends without a chat message, another activity or persistent state. Confirm control conflicts, cancellation, remote playback and discoverability before implementation. Prefer an accessible action in the existing menu plus a single documented shortcut over an emote wheel.
+The independent product review selected one worthwhile addition after the first delivery works: a greeting wave. The shipped clip named Wave is actually Idle_Talking_Loop and failed the review's raised-hand test, so a compatible raised-arm/wrist gesture is being authored separately. Its purpose is visible intent between friends without a chat message, another activity or persistent state. Confirm control conflicts, cancellation, remote playback and discoverability before implementation. Prefer an accessible action in the existing menu plus G over an emote wheel.
 
 ## Ownership and sequence
 
@@ -35,6 +35,8 @@ The release chat owns `codex/chill-movement`: plan, punch pointer adapter, help,
 ## Completion evidence
 
 Record actual code/commit, automated checks, local screenshots, two-client behavior, clearance tests, mode-transition regressions, and a bounded performance comparison. Green unit tests alone do not establish believable animation or collision. Do not call this whole objective complete while any explicit movement/control requirement or selected social delivery lacks evidence.
+
+Capture front, side and three-quarter views locally and remotely. Crouch must show bent knees, lowered pelvis/head and planted feet. Prone must show a connected horizontal torso, supported forearms and a face above the ground. Inspect the complete transition for detached clothing/hands/feet, vertical snaps and stale pose offsets. Record actual collider clearance under a ceiling and after moving clear. Test pose priority across stun, activities, water, scooter, doors and reset; safe collision takes precedence over automatic visual cleanup.
 
 ## Deliberate boundaries
 

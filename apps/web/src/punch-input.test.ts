@@ -39,7 +39,11 @@ describe("punch pointer control", () => {
     expect(punch).toHaveBeenCalledOnce();
     listeners.get("auxclick")!(event);
     expect(event.preventDefault).toHaveBeenCalledTimes(3);
-    for (const cancel of ["pointercancel", "pointerleave"]) {
+    for (const cancel of [
+      "pointercancel",
+      "pointerleave",
+      "lostpointercapture",
+    ]) {
       listeners.get("pointerdown")!(event);
       listeners.get(cancel)!(event);
       listeners.get("pointerup")!(event);
