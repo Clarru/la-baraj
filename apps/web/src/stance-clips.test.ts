@@ -117,6 +117,7 @@ describe("land stance clips", () => {
     scene.updateMatrixWorld(true);
     const lift = 0.46;
     const pelvis = worldPosition(scene, "pelvis");
+    const chest = worldPosition(scene, "spine_03");
     const head = worldPosition(scene, "Head");
     const hands = [
       worldPosition(scene, "hand_l"),
@@ -128,7 +129,9 @@ describe("land stance clips", () => {
     ];
     expect(head.z - pelvis.z).toBeGreaterThan(0.35);
     expect(Math.abs(head.y - pelvis.y)).toBeLessThan(0.18);
-    expect(head.y + lift).toBeGreaterThan(0.35);
+    expect(pelvis.y + lift).toBeLessThan(0.25);
+    expect(chest.y + lift).toBeLessThan(0.28);
+    expect(head.y + lift).toBeGreaterThan(0.25);
     expect(Math.min(...hands.map((hand) => hand.y + lift))).toBeGreaterThan(
       0.04,
     );
@@ -157,7 +160,7 @@ describe("land stance clips", () => {
       const crawlHead = worldPosition(scene, "Head");
       const crawlPelvis = worldPosition(scene, "pelvis");
       expect(crawlHead.z - crawlPelvis.z).toBeGreaterThan(0.28);
-      expect(crawlHead.y + lift).toBeGreaterThan(0.28);
+      expect(crawlHead.y + lift).toBeGreaterThan(0.2);
       assertFiniteBones(scene);
     }
 

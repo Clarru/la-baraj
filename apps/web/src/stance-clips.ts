@@ -11,12 +11,58 @@ export const PRONE_IDLE_DURATION = 1.2;
 // alternating kick. The constants are local bone quaternions, so every
 // character instance still gets its own mixer/skeleton.
 const proneLegPose: Record<string, [number, number, number, number]> = {
-  thigh_l: [0.908502031, 0.116694897, 0.056997576, 0.397187157],
-  calf_l: [-0.326229363, 0.217599, -0.139546695, -0.909258928],
-  foot_l: [-0.091333363, -0.113104221, -0.265659148, 0.953042952],
-  thigh_r: [0.90759212, -0.12354863, -0.05623936, 0.397302673],
-  calf_r: [-0.32883052, -0.220089893, 0.141294277, -0.907450745],
-  foot_r: [-0.097348521, 0.111845408, 0.264733157, 0.952853727],
+  thigh_l: [0.980815207, 0.084038041, -0.116767628, -0.131546414],
+  calf_l: [-0.269278073, -0.397650515, 0.387575323, 0.786860061],
+  foot_l: [0.025990361, -0.341747915, 0.358598163, -0.868297312],
+  thigh_r: [0.97979773, -0.088387491, 0.120773185, -0.132657067],
+  calf_r: [-0.267756075, 0.401556297, -0.390945489, 0.783722431],
+  foot_r: [0.030994802, 0.346852421, -0.356582849, -0.86693794],
+};
+
+const proneArmTimes = [0, 0.333333, 0.666667, 1, 1.333333];
+const proneArmFrames: Record<string, [number, number, number, number][]> = {
+  upperarm_l: [
+    [0.018402, -0.802667, -0.078375, -0.590969],
+    [-0.414357, 0.364375, 0.216699, 0.805345],
+    [-0.248881, 0.526086, 0.054271, 0.811386],
+    [-0.171758, -0.732156, -0.241758, -0.613188],
+    [0.018402, -0.802667, -0.078375, -0.590969],
+  ],
+  lowerarm_l: [
+    [-0.979294, -0.00608, -0.169515, -0.1105],
+    [0.866116, -0.06434, 0.494072, 0.039955],
+    [0.999273, 0.032325, -0.000833, 0.020187],
+    [0.98351, 0.003068, -0.025663, 0.178999],
+    [-0.979294, -0.00608, -0.169515, -0.1105],
+  ],
+  hand_l: [
+    [-0.160988, 0.390382, 0.14068, -0.895485],
+    [-0.088614, -0.268659, 0.061935, 0.957149],
+    [0.114793, 0.221504, -0.062443, 0.966364],
+    [-0.01395, -0.172995, 0.116893, -0.977862],
+    [-0.160988, 0.390382, 0.14068, -0.895485],
+  ],
+  upperarm_r: [
+    [-0.020532, -0.812679, -0.078937, 0.576975],
+    [-0.267802, -0.396684, -0.21994, 0.850029],
+    [-0.24846, -0.524381, -0.057103, 0.812423],
+    [0.375228, -0.640736, -0.065386, 0.666623],
+    [-0.020532, -0.812679, -0.078937, 0.576975],
+  ],
+  lowerarm_r: [
+    [0.984907, 0.001954, -0.132881, 0.110889],
+    [-0.013487, 0.230594, -0.958271, -0.168405],
+    [0.999217, -0.032696, -0.010117, 0.019844],
+    [0.841974, 0.08325, -0.37765, 0.376204],
+    [0.984907, 0.001954, -0.132881, 0.110889],
+  ],
+  hand_r: [
+    [-0.060109, -0.478697, -0.125507, -0.866882],
+    [0.031705, 0.231797, -0.134327, 0.962923],
+    [0.082117, -0.233816, -0.001369, 0.968806],
+    [0.014457, -0.174292, 0.118076, 0.977482],
+    [-0.060109, -0.478697, -0.125507, -0.866882],
+  ],
 };
 
 function axisQuaternion(axis: "x" | "y" | "z", angle: number) {
@@ -97,23 +143,39 @@ function correctProneSupportTracks(
   };
   return tracks.map((source) => {
     const bone = source.name.split(".")[0];
-    if (
-      (bone === "root" || (bone === "pelvis" && crawling)) &&
-      source.name.endsWith(".position")
-    ) {
+    if (bone === "pelvis" && source.name.endsWith(".position")) {
       const track = source.clone();
       const size = track.getValueSize();
       const values = Array.from(track.values);
       for (let index = 0; index < values.length; index += size) {
-        const phase =
-          crawling && duration > 0
-            ? THREE.MathUtils.clamp(track.times[index / size] / duration, 0, 1)
-            : 0;
         // Measured against skinned vertices with the parent stance's +0.46m
-        // lift: the authored swim root needs a small phase-aware contact trim.
-        values[index + 2] += crawling ? 0.016 - 0.066 * phase : 0.016;
+        // lift: the authored swim pelvis needs a small contact trim.
+        values[index + 2] += -0.24 + (crawling ? 0.026 : 0);
       }
       track.values = new Float32Array(values);
+      return track;
+    }
+    const armFrames = proneArmFrames[bone];
+    if (armFrames && source.name.endsWith(".quaternion")) {
+      const track = source.clone();
+      const frames = armFrames.map((frame) => {
+        const q = new THREE.Quaternion().fromArray(frame);
+        // Preserve the finger direction while turning the palm normal toward
+        // world down for a supported belly-down contact.
+        if (bone.startsWith("hand_"))
+          q.multiply(axisQuaternion("y", Math.PI)).normalize();
+        return q.toArray();
+      });
+      if (crawling) {
+        track.times = new Float32Array(proneArmTimes);
+        track.values = new Float32Array(frames.flat());
+      } else {
+        const size = track.getValueSize();
+        const values = Array.from(track.values);
+        for (let index = 0; index < values.length; index += size)
+          values.splice(index, size, ...frames[0]);
+        track.values = new Float32Array(values);
+      }
       return track;
     }
     const legPose = proneLegPose[bone];
