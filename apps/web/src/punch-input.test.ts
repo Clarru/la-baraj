@@ -15,15 +15,20 @@ describe("punch pointer control", () => {
     const punch = vi.fn();
     const unbind = bindPunchPointer(target as unknown as HTMLElement, punch);
     const event = {
+      pointerId: 1,
+      clientX: 10,
+      clientY: 10,
       button: 1,
       pointerType: "mouse",
       preventDefault: vi.fn(),
       stopImmediatePropagation: vi.fn(),
     };
     listeners.get("pointerdown")!(event);
+    expect(punch).not.toHaveBeenCalled();
+    listeners.get("pointerup")!(event);
     expect(punch).toHaveBeenCalledOnce();
-    expect(event.preventDefault).toHaveBeenCalledOnce();
-    expect(event.stopImmediatePropagation).toHaveBeenCalledOnce();
+    expect(event.preventDefault).toHaveBeenCalledTimes(2);
+    expect(event.stopImmediatePropagation).toHaveBeenCalledTimes(2);
     for (const change of [
       { button: 0 },
       { button: 2 },
@@ -33,7 +38,16 @@ describe("punch pointer control", () => {
       listeners.get("pointerdown")!({ ...event, ...change });
     expect(punch).toHaveBeenCalledOnce();
     listeners.get("auxclick")!(event);
-    expect(event.preventDefault).toHaveBeenCalledTimes(2);
+    expect(event.preventDefault).toHaveBeenCalledTimes(3);
+    for (const cancel of ["pointercancel", "pointerleave"]) {
+      listeners.get("pointerdown")!(event);
+      listeners.get(cancel)!(event);
+      listeners.get("pointerup")!(event);
+    }
+    listeners.get("pointerdown")!(event);
+    listeners.get("pointermove")!({ ...event, clientX: 20 });
+    listeners.get("pointerup")!(event);
+    expect(punch).toHaveBeenCalledOnce();
     unbind();
     expect(listeners.size).toBe(0);
   });

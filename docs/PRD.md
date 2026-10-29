@@ -63,7 +63,8 @@ One identity has one active avatar. A second tab offers a session takeover inste
 | Jump | Space | Small traversable obstacles |
 | Sprint | Shift | Disabled while carrying the trophy |
 | Interact | E | Contextual pick up, place, fish, inspect or enter |
-| Punch | Left mouse button | Only when the game has input focus |
+| Crouch / prone | C / Z | Toggle lowered posture; return to standing when clear |
+| Punch | P / stationary middle click | Standing on the ground with game input focus |
 | Drop | Q | Place carried contested object at a valid nearby point |
 | Chat | Enter | Open/send chat; typing disables game controls |
 | Pause | Esc | Settings, help, recovery code, leave |

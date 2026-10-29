@@ -18,7 +18,7 @@ Baseline is main `67c59ab`: one shared world, persistent cabins, benches, tempor
 
 ## Next delivery: small social expression
 
-Ask independent reviewers to choose one worthwhile addition after the first delivery works. A wave using the existing Wave clip is the leading candidate: visible intent between friends without a chat message, another activity or persistent state. Confirm control conflicts, cancellation, remote playback and discoverability before implementation. Prefer an accessible action in the existing menu plus a single documented shortcut over an emote wheel.
+The independent product review selected one worthwhile addition after the first delivery works: a wave using the existing Wave clip. Its purpose is visible intent between friends without a chat message, another activity or persistent state. Confirm control conflicts, cancellation, remote playback and discoverability before implementation. Prefer an accessible action in the existing menu plus a single documented shortcut over an emote wheel.
 
 ## Ownership and sequence
 
@@ -39,3 +39,7 @@ Record actual code/commit, automated checks, local screenshots, two-client behav
 ## Deliberate boundaries
 
 No account system, progression economy, new currency, combat progression, new rooms, mobile work, visual asset replacement, paid hosting, or world reset. Do not turn lowering posture into a competitive stealth mechanic. Keep time available for visual correction and testing rather than expanding the feature list.
+
+## Product review outcomes
+
+The product reviewer supports C/Z toggles and P with a middle-click alternative, requests a 6px movement threshold to cancel accidental mouse punches, and recommends G for a one-shot greeting using the existing rig. Keep stance collision conservative and prove it before enabling traversal benefits. They also found stale Q/left-mouse punch documentation, now updated in this branch. A roster is deferred until people actually need it. Technical review and runtime verification remain pending.
