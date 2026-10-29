@@ -145,7 +145,12 @@ export function Player({
     ground: 0,
     indoors: false,
   });
-  const dryScooter = useRef<{ x: number; z: number; yaw: number } | null>(null);
+  const dryScooter = useRef<{
+    x: number;
+    z: number;
+    bodyY: number;
+    yaw: number;
+  } | null>(null);
   const swimForward = useMemo(() => new THREE.Vector3(), []);
   const swimRight = useMemo(() => new THREE.Vector3(), []);
   const swimDirection = useMemo(() => new THREE.Vector3(), []);
@@ -542,15 +547,19 @@ export function Player({
       sampled = true;
     }
     // A scooter stays on the last dry ground when its rider enters the lake.
-    if (mounted && sampled && !sample.wet)
-      dryScooter.current = { x: p.x, z: p.z, yaw: rideYaw.current };
+    if (mounted && sampled && !sample.wet && c.isOnGround)
+      dryScooter.current = { x: p.x, z: p.z, bodyY: p.y, yaw: rideYaw.current };
     if (mounted && sample.wet && p.y < LAKE_LEVEL + 1.4) {
       const dry = dryScooter.current ?? {
         x: arrival.scooter[0],
         z: arrival.scooter[2],
+        bodyY: arrival.scooter[1] + 2,
         yaw: arrival.yaw,
       };
-      parkVehicle([dry.x, floorAt(dry.x, dry.z), dry.z], dry.yaw);
+      const support =
+        scooterSupportHeight(world, dry.x, dry.z, dry.bodyY, c.body) ??
+        floorAt(dry.x, dry.z);
+      parkVehicle([dry.x, support, dry.z], dry.yaw);
       const velocity = c.body.linvel();
       const horizontal = Math.hypot(velocity.x, velocity.z);
       const scale = horizontal > 3.5 ? 3.5 / horizontal : 1;
