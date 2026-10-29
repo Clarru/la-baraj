@@ -25,6 +25,7 @@ window.addEventListener("pagehide", stop);
 const arrival = homeSpawn(0),
   [x, y, z] = arrival.position;
 const output = document.querySelector("#motion")!;
+const samples: Record<string, unknown>[] = [];
 function Probe() {
   const { world } = useRapier();
   useAfterPhysicsStep(() => {
@@ -98,6 +99,9 @@ function App() {
               paused={false}
               onMove={() => {}}
               onMotion={(sample) => {
+                samples.push(sample);
+                if (samples.length > 30) samples.shift();
+                output.setAttribute("data-samples", JSON.stringify(samples));
                 room.publishMotion(sample);
                 output.textContent = JSON.stringify(sample, null, 2);
                 output.setAttribute("data-motion", JSON.stringify(sample));

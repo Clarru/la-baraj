@@ -16,6 +16,8 @@ The motion output exposes actual body/visual-root position, contact, grounded st
 - Crouch controller height: approximately 0.58m after the stance-specific probe correction. Visual root stayed at ground +0.015m.
 - Walked the crouched player beneath the 1.2m ceiling using the real controller. Pressing C there retained crouch and the 0.18/0.30 capsule instead of expanding through the ceiling.
 - Prone controller height: approximately 0.43m after the correction.
+- Measured crouch speed while holding Shift+W: 1.4999997 world units/s; sprint did not bypass the lowered speed cap. Space remained grounded at about 0.5804m controller height.
+- Q retained Idle; P and a stationary middle click each triggered the existing Punch_Jab through the real in-memory room. Both punch controls were then suppressed while crouching.
 - Found that Rapier's world-space collider `setRotation` was overwritten on the next dynamic-body step. Changed the attached collider using `setRotationWrtParent`; the horizontal orientation then persisted after simulation. A real-world multi-step regression covers this behavior.
 - G published `Social_Wave` while standing. Reset during the gesture returned to standing `Idle_Neutral`; subsequent motion did not retain a stale wave state. Movement cancelled the wave and returned through Walk to Idle.
 - Separate dressed-rig front/side captures verified the authored crouch silhouette and appearance. Both crouch clips contain no root drift.
