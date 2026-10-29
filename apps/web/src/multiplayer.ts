@@ -1,5 +1,6 @@
 import PartySocket from "partysocket";
 import { InputActivity } from "./input-activity";
+import { syncWorldTime } from "./day-night";
 import {
   CANONICAL_WORLD_ID,
   HOUSING_EPOCH,
@@ -364,6 +365,8 @@ export class MultiplayerRoom {
         break;
       }
       case "snapshot": {
+        if (typeof message.serverTime === "number")
+          syncWorldTime(message.serverTime);
         if (message.planes) this.acceptPlanes(message.planes);
         if (message.village && message.village.epoch !== HOUSING_EPOCH) {
           this.publish({

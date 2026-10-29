@@ -614,3 +614,31 @@ button:disabled {
     padding-block: 22px;
   }
 }
+.game-clock {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  border: 10px solid transparent;
+  border-image: var(--sign-art) 44 120 fill / 10px 22px / 0 stretch;
+  padding: 2px 9px;
+  pointer-events: auto;
+}
+.game-clock-glyphs {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+.game-clock-digit {
+  display: block;
+  width: 15px;
+  height: 20px;
+  background-image: url("/assets/ui/clock-numerals.webp");
+  background-repeat: no-repeat;
+  background-size: 1000% 100%;
+}
+.game-clock-colon {
+  color: #f1dfb5;
+  font: 700 19px/1 var(--font-body);
+  padding: 0 1px 2px;
+}

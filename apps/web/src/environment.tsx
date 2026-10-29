@@ -1,3 +1,4 @@
+import { currentLighting } from "./day-night";
 import { memo, useEffect, useMemo } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { RigidBody } from "@react-three/rapier";
@@ -193,15 +194,19 @@ function waterNormals() {
   texture.needsUpdate = true;
   return texture;
 }
-export const sunDirection = (evening: boolean) =>
-  new THREE.Vector3(-0.55, evening ? 0.19 : 0.65, -0.75).normalize();
-export function LakeWater({ evening }: { evening: boolean }) {
+export function LakeWater({
+  evening,
+  forceDay,
+}: {
+  evening: boolean;
+  forceDay: boolean;
+}) {
   const water = useMemo(() => {
     const w = new Water(waterGeometry(), {
       textureWidth: 512,
       textureHeight: 512,
       waterNormals: waterNormals(),
-      sunDirection: sunDirection(false),
+      sunDirection: currentLighting(evening, forceDay).sunDirection.clone(),
       sunColor: "#fff1d7",
       waterColor: "#155c62",
       distortionScale: 0.65,
@@ -229,15 +234,16 @@ export function LakeWater({ evening }: { evening: boolean }) {
     };
     return w;
   }, []);
-  useEffect(() => {
-    water.material.uniforms.sunDirection.value.copy(sunDirection(evening));
-    water.material.uniforms.sunColor.value.set(evening ? "#ffd3ab" : "#fff1df");
-    water.material.uniforms.waterColor.value.set(
-      evening ? "#174951" : "#145b61",
-    );
-  }, [water, evening]);
+  let lastLightingUpdate = -Infinity;
   useFrame((_, dt) => {
     water.material.uniforms.time.value += dt * 0.45;
+    const now = performance.now();
+    if (now - lastLightingUpdate < 250) return;
+    lastLightingUpdate = now;
+    const light = currentLighting(evening, forceDay);
+    water.material.uniforms.sunDirection.value.copy(light.sunDirection);
+    water.material.uniforms.sunColor.value.copy(light.colors.sun);
+    water.material.uniforms.waterColor.value.copy(light.colors.water);
   });
   return <primitive object={water} dispose={null} />;
 }

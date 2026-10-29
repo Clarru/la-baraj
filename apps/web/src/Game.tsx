@@ -11,17 +11,12 @@ import {
   type ReactNode,
 } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { WorldBackdrop, worldFog } from "./WorldBackdrop";
+import { WorldBackdrop } from "./WorldBackdrop";
+import { WorldLighting } from "./WorldLighting";
 import { Physics } from "@react-three/rapier";
 import { GameIcon } from "./GameArt";
 import * as THREE from "three";
-import {
-  Terrain,
-  LakeWater,
-  Roads,
-  Vegetation,
-  sunDirection,
-} from "./environment";
+import { Terrain, LakeWater, Roads, Vegetation } from "./environment";
 import { Settlement } from "./settlement";
 import { WorldActivities, type ActivityPrompt } from "./activities";
 import { SceneLoading } from "./SceneLoading";
@@ -348,33 +343,13 @@ export default function Game({ initialName }: { initialName: string }) {
               toneMappingExposure: 0.92,
             }}
           >
-            <color attach="background" args={[worldFog(evening)]} />
-            <fog attach="fog" args={[worldFog(evening), 480, 3300]} />
-            <WorldBackdrop evening={evening} />
-            <hemisphereLight
-              args={["#eef1db", "#7c8458", evening ? 0.55 : 0.75]}
-            />
-            <ambientLight intensity={0.08} />
-            <directionalLight
-              position={sunDirection(evening).multiplyScalar(150).toArray()}
-              color={evening ? "#ffce98" : "#ffe2b3"}
-              intensity={evening ? 2.4 : 3.3}
-              castShadow
-              shadow-mapSize={[2048, 2048]}
-              shadow-camera-left={-110}
-              shadow-camera-right={110}
-              shadow-camera-top={90}
-              shadow-camera-bottom={-90}
-              shadow-camera-near={1}
-              shadow-camera-far={240}
-              shadow-bias={-0.0004}
-              shadow-normalBias={0.04}
-            />
+            <WorldLighting evening={evening} forceDay={performanceLab} />
+            <WorldBackdrop evening={evening} forceDay={performanceLab} />
             <Physics timeStep={1 / 60} gravity={[0, -12, 0]}>
               <group>
                 <Terrain />
                 <Roads />
-                <LakeWater evening={evening} />
+                <LakeWater evening={evening} forceDay={performanceLab} />
                 <Vegetation flat={flat} />
                 <Settlement
                   flat={flat}
