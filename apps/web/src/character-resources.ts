@@ -10,6 +10,9 @@ const clipCache = new WeakMap<
   THREE.AnimationClip[],
   { source: string; clips: THREE.AnimationClip[] }
 >();
+const characterCullCenter = new THREE.Vector3(0, 0.8, 0);
+const characterCullRadius = 2.5;
+const boundedGeometries = new WeakSet<THREE.BufferGeometry>();
 export function characterClips(
   animations: THREE.AnimationClip[],
   source: string,
@@ -40,6 +43,8 @@ export function characterClips(
  */
 export function cloneCharacter(source: THREE.Object3D) {
   const object = clone(source);
+  object.updateWorldMatrix(true, true);
+  const rootToWorld = object.matrixWorld.clone();
   const skeletons: THREE.Skeleton[] = [];
   object.traverse((node) => {
     if (node instanceof THREE.Mesh) {
@@ -47,10 +52,23 @@ export function cloneCharacter(source: THREE.Object3D) {
       node.receiveShadow = true;
     }
     if (!(node instanceof THREE.SkinnedMesh)) return;
-    // Geometry bounds describe the standing bind pose. Hair, eyes and clothing
-    // can leave those bounds during prone/swim poses; whole avatars already
-    // have distance culling, so retain every animated part of a visible rig.
-    node.frustumCulled = false;
+    // Geometry bounds describe the standing bind pose. Use one conservative
+    // root-space envelope for every animated part instead of disabling
+    // frustum culling for the entire skinned rig. The approved character has
+    // one unique identity-transformed geometry per skinned mesh; the matrix
+    // conversion keeps this correct if that bind layout changes later.
+    if (!boundedGeometries.has(node.geometry)) {
+      const rootToNode = node.matrixWorld
+        .clone()
+        .invert()
+        .multiply(rootToWorld);
+      node.geometry.boundingSphere = new THREE.Sphere(
+        characterCullCenter.clone().applyMatrix4(rootToNode),
+        characterCullRadius * rootToNode.getMaxScaleOnAxis(),
+      );
+      boundedGeometries.add(node.geometry);
+    }
+    node.frustumCulled = true;
     const skeleton = node.skeleton;
     const shared = skeletons.find(
       (s) =>
