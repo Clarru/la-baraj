@@ -9,7 +9,8 @@ import {
 // Coordinates are within the documented Lake Cinciș shoreline, not player location.
 export const FORECAST_URL =
   "https://api.open-meteo.com/v1/forecast?latitude=45.69&longitude=22.85&current=cloud_cover%2Cweather_code&timezone=GMT&forecast_days=1";
-const STORAGE_KEY = "lake-weather-v1";
+// Version 2 retires the unsuccessful initial cache without touching world data.
+const STORAGE_KEY = "lake-weather-v2";
 type Cache = { nextAttemptAt: number; weather: LakeWeather | null };
 type Store = {
   get<T>(key: string): Promise<T | undefined>;
@@ -46,7 +47,7 @@ export class LakeWeatherService {
   constructor(
     private store: Store,
     private announce: (weather: LakeWeather | null) => void,
-    private fetchForecast: typeof fetch = fetch,
+    private fetchForecast: typeof fetch = (...args) => fetch(...args),
   ) {}
   async load(now = Date.now()) {
     const saved = await this.store.get<Cache>(STORAGE_KEY);

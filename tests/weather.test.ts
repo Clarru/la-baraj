@@ -123,3 +123,25 @@ describe("Lake Cinciș weather", () => {
     expect(announce).toHaveBeenLastCalledWith(null);
   });
 });
+
+it("calls the runtime fetch without rebinding its required global receiver", async () => {
+  vi.useFakeTimers();
+  vi.setSystemTime(now);
+  const fetcher = vi.fn(function (this: unknown) {
+    if (this !== undefined && this !== globalThis)
+      throw new TypeError("Illegal invocation");
+    return Promise.resolve(
+      new Response(JSON.stringify(forecast), { status: 200 }),
+    );
+  });
+  vi.stubGlobal("fetch", fetcher);
+  try {
+    const service = new LakeWeatherService(storage(), vi.fn());
+    await service.load(now);
+    await service.refresh(now);
+    expect(service.current(now)?.weatherCode).toBe(3);
+    expect(fetcher).toHaveBeenCalledTimes(1);
+  } finally {
+    vi.unstubAllGlobals();
+  }
+});
