@@ -45,10 +45,12 @@ export function MultiplayerHud({ room }: { room: MultiplayerRoom }) {
         ) : (
           <GameIcon name="offline" size={26} />
         )}
-        <strong>
-          {room.localPreview
-            ? "Local · aceeași lume în filele acestui browser"
-            : label}
+        <strong
+          title={
+            room.localPreview ? "Shared with tabs in this browser" : undefined
+          }
+        >
+          {room.localPreview ? "Local world" : label}
         </strong>
       </span>
       {(message || retry) && (
