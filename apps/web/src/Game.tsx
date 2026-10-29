@@ -102,7 +102,7 @@ export default function Game({ initialName }: { initialName: string }) {
   const [room] = useState<MultiplayerRoom>(() =>
     planesLab
       ? new LocalPlanesRoom(initialName)
-      : localWorldEnabled()
+      : !performanceLab && localWorldEnabled()
         ? new LocalWorldRoom(initialName)
         : new MultiplayerRoom(initialName),
   );
