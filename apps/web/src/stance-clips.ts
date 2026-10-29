@@ -11,12 +11,12 @@ export const PRONE_IDLE_DURATION = 1.2;
 // alternating kick. The constants are local bone quaternions, so every
 // character instance still gets its own mixer/skeleton.
 const proneLegPose: Record<string, [number, number, number, number]> = {
-  thigh_l: [0.945286791, 0.164546444, -0.001307035, 0.281701335],
-  calf_l: [0.427030014, -0.231843895, 0.204527881, 0.849742386],
-  foot_l: [-0.310331074, -0.041302719, -0.221912466, 0.923441155],
-  thigh_r: [0.944380829, -0.170910709, 0.003230032, 0.28093406],
-  calf_r: [0.428462459, 0.233921762, -0.205864508, 0.848127546],
-  foot_r: [-0.315601427, 0.038989995, 0.220213192, 0.922161412],
+  thigh_l: [0.908502031, 0.116694897, 0.056997576, 0.397187157],
+  calf_l: [-0.326229363, 0.217599, -0.139546695, -0.909258928],
+  foot_l: [-0.091333363, -0.113104221, -0.265659148, 0.953042952],
+  thigh_r: [0.90759212, -0.12354863, -0.05623936, 0.397302673],
+  calf_r: [-0.32883052, -0.220089893, 0.141294277, -0.907450745],
+  foot_r: [-0.097348521, 0.111845408, 0.264733157, 0.952853727],
 };
 
 function axisQuaternion(axis: "x" | "y" | "z", angle: number) {
@@ -87,15 +87,35 @@ function sampledTrack(
 function correctProneSupportTracks(
   tracks: THREE.KeyframeTrack[],
   duration: number,
+  crawling = false,
 ) {
   const corrections: Record<string, THREE.Quaternion> = {
     // Mirrored local Z signs lower both palms toward the ground during the
     // forward stroke instead of leaving the elbows/forearms hovering.
-    lowerarm_l: axisQuaternion("z", -0.72),
-    lowerarm_r: axisQuaternion("z", 0.72),
+    lowerarm_l: axisQuaternion("z", -0.35),
+    lowerarm_r: axisQuaternion("z", 0.35),
   };
   return tracks.map((source) => {
     const bone = source.name.split(".")[0];
+    if (
+      (bone === "root" || (bone === "pelvis" && crawling)) &&
+      source.name.endsWith(".position")
+    ) {
+      const track = source.clone();
+      const size = track.getValueSize();
+      const values = Array.from(track.values);
+      for (let index = 0; index < values.length; index += size) {
+        const phase =
+          crawling && duration > 0
+            ? THREE.MathUtils.clamp(track.times[index / size] / duration, 0, 1)
+            : 0;
+        // Measured against skinned vertices with the parent stance's +0.46m
+        // lift: the authored swim root needs a small phase-aware contact trim.
+        values[index + 2] += crawling ? 0.016 - 0.066 * phase : 0.016;
+      }
+      track.values = new Float32Array(values);
+      return track;
+    }
     const legPose = proneLegPose[bone];
     if (legPose && source.name.endsWith(".quaternion")) {
       const track = source.clone();
@@ -148,6 +168,7 @@ export function createProneClips(swimForward?: THREE.AnimationClip) {
     correctProneSupportTracks(
       swimForward.tracks.map((track) => track.clone()),
       swimForward.duration,
+      true,
     ),
   );
   return [idle, crawl];

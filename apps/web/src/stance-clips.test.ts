@@ -49,6 +49,27 @@ function assertFiniteBones(scene: THREE.Object3D) {
   });
 }
 
+function skinnedMinimumY(scene: THREE.Object3D) {
+  let minimum = Infinity;
+  let source = "";
+  const local = new THREE.Vector3();
+  scene.updateWorldMatrix(true, true);
+  scene.traverse((object) => {
+    if (!(object instanceof THREE.SkinnedMesh)) return;
+    object.skeleton.update();
+    const position = object.geometry.getAttribute("position");
+    for (let index = 0; index < position.count; index++) {
+      object.getVertexPosition(index, local);
+      object.localToWorld(local);
+      if (local.y < minimum) {
+        minimum = local.y;
+        source = object.name;
+      }
+    }
+  });
+  return { minimum, source };
+}
+
 describe("land stance clips", () => {
   it("creates a real additive crouch that lowers hips and keeps feet near the ground", async () => {
     const { scene, animations } = await loadRig(rigPath);
@@ -114,16 +135,18 @@ describe("land stance clips", () => {
     expect(Math.max(...hands.map((hand) => hand.y + lift))).toBeLessThan(
       head.y + lift,
     );
-    expect(Math.min(...feet.map((foot) => foot.y + lift))).toBeGreaterThan(0.2);
+    expect(Math.min(...feet.map((foot) => foot.y + lift))).toBeGreaterThan(
+      0.08,
+    );
     for (const foot of feet) {
-      expect(foot.y).toBeCloseTo(-0.1, 2);
+      expect(foot.y).toBeCloseTo(-0.36, 2);
       expect(foot.z).toBeLessThan(pelvis.z - 0.55);
     }
     for (const ball of [
       worldPosition(scene, "ball_l"),
       worldPosition(scene, "ball_r"),
     ])
-      expect(ball.y).toBeCloseTo(-0.1, 2);
+      expect(ball.y).toBeCloseTo(-0.36, 2);
     assertFiniteBones(scene);
 
     mixer.stopAllAction();
@@ -158,6 +181,28 @@ describe("land stance clips", () => {
         bounds.getCenter(new THREE.Vector3()).distanceTo(attachedHead),
       ).toBeLessThan(0.2);
     }
+    attachedMixer.stopAllAction();
+    const attachedCrawl = new THREE.AnimationMixer(cloned);
+    attachedCrawl.clipAction(crawl).setLoop(THREE.LoopRepeat, Infinity).play();
+    for (const time of [0, 0.333, 0.666, 1.0]) {
+      attachedCrawl.setTime(time);
+      const lowest = skinnedMinimumY(cloned);
+      const floorY = lowest.minimum + lift;
+      expect(
+        floorY,
+        `crawl floor at ${time} (${lowest.source})`,
+      ).toBeGreaterThan(-0.02);
+      expect(floorY, `crawl floor at ${time} (${lowest.source})`).toBeLessThan(
+        0.02,
+      );
+    }
+    attachedCrawl.stopAllAction();
+    const attachedIdle = new THREE.AnimationMixer(cloned);
+    attachedIdle.clipAction(idle).setLoop(THREE.LoopRepeat, Infinity).play();
+    attachedIdle.setTime(0);
+    const idleFloor = skinnedMinimumY(cloned).minimum + lift;
+    expect(idleFloor).toBeGreaterThan(-0.02);
+    expect(idleFloor).toBeLessThan(0.02);
   });
 
   it("restores the source idle pose when the additive crouch is stopped", async () => {
