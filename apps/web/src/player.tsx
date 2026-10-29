@@ -48,6 +48,7 @@ import {
 } from "./boat-state";
 import {
   BOAT_BOARD_DISTANCE,
+  boatBlockedAhead,
   boatExitCandidates,
   canBoardBoat,
   chooseBoatExit,
@@ -818,6 +819,16 @@ export function Player({
           : 0,
         dt,
       });
+      // Shallows or land within the probe stop the hull before it can climb a
+      // bank; at rest the throttle picks the side, so a beached bow can reverse.
+      const heading =
+        Math.abs(motion.speed) > 1e-3
+          ? Math.sign(motion.speed)
+          : throttle < 0
+            ? -1
+            : 1;
+      if (boatBlockedAhead(p.x, p.z, motion.yaw, heading as 1 | -1))
+        motion.speed = 0;
       c.body.setGravityScale(0, true);
       c.body.setLinvel(
         boatVelocity({

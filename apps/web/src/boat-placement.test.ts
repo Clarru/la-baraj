@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   BOAT_DOCK_XS,
   BOAT_BOARD_DISTANCE,
+  boatBlockedAhead,
   boatDockSpawn,
   boatExitCandidates,
   canBoardBoat,
@@ -9,7 +10,7 @@ import {
   nearestDockSpawn,
 } from "./boat-placement";
 import { getBoatState, parkBoat, resetBoatToDock } from "./boat-state";
-import { inWater, terrainHeight } from "./geography";
+import { inWater, southShore, terrainHeight } from "./geography";
 import { LAKE_LEVEL } from "./swim-motion";
 
 describe("boat placement", () => {
@@ -103,5 +104,21 @@ describe("boat placement", () => {
     expect(getBoatState().yaw).toBe(dock.yaw);
     expect(getBoatState().mounted).toBe(false);
     expect(getBoatState().speed).toBe(0);
+  });
+
+  it("stops at the shallows ahead but can still back away from the bank", () => {
+    const {
+      position: [sx, , sz],
+    } = boatDockSpawn(0);
+    expect(boatBlockedAhead(sx, sz, Math.PI, 1)).toBe(false);
+    const nearShore = southShore(0) - 1;
+    expect(boatBlockedAhead(0, nearShore, 0, 1)).toBe(true);
+    // Where the bow probe halts a shoreward boat, it can still turn or back out.
+    const resting = southShore(0) - 6;
+    expect(boatBlockedAhead(0, resting, 0, 1)).toBe(true);
+    expect(boatBlockedAhead(0, resting, 0, -1)).toBe(false);
+    expect(boatBlockedAhead(0, resting, Math.PI, 1)).toBe(false);
+    expect(boatBlockedAhead(Number.NaN, nearShore, 0, 1)).toBe(true);
+    expect(boatBlockedAhead(0, nearShore, Infinity, -1)).toBe(true);
   });
 });

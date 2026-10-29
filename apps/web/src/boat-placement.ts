@@ -1,4 +1,4 @@
-import { southShore } from "./geography";
+import { inWater, southShore, terrainHeight } from "./geography";
 import { LAKE_LEVEL } from "./swim-motion";
 
 /** The two `<Dock>` x positions in settlement.tsx. */
@@ -53,6 +53,28 @@ export function canBoardBoat(input: {
     !input.paused &&
     input.activity === "none" &&
     (input.swimming || input.grounded)
+  );
+}
+
+/** Shallowest water (m) the hull may enter. */
+export const BOAT_MIN_DEPTH = 0.5;
+/** Probe distance ahead of the hull centre: 1.8 m half-length plus margin. */
+export const BOAT_PROBE_DISTANCE = 2.2;
+
+/** Whether land or shallows lie just ahead (direction 1) or astern (-1); non-finite input counts as blocked. */
+export function boatBlockedAhead(
+  x: number,
+  z: number,
+  yaw: number,
+  direction: 1 | -1,
+): boolean {
+  if (![x, z, yaw].every(Number.isFinite)) return true;
+  const d = BOAT_PROBE_DISTANCE * direction;
+  const px = x + Math.sin(yaw) * d,
+    pz = z + Math.cos(yaw) * d;
+  return (
+    !inWater(px, pz) ||
+    LAKE_LEVEL - terrainHeight(px, pz, undefined, true) < BOAT_MIN_DEPTH
   );
 }
 
