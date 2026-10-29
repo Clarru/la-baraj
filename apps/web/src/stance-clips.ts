@@ -6,6 +6,19 @@ export const PRONE_CRAWL_CLIP_NAME = "Prone_Crawl";
 export const CROUCH_POSE_DURATION = 1;
 export const PRONE_IDLE_DURATION = 1.2;
 
+// Solved once against the approved Lakeside_Man rig: both feet sit behind the
+// hips with a shallow forward knee pole, rather than inheriting the swimmer's
+// alternating kick. The constants are local bone quaternions, so every
+// character instance still gets its own mixer/skeleton.
+const proneLegPose: Record<string, [number, number, number, number]> = {
+  thigh_l: [0.945286791, 0.164546444, -0.001307035, 0.281701335],
+  calf_l: [0.427030014, -0.231843895, 0.204527881, 0.849742386],
+  foot_l: [-0.310331074, -0.041302719, -0.221912466, 0.923441155],
+  thigh_r: [0.944380829, -0.170910709, 0.003230032, 0.28093406],
+  calf_r: [0.428462459, 0.233921762, -0.205864508, 0.848127546],
+  foot_r: [-0.315601427, 0.038989995, 0.220213192, 0.922161412],
+};
+
 function axisQuaternion(axis: "x" | "y" | "z", angle: number) {
   const vector = new THREE.Vector3(
     axis === "x" ? 1 : 0,
@@ -83,6 +96,16 @@ function correctProneSupportTracks(
   };
   return tracks.map((source) => {
     const bone = source.name.split(".")[0];
+    const legPose = proneLegPose[bone];
+    if (legPose && source.name.endsWith(".quaternion")) {
+      const track = source.clone();
+      const size = track.getValueSize();
+      const values = Array.from(track.values);
+      for (let index = 0; index < values.length; index += size)
+        values.splice(index, size, ...legPose);
+      track.values = new Float32Array(values);
+      return track;
+    }
     const correction = corrections[bone];
     if (!correction || !source.name.endsWith(".quaternion")) return source;
     const track = source.clone();
@@ -112,8 +135,11 @@ export function createProneClips(swimForward?: THREE.AnimationClip) {
   const idle = new THREE.AnimationClip(
     PRONE_IDLE_CLIP_NAME,
     PRONE_IDLE_DURATION,
-    swimForward.tracks.map((track) =>
-      sampledTrack(track, 0, PRONE_IDLE_DURATION),
+    correctProneSupportTracks(
+      swimForward.tracks.map((track) =>
+        sampledTrack(track, 0, PRONE_IDLE_DURATION),
+      ),
+      PRONE_IDLE_DURATION,
     ),
   );
   const crawl = new THREE.AnimationClip(

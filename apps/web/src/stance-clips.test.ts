@@ -9,6 +9,7 @@ import {
   createProneClips,
   createStanceClips,
 } from "./stance-clips";
+import { cloneCharacter } from "./character-resources";
 
 const { loadRig } = (await import(
   /* @vite-ignore */ new URL(
@@ -114,6 +115,15 @@ describe("land stance clips", () => {
       head.y + lift,
     );
     expect(Math.min(...feet.map((foot) => foot.y + lift))).toBeGreaterThan(0.2);
+    for (const foot of feet) {
+      expect(foot.y).toBeCloseTo(-0.1, 2);
+      expect(foot.z).toBeLessThan(pelvis.z - 0.55);
+    }
+    for (const ball of [
+      worldPosition(scene, "ball_l"),
+      worldPosition(scene, "ball_r"),
+    ])
+      expect(ball.y).toBeCloseTo(-0.1, 2);
     assertFiniteBones(scene);
 
     mixer.stopAllAction();
@@ -126,6 +136,27 @@ describe("land stance clips", () => {
       expect(crawlHead.z - crawlPelvis.z).toBeGreaterThan(0.28);
       expect(crawlHead.y + lift).toBeGreaterThan(0.28);
       assertFiniteBones(scene);
+    }
+
+    // Runtime avatars coalesce the exact equivalent skeletons, including the
+    // approved hair/beard meshes. Verify those attachments follow the prone
+    // head instead of remaining at the standing bind pose.
+    const cloned = cloneCharacter((await loadRig(rigPath)).scene);
+    const attachedMixer = new THREE.AnimationMixer(cloned);
+    attachedMixer.clipAction(crawl).setLoop(THREE.LoopRepeat, Infinity).play();
+    attachedMixer.setTime(0.35);
+    cloned.updateMatrixWorld(true);
+    const attachedHead = worldPosition(cloned, "Head");
+    for (const name of [
+      "Hairstyle_Hair_Beard",
+      "Hairstyle_Hair_SimpleParted",
+    ]) {
+      const mesh = cloned.getObjectByName(name)! as THREE.SkinnedMesh;
+      mesh.skeleton.update();
+      const bounds = new THREE.Box3().setFromObject(mesh);
+      expect(
+        bounds.getCenter(new THREE.Vector3()).distanceTo(attachedHead),
+      ).toBeLessThan(0.2);
     }
   });
 
