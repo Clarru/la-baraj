@@ -53,6 +53,7 @@ import {
   swimVelocity,
 } from "./swim-motion";
 import { SwimWake } from "./SwimWake";
+import { bindCameraMouse } from "./camera-mouse";
 import {
   activityAnimation,
   activityElapsed,
@@ -878,6 +879,14 @@ export function Player({
         velocity: [velocity.x, velocity.y, velocity.z],
         facing: facing.toArray(),
         inWater: inWater(p.x, p.z),
+        ...(import.meta.env.DEV || import.meta.env.VITE_GAME_DIAGNOSTICS === "1"
+          ? {
+              pressedKeys: [...k],
+              cameraDirection: camera
+                .getWorldDirection(new THREE.Vector3())
+                .toArray(),
+            }
+          : {}),
         lastMovingAlignment: lastMovingAlignment.current,
         facingDot:
           speed > 0.3
@@ -958,7 +967,16 @@ export function CameraRig({
     window.addEventListener("keydown", inspect);
     return () => window.removeEventListener("keydown", inspect);
   }, [mode]);
-  const { camera } = useThree();
+  const { camera, gl, events } = useThree();
+  useEffect(() => {
+    const c = controls.current;
+    if (!c) return;
+    const element =
+      c.domElement ??
+      (events.connected as HTMLElement | undefined) ??
+      gl.domElement;
+    return bindCameraMouse(c, element);
+  }, [gl, events.connected]);
   const last = useRef(new THREE.Vector3());
   const priorInterior = useRef<number | null>(null);
   const priorTable = useRef<number | null>(null);
