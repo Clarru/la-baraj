@@ -1,5 +1,5 @@
 import { currentLighting } from "./day-night";
-import { memo, useEffect, useMemo } from "react";
+import { memo, useEffect, useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { RigidBody } from "@react-three/rapier";
 import * as THREE from "three";
@@ -457,8 +457,12 @@ type TreeImpostor = {
 };
 export const Vegetation = memo(function Vegetation({
   flat,
+  evening,
+  forceDay,
 }: {
   flat: boolean;
+  evening: boolean;
+  forceDay: boolean;
 }) {
   const textures = useTexture(treeImpostorUrls);
   // Four shared species resources serve every near-bank LOD cluster and far bank.
@@ -485,6 +489,21 @@ export const Vegetation = memo(function Vegetation({
       ),
     [textures],
   );
+  const lastOakLighting = useRef(-Infinity);
+  const oakTints = useMemo(
+    () => ({ day: new THREE.Color("#c0d1be"), night: new THREE.Color("#899782") }),
+    [],
+  );
+  useFrame(() => {
+    const now = performance.now();
+    if (now - lastOakLighting.current < 250) return;
+    lastOakLighting.current = now;
+    const light = currentLighting(evening, forceDay);
+    const dayWeight = THREE.MathUtils.clamp(
+      (light.sunIntensity - 0.75) / (3.3 - 0.75), 0, 1,
+    );
+    impostors.Cincis_Oak_1.material.color.copy(oakTints.night).lerp(oakTints.day, dayWeight);
+  });
   useEffect(
     () => () => {
       for (const { geometry, material } of Object.values(impostors)) {

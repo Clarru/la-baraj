@@ -407,7 +407,7 @@ export default function Game({ initialName }: { initialName: string }) {
                 <Terrain />
                 <Roads />
                 <LakeWater evening={evening} forceDay={performanceLab} />
-                <Vegetation flat={flat} />
+                <Vegetation flat={flat} evening={evening} forceDay={performanceLab} />
                 <Settlement
                   flat={flat}
                   interiorIndex={interiorIndex}
