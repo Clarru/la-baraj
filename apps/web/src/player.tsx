@@ -590,7 +590,9 @@ export function Player({
     }
     const transfer = doorArrival.current;
     if (transfer && (requestedTransfer || doorTransition)) {
-      setPhysicalStance("standing", false);
+      // A departure under a low overhang must retain its lowered collider;
+      // normal clearance decides whether it can expand before the path starts.
+      setPhysicalStance("standing");
       c.body.setBodyType(rapier.RigidBodyType.KinematicPositionBased, true);
       const doorMotion = sampleCabinMotion(
         transfer,
@@ -646,7 +648,7 @@ export function Player({
         onMotion({
           ...doorMotion,
           homeIndex,
-          posture: "standing",
+          posture: stanceRef.current,
           animationHistory: animationHistory.current,
         });
       }
@@ -655,6 +657,8 @@ export function Player({
     if (doorArrival.current) {
       doorArrival.current = null;
       c.body.setBodyType(rapier.RigidBodyType.Dynamic, true);
+      // Check the verified destination before restoring standing clearance.
+      setPhysicalStance("standing");
       c.body.setLinvel({ x: 0, y: 0, z: 0 }, true);
       c.body.resetForces(true);
       c.body.resetTorques(true);

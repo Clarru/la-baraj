@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
+import * as THREE from "three";
 import {
   STANCE_METRICS,
   postureFromAnimation,
   stanceBaseAnimation,
   stanceBottomExtent,
   stanceCandidateY,
+  stanceColliderRotation,
   stanceExpansionAllowed,
   stanceForToggle,
   stanceRayOriginOffset,
@@ -65,4 +67,22 @@ describe("player stance contract", () => {
     expect(stanceExpansionAllowed("prone", "crouching", false)).toBe(true);
     expect(stanceExpansionAllowed("crouching", "prone", true)).toBe(false);
   });
+
+  it.each([
+    [0, [0, 0, 1]],
+    [Math.PI / 2, [1, 0, 0]],
+    [Math.PI, [0, 0, -1]],
+    [-Math.PI / 2, [-1, 0, 0]],
+  ])(
+    "rotates the prone capsule axis in the expected direction at yaw %s",
+    (yaw, expected) => {
+      const rotation = stanceColliderRotation("prone", yaw);
+      const axis = new THREE.Vector3(0, 1, 0).applyQuaternion(
+        new THREE.Quaternion(rotation.x, rotation.y, rotation.z, rotation.w),
+      );
+      expect(axis.x).toBeCloseTo(expected[0]);
+      expect(axis.y).toBeCloseTo(expected[1]);
+      expect(axis.z).toBeCloseTo(expected[2]);
+    },
+  );
 });
