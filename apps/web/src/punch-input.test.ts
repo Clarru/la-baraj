@@ -4,7 +4,9 @@ import { bindPunchPointer } from "./punch-input";
 describe("punch pointer control", () => {
   it("reserves middle click before the camera and removes both listeners", () => {
     const listeners = new Map<string, Function>();
+    const view = new EventTarget();
     const target = {
+      ownerDocument: { defaultView: view },
       addEventListener: vi.fn((type, callback) =>
         listeners.set(type, callback),
       ),
@@ -50,6 +52,10 @@ describe("punch pointer control", () => {
     }
     listeners.get("pointerdown")!(event);
     listeners.get("pointermove")!({ ...event, clientX: 20 });
+    listeners.get("pointerup")!(event);
+    expect(punch).toHaveBeenCalledOnce();
+    listeners.get("pointerdown")!(event);
+    view.dispatchEvent(new Event("blur"));
     listeners.get("pointerup")!(event);
     expect(punch).toHaveBeenCalledOnce();
     unbind();
