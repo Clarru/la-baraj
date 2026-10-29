@@ -785,7 +785,7 @@ export function Player({
     // Activities and water own the full-body pose. Keep a lowered collider only
     // when it is safe and meaningful; a blocked stand remains blocked overhead.
     if (nowSwimming && stanceRef.current !== "standing")
-      setPhysicalStance("standing", false);
+      setPhysicalStance("standing");
     else if (holding && stanceRef.current !== "standing")
       setPhysicalStance("standing");
     const steer =
