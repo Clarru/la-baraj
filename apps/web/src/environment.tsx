@@ -5,6 +5,7 @@ import * as THREE from "three";
 import { Water } from "three/examples/jsm/objects/Water.js";
 import { ModelInstances, type Placement } from "./assets";
 import { NearbySolids, type NaturalSolid } from "./NearbySolids";
+import { isSolidVegetation } from "./vegetation-collision";
 import { makeRoadRibbon, makeBackgroundForest } from "./landscape-geometry";
 import { useTexture, Detailed } from "@react-three/drei";
 import impostorInfo from "../public/assets/impostors/manifest.json";
@@ -396,7 +397,7 @@ const naturalSolids: NaturalSolid[] = [
   ...Object.entries(vegetationData).flatMap(([id, items]) => {
     const modelId = id.replace("_Distant", "");
     const tree = /^(CommonTree|Pine)/.test(modelId);
-    if (!tree && !/^(Rock|Bush)/.test(modelId)) return [];
+    if (!isSolidVegetation(id)) return [];
     return items.map((item, index) => ({
       ...item,
       id: modelId,

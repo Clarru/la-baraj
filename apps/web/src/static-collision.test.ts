@@ -5,6 +5,21 @@ import { collisionMesh, surfaceGrip } from "./static-collision";
 const { loadRig } = await import(/* @vite-ignore */ new URL("../../../scripts/extract-activity-clips.mjs", import.meta.url).href);
 beforeAll(async () => { await RAPIER.init(); });
 
+it("keeps the Sage cabin porch clear in front of the door", async () => {
+  for (const id of ["Sage", "SagePergola"]) {
+    const { scene } = await loadRig(new URL(`../public/assets/optimized/Lake_Cabin_${id}.glb`, import.meta.url).pathname);
+    const shape = collisionMesh(scene);
+    const world = new RAPIER.World({ x: 0, y: -12, z: 0 });
+    world.createCollider(RAPIER.ColliderDesc.trimesh(shape.vertices, shape.indices));
+    world.step();
+    for (const x of [1.45, 1.7, 1.95]) for (const y of [0.85, 1.12, 1.45]) {
+      const hit = world.castRay(new RAPIER.Ray({ x, y, z: 4.5 }, { x: 0, y: 0, z: -1 }), 1.15, true);
+      expect(hit, `${id}: blocked at x=${x}, y=${y}`).toBeNull();
+    }
+    world.free();
+  }
+});
+
 it("matches the visible roofs of all six cabins instead of an invisible flat box", async () => {
   for (const id of ["Gable", "AFrame", "Sage", "GableBlue", "AFrameCopper", "SagePergola"]) {
     const { scene } = await loadRig(new URL(`../public/assets/optimized/Lake_Cabin_${id}.glb`, import.meta.url).pathname);
