@@ -14,6 +14,9 @@ export const BOAT_METRICS = {
   grips: { left: [-0.19, 0, 0], right: [0.19, 0, 0] },
 } as const;
 
+/** Hull floor height above the lake surface, shared by the parked and driven boat. */
+export const BOAT_FLOAT_HEIGHT = 0.15;
+
 export type BoatSide = "left" | "right";
 const tiltAxis = new THREE.Vector3(1, 0, 0);
 const wheelAxis = new THREE.Vector3(0, 0, 1);

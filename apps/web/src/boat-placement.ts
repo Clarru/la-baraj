@@ -11,6 +11,8 @@ export const BOAT_DOCK_LAKE_OFFSET = 11;
 export const BOAT_BOARD_DISTANCE = 3.5;
 const EXIT_MIN_DRY = 0.1;
 const EXIT_STEPS = [1.6, 2.6] as const;
+/** Bow steps clear the 1.8 m hull half-length plus the 0.3 m capsule radius. */
+const BOW_EXIT_STEPS = [2.2, 3.2] as const;
 
 type Spawn = { position: [number, number, number]; yaw: number };
 
@@ -54,7 +56,7 @@ export function canBoardBoat(input: {
   );
 }
 
-/** Exit points left, right, then bow at 1.6 m and 2.6 m (left of +Z-forward is +X). */
+/** Exit points per step: left and right at 1.6 m / 2.6 m, then bow at 2.2 m / 3.2 m (left of +Z-forward is +X). */
 export function boatExitCandidates(
   x: number,
   z: number,
@@ -68,12 +70,14 @@ export function boatExitCandidates(
   const lx = fz,
     lz = -fx;
   const out: [number, number][] = [];
-  for (const d of EXIT_STEPS)
+  EXIT_STEPS.forEach((d, i) => {
+    const bow = BOW_EXIT_STEPS[i];
     out.push(
       [px + lx * d, pz + lz * d],
       [px - lx * d, pz - lz * d],
-      [px + fx * d, pz + fz * d],
+      [px + fx * bow, pz + fz * bow],
     );
+  });
   return out;
 }
 

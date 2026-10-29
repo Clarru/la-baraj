@@ -65,6 +65,9 @@ describe("boat placement", () => {
     expect(c).toHaveLength(6);
     expect(c[0][0]).toBeCloseTo(1.6);
     expect(c[1][0]).toBeCloseTo(-1.6);
+    expect(c[2][0]).toBeCloseTo(0);
+    expect(c[2][1]).toBeCloseTo(2.2);
+    expect(c[5][1]).toBeCloseTo(3.2);
     expect(c.flat().every(Number.isFinite)).toBe(true);
   });
 

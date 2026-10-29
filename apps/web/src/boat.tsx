@@ -5,6 +5,7 @@ import { getBoatState } from "./boat-state";
 import {
   applyBoatLean,
   setBoatWheelAngle,
+  BOAT_FLOAT_HEIGHT,
   BOAT_METRICS,
   type BoatSide,
 } from "./boat-geometry";
@@ -44,11 +45,13 @@ export const Boat = forwardRef<BoatHandle, { visible?: boolean }>(function Boat(
 /** Keep the parked hull solid so the walking player cannot step through it. */
 export function ParkedBoat({ mounted }: { mounted: boolean }) {
   const state = getBoatState();
+  const [x, y, z] = state.parked;
+  const position: [number, number, number] = [x, y + BOAT_FLOAT_HEIGHT, z];
   return (
     <>
       <group
         visible={!mounted}
-        position={state.parked}
+        position={position}
         rotation={[0, state.yaw, 0]}
       >
         <Boat />
@@ -57,7 +60,7 @@ export function ParkedBoat({ mounted }: { mounted: boolean }) {
         <RigidBody
           type="fixed"
           colliders={false}
-          position={state.parked}
+          position={position}
           rotation={[0, state.yaw, 0]}
         >
           <CuboidCollider
