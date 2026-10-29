@@ -123,7 +123,7 @@ export const BACKGROUND_TREE_BUDGET = 2400;
 /** Reuses the four baked tree sprites. No new GLBs or shadow passes; trunk collisions use the existing nearby-only system. */
 export function makeBackgroundForest() {
   const groups: Record<string, Placement[]> = {
-    Cincis_Oak_1: [],
+    CommonTree_1: [],
     CommonTree_3: [],
     Pine_2: [],
     Pine_4: [],

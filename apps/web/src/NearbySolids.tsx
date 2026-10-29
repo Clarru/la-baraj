@@ -15,7 +15,6 @@ export type NaturalSolid = Placement & {
   id: string;
   key: string;
   treeHeight?: number;
-  treeRadius?: number;
 };
 /** Physics stays independent from visual LOD; a small active radius bounds collider cost. */
 export function NearbySolids({ items }: { items: NaturalSolid[] }) {
@@ -79,7 +78,7 @@ export function NearbySolids({ items }: { items: NaturalSolid[] }) {
         const height = item.treeHeight * item.scale;
         desc = rapier.ColliderDesc.cylinder(
           height / 2,
-          (item.treeRadius ?? 0.24) * item.scale,
+          0.24 * item.scale,
         ).setTranslation(item.x, item.y + height / 2, item.z);
       } else {
         const shape = shapes[item.id];

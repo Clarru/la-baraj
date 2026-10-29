@@ -6,7 +6,7 @@ import * as THREE from "three";
 import { Water } from "three/examples/jsm/objects/Water.js";
 import { ModelInstances, type Placement } from "./assets";
 import { NearbySolids, type NaturalSolid } from "./NearbySolids";
-import { isSolidVegetation, treeCollision } from "./vegetation-collision";
+import { isSolidVegetation } from "./vegetation-collision";
 import { LAKE_LEVEL } from "./swim-motion";
 import { makeRoadRibbon, makeBackgroundForest } from "./landscape-geometry";
 import { useTexture, Detailed } from "@react-three/drei";
@@ -286,7 +286,7 @@ export function Roads() {
 const vegetationData = (() => {
   const random = rng(1729),
     groups: Record<string, Placement[]> = {
-      Cincis_Oak_1: [],
+      CommonTree_1: [],
       CommonTree_3: [],
       Pine_2: [],
       Pine_4: [],
@@ -297,7 +297,7 @@ const vegetationData = (() => {
       Rock_Medium_1: [],
       Rock_Medium_2: [],
     };
-  const trees = ["Cincis_Oak_1", "CommonTree_3", "Pine_2", "Pine_4"];
+  const trees = ["CommonTree_1", "CommonTree_3", "Pine_2", "Pine_4"];
   // Human-scale trees stay the same size; the geography and available land expand.
   for (let i = 0; i < 1700; i++) {
     const c = cabinSpots[i % cabinSpots.length],
@@ -368,7 +368,7 @@ const backgroundForest = makeBackgroundForest();
 const naturalSolids: NaturalSolid[] = [
   ...Object.entries(vegetationData).flatMap(([id, items]) => {
     const modelId = id.replace("_Distant", "");
-    const tree = /^(Cincis_Oak|CommonTree|Pine)/.test(modelId);
+    const tree = /^(CommonTree|Pine)/.test(modelId);
     if (!isSolidVegetation(id)) return [];
     return items.map((item, index) => ({
       ...item,
@@ -376,10 +376,8 @@ const naturalSolids: NaturalSolid[] = [
       key: `${id}-${index}`,
       ...(tree
         ? {
-            ...treeCollision(
-              modelId,
-              impostorInfo[modelId as keyof typeof impostorInfo].height,
-            ),
+            treeHeight:
+              impostorInfo[modelId as keyof typeof impostorInfo].height * 0.72,
           }
         : {}),
     }));
@@ -389,14 +387,14 @@ const naturalSolids: NaturalSolid[] = [
       ...item,
       id,
       key: `background-${id}-${index}`,
-      ...treeCollision(id, impostorInfo[id as keyof typeof impostorInfo].height),
+      treeHeight: impostorInfo[id as keyof typeof impostorInfo].height * 0.72,
     })),
   ),
 ];
 export const environmentCounts = Object.fromEntries(
   Object.entries(vegetationData).map(([k, v]) => [k, v.length]),
 );
-const treeIds = ["Cincis_Oak_1", "CommonTree_3", "Pine_2", "Pine_4"] as const;
+const treeIds = ["CommonTree_1", "CommonTree_3", "Pine_2", "Pine_4"] as const;
 const treeImpostorUrls = treeIds.map((id) => `/assets/impostors/${id}.png`);
 // Metrics update the App every second. Keep placement identities stable so those
 // renders never rebuild instance matrices, bounding spheres, or forest meshes.

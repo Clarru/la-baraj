@@ -26,12 +26,5 @@
     "source": "Quaternius Stylized Nature MegaKit: Pine_4.gltf",
     "license": "CC0-1.0",
     "method": "Blender orthographic RGBA bake; native alpha, not generated art"
-  },
-  "Cincis_Oak_1": {
-    "height": 11.444157600402834,
-    "width": 7.629438400268556,
-    "source": "Original Cinci\u0219 oak v2: scripts/build-cincis-oak-v2.mjs",
-    "license": "Original project geometry and image-generated textures",
-    "method": "Three.js orthographic RGBA bake from the exported model; bottom-grounded"
   }
 }
