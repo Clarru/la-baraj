@@ -11,16 +11,32 @@ export function worldNow() {
     ? serverClock.time + performance.now() - serverClock.local
     : Date.now();
 }
-/** All clients derive the same game time from the Unix epoch; a game day is one hour. */
-export const GAME_DAY_MS = 60 * 60 * 1000;
+/** Romania's local civil time, including seasonal clock changes. */
+const romanianClock = new Intl.DateTimeFormat("en-GB", {
+  timeZone: "Europe/Bucharest",
+  hour: "2-digit",
+  minute: "2-digit",
+  hourCycle: "h23",
+});
+let cachedMinute = NaN,
+  cachedRomanianMinutes = 0;
 export function gameMinutes(now: number) {
-  return Math.floor(
-    ((((now % GAME_DAY_MS) + GAME_DAY_MS) % GAME_DAY_MS) * 1440) / GAME_DAY_MS,
-  );
+  const minute = Math.floor(now / 60000);
+  if (minute !== cachedMinute) {
+    const parts = romanianClock.formatToParts(now);
+    const hour = Number(parts.find((part) => part.type === "hour")?.value);
+    const minutes = Number(parts.find((part) => part.type === "minute")?.value);
+    cachedRomanianMinutes = hour * 60 + minutes;
+    cachedMinute = minute;
+  }
+  return cachedRomanianMinutes;
+}
+export function formatClockMinutes(value: number) {
+  const minutes = ((Math.floor(value) % 1440) + 1440) % 1440;
+  return `${String(Math.floor(minutes / 60)).padStart(2, "0")}:${String(minutes % 60).padStart(2, "0")}`;
 }
 export function formatGameTime(now: number) {
-  const minutes = gameMinutes(now);
-  return `${String(Math.floor(minutes / 60)).padStart(2, "0")}:${String(minutes % 60).padStart(2, "0")}`;
+  return formatClockMinutes(gameMinutes(now));
 }
 
 type Palette = {
@@ -193,15 +209,15 @@ export function currentLighting(evening = false, forceDay = false) {
     import.meta.env.VITE_GAME_DIAGNOSTICS === "1"
       ? new URLSearchParams(location.search).get("time")
       : null;
+  const now = worldNow();
   const hour = evening
     ? 19
     : override !== null && Number.isFinite(Number(override))
       ? Number(override)
       : forceDay
         ? 12
-        : (((Math.floor(worldNow() / 1000) * 1000) % GAME_DAY_MS) /
-            GAME_DAY_MS) *
-          24;
+        : gameMinutes(now) / 60 +
+          (((Math.floor(now / 1000) % 60) + 60) % 60) / 3600;
   const key = hour.toFixed(3);
   if (cacheKey !== key) {
     cacheKey = key;

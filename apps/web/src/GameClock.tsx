@@ -1,16 +1,14 @@
 import { useEffect, useState } from "react";
-import { formatGameTime, GAME_DAY_MS, worldNow } from "./day-night";
+import { formatGameTime, formatClockMinutes, worldNow } from "./day-night";
 
 function displayTime() {
   const override =
     import.meta.env.VITE_GAME_DIAGNOSTICS === "1"
       ? new URLSearchParams(location.search).get("time")
       : null;
-  const now =
-    override !== null && Number.isFinite(Number(override))
-      ? (Number(override) / 24) * GAME_DAY_MS
-      : worldNow();
-  return formatGameTime(now);
+  return override !== null && Number.isFinite(Number(override))
+    ? formatClockMinutes(Number(override) * 60)
+    : formatGameTime(worldNow());
 }
 /** ImageGen glyphs are decorative; the actual time remains available as text. */
 export function GameClock() {
