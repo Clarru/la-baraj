@@ -43,6 +43,7 @@ setInterval(() => void core.commitNames().catch(() => {}), 250);
 type Packet =
   | { kind: "connect"; player: number }
   | { kind: "message"; message: ClientMessage }
+  | { kind: "weather"; cloudCover: number | null }
   | { kind: "seat"; side: 0 | 1 }
   | { kind: "disconnect" };
 (self as unknown as { onconnect: (event: MessageEvent) => void }).onconnect = (
@@ -70,7 +71,19 @@ type Packet =
       );
     } else if (connection && packet.kind === "message")
       await core.message(connection, JSON.stringify(packet.message));
-    else if (connection && packet.kind === "seat") {
+    else if (connection && packet.kind === "weather") {
+      const now = Date.now();
+      core.setWeather(
+        packet.cloudCover === null
+          ? null
+          : {
+              cloudCover: packet.cloudCover,
+              weatherCode: packet.cloudCover >= 70 ? 3 : 0,
+              observedAt: now,
+              fetchedAt: now,
+            },
+      );
+    } else if (connection && packet.kind === "seat") {
       await core.message(
         connection,
         JSON.stringify({

@@ -1,6 +1,13 @@
 import PartySocket from "partysocket";
 import { InputActivity } from "./input-activity";
-import { syncWorldTime } from "./day-night";
+import { syncWorldTime, worldNow } from "./day-night";
+import { setWorldWeather } from "./weather-visual";
+import {
+  WEATHER_RETRY_MS,
+  WEATHER_MAX_AGE_MS,
+  validLakeWeather,
+  type LakeWeather,
+} from "../../../packages/shared/weather";
 import {
   CANONICAL_WORLD_ID,
   HOUSING_EPOCH,
@@ -30,6 +37,7 @@ type RoomView = {
   homeIndex: number | null;
   cabins: PublicCabin[];
   planes: PlanesView | null;
+  weather: LakeWeather | null;
 };
 export type RemotePlayer = {
   player: PlayerPresence;
@@ -87,6 +95,7 @@ export function currentMultiplayerRoom() {
 export class MultiplayerRoom {
   readonly roomId = roomFromLocation();
   readonly remotes = new Map<string, RemotePlayer>();
+  private weatherExpiry: ReturnType<typeof setTimeout> | null = null;
   private inputActivity = new InputActivity((idleMs) =>
     this.send({ type: "activity", idleMs }),
   );
@@ -133,6 +142,7 @@ export class MultiplayerRoom {
     homeIndex: null,
     cabins: [],
     planes: null,
+    weather: null,
   };
   constructor(
     initialName?: string,
@@ -228,11 +238,18 @@ export class MultiplayerRoom {
       maxEnqueuedMessages: 0,
     });
     this.socket = socket;
+    // Frequent, small room requests let the server retry outages; the shared
+    // server cache limits actual provider calls to one per 15 minutes.
+    const weatherTimer = setInterval(
+      () => this.send({ type: "weather-refresh" }),
+      WEATHER_RETRY_MS,
+    );
     socket.addEventListener("open", () => {
       if (this.socket !== socket) return;
       this.homeAcknowledged = false;
       this.sendHello();
       this.send({ type: "sync" });
+      this.send({ type: "weather-refresh" });
     });
     socket.addEventListener("message", (event) => {
       if (this.socket !== socket || typeof event.data !== "string") return;
@@ -248,6 +265,9 @@ export class MultiplayerRoom {
     });
     return () => {
       this.socket = null;
+      clearInterval(weatherTimer);
+      if (this.weatherExpiry) clearTimeout(this.weatherExpiry);
+      this.weatherExpiry = null;
       socket.close();
       this.resolvePending();
       this.remotes.clear();
@@ -311,6 +331,24 @@ export class MultiplayerRoom {
   stunned(id: string, now = performance.now()) {
     return now < (this.stunTimes.get(id) ?? 0);
   }
+  private acceptWeather(input: LakeWeather | null, publish = true) {
+    if (this.weatherExpiry) clearTimeout(this.weatherExpiry);
+    this.weatherExpiry = null;
+    const now = worldNow();
+    const expiry = input
+      ? Math.min(input.observedAt, input.fetchedAt) + WEATHER_MAX_AGE_MS
+      : 0;
+    const weather =
+      input && input.fetchedAt <= now + 60000 && expiry > now ? input : null;
+    if (weather)
+      this.weatherExpiry = setTimeout(
+        () => this.acceptWeather(null),
+        expiry - now,
+      );
+    setWorldWeather(weather);
+    if (publish) this.publish({ weather });
+    else this.view = { ...this.view, weather };
+  }
   private updateRemote(player: PlayerPresence) {
     if (player.id === this.view.selfId) return;
     const old = this.remotes.get(player.id);
@@ -336,6 +374,12 @@ export class MultiplayerRoom {
   }
   protected receive(message: ServerMessage) {
     switch (message.type) {
+      case "weather": {
+        if (message.weather !== null && !validLakeWeather(message.weather))
+          break;
+        this.acceptWeather(message.weather);
+        break;
+      }
       case "activity": {
         const remote = this.remotes.get(message.id);
         if (remote) remote.lastInputAt = performance.now() - message.idleMs;
@@ -367,6 +411,8 @@ export class MultiplayerRoom {
       case "snapshot": {
         if (typeof message.serverTime === "number")
           syncWorldTime(message.serverTime);
+        if (message.weather === null || validLakeWeather(message.weather))
+          this.acceptWeather(message.weather, false);
         if (message.planes) this.acceptPlanes(message.planes);
         if (message.village && message.village.epoch !== HOUSING_EPOCH) {
           this.publish({

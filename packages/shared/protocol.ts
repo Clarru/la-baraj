@@ -1,3 +1,4 @@
+import type { LakeWeather } from "./weather.ts";
 import {
   legalFleet,
   isGridPoint,
@@ -51,6 +52,7 @@ export type ClientMessage =
     }
   | { type: "pose"; pose: PlayerPose }
   | { type: "activity"; idleMs: number }
+  | { type: "weather-refresh" }
   | { type: "punch" }
   | { type: "fire"; lit: boolean }
   | { type: "seat"; seatId: string | null; requestId: string }
@@ -68,6 +70,7 @@ export type ServerMessage =
       selfId: string;
       /** Current server UTC time, optional for compatibility with older rooms. */
       serverTime?: number;
+      weather?: LakeWeather | null;
       players: PlayerPresence[];
       fire: FireState;
       seats: Record<string, string>;
@@ -79,6 +82,7 @@ export type ServerMessage =
   | { type: "joined"; player: PlayerPresence }
   | { type: "pose"; player: PlayerPresence }
   | { type: "left"; id: string }
+  | { type: "weather"; weather: LakeWeather | null }
   | { type: "activity"; id: string; idleMs: number }
   | { type: "punch"; attackerId: string; targetId: string | null }
   | { type: "fire"; fire: FireState }
@@ -169,6 +173,8 @@ export function parseClientMessage(raw: string): ClientMessage | null {
         value.idleMs <= AFK_AFTER_MS
         ? { type: "activity", idleMs: value.idleMs }
         : null;
+    case "weather-refresh":
+      return { type: "weather-refresh" };
     case "punch":
       return { type: "punch" };
     case "sync":

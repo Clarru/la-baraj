@@ -1,6 +1,11 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { GameIcon } from "./GameArt";
 import { GameClock } from "./GameClock";
+import { formatGameTime } from "./day-night";
+import {
+  weatherDescription,
+  type LakeWeather,
+} from "../../../packages/shared/weather";
 
 import type { MultiplayerRoom } from "./multiplayer";
 import { MultiplayerHud } from "./multiplayer-hud";
@@ -91,6 +96,7 @@ export function GameMenu({
   nickname,
   homeIndex,
   homeOwnerName,
+  weather,
   canLookHome = true,
   onRename,
   onControls,
@@ -101,6 +107,7 @@ export function GameMenu({
   nickname: string;
   homeIndex: number | null;
   homeOwnerName?: string | null;
+  weather?: LakeWeather | null;
   canLookHome?: boolean;
   onRename: (name: string) => void;
   onControls: () => void;
@@ -174,6 +181,24 @@ export function GameMenu({
         </button>
         <p>If you’re stuck, return outside your cabin.</p>
       </div>
+      <p className="game-weather-info">
+        Lake weather · {weather ? weatherDescription(weather) : "Unavailable"}
+      </p>
+      <p className="game-weather-credit">
+        {weather ? `As of ${formatGameTime(weather.observedAt)} · ` : ""}Weather
+        data:{" "}
+        <a href="https://open-meteo.com/" target="_blank" rel="noreferrer">
+          Open-Meteo
+        </a>{" "}
+        ·{" "}
+        <a
+          href="https://creativecommons.org/licenses/by/4.0/"
+          target="_blank"
+          rel="noreferrer"
+        >
+          CC BY 4.0
+        </a>
+      </p>
       <a
         className="game-attribution"
         href="https://www.openstreetmap.org/copyright"

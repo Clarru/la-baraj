@@ -882,3 +882,30 @@ describe("input activity presence", () => {
     ).toBeNull();
   });
 });
+
+describe("shared weather messages", () => {
+  it("sends updates and restores current conditions to late joiners", async () => {
+    const f = fixture(),
+      a = f.connect("weather-a"),
+      b = f.connect("weather-b");
+    const weather = {
+      cloudCover: 82,
+      weatherCode: 3,
+      observedAt: 1000,
+      fetchedAt: 2000,
+    };
+    f.room.setWeather(weather);
+    expect(a.messages.at(-1)).toEqual({ type: "weather", weather });
+    expect(b.messages.at(-1)).toEqual({ type: "weather", weather });
+    f.room.snapshot(b, 3000);
+    expect(b.messages.at(-1)).toMatchObject({ type: "snapshot", weather });
+    const count = a.messages.length;
+    f.room.setWeather({ ...weather });
+    expect(a.messages.length).toBe(count);
+    f.room.setWeather(null);
+    expect(a.messages.at(-1)).toEqual({ type: "weather", weather: null });
+    expect(
+      parseClientMessage(JSON.stringify({ type: "weather-refresh" })),
+    ).toEqual({ type: "weather-refresh" });
+  });
+});

@@ -701,3 +701,64 @@ describe("remote activity", () => {
     disconnect();
   });
 });
+
+describe("shared weather", () => {
+  it("accepts the weather snapshot and updates, but ignores malformed conditions", () => {
+    const room = new MultiplayerRoom();
+    const disconnect = room.connect(),
+      socket = sockets[0];
+    socket.open();
+    expect(socket.sent).toContainEqual({ type: "weather-refresh" });
+    snapshot(socket);
+    const now = Date.now();
+    const weather = {
+      cloudCover: 76,
+      weatherCode: 3,
+      observedAt: now,
+      fetchedAt: now,
+    };
+    socket.receive({ type: "weather", weather });
+    expect(room.getSnapshot().weather).toEqual(weather);
+    socket.receive({
+      type: "weather",
+      weather: { ...weather, cloudCover: 500 },
+    });
+    expect(room.getSnapshot().weather).toEqual(weather);
+    socket.receive({ type: "weather", weather: null });
+    expect(room.getSnapshot().weather).toBeNull();
+    disconnect();
+  });
+});
+
+describe("weather freshness", () => {
+  it("expires a last-known forecast even when the connection is unavailable", () => {
+    vi.useFakeTimers({
+      toFake: [
+        "setTimeout",
+        "clearTimeout",
+        "setInterval",
+        "clearInterval",
+        "Date",
+      ],
+    });
+    const room = new MultiplayerRoom(),
+      disconnect = room.connect(),
+      socket = sockets[0];
+    socket.open();
+    snapshot(socket);
+    const now = Date.now();
+    socket.receive({
+      type: "weather",
+      weather: {
+        cloudCover: 60,
+        weatherCode: 2,
+        observedAt: now,
+        fetchedAt: now,
+      },
+    });
+    expect(room.getSnapshot().weather?.cloudCover).toBe(60);
+    vi.advanceTimersByTime(3 * 60 * 60 * 1000);
+    expect(room.getSnapshot().weather).toBeNull();
+    disconnect();
+  });
+});

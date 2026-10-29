@@ -527,6 +527,7 @@ export default function Game({ initialName }: { initialName: string }) {
           )}
           {panel === "menu" && (
             <GameMenu
+              weather={roomView.weather}
               nickname={roomView.nickname}
               homeOwnerName={
                 cabins.find((c) => c.index === homeIndex)?.ownerName ?? null
