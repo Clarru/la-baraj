@@ -471,13 +471,13 @@ export const Vegetation = memo(function Vegetation({
           return [
             id,
             {
-              geometry: distantTreeGeometry(impostorInfo[id]),
+              geometry: distantTreeGeometry(impostorInfo[id], id === "Cincis_Oak_1" ? 3 : 2),
               material: new THREE.MeshBasicMaterial({
                 map: texture,
                 alphaTest: 0.4,
                 side: THREE.DoubleSide,
                 fog: true,
-                color: "#c0d1be",
+                color: id === "Cincis_Oak_1" ? "#899782" : "#c0d1be",
               }),
             },
           ];
@@ -538,40 +538,21 @@ export const Vegetation = memo(function Vegetation({
     </>
   );
 });
-function distantTreeGeometry(info: { width: number; height: number }) {
-  const w = info.width / 2,
-    h = info.height;
-  const positions = [
-    -w,
-    0,
-    0,
-    w,
-    0,
-    0,
-    w,
-    h,
-    0,
-    -w,
-    h,
-    0,
-    0,
-    0,
-    -w,
-    0,
-    0,
-    w,
-    0,
-    h,
-    w,
-    0,
-    h,
-    -w,
-  ];
-  const uv = [0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1];
+function distantTreeGeometry(info: { width: number; height: number }, planes = 2) {
+  const positions: number[] = [], uv: number[] = [], indices: number[] = [];
+  for (let i = 0; i < planes; i++) {
+    const angle = (i * Math.PI) / planes;
+    const x = Math.cos(angle) * info.width / 2;
+    const z = Math.sin(angle) * info.width / 2;
+    const base = i * 4;
+    positions.push(-x, 0, -z, x, 0, z, x, info.height, z, -x, info.height, -z);
+    uv.push(0, 0, 1, 0, 1, 1, 0, 1);
+    indices.push(base, base + 1, base + 2, base, base + 2, base + 3);
+  }
   const g = new THREE.BufferGeometry();
   g.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
   g.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2));
-  g.setIndex([0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7]);
+  g.setIndex(indices);
   g.computeVertexNormals();
   return g;
 }
