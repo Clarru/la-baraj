@@ -208,6 +208,8 @@ export function Player({
   const gestureAnimation = useRef<string | null>(null);
   const facingParent = useMemo(() => new THREE.Quaternion(), []);
   const facingTarget = useMemo(() => new THREE.Quaternion(), []);
+  const proneFacing = useMemo(() => new THREE.Vector3(), []);
+  const proneOrientation = useMemo(() => new THREE.Quaternion(), []);
   const lastMovingAlignment = useRef<number | null>(null);
   const crouchOverlayActive = useRef(false);
   const { scene, animations } = useGLTF(assetUrl("Lakeside_Man"));
@@ -1079,22 +1081,32 @@ export function Player({
       }
     }
     if (stanceRef.current === "prone" && visual.current) {
-      const facing = new THREE.Vector3(0, 0, 1).applyQuaternion(
-        visual.current.getWorldQuaternion(new THREE.Quaternion()),
+      proneFacing
+        .set(0, 0, 1)
+        .applyQuaternion(visual.current.getWorldQuaternion(proneOrientation));
+      const yaw = Math.atan2(proneFacing.x, proneFacing.z);
+      const turn = Math.atan2(
+        Math.sin(yaw - proneYaw.current),
+        Math.cos(yaw - proneYaw.current),
       );
-      const yaw = Math.atan2(facing.x, facing.z);
-      const rotated = rotateProneCollider({
-        body: c.body,
-        collider: c.collider,
-        world,
-        rapier,
-        yaw,
-      });
-      if (rotated) proneYaw.current = yaw;
-      else {
-        visual.current.parent?.getWorldQuaternion(facingParent);
-        localFacing(proneYaw.current, facingParent, facingTarget);
-        visual.current.quaternion.copy(facingTarget);
+      // Translation is handled by Rapier. Only a changing footprint needs an
+      // extra overlap query; an idle prone avatar adds no query per frame.
+      if (Math.abs(turn) > 0.001) {
+        if (
+          rotateProneCollider({
+            body: c.body,
+            collider: c.collider,
+            world,
+            rapier,
+            yaw,
+          })
+        )
+          proneYaw.current = yaw;
+        else {
+          visual.current.parent?.getWorldQuaternion(facingParent);
+          localFacing(proneYaw.current, facingParent, facingTarget);
+          visual.current.quaternion.copy(facingTarget);
+        }
       }
     }
     const gesture =
