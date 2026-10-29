@@ -86,7 +86,8 @@ export class LakeWeatherService {
       const response = await this.fetchForecast(FORECAST_URL, {
         signal: AbortSignal.timeout(8000),
       });
-      if (!response.ok) throw new Error("weather service unavailable");
+      if (!response.ok)
+        throw new Error(`weather provider returned HTTP ${response.status}`);
       const forecast = parseForecast(await response.json(), now);
       if (!forecast) throw new Error("invalid weather response");
       const next = {
@@ -95,7 +96,12 @@ export class LakeWeatherService {
       };
       await this.store.put(STORAGE_KEY, next);
       this.cache = next;
-    } catch {
+    } catch (error) {
+      // Log only the failure class/status; no player data goes to the provider.
+      console.warn(
+        "Lake weather refresh failed:",
+        error instanceof Error ? error.message : "unknown error",
+      );
       // Keep the last good result until it ages out; retry later without breaking the room.
     }
     this.announce(this.current(Date.now()));
