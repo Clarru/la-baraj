@@ -840,3 +840,44 @@ describe("playful punches", () => {
     }
   });
 });
+
+describe("input activity presence", () => {
+  it("broadcasts bounded activity, retains idle age in snapshots and does not depend on pose packets", async () => {
+    const f = fixture(),
+      a = f.connect("a"),
+      b = f.connect("b");
+    await f.send(a, { type: "hello", nickname: "A" });
+    await f.send(b, { type: "hello", nickname: "B" });
+    await f.send(a, { type: "activity", idleMs: 1200 }, 5000);
+    expect(b.messages.at(-1)).toEqual({
+      type: "activity",
+      id: "a",
+      idleMs: 1200,
+    });
+    const messages = b.messages.length;
+    await f.send(a, { type: "activity", idleMs: 0 }, 5500);
+    expect(b.messages.length).toBe(messages);
+    f.room.snapshot(b, 183800);
+    const snapshot = b.messages.at(-1);
+    expect(snapshot?.type).toBe("snapshot");
+    if (snapshot?.type === "snapshot") {
+      expect(snapshot.players.find((player) => player.id === "a")?.idleMs).toBe(
+        180000,
+      );
+      expect(
+        snapshot.players.find((player) => player.id === "b")?.idleMs,
+      ).toBeUndefined();
+    }
+    await f.send(a, { type: "activity", idleMs: 0 }, 184000);
+    expect(b.messages.at(-1)).toEqual({ type: "activity", id: "a", idleMs: 0 });
+    await f.send(a, { type: "activity", idleMs: 180000 }, 200000);
+    await f.send(a, { type: "activity", idleMs: 0 }, 200100);
+    expect(b.messages.at(-1)).toEqual({ type: "activity", id: "a", idleMs: 0 });
+    expect(
+      parseClientMessage(JSON.stringify({ type: "activity", idleMs: -1 })),
+    ).toBeNull();
+    expect(
+      parseClientMessage(JSON.stringify({ type: "activity", idleMs: 180001 })),
+    ).toBeNull();
+  });
+});

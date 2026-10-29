@@ -9,6 +9,7 @@ export const PROTOCOL_VERSION = 1 as const;
 /** Retains the existing world's Durable Object and anonymous home ownership. */
 export const CANONICAL_WORLD_ID = "27f6361b353f4b5db885fd37fac89eda";
 export const MAX_PLAYERS = 50;
+export const AFK_AFTER_MS = 3 * 60 * 1000;
 export const MAX_HOMES = 50;
 /** Intentional village reset: old random ownership and placements are retired. */
 export const HOUSING_EPOCH = 2;
@@ -33,6 +34,8 @@ export type PlayerPresence = PlayerPose & {
   id: string;
   nickname: string;
   homeIndex?: number;
+  /** Snapshot-only: milliseconds since last user input, when known. */
+  idleMs?: number;
 };
 /** Private to the owning connection; never embed this in public presence. */
 export type HomeAssignment = { index: number; resumeToken: string };
@@ -47,6 +50,7 @@ export type ClientMessage =
       housingEpoch?: number;
     }
   | { type: "pose"; pose: PlayerPose }
+  | { type: "activity"; idleMs: number }
   | { type: "punch" }
   | { type: "fire"; lit: boolean }
   | { type: "seat"; seatId: string | null; requestId: string }
@@ -73,6 +77,7 @@ export type ServerMessage =
   | { type: "joined"; player: PlayerPresence }
   | { type: "pose"; player: PlayerPresence }
   | { type: "left"; id: string }
+  | { type: "activity"; id: string; idleMs: number }
   | { type: "punch"; attackerId: string; targetId: string | null }
   | { type: "fire"; fire: FireState }
   | { type: "seats"; seats: Record<string, string> }
@@ -155,6 +160,13 @@ export function parseClientMessage(raw: string): ClientMessage | null {
         action: parsed,
       };
     }
+    case "activity":
+      return typeof value.idleMs === "number" &&
+        Number.isInteger(value.idleMs) &&
+        value.idleMs >= 0 &&
+        value.idleMs <= AFK_AFTER_MS
+        ? { type: "activity", idleMs: value.idleMs }
+        : null;
     case "punch":
       return { type: "punch" };
     case "sync":

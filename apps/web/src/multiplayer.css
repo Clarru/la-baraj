@@ -76,3 +76,16 @@
     animation: none;
   }
 }
+.multiplayer-afk {
+  display: block;
+  width: max-content;
+  margin: 0 auto 4px;
+  padding: 3px 7px;
+  border: 1px solid #bcae85;
+  border-radius: 4px;
+  background: #29372c;
+  color: #f5e8bd;
+  font: 700 10px/1.1 var(--font-body);
+  letter-spacing: 0.04em;
+  user-select: none;
+}

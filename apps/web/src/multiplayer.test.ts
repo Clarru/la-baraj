@@ -670,3 +670,34 @@ describe("private paper-game client", () => {
     stop();
   });
 });
+
+describe("remote activity", () => {
+  it("keeps activity through pose updates, restores snapshot age and clears on input", () => {
+    const room = new MultiplayerRoom();
+    const disconnect = room.connect(),
+      socket = sockets[0];
+    socket.open();
+    snapshot(socket);
+    socket.receive({ type: "activity", id: friend.id, idleMs: 500 });
+    expect(room.remotes.get(friend.id)?.lastInputAt).toBe(500);
+    socket.receive({
+      type: "pose",
+      player: { ...friend, position: [46, 2, 27] },
+    });
+    expect(room.remotes.get(friend.id)?.lastInputAt).toBe(500);
+    socket.receive({ type: "activity", id: friend.id, idleMs: 0 });
+    expect(room.remotes.get(friend.id)?.lastInputAt).toBe(1000);
+    const hello = socket.sent.find((message) => message.type === "hello")!;
+    socket.receive({
+      type: "snapshot",
+      version: 1,
+      selfId: self.id,
+      players: [self, { ...friend, idleMs: 180000 }],
+      fire: { lit: true, revision: 0 },
+      seats: {},
+      home: { index: 14, resumeToken: hello.resumeToken },
+    });
+    expect(room.remotes.get(friend.id)?.lastInputAt).toBe(-179000);
+    disconnect();
+  });
+});

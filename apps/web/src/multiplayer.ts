@@ -1,4 +1,5 @@
 import PartySocket from "partysocket";
+import { InputActivity } from "./input-activity";
 import {
   CANONICAL_WORLD_ID,
   HOUSING_EPOCH,
@@ -33,6 +34,7 @@ export type RemotePlayer = {
   player: PlayerPresence;
   receivedAt: number;
   activityAt: number;
+  lastInputAt?: number;
 };
 export function roomFromLocation() {
   const url = new URL(location.href);
@@ -84,6 +86,9 @@ export function currentMultiplayerRoom() {
 export class MultiplayerRoom {
   readonly roomId = roomFromLocation();
   readonly remotes = new Map<string, RemotePlayer>();
+  private inputActivity = new InputActivity((idleMs) =>
+    this.send({ type: "activity", idleMs }),
+  );
   private listeners = new Set<() => void>();
   private punchTimes = new Map<string, number>();
   private lastPunchSentAt = -Infinity;
@@ -134,6 +139,8 @@ export class MultiplayerRoom {
   ) {
     if (initialName) this.view = { ...this.view, nickname: initialName };
   }
+  noteInput = () => this.inputActivity.input();
+  stopTrackingInput = () => this.inputActivity.dispose();
   subscribe = (listener: () => void) => {
     this.listeners.add(listener);
     return () => {
@@ -311,6 +318,10 @@ export class MultiplayerRoom {
     this.remotes.set(player.id, {
       player,
       receivedAt: performance.now(),
+      lastInputAt:
+        player.idleMs === undefined
+          ? old?.lastInputAt
+          : performance.now() - player.idleMs,
       activityAt:
         old && old.player.activity === player.activity
           ? old.activityAt
@@ -324,6 +335,11 @@ export class MultiplayerRoom {
   }
   protected receive(message: ServerMessage) {
     switch (message.type) {
+      case "activity": {
+        const remote = this.remotes.get(message.id);
+        if (remote) remote.lastInputAt = performance.now() - message.idleMs;
+        break;
+      }
       case "punch": {
         const now = performance.now();
         this.punchTimes.set(message.attackerId, now + 867);
@@ -396,6 +412,7 @@ export class MultiplayerRoom {
           fireLit: message.fire.lit,
         });
         this.sentPose = "";
+        this.inputActivity.flush();
         if (this.lastPose) this.publishPose(this.lastPose, true);
         this.publishWorld();
         break;
