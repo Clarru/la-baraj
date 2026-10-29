@@ -9,7 +9,11 @@ export const BOAT_DOCK_SIDE_OFFSET = 3.2;
 export const BOAT_DOCK_LAKE_OFFSET = 11;
 /** Furthest the player can be from the boat and still board. */
 export const BOAT_BOARD_DISTANCE = 3.5;
-const EXIT_MIN_DRY = 0.1;
+/**
+ * Deepest water (m) a stepped-out driver stands in. Below the swim thresholds in
+ * swim-motion.ts (enter 0.62, exit 0.42), so the player wades instead of swimming.
+ */
+export const BOAT_WADE_DEPTH = 0.4;
 const EXIT_STEPS = [1.6, 2.6] as const;
 /** Bow steps clear the 1.8 m hull half-length plus the 0.3 m capsule radius. */
 const BOW_EXIT_STEPS = [2.2, 3.2] as const;
@@ -111,7 +115,7 @@ export function boatExitCandidates(
   return out;
 }
 
-/** First dry-enough candidate becomes a land exit; otherwise drop into the water at the first. */
+/** First candidate with ground no deeper than BOAT_WADE_DEPTH becomes a land (wade-ashore) exit; otherwise drop into the water at the first. */
 export function chooseBoatExit(
   candidates: [number, number][],
   floorAt: (x: number, z: number) => number | undefined,
@@ -123,7 +127,7 @@ export function chooseBoatExit(
     if (
       floor !== undefined &&
       Number.isFinite(floor) &&
-      floor >= LAKE_LEVEL + EXIT_MIN_DRY
+      floor >= LAKE_LEVEL - BOAT_WADE_DEPTH
     )
       return { kind: "land", position: [x, floor, z] };
   }

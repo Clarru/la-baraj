@@ -18,7 +18,7 @@ Values live in `BOAT_TUNING` in `apps/web/src/boat-motion.ts`.
 - Wheel travel 2.4 rad, hull lean at most 0.06 rad, ride height 0.75 m, bob amplitude 0.03 m.
 - The hull floor never goes below `LAKE_LEVEL + 0.15` (`BOAT_FLOAT_HEIGHT` in `apps/web/src/boat-geometry.ts`).
 - Bank stop: the boat probes the water 2.2 m ahead (`BOAT_PROBE_DISTANCE`) and stops when it is shallower than 0.5 m (`BOAT_MIN_DEPTH`), both in `apps/web/src/boat-placement.ts` (`boatBlockedAhead`).
-- Exit candidates: sides at 1.6 m and 2.6 m, then the bow at 2.2 m and 3.2 m, then a land-only far ring of left, right and bow at 4.5 m. If none is solid ground at least 0.1 m above the lake, the driver enters the water beside the boat at the first (1.6 m) candidate.
+- Exit candidates: sides at 1.6 m and 2.6 m, then the bow at 2.2 m and 3.2 m, then a land-only far ring of left, right and bow at 4.5 m. The first candidate whose ground lies no more than 0.4 m below the lake surface (`BOAT_WADE_DEPTH`, shallower than the 0.62 m swim threshold) becomes the exit, so the driver wades rather than swims. If none qualifies, the driver enters the water beside the boat at the first (1.6 m) candidate.
 
 ## Wheel and hands
 
@@ -34,7 +34,7 @@ The existing pose carries `vehicle: "boat"`; no new message type is added. A rem
 - Boat position is not persisted; it resets to the dock on reload.
 - The north shore terrain is a proxy, so boat-to-bank behaviour there is approximate.
 - Remote players and remote boats were not verified: the run was offline and the production Worker was not contacted.
-- At a gentle bank the boat stops in water that is still about 0.67 m deep, about 5 m from the shoreline. The exit reach now extends to 4.5 m, so V reaches the bank on gentle shores. North-shore crossing: see Browser verification item 7.
+- At a gentle bank the boat stops in water that is still about 0.67 m deep, about 5 m from the shoreline. The exit reach now extends to 4.5 m and wadeable shallows up to 0.4 m deep count as ground, so V at a shallows stop wades ashore on gentle banks. North-shore crossing: see Browser verification item 7.
 - Dev-mode verification is blocked by a bug that predates the boats. `React.StrictMode` runs effects twice, and the cleanup at `apps/web/src/NearbySolids.tsx:38` calls `isValid()` on a Rapier world that is already freed. The error is "null pointer passed to rust" and the scene boundary shows "The lake couldn't load". It reproduces on the base commit (6d6e3d8) as well as this branch.
 
 ## Browser verification
@@ -53,7 +53,7 @@ Console in the preview session: 0 errors and 2 existing warnings (THREE.Clock de
 ## Observed issues
 
 - Fixed during verification: the boat could cross the shoreline at full throttle and strand the player in terrain (fix 48e95a5).
-- Changed after verification, browser re-run pending: the gentle-bank exit now has a 4.5 m far exit ring (see Known limits).
+- Changed after verification, browser re-run pending: the gentle-bank exit now has a 4.5 m far exit ring and wades ashore in water up to 0.4 m deep (see Known limits).
 - Open: dev-mode scene load fails because of the StrictMode and Rapier cleanup bug, unrelated to the boats.
 
 ## Captures

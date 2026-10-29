@@ -332,7 +332,8 @@ export function Player({
             yaw = boatMotion.current.yaw;
           const exit = chooseBoatExit(
             boatExitCandidates(pos.x, pos.z, yaw),
-            (x, z) => scooterSupportHeight(world, x, z, pos.y + 2, body),
+            // The 3 m ray from here reaches LAKE_LEVEL - 0.75, below the wade depth.
+            (x, z) => scooterSupportHeight(world, x, z, pos.y + 1.5, body),
           );
           parkBoat([pos.x, LAKE_LEVEL, pos.z], yaw);
           // A water exit lands at the surface; swim detection takes over next frame.

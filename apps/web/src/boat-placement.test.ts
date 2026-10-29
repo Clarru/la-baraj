@@ -89,7 +89,12 @@ describe("boat placement", () => {
       kind: "land",
       position: [2, 0.4, 2],
     });
-    expect(chooseBoatExit(c, () => LAKE_LEVEL + 0.05).kind).toBe("water");
+    // Wadeable shallows count as land; deeper water does not.
+    expect(chooseBoatExit(c, () => LAKE_LEVEL - 0.5).kind).toBe("water");
+    expect(chooseBoatExit(c, () => LAKE_LEVEL - 0.3)).toEqual({
+      kind: "land",
+      position: [1, LAKE_LEVEL - 0.3, 1],
+    });
   });
 
   it("falls back to the water beside the boat mid-lake", () => {
