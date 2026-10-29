@@ -14,7 +14,7 @@ import { terrainHeight, settlementRoadZ } from "./geography";
 import * as THREE from "three";
 
 export type PerformanceScenario =
-  "solo" | "village" | "crowd" | "riders" | "distant";
+  "solo" | "village" | "crowd" | "riders" | "distant" | "swimmers";
 export const performanceLab =
   import.meta.env.VITE_PERFORMANCE_LAB === "1" &&
   ["127.0.0.1", "localhost"].includes(location.hostname);
@@ -55,6 +55,7 @@ export function PerformancePanel({
           <option value="village">50 cabins / solo</option>
           <option value="crowd">50 cabins / 49 nearby walkers</option>
           <option value="riders">50 cabins / 49 nearby scooter riders</option>
+          <option value="swimmers">50 cabins / 49 swimmers</option>
           <option value="distant">50 cabins / 49 distant players</option>
         </select>
       </label>
@@ -159,7 +160,7 @@ export function PerformanceScene({
             nickname: `Friend ${i + 1}`,
             position: [0, 0, 0],
             yaw: 0,
-            animation: "Walk",
+            animation: scenario === "swimmers" ? "Swim_Forward" : "Walk",
             activity: "none",
             vehicle: scenario === "riders" ? "scooter" : "none",
             speed: 3,
@@ -179,9 +180,17 @@ export function PerformanceScene({
     for (const remote of source.remotes.values()) {
       const angle = (i * Math.PI * 2) / 49 + time.current * 0.07;
       const radius = scenario === "distant" ? 650 : 8 + (i % 3) * 3;
-      const x = arrival.position[0] + Math.sin(angle) * radius;
-      const z = arrival.position[2] + Math.cos(angle) * radius;
-      remote.player.position = [x, terrainHeight(x, z), z];
+      const x =
+        (scenario === "swimmers" ? -10 : arrival.position[0]) +
+        Math.sin(angle) * radius;
+      const z =
+        (scenario === "swimmers" ? 40 : arrival.position[2]) +
+        Math.cos(angle) * radius;
+      remote.player.position = [
+        x,
+        scenario === "swimmers" ? 0.1 : terrainHeight(x, z),
+        z,
+      ];
       remote.player.yaw = angle + Math.PI / 2;
       i++;
     }

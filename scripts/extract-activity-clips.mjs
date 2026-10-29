@@ -46,6 +46,8 @@ async function main() {
     OverhandThrow: "Activity_Cast",
     Pistol_Aim_Neutral: "Activity_HoldRod",
     PickUp_Table: "Activity_Catch",
+    Swim_Fwd_Loop: "Swim_Forward",
+    Swim_Idle_Loop: "Swim_Idle",
   };
   const clips = source.animations
     .filter((clip) => wanted[clip.name])

@@ -1,1 +1,3 @@
 Supplemental authored character activity clips are extracted from the project’s recorded Quaternius universal humanoid / animation source copy. Original notices and source hashes are retained in assets/character-source/ and this folder’s source-manifest.json. The derivative JSON contains only selected animation tracks; the original mesh is not included. Extraction and modifications are recorded in the manifest.
+
+Swim_Forward and Swim_Idle are the original swim clips extracted from the same [Quaternius Universal Animation Library](https://quaternius.com/packs/universalanimationlibrary.html) CC0 source.

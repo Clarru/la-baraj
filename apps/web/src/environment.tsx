@@ -1,11 +1,12 @@
 import { memo, useEffect, useMemo } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
-import { RigidBody, TrimeshCollider } from "@react-three/rapier";
+import { RigidBody } from "@react-three/rapier";
 import * as THREE from "three";
 import { Water } from "three/examples/jsm/objects/Water.js";
 import { ModelInstances, type Placement } from "./assets";
 import { NearbySolids, type NaturalSolid } from "./NearbySolids";
 import { isSolidVegetation } from "./vegetation-collision";
+import { LAKE_LEVEL } from "./swim-motion";
 import { makeRoadRibbon, makeBackgroundForest } from "./landscape-geometry";
 import { useTexture, Detailed } from "@react-three/drei";
 import impostorInfo from "../public/assets/impostors/manifest.json";
@@ -156,41 +157,6 @@ export function Terrain() {
     </>
   );
 }
-// A continuous collision wall follows the real shoreline. No trigger/respawn at water.
-export function makeLakeBoundary() {
-  const vertices: number[] = [],
-    indices: number[] = [];
-  for (let i = 1; i < lake.length; i++) {
-    const a = lake[i - 1],
-      b = lake[i],
-      n = vertices.length / 3;
-    vertices.push(a[0], -4, a[1], b[0], -4, b[1], a[0], 8, a[1], b[0], 8, b[1]);
-    // Both faces collide so approaching from either side remains predictable.
-    indices.push(
-      n,
-      n + 1,
-      n + 2,
-      n + 1,
-      n + 3,
-      n + 2,
-      n + 2,
-      n + 1,
-      n,
-      n + 2,
-      n + 3,
-      n + 1,
-    );
-  }
-  return [new Float32Array(vertices), new Uint32Array(indices)] as const;
-}
-export function LakeBoundary() {
-  const [vertices, indices] = useMemo(makeLakeBoundary, []);
-  return (
-    <RigidBody type="fixed" colliders={false}>
-      <TrimeshCollider args={[vertices, indices]} friction={0} />
-    </RigidBody>
-  );
-}
 function waterGeometry() {
   const path = new THREE.Shape(
     lake.slice(0, -1).map(([x, z]) => new THREE.Vector2(x, -z)),
@@ -243,7 +209,7 @@ export function LakeWater({ evening }: { evening: boolean }) {
       side: THREE.DoubleSide,
     });
     w.rotation.x = -Math.PI / 2;
-    w.position.y = 0.05;
+    w.position.y = LAKE_LEVEL;
     w.material.uniforms.size.value = 7.5;
     w.material.fragmentShader = w.material.fragmentShader
       .replace(

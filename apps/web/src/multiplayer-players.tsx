@@ -26,6 +26,7 @@ import { RemoteScooter, RemoteScooterFleet } from "./RemoteScooterFleet";
 import type { MultiplayerRoom } from "./multiplayer";
 import { createTableReactionRig } from "./table-reactions";
 import { planesSeatSide } from "../../../packages/shared/planes-station";
+import { SwimWake } from "./SwimWake";
 
 /** Membership alone reconciles React. Pose packets update mutable targets read by each rig. */
 export function MultiplayerPlayers({ room }: { room: MultiplayerRoom }) {
@@ -101,6 +102,8 @@ function RemoteAvatarRig({
     scooterGroup = useRef<THREE.Group>(null),
     scooter = useRef<ScooterHandle>(null);
   const [hasScooter, setHasScooter] = useState(false);
+  const [swimming, setSwimming] = useState(false);
+  const swimmingRef = useRef(false);
   const scooterMounted = useRef(false);
   const target = useMemo(() => new THREE.Vector3(), []);
   const previousAnimation = useRef(""),
@@ -135,6 +138,12 @@ function RemoteAvatarRig({
     const player = remote.player,
       dt = Math.min(delta, 0.1),
       riding = player.vehicle === "scooter";
+    const nowSwimming =
+      player.animation === "Swim_Forward" || player.animation === "Swim_Idle";
+    if (swimmingRef.current !== nowSwimming) {
+      swimmingRef.current = nowSwimming;
+      setSwimming(nowSwimming);
+    }
     target.fromArray(player.position);
     // Presence still arrives; distant rigs need neither bone/IK updates nor badges.
     const visible = player.animation !== "idle";
@@ -240,6 +249,7 @@ function RemoteAvatarRig({
   return (
     <group ref={root} name={`Online player ${id}`}>
       <primitive object={object} dispose={null} />
+      {swimming && <SwimWake />}
       {hasScooter && (
         <group ref={scooterGroup}>
           <RemoteScooter ref={scooter} />

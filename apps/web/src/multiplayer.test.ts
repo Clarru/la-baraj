@@ -106,6 +106,29 @@ afterEach(() => {
 });
 
 describe("friends room client", () => {
+  it.each(["Swim_Forward", "Swim_Idle"])(
+    "publishes %s through the existing pose contract",
+    (animation) => {
+      const room = new MultiplayerRoom();
+      const disconnect = room.connect(),
+        socket = sockets[0];
+      socket.open();
+      snapshot(socket);
+      room.publishMotion({
+        ...sample,
+        animation,
+        feet: [10, 0.1, 12],
+        velocity: [0, 0, 2],
+      });
+      const packet = socket.sent.find((message) => message.type === "pose")!;
+      expect(packet).toMatchObject({
+        type: "pose",
+        pose: { animation, vehicle: "none" },
+      });
+      expect(parseClientMessage(JSON.stringify(packet))).toEqual(packet);
+      disconnect();
+    },
+  );
   it("keeps an explicit offline preview disconnected even with a configured live host", () => {
     const room = new MultiplayerRoom();
     const disconnect = room.connect(true);
