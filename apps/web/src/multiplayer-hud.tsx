@@ -56,7 +56,8 @@ export function MultiplayerHud({ room }: { room: MultiplayerRoom }) {
           {retry && <button onClick={() => location.reload()}>Retry</button>}
         </div>
       )}
-      {import.meta.env.DEV && (
+      {(import.meta.env.DEV ||
+        import.meta.env.VITE_GAME_DIAGNOSTICS === "1") && (
         <output
           hidden
           ref={room.attachDiagnostics}

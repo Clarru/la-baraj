@@ -358,7 +358,16 @@ export function Player({
       )
         return;
       if (e.ctrlKey || e.metaKey || e.altKey) return;
-      if (e.code === "KeyG" && !e.repeat && !paused && mode === "walk") {
+      if (
+        e.code === "KeyG" &&
+        !e.repeat &&
+        !paused &&
+        mode === "walk" &&
+        !(
+          e.target instanceof HTMLElement &&
+          e.target.closest("button, a, [role=button], [role=dialog]")
+        )
+      ) {
         waveQueued.current = true;
         e.preventDefault();
         return;
@@ -508,6 +517,9 @@ export function Player({
     };
   }, [mode, paused, mixer, indoors, gl, setPhysicalStance]);
   useEffect(() => {
+    waveQueued.current = false;
+    waveState.current = null;
+    actions[SOCIAL_WAVE_CLIP_NAME]?.stop();
     // A reset relocates to a known open spawn, so normalise the collider first.
     setPhysicalStance("standing", false);
     controller.current?.body?.setTranslation(

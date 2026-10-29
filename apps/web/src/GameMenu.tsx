@@ -103,6 +103,7 @@ export function GameMenu({
   onHome,
   onReset,
   onWave,
+  canWave = true,
   onClose,
 }: {
   nickname: string;
@@ -115,6 +116,7 @@ export function GameMenu({
   onHome: () => void;
   onReset: () => void;
   onWave?: () => void;
+  canWave?: boolean;
   onClose: () => void;
 }) {
   const [name, setName] = useState(nickname);
@@ -160,7 +162,13 @@ export function GameMenu({
       )}
       <div className="game-menu-actions">
         {onWave && (
-          <button onClick={onWave}>
+          <button
+            onClick={onWave}
+            disabled={!canWave}
+            title={
+              canWave ? "Wave hello" : "Stand still outside an activity to wave"
+            }
+          >
             <GameIcon name="people" size={29} />
             <span>Wave hello</span>
             <kbd>G</kbd>
