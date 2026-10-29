@@ -249,6 +249,7 @@ export class MultiplayerRoom {
       this.homeAcknowledged = false;
       this.sendHello();
       this.send({ type: "sync" });
+      this.send({ type: "weather-refresh" });
     });
     socket.addEventListener("message", (event) => {
       if (this.socket !== socket || typeof event.data !== "string") return;

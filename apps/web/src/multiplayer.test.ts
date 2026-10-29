@@ -708,6 +708,7 @@ describe("shared weather", () => {
     const disconnect = room.connect(),
       socket = sockets[0];
     socket.open();
+    expect(socket.sent).toContainEqual({ type: "weather-refresh" });
     snapshot(socket);
     const now = Date.now();
     const weather = {
