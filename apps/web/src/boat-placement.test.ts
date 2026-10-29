@@ -8,6 +8,7 @@ import {
   chooseBoatExit,
   nearestDockSpawn,
 } from "./boat-placement";
+import { getBoatState, parkBoat, resetBoatToDock } from "./boat-state";
 import { inWater, terrainHeight } from "./geography";
 import { LAKE_LEVEL } from "./swim-motion";
 
@@ -89,5 +90,15 @@ describe("boat placement", () => {
       kind: "water",
       position: [1, LAKE_LEVEL, 1],
     });
+  });
+
+  it("returning home puts the boat back at the nearest dock", () => {
+    parkBoat([500, LAKE_LEVEL, -300], 1);
+    resetBoatToDock(-200);
+    const dock = nearestDockSpawn(-200);
+    expect(getBoatState().parked).toEqual(dock.position);
+    expect(getBoatState().yaw).toBe(dock.yaw);
+    expect(getBoatState().mounted).toBe(false);
+    expect(getBoatState().speed).toBe(0);
   });
 });

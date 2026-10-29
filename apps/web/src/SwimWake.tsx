@@ -12,14 +12,15 @@ const material = new THREE.MeshBasicMaterial({
   depthWrite: false,
   side: THREE.DoubleSide,
 });
-export function SwimWake() {
+/** `scale` widens the ring, e.g. for a boat hull. */
+export function SwimWake({ scale: size = 1 }: { scale?: number }) {
   const mesh = useRef<THREE.Mesh>(null);
   const world = useMemo(() => new THREE.Vector3(), []);
   useFrame(({ clock }) => {
     if (!mesh.current?.parent) return;
     mesh.current.parent.getWorldPosition(world);
     mesh.current.position.y = LAKE_LEVEL + 0.025 - world.y;
-    const scale = 1 + 0.18 * Math.sin(clock.elapsedTime * 2.1);
+    const scale = size * (1 + 0.18 * Math.sin(clock.elapsedTime * 2.1));
     mesh.current.scale.set(scale, scale * 0.72, 1);
   });
   return (

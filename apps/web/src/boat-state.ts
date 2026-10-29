@@ -1,4 +1,5 @@
-import { boatDockSpawn } from "./boat-placement";
+import { boatDockSpawn, nearestDockSpawn } from "./boat-placement";
+import { getVehicleState } from "./vehicle-state";
 
 /** One local, parkable personal motorboat. Shared with seating so driving excludes seated activities. */
 export type BoatState = {
@@ -33,4 +34,13 @@ export function parkBoat(
 export function updateBoatMotion(yaw: number, speed: number): void {
   state.yaw = yaw;
   state.speed = speed;
+}
+/** Return the boat to the dock nearest the player's home. */
+export function resetBoatToDock(homeX: number): void {
+  const dock = nearestDockSpawn(homeX);
+  parkBoat(dock.position, dock.yaw);
+}
+/** Riding the scooter or driving the boat; either excludes seated activities. */
+export function vehicleOccupied(): boolean {
+  return getVehicleState().mounted || state.mounted;
 }

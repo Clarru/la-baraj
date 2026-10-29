@@ -21,6 +21,7 @@ import { Settlement } from "./settlement";
 import { WorldActivities, type ActivityPrompt } from "./activities";
 import { SceneLoading } from "./SceneLoading";
 import { ParkedScooter } from "./scooter";
+import { ParkedBoat } from "./boat";
 import { SeatingMetrics } from "./SeatingMetrics";
 import { CabinInterior } from "./CabinInterior";
 import { CabinAccess } from "./CabinAccess";
@@ -179,6 +180,20 @@ export default function Game({ initialName }: { initialName: string }) {
     previousVehicleMounted.current = vehicleMounted;
     if (!vehicleMounted) setVehicleHintUntil(0);
   }, [vehicleMounted]);
+  const [boatMounted, setBoatMounted] = useState(false),
+    [boatNear, setBoatNear] = useState(false);
+  const [boatHintUntil, setBoatHintUntil] = useState(0);
+  const previousBoatMounted = useRef(false);
+  useEffect(() => {
+    if (boatMounted && !previousBoatMounted.current) {
+      setBoatHintUntil(Date.now() + 4500);
+      const timer = setTimeout(() => setBoatHintUntil(0), 4500);
+      previousBoatMounted.current = true;
+      return () => clearTimeout(timer);
+    }
+    previousBoatMounted.current = boatMounted;
+    if (!boatMounted) setBoatHintUntil(0);
+  }, [boatMounted]);
   const [interiorIndex, setInteriorIndex] = useState<number | null>(null);
   const [focusedCabinIndex, setFocusedCabinIndex] = useState(homeIndex);
   const [doorTransition, setDoorTransition] = useState(false),
@@ -359,10 +374,28 @@ export default function Game({ initialName }: { initialName: string }) {
               key: "V",
             }
           : null
-        : (activityPrompt ??
-          (scooterNear
-            ? { main: "Ride QuickVolt 9", detail: "Electric scooter", key: "V" }
-            : null));
+        : boatMounted
+          ? boatHintUntil > 0
+            ? {
+                main: "Motorboat",
+                detail: "V near a bank to step out",
+                key: "V",
+              }
+            : null
+          : (activityPrompt ??
+            (boatNear
+              ? {
+                  main: "Drive the motorboat",
+                  detail: "W throttle · A/D steer · V step out",
+                  key: "V",
+                }
+              : scooterNear
+                ? {
+                    main: "Ride QuickVolt 9",
+                    detail: "Electric scooter",
+                    key: "V",
+                  }
+                : null));
   const menuHomeIndex =
     roomView.homeIndex ?? (roomView.status === "offline" ? homeIndex : null);
   return (
@@ -442,6 +475,8 @@ export default function Game({ initialName }: { initialName: string }) {
                   onMotion={updateMotion}
                   onVehicleChange={setVehicleMounted}
                   onVehicleHint={setScooterNear}
+                  onBoatChange={setBoatMounted}
+                  onBoatHint={setBoatNear}
                   indoors={interiorIndex !== null}
                   doorTransition={doorTransition}
                 />
@@ -461,6 +496,7 @@ export default function Game({ initialName }: { initialName: string }) {
                   <PerformanceScene scenario={performanceScenario} />
                 )}
                 {hasHome && <ParkedScooter mounted={vehicleMounted} />}
+                {hasHome && <ParkedBoat mounted={boatMounted} />}
                 <WorldActivities
                   room={room}
                   onFireMetrics={
