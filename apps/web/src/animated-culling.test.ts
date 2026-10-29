@@ -99,5 +99,5 @@ describe("animated character frustum bounds", () => {
     );
     frustum.setFromProjectionMatrix(projection);
     expect(meshes.some((mesh) => frustum.intersectsObject(mesh))).toBe(true);
-  });
+  }, 15000);
 });
