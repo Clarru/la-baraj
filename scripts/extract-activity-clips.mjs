@@ -92,6 +92,16 @@ async function main() {
       ),
     ),
   );
+  // These clips are baked against the dressed target rig, not the source body.
+  const prone = JSON.parse(
+    fs.readFileSync("assets/character-source/prone-retarget.json", "utf8"),
+  );
+  clips.push(
+    ...prone.clips.map((clip) => ({
+      ...clip,
+      name: clip.name.replace("Prone_Belly_", "Prone_"),
+    })),
+  );
   fs.mkdirSync("apps/web/public/assets/animations", { recursive: true });
   const serialized = JSON.stringify(
     { source: "human_male.glb", clips },

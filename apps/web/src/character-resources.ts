@@ -1,6 +1,5 @@
 import * as THREE from "three";
 import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
-import { createStanceClips } from "./stance-clips";
 import { createSocialWaveClip } from "./social-wave";
 import { createRunJumpClips } from "./run-jump-clips";
 import { createFishingGestureClips } from "./character-actions";
@@ -27,9 +26,6 @@ export function characterClips(
     ...createRunJumpClips(animations.find((c) => c.name === "Run")),
     ...authored,
     ...createFishingGestureClips(),
-    ...createStanceClips(
-      authored.find((clip) => clip.name === "Swim_Forward"),
-    ).filter((clip) => clip.name !== "Crouch_Pose"),
     createSocialWaveClip(),
   ];
   clipCache.set(animations, { source, clips });

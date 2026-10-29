@@ -96,9 +96,7 @@ describe("approved character resource reuse", () => {
     expect(lowestVertex).toBeLessThan(0.015);
     mixer.stopAllAction();
     expect(clips.find((clip) => clip.name === "Prone_Idle")).toBeDefined();
-    expect(clips.find((clip) => clip.name === "Prone_Crawl")?.duration).toBe(
-      clips.find((clip) => clip.name === "Swim_Forward")?.duration,
-    );
+    expect(clips.find((clip) => clip.name === "Prone_Crawl")).toBeDefined();
   });
   it("shares equivalent skeletons within one avatar, never between players, preserving bind and animated vertices", async () => {
     const { scene, animations } = await loadRig(
