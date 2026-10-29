@@ -37,3 +37,7 @@ Create an original transparent-background foliage texture for a stylized 3D Euro
 
 Beech bark, 29 October 2026. Input: species-distinct-style-lineup.png. Prompt:
 Create one seamless, tileable bark albedo texture for a stylized 3D European beech tree in a natural lakeside game. Smooth silvery gray bark with very subtle fine horizontal lenticel marks, restrained tonal variation and a few delicate pale patches. Match the visual finish of the tree art reference while retaining beech's smooth bark; no oak-like deep furrows, no thick grooves, no cracks, no moss, no knots, no lighting or shadows, no text. Flat orthographic material texture filling the image edge to edge.
+
+
+Beech separate leaf spray, 29 October 2026. Input: species-distinct-style-lineup.png. Transparent background. Prompt:
+A transparent texture asset for a stylized realistic 3D European beech tree. Exactly five separate individual beech leaves arranged loosely in a circular spray, viewed face on, each leaf distinct and fully visible, separated by transparent gaps. Each leaf is oval, pointed, with gently wavy edges and delicate parallel veins. Rich natural green with subtle painterly shading, same material finish as the reference tree art. No twigs, stems, branch, background, glow, ground, shadows, text or extra foliage. This is a sparse alpha card texture, not a tree or dense bush.
