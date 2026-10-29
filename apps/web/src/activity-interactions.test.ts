@@ -262,7 +262,7 @@ describe("vehicle guard", () => {
     parkBoat([0, 0, 0], 0);
     parkVehicle([0, 0, 0], 0);
   });
-  it("activities refuse to start while driving a boat", () => {
+  it("vehicleOccupied reports a mounted boat or scooter", () => {
     expect(vehicleOccupied()).toBe(false);
     mountBoat();
     expect(vehicleOccupied()).toBe(true);

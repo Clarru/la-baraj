@@ -13,6 +13,8 @@ const EXIT_MIN_DRY = 0.1;
 const EXIT_STEPS = [1.6, 2.6] as const;
 /** Bow steps clear the 1.8 m hull half-length plus the 0.3 m capsule radius. */
 const BOW_EXIT_STEPS = [2.2, 3.2] as const;
+/** Land-only far ring: reaches a gentle bank from where the shallows stop the hull. */
+const EXIT_FAR_STEP = 4.5;
 
 type Spawn = { position: [number, number, number]; yaw: number };
 
@@ -78,7 +80,11 @@ export function boatBlockedAhead(
   );
 }
 
-/** Exit points per step: left and right at 1.6 m / 2.6 m, then bow at 2.2 m / 3.2 m (left of +Z-forward is +X). */
+/**
+ * Exit points per step: left and right at 1.6 m / 2.6 m, then bow at 2.2 m / 3.2 m,
+ * then a far ring of left, right, bow at 4.5 m (left of +Z-forward is +X).
+ * The water fallback always uses the first, nearest candidate.
+ */
 export function boatExitCandidates(
   x: number,
   z: number,
@@ -92,8 +98,10 @@ export function boatExitCandidates(
   const lx = fz,
     lz = -fx;
   const out: [number, number][] = [];
-  EXIT_STEPS.forEach((d, i) => {
-    const bow = BOW_EXIT_STEPS[i];
+  const sides = [...EXIT_STEPS, EXIT_FAR_STEP],
+    bows = [...BOW_EXIT_STEPS, EXIT_FAR_STEP];
+  sides.forEach((d, i) => {
+    const bow = bows[i];
     out.push(
       [px + lx * d, pz + lz * d],
       [px - lx * d, pz - lz * d],

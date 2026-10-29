@@ -63,12 +63,19 @@ describe("boat placement", () => {
 
   it("tries both sides before the bow", () => {
     const c = boatExitCandidates(0, 0, 0);
-    expect(c).toHaveLength(6);
+    expect(c).toHaveLength(9);
     expect(c[0][0]).toBeCloseTo(1.6);
     expect(c[1][0]).toBeCloseTo(-1.6);
     expect(c[2][0]).toBeCloseTo(0);
     expect(c[2][1]).toBeCloseTo(2.2);
     expect(c[5][1]).toBeCloseTo(3.2);
+    // Far land-only ring reaches the bank from a shallows stop.
+    expect(c[6][0]).toBeCloseTo(4.5);
+    expect(c[6][1]).toBeCloseTo(0);
+    expect(c[7][0]).toBeCloseTo(-4.5);
+    expect(c[7][1]).toBeCloseTo(0);
+    expect(c[8][0]).toBeCloseTo(0);
+    expect(c[8][1]).toBeCloseTo(4.5);
     expect(c.flat().every(Number.isFinite)).toBe(true);
   });
 
