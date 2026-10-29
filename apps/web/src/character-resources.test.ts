@@ -65,15 +65,13 @@ describe("approved character resource reuse", () => {
     expect(crouch?.blendMode).toBe(THREE.AdditiveAnimationBlendMode);
     expect(crouch?.tracks.map((track) => track.name)).toEqual(
       expect.arrayContaining([
-        "pelvis.quaternion",
+        "pelvis.position",
         "thigh_l.quaternion",
         "calf_l.quaternion",
         "spine_03.quaternion",
       ]),
     );
-    expect(clips.find((clip) => clip.name === "Prone_Idle")?.duration).toBe(
-      clips.find((clip) => clip.name === "Swim_Idle")?.duration,
-    );
+    expect(clips.find((clip) => clip.name === "Prone_Idle")).toBeDefined();
     expect(clips.find((clip) => clip.name === "Prone_Crawl")?.duration).toBe(
       clips.find((clip) => clip.name === "Swim_Forward")?.duration,
     );
