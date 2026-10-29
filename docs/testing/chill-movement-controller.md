@@ -25,3 +25,15 @@ The motion output exposes actual body/visual-root position, contact, grounded st
 ## Remaining gates
 
 Repeat the controller clearance sequence after the final prone clip correction; walk clear of the ceiling and verify standing succeeds, test repeated toggles for vertical drift, and inspect sloped support. Verify crouch/prone/punch suppression during jump, chat, menu, seats, cards, scooter, water and cabin transitions in the full world. Verify two-client pose/gesture parity and the Menu wave action. Run the representative render/performance comparison and restore a normal shared preview build before release.
+
+## Full-world paired-client check
+
+A temporary production-shaped build used the existing `VITE_PLANES_PAIRED_LAB=1 VITE_GAME_DIAGNOSTICS=1` flags on the same 4173 server, with two test tabs and the existing `time=12` daylight override. Both clients shared only an in-memory test authority.
+
+- Client A crouched through C. Client B received explicit `posture: crouching`, `animation: Crouch_Idle` and the same grounded visual root, and visibly rendered the dressed character in crouch. The normal standing avatar beside it provided a direct height reference.
+- Client A returned to standing and used G. Client B received `Social_Wave` and visibly animated the raised arm.
+- The Menu's Wave hello action closed the menu and started Social_Wave locally.
+- A crouched player walked to the Planes bench and used the actual F interaction. The seated pose became `standing`/`Activity_Sit` with activity `sit`. C, Z, G and P did not override the active table-game UI. Stand up completed back to standing Idle_Neutral and activity none.
+- Both test clients were closed after releasing seats. No production homes or match data were touched.
+
+The canonical main preview was then restored to the normal Cruce follow-up build (not this unfinished movement branch). A fresh normal-local smoke check walked from the cabin to Cruce, used F to open the board, and released the seat. QA controls were absent. PR34 remains independently gated on idle-prop resource allocation and the performance fixture's narrow room contract.
