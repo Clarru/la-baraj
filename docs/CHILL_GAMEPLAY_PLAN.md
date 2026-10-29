@@ -53,3 +53,13 @@ The product reviewer supports C/Z toggles and P with a middle-click alternative,
 - Stance implementation is still under review on `codex/stance-movement`. Initial draft review flagged expansion clearance for prone-to-crouch, pointer/keyboard grounded parity, visual root offset and the need to replace swimming-like prone motion with credible land motion. Real Rapier clearance tests are being added by that worker.
 - The Cruce follow-up chat owns the localhost in-memory transport, square table geometry and held-card gestures. Its future shared-file hooks will be merged deliberately with stance/wave changes. Production origin remains strict.
 - The currently served 4173 main game, approved rock swap and Cruce QA fixture have not been replaced by this goal's unfinished branches.
+
+## Revised implementation evidence
+
+- The first in-world posture pass failed visual acceptance: prone idle was upright/buried and crouch barely lowered the silhouette. Those aliases are no longer the intended delivery.
+- A fresh inventory of the full original `human_male.glb` found 86 animations, including `Crouch_Idle_Loop` and `Crouch_Fwd_Loop`. The runtime now uses extracted `Crouch_Idle`/`Crouch_Walk` clips through the existing action JSON; all previous clips remain byte-equivalent as parsed data. Added compressed payload is about 52 KB. Both full and incremental extraction scripts preserve these clips.
+- Real-rig crouch validation checks a hip drop over 20cm and the actual deformed mesh's lowest vertex within 1.5cm of the floor. An authored raised heel makes ankle-joint height unsuitable as a sole-contact assertion.
+- Skinned character pieces now bypass stale bind-pose frustum bounds; whole-avatar distance culling remains. Hair/beard skin weights and head tracks were verified before changing this.
+- Controller followups fix posture-aware ground probing, full target orientation/volume clearance, collision-safe prone turning and cabin-path expansion checks. Exact capsule-axis tests cover four cardinal headings.
+- The revised branch passes 218 frontend tests and 114 server/protocol tests under Node 24, plus frontend/server type checks. In-world authored crouch/prone, wave/reset/menu, two-client visual parity and representative performance checks still remain; these test totals are not release acceptance.
+- The preview is temporarily allocated to the Cruce followup's final world/hand check. Its local-only candidate preserves the approved rock and QA routes. The normal pre-QA build is preserved at the release owner's recorded temporary backup path.
