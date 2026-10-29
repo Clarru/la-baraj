@@ -70,12 +70,18 @@ describe("social hello wave", () => {
     expect(createSocialWaveClips()[0].blendMode).toBe(
       THREE.AdditiveAnimationBlendMode,
     );
-    expect(clip.tracks.map((track) => track.name)).toEqual([
+    const names = clip.tracks.map((track) => track.name);
+    expect(names.slice(0, 4)).toEqual([
       "clavicle_r.quaternion",
       "upperarm_r.quaternion",
       "lowerarm_r.quaternion",
       "hand_r.quaternion",
     ]);
+    for (const finger of ["index", "middle", "ring", "pinky"])
+      for (const joint of ["01", "02", "03"])
+        expect(names).toContain(`${finger}_${joint}_r.quaternion`);
+    for (const joint of ["01", "02", "03"])
+      expect(names).toContain(`thumb_${joint}_r.quaternion`);
     for (const track of clip.tracks) {
       const size = track.getValueSize();
       expect(Array.from(track.values.slice(0, size)).map(Math.abs)).toEqual([
@@ -100,19 +106,51 @@ describe("social hello wave", () => {
     wave.play();
 
     let peakHandAboveShoulder = -Infinity;
+    let peakHandDistanceToHead = Infinity;
+    let peakForearmX = Infinity;
+    let peakForearmY = -Infinity;
+    let handMinX = Infinity;
+    let handMaxX = -Infinity;
+    let peakFingerDistance = -Infinity;
     for (let frame = 0; frame <= 96; frame++) {
       mixer.setTime((SOCIAL_WAVE_DURATION * frame) / 96);
       scene.updateMatrixWorld(true);
+      const elbow = scene
+        .getObjectByName("lowerarm_r")!
+        .getWorldPosition(new THREE.Vector3());
       const shoulder = scene
         .getObjectByName("clavicle_r")!
         .getWorldPosition(new THREE.Vector3());
       const hand = scene
         .getObjectByName("hand_r")!
         .getWorldPosition(new THREE.Vector3());
+      const head = scene
+        .getObjectByName("Head")!
+        .getWorldPosition(new THREE.Vector3());
       peakHandAboveShoulder = Math.max(
         peakHandAboveShoulder,
         hand.y - shoulder.y,
       );
+      peakHandDistanceToHead = Math.min(
+        peakHandDistanceToHead,
+        hand.distanceTo(head),
+      );
+      const forearm = hand.clone().sub(elbow);
+      if (hand.y - shoulder.y === peakHandAboveShoulder) {
+        peakForearmX = Math.abs(forearm.x);
+        peakForearmY = forearm.y;
+      }
+      handMinX = Math.min(handMinX, hand.x);
+      handMaxX = Math.max(handMaxX, hand.x);
+      for (const finger of ["index", "middle", "ring", "pinky"])
+        peakFingerDistance = Math.max(
+          peakFingerDistance,
+          hand.distanceTo(
+            scene
+              .getObjectByName(`${finger}_04_leaf_r`)!
+              .getWorldPosition(new THREE.Vector3()),
+          ),
+        );
       scene.traverse((object) => {
         if (!(object instanceof THREE.Bone)) return;
         expect(object.quaternion.length()).toBeCloseTo(1, 4);
@@ -120,6 +158,11 @@ describe("social hello wave", () => {
       });
     }
     expect(peakHandAboveShoulder).toBeGreaterThan(0.12);
+    expect(peakHandDistanceToHead).toBeLessThan(0.55);
+    expect(peakForearmY).toBeGreaterThan(0.12);
+    expect(peakForearmX).toBeLessThan(peakForearmY * 0.75);
+    expect(handMaxX - handMinX).toBeGreaterThan(0.08);
+    expect(peakFingerDistance).toBeGreaterThan(0.11);
   });
 
   it("restores the authored pose after the additive layer ends", async () => {

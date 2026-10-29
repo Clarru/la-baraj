@@ -135,15 +135,16 @@ export function createSocialWaveClip() {
     [
       // The shoulder lift creates a readable greeting silhouette without
       // changing the approved mesh or the character's torso/feet.
-      track("clavicle_r", "x", (time) => 0.5 * waveEnvelope(time)),
+      track("clavicle_r", "x", (time) => 0.35 * waveEnvelope(time)),
       track("upperarm_r", "z", (time) => -1.3 * waveEnvelope(time)),
-      // Three low-amplitude forearm passes keep the hand moving after lift.
+      // The elbow stays high while the forearm folds back toward the head.
+      // A z-axis sweep moves the wrist side-to-side without punching forward.
       track(
         "lowerarm_r",
-        "x",
+        "z",
         (time) =>
-          (-0.25 +
-            0.23 * Math.sin((time / SOCIAL_WAVE_DURATION) * Math.PI * 6)) *
+          (-1.7 +
+            0.35 * Math.sin((time / SOCIAL_WAVE_DURATION) * Math.PI * 6)) *
           waveEnvelope(time),
       ),
       track(
@@ -154,6 +155,26 @@ export function createSocialWaveClip() {
           Math.sin((time / SOCIAL_WAVE_DURATION) * Math.PI * 6 + Math.PI / 2) *
           waveEnvelope(time),
       ),
+      // The source hand is curled into a fist. Open its compatible finger
+      // chains with bounded offsets while retaining the original mesh.
+      ...(["index", "middle", "ring", "pinky"] as const).flatMap((finger) =>
+        (
+          [
+            ["01", -0.8],
+            ["02", -0.55],
+            ["03", -0.3],
+          ] as const
+        ).map(([joint, amount]) =>
+          track(
+            `${finger}_${joint}_r`,
+            "x",
+            (time) => amount * waveEnvelope(time),
+          ),
+        ),
+      ),
+      track("thumb_01_r", "z", (time) => 0.8 * waveEnvelope(time)),
+      track("thumb_02_r", "z", (time) => 0.7 * waveEnvelope(time)),
+      track("thumb_03_r", "z", (time) => 0.5 * waveEnvelope(time)),
     ],
   );
   clip.blendMode = THREE.AdditiveAnimationBlendMode;
