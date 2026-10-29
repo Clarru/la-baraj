@@ -48,6 +48,36 @@ describe("approved character resource reuse", () => {
       mixer.stopAllAction();
     }
   });
+  it("adds an additive crouch pose and aliases the authored swim rig for prone movement", async () => {
+    const { animations } = await loadRig(
+      new URL("../public/assets/optimized/Lakeside_Man.glb", import.meta.url)
+        .pathname,
+    );
+    const json = readFileSync(
+      new URL(
+        "../public/assets/animations/character-actions.json",
+        import.meta.url,
+      ),
+      "utf8",
+    );
+    const clips = characterClips(animations, json);
+    const crouch = clips.find((clip) => clip.name === "Crouch_Pose");
+    expect(crouch?.blendMode).toBe(THREE.AdditiveAnimationBlendMode);
+    expect(crouch?.tracks.map((track) => track.name)).toEqual(
+      expect.arrayContaining([
+        "pelvis.quaternion",
+        "thigh_l.quaternion",
+        "calf_l.quaternion",
+        "spine_03.quaternion",
+      ]),
+    );
+    expect(clips.find((clip) => clip.name === "Prone_Idle")?.duration).toBe(
+      clips.find((clip) => clip.name === "Swim_Idle")?.duration,
+    );
+    expect(clips.find((clip) => clip.name === "Prone_Crawl")?.duration).toBe(
+      clips.find((clip) => clip.name === "Swim_Forward")?.duration,
+    );
+  });
   it("shares equivalent skeletons within one avatar, never between players, preserving bind and animated vertices", async () => {
     const { scene, animations } = await loadRig(
       new URL("../public/assets/optimized/Lakeside_Man.glb", import.meta.url)

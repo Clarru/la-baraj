@@ -28,6 +28,11 @@ import { createTableReactionRig } from "./table-reactions";
 import { planesSeatSide } from "../../../packages/shared/planes-station";
 import { SwimWake } from "./SwimWake";
 import { AFK_AFTER_MS } from "../../../packages/shared/protocol";
+import {
+  postureFromAnimation,
+  stanceBaseAnimation,
+  type Stance,
+} from "./stance-motion";
 
 // Only the isolated local browser lab may shorten the visual timeout for QA.
 const displayAfkAfter =
@@ -118,6 +123,7 @@ function RemoteAvatarRig({
   const previousAnimation = useRef(""),
     previousActivityAt = useRef(-1),
     previousGesture = useRef<string | null>(null),
+    previousStance = useRef<Stance>("standing"),
     wasRiding = useRef(false),
     initialized = useRef(false);
   const badge = useRef<HTMLSpanElement>(null);
@@ -172,6 +178,7 @@ function RemoteAvatarRig({
     const player = remote.player,
       dt = Math.min(delta, 0.1),
       riding = player.vehicle === "scooter";
+    const stance = postureFromAnimation(player.posture, player.animation);
     const nowSwimming =
       player.animation === "Swim_Forward" || player.animation === "Swim_Idle";
     if (swimmingRef.current !== nowSwimming) {
@@ -212,6 +219,10 @@ function RemoteAvatarRig({
         player.jumpPhase as JumpPhase,
         player.animation.startsWith("Jump_Run") ? "run" : "walk",
       );
+    const proneAnimation = stanceBaseAnimation(
+      stance,
+      (player.speed ?? 0) > 0.3,
+    );
     const config = activity ?? jump;
     const combatRoom = "stunned" in room ? (room as MultiplayerRoom) : null;
     const stunned = combatRoom?.stunned(id) ?? false;
@@ -221,7 +232,28 @@ function RemoteAvatarRig({
       ? "Punch_Hit"
       : punching
         ? "Punch_Jab"
-        : player.animation;
+        : proneAnimation &&
+            player.activity === "none" &&
+            !riding &&
+            !nowSwimming
+          ? proneAnimation
+          : player.animation;
+    const crouchActive =
+      stance === "crouching" &&
+      !nowSwimming &&
+      !riding &&
+      player.activity === "none" &&
+      !stunned &&
+      !punching;
+    const crouchAction = rig.actions.get("Crouch_Pose");
+    if (crouchAction) {
+      if (crouchActive && previousStance.current !== "crouching")
+        crouchAction.reset().setLoop(THREE.LoopRepeat, Infinity).play();
+      crouchAction.setEffectiveWeight(crouchActive ? 1 : 0);
+      if (!crouchActive && previousStance.current === "crouching")
+        crouchAction.fadeOut(0.12);
+    }
+    previousStance.current = crouchActive ? "crouching" : stance;
     const next = rig.actions.has(chosen) ? chosen : "Idle_Neutral";
     if (
       next !== previousAnimation.current ||

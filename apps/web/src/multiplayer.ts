@@ -598,6 +598,11 @@ export class MultiplayerRoom {
       animation: String(sample.animation ?? "Idle_Neutral"),
       activity: String(sample.activity ?? "none"),
       vehicle: sample.vehicle ? "scooter" : "none",
+      ...(sample.posture === "standing" ||
+      sample.posture === "crouching" ||
+      sample.posture === "prone"
+        ? { posture: sample.posture }
+        : {}),
       jumpPhase: String(sample.jumpPhase ?? "grounded"),
       speed: sample.vehicle
         ? Number(sample.vehicleSpeed ?? 0)

@@ -17,14 +17,68 @@ export function characterClips(
   const data = JSON.parse(source) as {
     clips: Parameters<typeof THREE.AnimationClip.parse>[0][];
   };
+  const authored = data.clips.map((c) => THREE.AnimationClip.parse(c));
   const clips = [
     ...animations,
     ...createRunJumpClips(animations.find((c) => c.name === "Run")),
-    ...data.clips.map((c) => THREE.AnimationClip.parse(c)),
+    ...authored,
     ...createFishingGestureClips(),
+    createCrouchPoseClip(),
   ];
+  // Swimming is already a strong, fully authored prone body pose on this rig.
+  // Alias it instead of flattening the mesh or inventing an unconvincing
+  // all-bone pose; the movement controller supplies the land collision shape.
+  const swimIdle = authored.find((clip) => clip.name === "Swim_Idle");
+  const swimForward = authored.find((clip) => clip.name === "Swim_Forward");
+  if (swimIdle) {
+    const prone = swimIdle.clone();
+    prone.name = "Prone_Idle";
+    clips.push(prone);
+  }
+  if (swimForward) {
+    const prone = swimForward.clone();
+    prone.name = "Prone_Crawl";
+    clips.push(prone);
+  }
   clipCache.set(animations, { source, clips });
   return clips;
+}
+
+/**
+ * A small additive lower-body/torso pose keeps the approved walk/run clips
+ * intact while giving crouch a readable silhouette. Prone uses the authored
+ * swim clips above, which include the complete hand/foot timing.
+ */
+export function createCrouchPoseClip() {
+  const duration = 1;
+  const offsets: Record<string, number> = {
+    pelvis: 0.18,
+    spine_01: -0.12,
+    spine_02: -0.12,
+    spine_03: -0.15,
+    neck_01: 0.1,
+    Head: 0.15,
+    thigh_l: 0.35,
+    thigh_r: 0.35,
+    calf_l: -0.8,
+    calf_r: -0.8,
+    foot_l: 0.35,
+    foot_r: 0.35,
+  };
+  const tracks = Object.entries(offsets).map(([bone, angle]) => {
+    const q = new THREE.Quaternion().setFromEuler(new THREE.Euler(angle, 0, 0));
+    return new THREE.QuaternionKeyframeTrack(
+      `${bone}.quaternion`,
+      [0, duration],
+      [q.x, q.y, q.z, q.w, q.x, q.y, q.z, q.w],
+    );
+  });
+  return new THREE.AnimationClip(
+    "Crouch_Pose",
+    duration,
+    tracks,
+    THREE.AdditiveAnimationBlendMode,
+  );
 }
 
 /** The approved model binds all ten clothing/body meshes to identical bones.
