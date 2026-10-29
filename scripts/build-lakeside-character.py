@@ -2,7 +2,7 @@
 import bpy,bmesh,math
 from pathlib import Path
 from mathutils import Vector
-root=Path('/Users/claumarin/Documents/ChatGPT/multiplayer-game')
+root=Path(__file__).resolve().parents[1]
 bpy.ops.wm.read_factory_settings(use_empty=True)
 bpy.ops.import_scene.gltf(filepath=str(root/'assets/character-source/human_male.glb'))
 rig=next(o for o in bpy.context.scene.objects if o.type=='ARMATURE')

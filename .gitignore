@@ -33,3 +33,6 @@ docs/feasibility/captures/*-raw.png
 docs/animations/captures/*-raw.png
 docs/deployment/captures/*-raw.png
 .vercel
+
+# Local design-tool session cache
+.impeccable/hook.cache.json

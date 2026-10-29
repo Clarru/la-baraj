@@ -1,6 +1,6 @@
 import bpy,json
 from pathlib import Path
-root=Path('/Users/claumarin/Documents/ChatGPT/multiplayer-game')
+root=Path(__file__).resolve().parents[1]
 bpy.ops.wm.read_factory_settings(use_empty=True)
 bpy.ops.import_scene.gltf(filepath=str(root/'assets/character-source/human_male.glb'))
 for o in bpy.context.scene.objects:

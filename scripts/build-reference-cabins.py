@@ -6,7 +6,7 @@ from shutil import copyfile
 from pathlib import Path
 from mathutils import Vector
 from array import array
-root=Path('/Users/claumarin/Documents/ChatGPT/multiplayer-game')
+root=Path(__file__).resolve().parents[1]
 bpy.ops.wm.read_factory_settings(use_empty=True)
 random.seed(407)
 # Restrained grain is original procedural image data, not an imagegen substitute for the reference.

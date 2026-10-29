@@ -6,20 +6,20 @@ The canonical repository is https://github.com/Clarru/la-baraj (private). Produc
 
 | Chat | Branch | Dedicated working directory | Responsibility |
 | --- | --- | --- | --- |
-| Putting it live | `main` | `/Users/claumarin/Documents/ChatGPT/multiplayer-game-release` | Integration, multiplayer/backend, release and deployment |
-| Choose a low-cost multiplayer stack | `codex/cabins-interiors` | `/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/cabins-interiors` | Cabins, interiors, doors and home/navigation |
-| Create a game - fork 1 | `codex/seating-campfire` | `/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/seating-campfire` | Seating, activities, campfire and its animations/effects |
-| Fork 2 - bicycle | `codex/scooter-jumping` | `/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/scooter-jumping` | QuickVolt scooter, rider, movement, jump animations and camera |
+| Putting it live | `main` | `~/Documents/ChatGPT/multiplayer-game-release` | Integration, multiplayer/backend, release and deployment |
+| Choose a low-cost multiplayer stack | `codex/cabins-interiors` | `~/Documents/ChatGPT/multiplayer-game-worktrees/cabins-interiors` | Cabins, interiors, doors and home/navigation |
+| Create a game - fork 1 | `codex/seating-campfire` | `~/Documents/ChatGPT/multiplayer-game-worktrees/seating-campfire` | Seating, activities, campfire and its animations/effects |
+| Fork 2 - bicycle | `codex/scooter-jumping` | `~/Documents/ChatGPT/multiplayer-game-worktrees/scooter-jumping` | QuickVolt scooter, rider, movement, jump animations and camera |
 
 These are separate Git worktrees, so edits and branch switches in one directory do not change another chat's files. Use the dedicated absolute working directory for every command and edit. Do not switch branches in another chat's checkout. The shared Git configuration sets the correct identity for all worktrees:
 
 `Clau Marin <46570067+Clarru@users.noreply.github.com>`
 
-Never use `clau.marin@usbc.xyz`. Before committing, check `git var GIT_AUTHOR_IDENT` and `git var GIT_COMMITTER_IDENT`; both must resolve to the identity above.
+Never use a personal or work email address for Git authorship. Before committing, check `git var GIT_AUTHOR_IDENT` and `git var GIT_COMMITTER_IDENT`; both must resolve to the identity above.
 
 ## Transition from the old shared folder
 
-`/Users/claumarin/Documents/ChatGPT/multiplayer-game` is the preserved legacy source/preview folder. It has no GitHub remote and no tracked baseline. Do not pull, checkout, reset, clean, stage everything, commit or push there. Do not delete or replace it. Work already in progress stays safe there while its owner finishes the current scoped task.
+`~/Documents/ChatGPT/multiplayer-game` is the preserved legacy source/preview folder. It has no GitHub remote and no tracked baseline. Do not pull, checkout, reset, clean, stage everything, commit or push there. Do not delete or replace it. Work already in progress stays safe there while its owner finishes the current scoped task.
 
 Move completed work deliberately into the assigned worktree based on `origin/main`. Compare only the task's owned files/hunks against the current release. Port the change; do not blanket-copy App.tsx, player.tsx, activities.tsx, package files, or the whole legacy source tree over the release. Preserve current multiplayer hooks, server-authoritative seat claims, remote pose publishing and shared fire. Latest legacy interiors and jumping revisions may be ahead of production and need this port.
 

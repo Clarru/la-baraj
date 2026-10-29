@@ -2,7 +2,7 @@
 import bpy, math
 from pathlib import Path
 from mathutils import Vector
-root=Path('/Users/claumarin/Documents/ChatGPT/multiplayer-game')
+root=Path(__file__).resolve().parents[1]
 bpy.ops.wm.read_factory_settings(use_empty=True)
 def mat(name,color,metal=0):
  m=bpy.data.materials.new(name);m.diffuse_color=(*color,1);m.use_nodes=True
