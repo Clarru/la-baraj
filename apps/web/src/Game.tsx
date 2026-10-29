@@ -1,3 +1,6 @@
+import { cruceWorldLab } from "./cruce-world-test";
+import { CruceWorldLab } from "./CruceWorldLab";
+import { LocalWorldRoom, localWorldEnabled } from "./LocalWorldRoom";
 import {
   cruceSeatSide,
   CRUCE_SEATS,
@@ -99,7 +102,9 @@ export default function Game({ initialName }: { initialName: string }) {
   const [room] = useState<MultiplayerRoom>(() =>
     planesLab
       ? new LocalPlanesRoom(initialName)
-      : new MultiplayerRoom(initialName),
+      : localWorldEnabled()
+        ? new LocalWorldRoom(initialName)
+        : new MultiplayerRoom(initialName),
   );
   const [performanceScenario, setPerformanceScenario] =
     useState<PerformanceScenario>("solo");
@@ -672,6 +677,7 @@ export default function Game({ initialName }: { initialName: string }) {
             </Suspense>
           )}
           {planesLab && <PlanesLabControls room={room} />}
+          {cruceWorldLab && <CruceWorldLab room={room} />}
           {performanceLab && (
             <PerformancePanel
               scenario={performanceScenario}

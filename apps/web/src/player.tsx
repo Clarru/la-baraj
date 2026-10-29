@@ -4,6 +4,9 @@ import {
   SOCIAL_WAVE_CLIP_NAME,
   type SocialWaveState,
 } from "./social-wave";
+import { takeCruceTestMove } from "./cruce-world-test";
+import { useCruceCharacter } from "./use-cruce-character";
+import { cruceSeatSide } from "../../../packages/shared/cruce-station";
 import { CRUCE_TABLE } from "../../../packages/shared/cruce-station";
 import type { CruceSeat } from "../../../packages/shared/cruce";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -223,6 +226,10 @@ export function Player({
   );
   const { actions, mixer } = useAnimations(allAnimations, object);
   const tableReaction = useMemo(() => createTableReactionRig(object), [object]);
+  const cruceCharacter = useCruceCharacter(
+    object,
+    allAnimations.find((c) => c.name === "Activity_HoldRod"),
+  );
   useFrame(() => tableReaction.beginFrame(), -2);
   useEffect(() => () => tableReaction.dispose(), [tableReaction]);
   useEffect(() => () => disposeCharacterSkeletons(object), [object]);
@@ -583,6 +590,16 @@ export function Player({
   useFrame((_, dt) => {
     const c = controller.current;
     if (!c || !c.body) return;
+    const testMove = takeCruceTestMove();
+    if (testMove) {
+      c.body.setTranslation(
+        { x: testMove[0], y: testMove[1] + 0.95, z: testMove[2] },
+        true,
+      );
+      c.body.setLinvel({ x: 0, y: 0, z: 0 }, true);
+      c.body.setAngvel({ x: 0, y: 0, z: 0 }, true);
+      keys.current.clear();
+    }
     const requestedTransfer = takeCabinTransfer();
     if (requestedTransfer) {
       doorArrival.current = requestedTransfer;
@@ -1110,6 +1127,14 @@ export function Player({
       visual.current.parent.getWorldPosition(playerViewPosition);
     else playerViewPosition.copy(playerPosition);
     activityRig.current?.update(pose, elapsed);
+    const cardRoom = currentMultiplayerRoom();
+    cruceCharacter.update(
+      cardRoom?.getSnapshot().cruce ?? null,
+      (pose.kind === "sit" || pose.kind === "sit-down") && cardRoom
+        ? cruceSeatSide(cardRoom.ownSeatId())
+        : null,
+      performance.now(),
+    );
     if (pose.kind === "sit" || pose.kind === "sit-down") {
       const room = currentMultiplayerRoom();
       if (room && planesSeatSide(room.ownSeatId()) !== null)
@@ -1306,11 +1331,15 @@ export function CameraRig({
     if (cardTableSeat !== null) {
       const angle = (cardTableSeat * Math.PI) / 2;
       camera.position.set(
-        CRUCE_TABLE.x - Math.sin(angle) * 3.9,
+        CRUCE_TABLE.x - Math.sin(angle) * 4.3 + Math.cos(angle) * 0.75,
         CRUCE_TABLE.ground + 2.6,
-        CRUCE_TABLE.z + Math.cos(angle) * 3.9,
+        CRUCE_TABLE.z + Math.cos(angle) * 4.3 + Math.sin(angle) * 0.75,
       );
-      c.target.set(CRUCE_TABLE.x, CRUCE_TABLE.ground + 0.9, CRUCE_TABLE.z);
+      c.target.set(
+        CRUCE_TABLE.x + Math.cos(angle) * 0.75,
+        CRUCE_TABLE.ground + 0.9,
+        CRUCE_TABLE.z + Math.sin(angle) * 0.75,
+      );
     } else if (tableSeat !== null) {
       // Keep the seated pair in the clear space to the left of the paper.
       const panZ = tableSeat === 0 ? 0.82 : -0.82;

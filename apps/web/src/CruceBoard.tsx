@@ -277,7 +277,10 @@ export default function CruceBoard({
     }
   };
   return (
-    <div className="cruce-overlay" data-testid="cruce-board">
+    <div
+      className={`cruce-overlay${v && !rules && ["playing", "trick"].includes(v.phase) ? " cruce-overlay--world" : ""}`}
+      data-testid="cruce-board"
+    >
       <section
         className="cruce-board"
         role="dialog"

@@ -670,3 +670,79 @@
     border: 8px solid #69452c;
   }
 }
+
+@media (min-width: 1000px) {
+  .cruce-overlay--world {
+    justify-items: end;
+    align-items: end;
+    background: transparent;
+    pointer-events: none;
+  }
+  .cruce-overlay--world .cruce-board {
+    pointer-events: auto;
+    width: min(500px, 45vw);
+    max-height: calc(100dvh - 110px);
+  }
+  .cruce-overlay--world .cruce-felt {
+    display: block;
+    min-height: 0;
+    color: #243831;
+    margin: 0 14px;
+    background: none;
+    border: 0;
+    box-shadow: none;
+  }
+  .cruce-overlay--world .cruce-player {
+    display: none;
+  }
+  .cruce-overlay--world .cruce-center {
+    position: static;
+    padding: 8px 0;
+    gap: 6px;
+  }
+  .cruce-overlay--world .cruce-played .cruce-card {
+    width: 43px;
+  }
+  .cruce-overlay--world .cruce-notice {
+    font-size: 13px;
+  }
+  .cruce-overlay--world .cruce-header {
+    padding: 12px 14px;
+    gap: 8px;
+    align-items: start;
+  }
+  .cruce-overlay--world .cruce-header-actions {
+    gap: 4px;
+    justify-content: end;
+  }
+  .cruce-overlay--world .cruce-header-actions button {
+    padding: 6px;
+    font-size: 13px;
+  }
+  .cruce-overlay--world .cruce-header h1 {
+    font-size: 25px;
+  }
+  .cruce-overlay--world kbd {
+    display: none;
+  }
+  .cruce-overlay--world .cruce-status,
+  .cruce-overlay--world .cruce-score-strip {
+    padding: 10px 14px;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+  }
+  .cruce-overlay--world .cruce-status h2 {
+    font-size: 20px;
+  }
+  .cruce-overlay--world .cruce-hand {
+    padding: 0 10px 12px;
+  }
+  .cruce-overlay--world .cruce-hand .cruce-card {
+    width: 62px;
+  }
+  .cruce-overlay--world .cruce-footer {
+    padding: 10px 14px;
+    flex-direction: column;
+    gap: 3px;
+  }
+}

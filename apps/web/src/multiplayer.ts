@@ -99,6 +99,7 @@ export function currentMultiplayerRoom() {
   return activeRoom;
 }
 export class MultiplayerRoom {
+  readonly localPreview: boolean = false;
   readonly roomId = roomFromLocation();
   readonly remotes = new Map<string, RemotePlayer>();
   private chatBubbles = new Map<string, { text: string; expiresAt: number }>();
@@ -211,6 +212,18 @@ export class MultiplayerRoom {
         seats: this.seats,
       }),
     );
+  }
+  /** Local transport owns its channel; reuse activity tracking and disconnect cleanup. */
+  protected connectLocalSession() {
+    activeRoom = this;
+    this.publish({ status: "connecting", error: "", errorCode: null });
+    let stopped = false;
+    return () => {
+      if (stopped) return;
+      stopped = true;
+      this.connectionClosed();
+      if (activeRoom === this) activeRoom = null;
+    };
   }
   connect(offlinePreview = false) {
     activeRoom = this;
@@ -751,7 +764,9 @@ export class MultiplayerRoom {
     this.planeRequests.clear();
     this.cruceRequests.forEach(({ resolve, timer }) => {
       clearTimeout(timer);
-      resolve("Conexiunea s-a întrerupt. Reconectează-te ca să revii la cărțile tale.");
+      resolve(
+        "Conexiunea s-a întrerupt. Reconectează-te ca să revii la cărțile tale.",
+      );
     });
     this.cruceRequests.clear();
   }
