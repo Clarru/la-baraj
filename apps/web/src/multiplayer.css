@@ -89,34 +89,43 @@
   letter-spacing: 0.04em;
   user-select: none;
 }
-/* Reuse the village's parchment artwork while keeping speech legible. */
+/* A rounded parchment speech bubble, with the village's dark green ink. */
 .bubble-chat {
   box-sizing: border-box;
   position: relative;
   color: #20352b;
   background: #f3e5c9;
-  border: 8px solid transparent;
-  border-image: var(--panel-art) 64 fill / 8px / 0 stretch;
+  border: 2px solid #344b3b;
+  border-radius: 13px;
   font: 600 14px/19px var(--font-body);
   text-align: left;
 }
+.bubble-chat::before,
 .bubble-chat::after {
   content: "";
   position: absolute;
   left: 50%;
+  width: 0;
+  height: 0;
+  transform: translateX(-50%);
+  border-style: solid;
+  pointer-events: none;
+}
+.bubble-chat::before {
   bottom: -11px;
-  width: 8px;
-  height: 8px;
-  background: #f3e5c9;
-  border-right: 1px solid #4c4a35;
-  border-bottom: 1px solid #4c4a35;
-  transform: translateX(-50%) rotate(45deg);
+  border-width: 10px 8px 0;
+  border-color: #344b3b transparent transparent;
+}
+.bubble-chat::after {
+  bottom: -7px;
+  border-width: 8px 6px 0;
+  border-color: #f3e5c9 transparent transparent;
 }
 .bubble-chat-editor {
   width: max-content;
   min-width: 66px;
   max-width: 240px;
-  padding: 3px 5px;
+  padding: 6px 9px;
 }
 .bubble-chat-editor:focus-within {
   outline: 2px solid #fff3d5;
@@ -172,8 +181,8 @@
   width: max-content;
   min-width: 36px;
   max-width: 240px;
-  padding: 3px 5px;
-  margin: 0 auto 10px;
+  padding: 6px 9px;
+  margin: 0 auto 12px;
 }
 .bubble-chat-message {
   display: block;
