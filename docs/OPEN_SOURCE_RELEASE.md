@@ -20,3 +20,13 @@ This checklist is for the release owner. Do not change repository visibility unt
 6. Verify the production frontend and multiplayer service after release, then publish contribution and security-reporting instructions.
 
 The project workflow assigns `main`, integration, and deployments to the release owner. This checklist does not grant permission to push `main`, merge a PR, force-push, or reset world data.
+
+## Investigation of the existing repository URL
+
+On 29 October 2026, a read-only audit fetched the advertised remote branch and pull-request head refs into a separate temporary bare clone. The product photograph was present at the tips of 21 of 22 branches and 29 of 30 pull-request head refs. The remaining tips had removed it from their current trees but still inherited its history. These counts are a snapshot, not an inventory of every GitHub-managed object or a guarantee that the refs will remain unchanged.
+
+GitHub's documented sensitive-data removal process says that rewriting and force-pushing branches alone does not remove pull-request references or cached views. It also says GitHub Support does not remove non-sensitive data through that process. Do not assume a history rewrite will make this photograph inaccessible; confirm the available remedy before publishing the current repository.
+
+One possible route to keep the `Clarru/la-baraj` URL is to rename the existing private repository and create a new repository at the original name from a reviewed clean snapshot. This creates a different GitHub repository identity: old PR links and Git redirects would no longer lead to the renamed repository once the old name is reused. Existing worktrees must have their remotes and histories handled deliberately, and the Vercel Git connection, production branch, previews, and Cloudflare configuration must be assessed and reconnected as needed. A new repository is not automatically a safe or production-ready release. This route requires explicit owner/release coordination and verification; it has not been executed.
+
+References: [GitHub history removal](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/removing-sensitive-data-from-a-repository), [repository rename redirects](https://docs.github.com/en/repositories/creating-and-managing-repositories/renaming-a-repository), and [Vercel Git deployment](https://vercel.com/docs/git).
