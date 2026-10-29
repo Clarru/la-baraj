@@ -18,7 +18,6 @@ import * as THREE from "three";
 import {
   Terrain,
   LakeWater,
-  LakeBoundary,
   Roads,
   Vegetation,
   sunDirection,
@@ -357,7 +356,6 @@ export default function Game({ initialName }: { initialName: string }) {
                 <Terrain />
                 <Roads />
                 <LakeWater evening={evening} />
-                <LakeBoundary />
                 <Vegetation flat={flat} />
                 <Settlement
                   flat={flat}
