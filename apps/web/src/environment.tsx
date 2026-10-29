@@ -287,7 +287,7 @@ const vegetationData = (() => {
   const random = rng(1729),
     groups: Record<string, Placement[]> = {
       Cincis_Oak_1: [],
-      CommonTree_3: [],
+      Cincis_Beech_1: [],
       Pine_2: [],
       Pine_4: [],
       Bush_Common: [],
@@ -297,7 +297,7 @@ const vegetationData = (() => {
       Rock_Medium_1: [],
       Rock_Medium_2: [],
     };
-  const trees = ["Cincis_Oak_1", "CommonTree_3", "Pine_2", "Pine_4"];
+  const trees = ["Cincis_Oak_1", "Cincis_Beech_1", "Pine_2", "Pine_4"];
   // Human-scale trees stay the same size; the geography and available land expand.
   for (let i = 0; i < 1700; i++) {
     const c = cabinSpots[i % cabinSpots.length],
@@ -368,7 +368,7 @@ const backgroundForest = makeBackgroundForest();
 const naturalSolids: NaturalSolid[] = [
   ...Object.entries(vegetationData).flatMap(([id, items]) => {
     const modelId = id.replace("_Distant", "");
-    const tree = /^(Cincis_Oak|CommonTree|Pine)/.test(modelId);
+    const tree = /^(Cincis_Oak|Cincis_Beech|CommonTree|Pine)/.test(modelId);
     if (!isSolidVegetation(id)) return [];
     return items.map((item, index) => ({
       ...item,
@@ -399,7 +399,7 @@ const naturalSolids: NaturalSolid[] = [
 export const environmentCounts = Object.fromEntries(
   Object.entries(vegetationData).map(([k, v]) => [k, v.length]),
 );
-const treeIds = ["Cincis_Oak_1", "CommonTree_3", "Pine_2", "Pine_4"] as const;
+const treeIds = ["Cincis_Oak_1", "Cincis_Beech_1", "Pine_2", "Pine_4"] as const;
 const treeImpostorUrls = treeIds.map((id) => `/assets/impostors/${id}.png`);
 // Metrics update the App every second. Keep placement identities stable so those
 // renders never rebuild instance matrices, bounding spheres, or forest meshes.
@@ -480,14 +480,14 @@ export const Vegetation = memo(function Vegetation({
             {
               geometry: distantTreeGeometry(
                 impostorInfo[id],
-                id === "Cincis_Oak_1" ? 3 : 2,
+                id.startsWith("Cincis_") ? 3 : 2,
               ),
               material: new THREE.MeshBasicMaterial({
                 map: texture,
                 alphaTest: 0.4,
                 side: THREE.DoubleSide,
                 fog: true,
-                color: id === "Cincis_Oak_1" ? "#899782" : "#c0d1be",
+                color: id.startsWith("Cincis_") ? "#899782" : "#c0d1be",
               }),
             },
           ];
@@ -513,9 +513,11 @@ export const Vegetation = memo(function Vegetation({
       0,
       1,
     );
-    impostors.Cincis_Oak_1.material.color
-      .copy(oakTints.night)
-      .lerp(oakTints.day, dayWeight);
+    for (const id of ["Cincis_Oak_1", "Cincis_Beech_1"]) {
+      impostors[id].material.color
+        .copy(oakTints.night)
+        .lerp(oakTints.day, dayWeight);
+    }
   });
   useEffect(
     () => () => {
@@ -539,7 +541,7 @@ export const Vegetation = memo(function Vegetation({
                 placements={placements}
               />
             );
-          if (id === "Cincis_Oak_1")
+          if (id === "Cincis_Oak_1" || id === "Cincis_Beech_1")
             return (
               <Detailed
                 key={key}

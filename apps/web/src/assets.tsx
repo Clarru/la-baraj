@@ -123,10 +123,26 @@ export function ModelInstances({
       material: THREE.Material | THREE.Material[];
       matrix: THREE.Matrix4;
     }[] = [];
-    const nearRoot = detail ? scene.getObjectByName("Oak_Near") : scene;
-    const root = detail
-      ? scene.getObjectByName(detail === "near" ? "Oak_Near" : "Oak_Mid")
-      : scene;
+    const family =
+      id === "Cincis_Oak_1"
+        ? "Oak"
+        : id === "Cincis_Beech_1"
+          ? "Beech"
+          : undefined;
+    const nearRoot =
+      detail && family
+        ? scene.getObjectByName(`${family}_Near`)
+        : detail
+          ? undefined
+          : scene;
+    const root =
+      detail && family
+        ? scene.getObjectByName(
+            `${family}_${detail === "near" ? "Near" : "Mid"}`,
+          )
+        : detail
+          ? undefined
+          : scene;
     if (!nearRoot || !root)
       throw new Error(`Missing ${detail} geometry for ${id}`);
     const box = new THREE.Box3().setFromObject(nearRoot);

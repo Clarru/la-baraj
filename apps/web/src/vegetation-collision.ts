@@ -2,14 +2,17 @@ import type RAPIER from "@dimforge/rapier3d-compat";
 
 /** Decorative vegetation is walk-through; trunks and rocks remain solid. */
 export function isSolidVegetation(id: string): boolean {
-  return /^(Cincis_Oak|CommonTree|Pine|Rock)/.test(id.replace(/_Distant$/, ""));
+  return /^(Cincis_Oak|Cincis_Beech|CommonTree|Pine|Rock)/.test(
+    id.replace(/_Distant$/, ""),
+  );
 }
 
 /** The oak's impostor has extra transparent headroom, so its quad height is not its trunk height. */
 export function treeCollision(id: string, impostorHeight: number) {
-  return id.replace(/_Distant$/, "") === "Cincis_Oak_1"
-    ? { treeHeight: 6, treeRadius: 0.4 }
-    : { treeHeight: impostorHeight * 0.72 };
+  const model = id.replace(/_Distant$/, "");
+  if (model === "Cincis_Oak_1") return { treeHeight: 6, treeRadius: 0.4 };
+  if (model === "Cincis_Beech_1") return { treeHeight: 6, treeRadius: 0.45 };
+  return { treeHeight: impostorHeight * 0.72 };
 }
 
 /** Build the same scaled, grounded trunk collider regardless of visual LOD. */

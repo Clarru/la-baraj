@@ -33,5 +33,12 @@
     "source": "Original Cinci\u0219 oak v2: scripts/build-cincis-oak-v2.mjs",
     "license": "Original project geometry and image-generated textures",
     "method": "Three.js orthographic RGBA bake from the exported model; bottom-grounded"
+  },
+  "Cincis_Beech_1": {
+    "height": 11.32673194885254,
+    "width": 7.55115463256836,
+    "source": "Original beech study: scripts/explore-beech-rooted-low.mjs",
+    "license": "Original project geometry and image-generated textures",
+    "method": "Three.js orthographic RGBA bake from exported model; bottom-grounded"
   }
 }

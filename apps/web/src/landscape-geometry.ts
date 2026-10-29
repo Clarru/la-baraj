@@ -124,7 +124,7 @@ export const BACKGROUND_TREE_BUDGET = 2400;
 export function makeBackgroundForest() {
   const groups: Record<string, Placement[]> = {
     Cincis_Oak_1: [],
-    CommonTree_3: [],
+    Cincis_Beech_1: [],
     Pine_2: [],
     Pine_4: [],
   };

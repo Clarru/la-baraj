@@ -17,3 +17,5 @@ Current cabin models Lake_Cabin_Gable, Lake_Cabin_AFrame and Lake_Cabin_Sage rep
 Additional original designs Lake_Cabin_GableBlue, Lake_Cabin_AFrameCopper and Lake_Cabin_SagePergola follow docs/art-direction/cabin-variants-grid.png (built-in image_gen; prompt saved alongside). Blender source construction: scripts/build-cabin-variants.py, reusing the established cabin geometry helpers.
 
 Cincis_Oak_1 is original procedural project geometry created with `scripts/build-cincis-oak-v2.mjs`; its foliage and bark textures were generated with built-in ImageGen, with sources and prompts in `docs/art-direction/trees/`. Its distant sprite is rendered from that model with `scripts/bake-cincis-oak-impostor.mjs`. The oak replaces one generic forest slot in this feature branch.
+
+Cincis_Beech_1 is original procedural project geometry built using the scripts and generated textures documented in `docs/art-direction/trees/WORK-IN-PROGRESS.md`. Its distant sprite is rendered from that model. The beech replaces one generic broadleaf slot in this feature branch.
