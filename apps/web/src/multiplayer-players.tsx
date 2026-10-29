@@ -27,6 +27,7 @@ import type { MultiplayerRoom } from "./multiplayer";
 import { createTableReactionRig } from "./table-reactions";
 import { planesSeatSide } from "../../../packages/shared/planes-station";
 import { SwimWake } from "./SwimWake";
+import { AFK_AFTER_MS } from "../../../packages/shared/protocol";
 
 /** Membership alone reconciles React. Pose packets update mutable targets read by each rig. */
 export function MultiplayerPlayers({ room }: { room: MultiplayerRoom }) {
@@ -113,6 +114,8 @@ function RemoteAvatarRig({
     initialized = useRef(false);
   const badge = useRef<HTMLSpanElement>(null);
   const stars = useRef<HTMLSpanElement>(null);
+  const afk = useRef<HTMLSpanElement>(null);
+  const wasAfk = useRef(false);
   useEffect(() => {
     const runtime = {
       rider: createScooterRiderRig(
@@ -136,6 +139,13 @@ function RemoteAvatarRig({
     const remote = room.remotes.get(id),
       group = root.current;
     if (!remote || !group) return;
+    const isAfk =
+      remote.lastInputAt !== undefined &&
+      performance.now() - remote.lastInputAt >= AFK_AFTER_MS;
+    if (isAfk !== wasAfk.current) {
+      wasAfk.current = isAfk;
+      if (afk.current) afk.current.style.display = isAfk ? "" : "none";
+    }
     const player = remote.player,
       dt = Math.min(delta, 0.1),
       riding = player.vehicle === "scooter";
@@ -278,6 +288,14 @@ function RemoteAvatarRig({
         zIndexRange={[5, 0]}
         style={{ pointerEvents: "none" }}
       >
+        <span
+          ref={afk}
+          className="multiplayer-afk"
+          style={{ display: "none" }}
+          aria-label="Away from keyboard"
+        >
+          AFK
+        </span>
         <span
           ref={stars}
           className="stun-stars"

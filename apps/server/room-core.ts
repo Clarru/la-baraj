@@ -1,5 +1,6 @@
 import {
   MAX_PLAYERS,
+  AFK_AFTER_MS,
   HOUSING_EPOCH,
   PROTOCOL_VERSION,
   parseClientMessage,
@@ -25,6 +26,8 @@ export type SessionState = {
   pose: Bucket;
   action: Bucket;
   violations: number;
+  lastInputAt?: number;
+  lastActivityReportAt?: number;
   punchAt?: number;
   stunnedUntil?: number;
   punchImmuneUntil?: number;
@@ -168,7 +171,7 @@ export class RoomCore {
       ),
     );
   }
-  snapshot(connection: RoomConnection) {
+  snapshot(connection: RoomConnection, now = Date.now()) {
     if (!connection.state) return;
     this.send(connection, {
       type: "snapshot",
@@ -178,7 +181,17 @@ export class RoomCore {
         epoch: HOUSING_EPOCH,
         cabins: this.runtime.homes.publicCabins(),
       },
-      players: this.active().map((c) => c.state!.player),
+      players: this.active().map((c) => ({
+        ...c.state!.player,
+        ...(c.state!.lastInputAt === undefined
+          ? {}
+          : {
+              idleMs: Math.min(
+                AFK_AFTER_MS,
+                Math.max(0, now - c.state!.lastInputAt),
+              ),
+            }),
+      })),
       fire: this.fire,
       seats: this.seats(),
       planes: this.planes.view(this.tableActor(connection)),
@@ -298,6 +311,28 @@ export class RoomCore {
       const player = { ...current.player, ...clientPose };
       connection.setState({ ...current, pose, player });
       this.broadcast({ type: "pose", player }, connection);
+      return;
+    }
+    if (message.type === "activity") {
+      if (
+        current.lastActivityReportAt !== undefined &&
+        now - current.lastActivityReportAt < 1000 &&
+        !(
+          current.lastInputAt !== undefined &&
+          now - current.lastInputAt >= AFK_AFTER_MS &&
+          message.idleMs < AFK_AFTER_MS
+        )
+      )
+        return;
+      connection.setState({
+        ...current,
+        lastInputAt: now - message.idleMs,
+        lastActivityReportAt: now,
+      });
+      this.broadcast(
+        { type: "activity", id: current.player.id, idleMs: message.idleMs },
+        connection,
+      );
       return;
     }
     if (message.type === "punch") {

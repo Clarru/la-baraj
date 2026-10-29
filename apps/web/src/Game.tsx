@@ -102,6 +102,25 @@ export default function Game({ initialName }: { initialName: string }) {
   const [performanceScenario, setPerformanceScenario] =
     useState<PerformanceScenario>("solo");
   useEffect(() => room.connect(performanceLab), [room]);
+  useEffect(() => {
+    const events = [
+      "keydown",
+      "pointerdown",
+      "pointermove",
+      "wheel",
+      "touchstart",
+    ] as const;
+    for (const event of events)
+      window.addEventListener(event, room.noteInput, {
+        passive: true,
+        capture: true,
+      });
+    return () => {
+      for (const event of events)
+        window.removeEventListener(event, room.noteInput, true);
+      room.stopTrackingInput();
+    };
+  }, [room]);
   const roomView = useSyncExternalStore(room.subscribe, room.getSnapshot);
   const [localHomeIndex] = useState(() => readLocalHome());
   const homeIndex = displayedHomeIndex(roomView.homeIndex, localHomeIndex);
