@@ -51,6 +51,20 @@ describe("paper-game interaction boundaries", () => {
     expect(html).toContain('data-testid="planes-board"');
     expect(html).toContain("Your plane placement grid");
   });
+  it("uses clear plane labels and reserves the error space before a move fails", () => {
+    const state = view();
+    const setup = render(state);
+    expect(setup).toContain("Your planes");
+    expect(setup).toContain("How to play");
+    expect(setup).toContain('class="planes-error" role="alert"');
+    expect(setup).not.toContain("Your sky");
+    state.phase = "playing";
+    state.turn = 0;
+    const battle = render(state);
+    expect(battle).toContain("Bob&#x27;s planes");
+    expect(battle).toContain("Your planes");
+    expect(battle).not.toContain("sky");
+  });
   it("enables Ready only while an opponent is online and present", () => {
     const state = view();
     expect(readyButton(render(state))).not.toContain("disabled");
@@ -89,5 +103,19 @@ describe("paper-game interaction boundaries", () => {
         []
       ).length,
     ).toBe(0);
+  });
+  it("keeps hit and revealed squares unavailable after a plane is downed", () => {
+    const state = view();
+    state.phase = "playing";
+    state.turn = 0;
+    state.shots[0] = [
+      { x: 4, y: 1, result: "head", revealed: { x: 4, y: 1, rotation: 0 } },
+    ];
+    const html = render(state);
+    expect(html).toMatch(/<button[^>]+aria-label="E2 · head"[^>]+disabled=""/);
+    expect(html).toMatch(
+      /<button[^>]+aria-label="C3 · downed"[^>]+disabled=""/,
+    );
+    expect(html).toMatch(/<button[^>]+aria-label="A1"(?![^>]*disabled)[^>]*>/);
   });
 });
