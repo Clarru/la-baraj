@@ -49,12 +49,15 @@ for(const [x,y,z] of lobes) for(let j=0;j<18;j++){
   g.translate(x+(rand()-.5)*1.3,y+(rand()-.5)*1.1,z+(rand()-.5)*1.3);cards.push(g);
 }
 const group=new THREE.Group();group.name='Cincis_Beech_Prototype';
-const bark=new THREE.MeshStandardMaterial({name:'Beech bark',color:'#a5a49b',vertexColors:true,roughness:1});const foliage=new THREE.MeshStandardMaterial({name:'Beech foliage cards',color:'#ffffff',roughness:1,side:THREE.DoubleSide});
+const bark=new THREE.MeshStandardMaterial({name:'Beech bark',color:'#ffffff',vertexColors:true,roughness:1});const foliage=new THREE.MeshStandardMaterial({name:'Beech foliage cards',color:'#ffffff',roughness:1,side:THREE.DoubleSide});
 for(const [name,parts,material] of [['Trunk and branches',wood,bark],['Foliage',cards,foliage]]){const mesh=new THREE.Mesh(mergeGeometries(parts),material);mesh.name=name;group.add(mesh)}
 const binary=await new Promise((resolve,reject)=>new GLTFExporter().parse(group,resolve,reject,{binary:true}));
 const io=new NodeIO();const doc=await io.readBinary(new Uint8Array(binary));
 // Resize the original generated transparent art for GPU use; retain the original as source.
 const image=await sharp(await readFile('docs/art-direction/trees/beech-foliage-generated.png')).resize({width:512,height:512,fit:'contain',background:{r:0,g:0,b:0,alpha:0}}).png({palette:true,colours:256,dither:.5}).toBuffer();
 const texture=doc.createTexture('Original beech foliage').setImage(new Uint8Array(image)).setMimeType('image/png');
+const barkImage=await sharp(await readFile('docs/art-direction/trees/beech-bark-generated.png')).resize(256,256).jpeg({quality:80}).toBuffer();
+const barkTexture=doc.createTexture('Beech bark').setImage(new Uint8Array(barkImage)).setMimeType('image/jpeg');
+doc.getRoot().listMaterials().find(m=>m.getName()==='Beech bark').setBaseColorTexture(barkTexture);
 const material=doc.getRoot().listMaterials().find(m=>m.getName()==='Beech foliage cards');material.setBaseColorTexture(texture).setAlphaMode('MASK').setAlphaCutoff(.38).setDoubleSided(true);
 const result=await io.writeBinary(doc);await writeFile('docs/art-direction/trees/cincis-beech-prototype.glb',result);console.log('Saved beech prototype',result.byteLength,'bytes');

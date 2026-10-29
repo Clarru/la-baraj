@@ -33,3 +33,7 @@ Use the supplied Blender screenshot only as a reference for quality, lighting, s
 
 Beech foliage, 29 October 2026. Input: species-distinct-style-lineup.png, second tree from left. Transparent background. Prompt:
 Create an original transparent-background foliage texture for a stylized 3D European beech tree, matching the foliage material quality, lighting and color treatment of the SECOND TREE FROM LEFT in the supplied game tree lineup. One compact irregular leafy spray, face-on for a 3D game alpha card. The leaves must be recognizably beech: small oval leaves with pointed tips, gently wavy edges and subtle parallel veins. Use natural summer greens and restrained painterly detail. Overlapping leaves with some small transparent gaps, no oak lobes, no needle shapes, no background, no glow, no text. Texture source only, no whole tree.
+
+
+Beech bark, 29 October 2026. Input: species-distinct-style-lineup.png. Prompt:
+Create one seamless, tileable bark albedo texture for a stylized 3D European beech tree in a natural lakeside game. Smooth silvery gray bark with very subtle fine horizontal lenticel marks, restrained tonal variation and a few delicate pale patches. Match the visual finish of the tree art reference while retaining beech's smooth bark; no oak-like deep furrows, no thick grooves, no cracks, no moss, no knots, no lighting or shadows, no text. Flat orthographic material texture filling the image edge to edge.
