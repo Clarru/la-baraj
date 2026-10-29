@@ -1,3 +1,4 @@
+import type { CruceAction, CruceView } from "../../../packages/shared/cruce";
 import PartySocket from "partysocket";
 import { InputActivity } from "./input-activity";
 import {
@@ -41,6 +42,7 @@ type RoomView = {
   homeIndex: number | null;
   cabins: PublicCabin[];
   planes: PlanesView | null;
+  cruce: CruceView | null;
   weather: LakeWeather | null;
 };
 export type RemotePlayer = {
@@ -127,6 +129,13 @@ export class MultiplayerRoom {
   >();
   private diagnostic: HTMLOutputElement | null = null;
   private lastDiagnosticAt = 0;
+  private cruceRequests = new Map<
+    string,
+    {
+      resolve: (error: string | null) => void;
+      timer: ReturnType<typeof setTimeout>;
+    }
+  >();
   private planesEventAt = 0;
   private planeRequests = new Map<
     string,
@@ -147,6 +156,7 @@ export class MultiplayerRoom {
     homeIndex: null,
     cabins: [],
     planes: null,
+    cruce: null,
     weather: null,
   };
   constructor(
@@ -421,6 +431,18 @@ export class MultiplayerRoom {
         if (message.targetId) this.stunTimes.set(message.targetId, now + 2000);
         break;
       }
+      case "cruce": {
+        this.publish({ cruce: message.view });
+        if (message.requestId) {
+          const pending = this.cruceRequests.get(message.requestId);
+          if (pending) {
+            clearTimeout(pending.timer);
+            this.cruceRequests.delete(message.requestId);
+            pending.resolve(message.error ?? null);
+          }
+        }
+        break;
+      }
       case "planes": {
         this.acceptPlanes(message.view);
         if (message.requestId) {
@@ -444,6 +466,7 @@ export class MultiplayerRoom {
         if (message.weather === null || validLakeWeather(message.weather))
           this.acceptWeather(message.weather, false);
         if (message.planes) this.acceptPlanes(message.planes);
+        if (message.cruce) this.publish({ cruce: message.cruce });
         if (message.village && message.village.epoch !== HOUSING_EPOCH) {
           this.publish({
             status: "error",
@@ -654,6 +677,19 @@ export class MultiplayerRoom {
         Math.max(0, Math.min(2500, Date.now() - view.event.at));
     this.publish({ planes: view });
   }
+  cruceAction(action: CruceAction, revision: number): Promise<string | null> {
+    if (this.view.status !== "online")
+      return Promise.resolve("Reconectează-te la lac ca să poți juca Cruce.");
+    const requestId = crypto.randomUUID();
+    return new Promise((resolve) => {
+      const timer = setTimeout(() => {
+        this.cruceRequests.delete(requestId);
+        resolve("Masa nu a răspuns. Încearcă din nou.");
+      }, 6000);
+      this.cruceRequests.set(requestId, { resolve, timer });
+      this.send({ type: "cruce-action", requestId, revision, action });
+    });
+  }
   planesAction(action: PlanesAction, revision: number): Promise<string | null> {
     if (this.view.status !== "online")
       return Promise.resolve("Connect to the lake to play with a friend.");
@@ -708,5 +744,10 @@ export class MultiplayerRoom {
       resolve("Connection interrupted. Your match will wait briefly for you.");
     });
     this.planeRequests.clear();
+    this.cruceRequests.forEach(({ resolve, timer }) => {
+      clearTimeout(timer);
+      resolve("Conexiunea s-a întrerupt. Reconectează-te ca să revii la cărțile tale.");
+    });
+    this.cruceRequests.clear();
   }
 }

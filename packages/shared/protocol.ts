@@ -1,3 +1,4 @@
+import { parseCruceAction, type CruceAction, type CruceView } from "./cruce.ts";
 import { isBubbleText } from "./bubble-chat.ts";
 import type { LakeWeather } from "./weather.ts";
 import {
@@ -64,6 +65,12 @@ export type ClientMessage =
       revision: number;
       action: PlanesAction;
     }
+  | {
+      type: "cruce-action";
+      requestId: string;
+      revision: number;
+      action: CruceAction;
+    }
   | { type: "sync" };
 export type ServerMessage =
   | {
@@ -79,6 +86,7 @@ export type ServerMessage =
       home?: HomeAssignment;
       village?: VillageState;
       planes?: PlanesView;
+      cruce?: CruceView;
     }
   | { type: "village"; village: VillageState }
   | { type: "joined"; player: PlayerPresence }
@@ -91,6 +99,7 @@ export type ServerMessage =
   | { type: "fire"; fire: FireState }
   | { type: "seats"; seats: Record<string, string> }
   | { type: "planes"; view: PlanesView; requestId?: string; error?: string }
+  | { type: "cruce"; view: CruceView; requestId?: string; error?: string }
   | {
       type: "seat-result";
       requestId: string;
@@ -136,6 +145,20 @@ export function parseClientMessage(raw: string): ClientMessage | null {
   }
   if (!object(value)) return null;
   switch (value.type) {
+    case "cruce-action": {
+      const action = parseCruceAction(value.action);
+      return label(value.requestId, 64) &&
+        Number.isSafeInteger(value.revision) &&
+        Number(value.revision) >= 0 &&
+        action
+        ? {
+            type: "cruce-action",
+            requestId: value.requestId,
+            revision: Number(value.revision),
+            action,
+          }
+        : null;
+    }
     case "planes-action": {
       const action = value.action;
       if (

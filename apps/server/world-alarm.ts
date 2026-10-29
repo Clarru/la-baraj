@@ -1,3 +1,4 @@
+import { nextCruceDeadline, type CruceRecord } from "./cruce-table";
 import { HOME_NAME_GRACE_MS } from "../../packages/shared/protocol";
 import type { HomeLedger } from "./home-assignments";
 import { nextPlanesDeadline, type PlanesRecord } from "./planes-table";
@@ -6,6 +7,7 @@ export function nextWorldDeadline(
   homes: HomeLedger | undefined,
   planes: PlanesRecord | undefined,
   recoveryAt?: number,
+  cruce?: CruceRecord,
 ): number | null {
   const times =
     homes?.owners
@@ -13,6 +15,8 @@ export function nextWorldDeadline(
       .map((o) => o.nameSince + HOME_NAME_GRACE_MS) ?? [];
   const tableDue = planes ? nextPlanesDeadline(planes) : null;
   if (tableDue !== null) times.push(tableDue);
+  const cruceDue = cruce ? nextCruceDeadline(cruce) : null;
+  if (cruceDue !== null) times.push(cruceDue);
   if (recoveryAt !== undefined) times.push(recoveryAt);
   return times.length ? Math.min(...times) : null;
 }

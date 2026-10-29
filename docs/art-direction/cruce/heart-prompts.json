@@ -1,0 +1,44 @@
+[
+  {
+    "id": "heart-unter",
+    "source": "generated/heart-unter.png",
+    "prompt": "Use case: stylized-concept. Asset: ONE individual playable Hungarian Tell-pattern card, vertical portrait aspect 363:585. Attached image is a structural reference, not a grid: faithfully follow its pip positions, double-ended geometry, figure pose and spacing. Draw a clean original traditional hand-colored woodcut with fine black ink outlines, vivid red/yellow/green/blue printing and pure white untextured card stock. Crisp small-scale game art. One thin rounded black inset border, full card fills image, no external margin, no shadow, no perspective, no aging. Top and bottom artwork must be rotational duplicates, NOT vertical reflections. Exactly one card. HEARTS UNTER / DOIAR. Two identical half-length men joined at the waist at the horizontal center, lower half rotated exactly 180 degrees. Man in red cap, blue tunic, white puff sleeves, yellow trousers, diagonal hunting horn. Exactly ONE red heart in the upper half, to the man's LEFT near the waist at 35% card height; its rotated duplicate is on the right at 65% height. Blank upper-left corner: NO heart by his head. No lettering.",
+    "reference": "https://github.com/tomasdrus/hungarian-playing-cards/blob/master/cards-large/heart-unter.png",
+    "tool": "image_gen (built-in)"
+  },
+  {
+    "id": "heart-ober",
+    "source": "generated/heart-ober.png",
+    "prompt": "Use case: stylized-concept. Asset: ONE individual playable Hungarian Tell-pattern card, vertical portrait aspect 363:585. Attached image is a structural reference, not a grid: faithfully follow its pip positions, double-ended geometry, figure pose and spacing. Draw a clean original traditional hand-colored woodcut with fine black ink outlines, vivid red/yellow/green/blue printing and pure white untextured card stock. Crisp small-scale game art. One thin rounded black inset border, full card fills image, no external margin, no shadow, no perspective, no aging. Top and bottom artwork must be rotational duplicates, NOT vertical reflections. Exactly one card. HEARTS OBER / TREIAR. Two identical bearded nobles joined at the waist, lower half rotated 180 degrees. Red feathered hat and red fur-trimmed cloak over green robes, holding a small red falcon on yellow glove. Exactly ONE heart at upper-left near the head, with its 180-degree duplicate at lower-right. Two hearts total. No other suit symbols, no lettering.",
+    "reference": "https://github.com/tomasdrus/hungarian-playing-cards/blob/master/cards-large/heart-ober.png",
+    "tool": "image_gen (built-in)"
+  },
+  {
+    "id": "heart-king",
+    "source": "generated/heart-king.png",
+    "prompt": "Use case: stylized-concept. Asset: ONE individual playable Hungarian Tell-pattern card, vertical portrait aspect 363:585. Attached image is a structural reference, not a grid: faithfully follow its pip positions, double-ended geometry, figure pose and spacing. Draw a clean original traditional hand-colored woodcut with fine black ink outlines, vivid red/yellow/green/blue printing and pure white untextured card stock. Crisp small-scale game art. One thin rounded black inset border, full card fills image, no external margin, no shadow, no perspective, no aging. Top and bottom artwork must be rotational duplicates, NOT vertical reflections. Exactly one card. HEARTS KING / PATRAR. Double-ended mounted king on a white horse, gold crown, gold scepter, red cape and purple tunic. Top half king and horse, lower half identical rotated 180 degrees, joined at center. Exactly one red heart upper-left and its rotated duplicate lower-right, two hearts total. No lettering.",
+    "reference": "https://github.com/tomasdrus/hungarian-playing-cards/blob/master/cards-large/heart-king.png",
+    "tool": "image_gen (built-in)"
+  },
+  {
+    "id": "heart-nine",
+    "source": "generated/heart-nine.png",
+    "prompt": "Use case: stylized-concept. Asset: ONE individual playable Hungarian Tell-pattern card, vertical portrait aspect 363:585. Attached image is a structural reference, not a grid: faithfully follow its pip positions, double-ended geometry, figure pose and spacing. Draw a clean original traditional hand-colored woodcut with fine black ink outlines, vivid red/yellow/green/blue printing and pure white untextured card stock. Crisp small-scale game art. One thin rounded black inset border, full card fills image, no external margin, no shadow, no perspective, no aging. Top and bottom artwork must be rotational duplicates, NOT vertical reflections. Exactly one card. HEARTS NINE / NOUAR. Precise reference layout: top half has three columns of overlapping upright red hearts, THREE hearts per column (3+3+3=9). Middle column slightly higher. The bottom half is the exact 180-degree rotation, another nine upside-down hearts: eighteen hearts on the full card. A small detailed castle on a grassy hill sits across the exact horizontal middle, with mirrored reflection below. Roman numeral IX in upper-left; its rotated duplicate lower-right. Do NOT draw a modern nine-pip poker card.",
+    "reference": "https://github.com/tomasdrus/hungarian-playing-cards/blob/master/cards-large/heart-nine.png",
+    "tool": "image_gen (built-in)"
+  },
+  {
+    "id": "heart-ten",
+    "source": "generated/heart-ten.png",
+    "prompt": "Use case: stylized-concept. Asset: ONE individual playable Hungarian Tell-pattern card, vertical portrait aspect 363:585. Attached image is a structural reference, not a grid: faithfully follow its pip positions, double-ended geometry, figure pose and spacing. Draw a clean original traditional hand-colored woodcut with fine black ink outlines, vivid red/yellow/green/blue printing and pure white untextured card stock. Crisp small-scale game art. One thin rounded black inset border, full card fills image, no external margin, no shadow, no perspective, no aging. Top and bottom artwork must be rotational duplicates, NOT vertical reflections. Exactly one card. HEARTS TEN / ZECAR. Precise reference layout: upper half three columns, FOUR overlapping red hearts in left column, TWO in center, FOUR in right (4+2+4=10). Bottom half is exact 180-degree rotation, ten upside-down hearts: twenty hearts total. Small castle on grassy hill across center, mirrored below. Roman numeral X centered at top, rotated X centered at bottom. Do NOT draw a modern ten-pip poker card.",
+    "reference": "https://github.com/tomasdrus/hungarian-playing-cards/blob/master/cards-large/heart-ten.png",
+    "tool": "image_gen (built-in)"
+  },
+  {
+    "id": "heart-ace",
+    "source": "generated/heart-ace.png",
+    "prompt": "Use case: stylized-concept. Asset: ONE individual playable Hungarian Tell-pattern card, vertical portrait aspect 363:585. Attached image is a structural reference, not a grid: faithfully follow its pip positions, double-ended geometry, figure pose and spacing. Draw a clean original traditional hand-colored woodcut with fine black ink outlines, vivid red/yellow/green/blue printing and pure white untextured card stock. Crisp small-scale game art. One thin rounded black inset border, full card fills image, no external margin, no shadow, no perspective, no aging. Top and bottom artwork must be rotational duplicates, NOT vertical reflections. Exactly one card. HEARTS ACE / AS. Double-ended SPRING pastoral scene, NOT a giant single heart. Upper half: seated young woman in blue skirt, red bodice and light hat holding basket of flowers, a wooden bench amid flowers, distant mountains and a tiny church. Lower half exact 180-degree rotation joined at horizontal center. Two red hearts in top left and top right corners, their rotated duplicates in lower corners: FOUR hearts total. No lettering, no A.",
+    "reference": "https://github.com/tomasdrus/hungarian-playing-cards/blob/master/cards-large/heart-ace.png",
+    "tool": "image_gen (built-in)"
+  }
+]
