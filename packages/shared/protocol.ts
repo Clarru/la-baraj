@@ -47,6 +47,7 @@ export type ClientMessage =
       housingEpoch?: number;
     }
   | { type: "pose"; pose: PlayerPose }
+  | { type: "punch" }
   | { type: "fire"; lit: boolean }
   | { type: "seat"; seatId: string | null; requestId: string }
   | {
@@ -72,6 +73,7 @@ export type ServerMessage =
   | { type: "joined"; player: PlayerPresence }
   | { type: "pose"; player: PlayerPresence }
   | { type: "left"; id: string }
+  | { type: "punch"; attackerId: string; targetId: string | null }
   | { type: "fire"; fire: FireState }
   | { type: "seats"; seats: Record<string, string> }
   | { type: "planes"; view: PlanesView; requestId?: string; error?: string }
@@ -153,6 +155,8 @@ export function parseClientMessage(raw: string): ClientMessage | null {
         action: parsed,
       };
     }
+    case "punch":
+      return { type: "punch" };
     case "sync":
       return { type: "sync" };
     case "hello": {

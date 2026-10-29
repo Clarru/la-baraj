@@ -85,6 +85,9 @@ export class MultiplayerRoom {
   readonly roomId = roomFromLocation();
   readonly remotes = new Map<string, RemotePlayer>();
   private listeners = new Set<() => void>();
+  private punchTimes = new Map<string, number>();
+  private lastPunchSentAt = -Infinity;
+  private stunTimes = new Map<string, number>();
   private worldListeners = new Set<() => void>();
   private socket: PartySocket | null = null;
   private homeCredential: HomeCredential | null = null;
@@ -249,6 +252,8 @@ export class MultiplayerRoom {
   protected connectionClosed() {
     this.homeAcknowledged = false;
     this.remotes.clear();
+    this.punchTimes.clear();
+    this.stunTimes.clear();
     this.seats = {};
     syncOnlineSeats({}, "");
     this.resolvePending();
@@ -277,6 +282,27 @@ export class MultiplayerRoom {
     if (this.socket?.readyState === WebSocket.OPEN)
       this.socket.send(JSON.stringify(message));
   }
+  punch(position: [number, number, number], yaw: number) {
+    const now = performance.now();
+    if (
+      this.view.status !== "online" ||
+      !this.lastPose ||
+      now - this.lastPunchSentAt < 1200
+    )
+      return;
+    this.lastPunchSentAt = now;
+    // Send the current direction before the swing instead of waiting for the
+    // next periodic pose; this keeps quick turns and punches responsive.
+    this.lastPose = { ...this.lastPose, position, yaw };
+    this.publishPose(this.lastPose, true);
+    this.send({ type: "punch" });
+  }
+  punching(id: string, now = performance.now()) {
+    return now < (this.punchTimes.get(id) ?? 0);
+  }
+  stunned(id: string, now = performance.now()) {
+    return now < (this.stunTimes.get(id) ?? 0);
+  }
   private updateRemote(player: PlayerPresence) {
     if (player.id === this.view.selfId) return;
     const old = this.remotes.get(player.id);
@@ -298,6 +324,12 @@ export class MultiplayerRoom {
   }
   protected receive(message: ServerMessage) {
     switch (message.type) {
+      case "punch": {
+        const now = performance.now();
+        this.punchTimes.set(message.attackerId, now + 867);
+        if (message.targetId) this.stunTimes.set(message.targetId, now + 2000);
+        break;
+      }
       case "planes": {
         this.acceptPlanes(message.view);
         if (message.requestId) {
@@ -374,6 +406,8 @@ export class MultiplayerRoom {
         this.updateRemote(message.player);
         break;
       case "left":
+        this.punchTimes.delete(message.id);
+        this.stunTimes.delete(message.id);
         this.remotes.delete(message.id);
         this.publish({
           ids: [...this.remotes.keys()],

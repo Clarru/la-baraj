@@ -25,6 +25,9 @@ export type SessionState = {
   pose: Bucket;
   action: Bucket;
   violations: number;
+  punchAt?: number;
+  stunnedUntil?: number;
+  punchImmuneUntil?: number;
   /** Optional for connection attachments created before home allocation shipped. */
   home?: HomeAssignment;
   nameAt?: number;
@@ -295,6 +298,66 @@ export class RoomCore {
       const player = { ...current.player, ...clientPose };
       connection.setState({ ...current, pose, player });
       this.broadcast({ type: "pose", player }, connection);
+      return;
+    }
+    if (message.type === "punch") {
+      const attacker = connection.state!;
+      const p = attacker.player;
+      const eligible = (player: PlayerPresence) =>
+        player.animation !== "idle" &&
+        !player.animation.startsWith("Swim_") &&
+        player.activity === "none" &&
+        player.vehicle === "none" &&
+        !player.seatId;
+      if (
+        attacker.nameAt === undefined ||
+        !eligible(p) ||
+        (attacker.stunnedUntil ?? 0) > now ||
+        (attacker.punchAt !== undefined && now - attacker.punchAt < 1200)
+      )
+        return;
+      connection.setState({ ...attacker, punchAt: now });
+      const candidates = this.active()
+        .filter((c) => {
+          const state = c.state!;
+          if (
+            c === connection ||
+            state.nameAt === undefined ||
+            !eligible(state.player) ||
+            (state.punchImmuneUntil ?? 0) > now
+          )
+            return false;
+          const [x, y, z] = state.player.position;
+          const dx = x - p.position[0],
+            dz = z - p.position[2];
+          const distance = Math.hypot(dx, dz);
+          return (
+            distance <= 2 &&
+            Math.abs(y - p.position[1]) <= 1.3 &&
+            (distance < 0.15 ||
+              (dx * Math.sin(p.yaw) + dz * Math.cos(p.yaw)) / distance >= 0.45)
+          );
+        })
+        .sort((a, b) => {
+          const distance = (c: RoomConnection) =>
+            Math.hypot(
+              c.state!.player.position[0] - p.position[0],
+              c.state!.player.position[2] - p.position[2],
+            );
+          return distance(a) - distance(b);
+        });
+      const target = candidates[0];
+      if (target)
+        target.setState({
+          ...target.state!,
+          stunnedUntil: now + 2000,
+          punchImmuneUntil: now + 3000,
+        });
+      this.broadcast({
+        type: "punch",
+        attackerId: p.id,
+        targetId: target?.state!.player.id ?? null,
+      });
       return;
     }
     const action = consume(current.action, now, 2, 5);

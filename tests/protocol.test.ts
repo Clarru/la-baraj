@@ -745,3 +745,98 @@ it("does not publish a plaque name when its durable write fails", async () => {
   expect(await homes.commitDueNames(HOME_NAME_GRACE_MS)).toBe(true);
   expect(homes.publicCabins()[0].ownerName).toBe("Clau");
 });
+
+describe("playful punches", () => {
+  it("hits only the closest eligible player in front, and enforces stun, cooldown and immunity", async () => {
+    const f = fixture();
+    const a = f.connect("a"),
+      b = f.connect("b"),
+      c = f.connect("c");
+    for (const player of [a, b, c])
+      await f.send(player, { type: "hello", nickname: "Friend" });
+    const position = async (
+      player: FakeConnection,
+      pos: [number, number, number],
+      changes: Partial<PlayerPose> = {},
+    ) =>
+      f.send(
+        player,
+        {
+          type: "pose",
+          pose: {
+            ...pose,
+            animation: "Idle_Neutral",
+            position: pos,
+            yaw: 0,
+            ...changes,
+          },
+        },
+        100,
+      );
+    await position(a, [0, 0, 0]);
+    await position(b, [0, 0, 1]);
+    await position(c, [0, 0, 1.7]);
+    await f.send(a, { type: "punch" }, 200);
+    expect(a.messages.at(-1)).toEqual({
+      type: "punch",
+      attackerId: "a",
+      targetId: "b",
+    });
+    expect(b.messages.at(-1)).toEqual(a.messages.at(-1));
+    expect(b.state?.stunnedUntil).toBe(2200);
+    const count = a.messages.length;
+    await f.send(b, { type: "punch" }, 1000);
+    await f.send(a, { type: "punch" }, 1000);
+    expect(a.messages.length).toBe(count);
+    await f.send(a, { type: "punch" }, 1500);
+    expect(a.messages.at(-1)).toEqual({
+      type: "punch",
+      attackerId: "a",
+      targetId: "c",
+    });
+    await f.send(a, { type: "punch" }, 2800);
+    expect(a.messages.at(-1)).toEqual({
+      type: "punch",
+      attackerId: "a",
+      targetId: null,
+    });
+    await f.send(a, { type: "punch" }, 4100);
+    expect(a.messages.at(-1)).toEqual({
+      type: "punch",
+      attackerId: "a",
+      targetId: "b",
+    });
+  });
+  it("misses behind, out of range, different heights, and protects seated or swimming players", async () => {
+    for (const [pos, changes] of [
+      [[0, 0, -1], {}],
+      [[0, 0, 2.1], {}],
+      [[0, 1.5, 1], {}],
+      [[0, 0, 1], { activity: "sit" }],
+      [[0, 0, 1], { animation: "Swim_Idle" }],
+      [[0, 0, 1], { vehicle: "scooter" }],
+    ] as [PlayerPose["position"], Partial<PlayerPose>][]) {
+      const f = fixture(),
+        a = f.connect("a"),
+        b = f.connect("b");
+      await f.send(a, { type: "hello", nickname: "A" });
+      await f.send(b, { type: "hello", nickname: "B" });
+      await f.send(
+        a,
+        { type: "pose", pose: { ...pose, position: [0, 0, 0], yaw: 0 } },
+        100,
+      );
+      await f.send(
+        b,
+        { type: "pose", pose: { ...pose, position: pos, ...changes } },
+        100,
+      );
+      await f.send(a, { type: "punch" }, 200);
+      expect(a.messages.at(-1)).toEqual({
+        type: "punch",
+        attackerId: "a",
+        targetId: null,
+      });
+    }
+  });
+});

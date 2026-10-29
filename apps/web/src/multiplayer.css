@@ -52,3 +52,27 @@
   border-radius: 2px;
   user-select: none;
 }
+.stun-stars {
+  display: block;
+  width: max-content;
+  color: #ffd36a;
+  font: 700 17px/1.15 sans-serif;
+  text-shadow:
+    0 2px 2px #3e2a13,
+    0 0 6px #47300e;
+  animation: stunned-stars 0.8s ease-in-out infinite alternate;
+  user-select: none;
+}
+@keyframes stunned-stars {
+  from {
+    transform: translateY(0) rotate(-5deg);
+  }
+  to {
+    transform: translateY(-4px) rotate(5deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stun-stars {
+    animation: none;
+  }
+}
