@@ -1,3 +1,5 @@
+import { CRUCE_TABLE } from "../../../packages/shared/cruce-station";
+import type { CruceSeat } from "../../../packages/shared/cruce";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useFrame, useLoader, useThree } from "@react-three/fiber";
 import { useGLTF, useAnimations, OrbitControls } from "@react-three/drei";
@@ -1009,6 +1011,7 @@ export function CameraRig({
   onFocusCabin,
   transitioning = false,
   tableSeat = null,
+  cardTableSeat = null,
 }: {
   mode: ViewMode;
   resetKey: number;
@@ -1017,6 +1020,7 @@ export function CameraRig({
   onFocusCabin?: (index: number) => void;
   transitioning?: boolean;
   tableSeat?: 0 | 1 | null;
+  cardTableSeat?: CruceSeat | null;
 }) {
   const controls = useRef<React.ComponentRef<typeof OrbitControls>>(null);
   const [cabinVariant, setCabinVariant] = useState(0);
@@ -1045,7 +1049,7 @@ export function CameraRig({
   }, [gl, events.connected]);
   const last = useRef(new THREE.Vector3());
   const priorInterior = useRef<number | null>(null);
-  const priorTable = useRef<number | null>(null);
+  const priorTable = useRef<string | null>(null);
   const blend = useRef<{
     from: THREE.Vector3;
     to: THREE.Vector3;
@@ -1061,10 +1065,24 @@ export function CameraRig({
     const leaving = priorInterior.current !== null && interiorIndex === null;
     const changingRoom = priorInterior.current !== interiorIndex;
     const exitedIndex = priorInterior.current;
-    const changingTable = priorTable.current !== tableSeat;
-    priorTable.current = tableSeat;
+    const tableKey =
+      cardTableSeat !== null
+        ? `cruce:${cardTableSeat}`
+        : tableSeat !== null
+          ? `planes:${tableSeat}`
+          : null;
+    const changingTable = priorTable.current !== tableKey;
+    priorTable.current = tableKey;
     priorInterior.current = interiorIndex;
-    if (tableSeat !== null) {
+    if (cardTableSeat !== null) {
+      const angle = (cardTableSeat * Math.PI) / 2;
+      camera.position.set(
+        CRUCE_TABLE.x - Math.sin(angle) * 3.9,
+        CRUCE_TABLE.ground + 2.6,
+        CRUCE_TABLE.z + Math.cos(angle) * 3.9,
+      );
+      c.target.set(CRUCE_TABLE.x, CRUCE_TABLE.ground + 0.9, CRUCE_TABLE.z);
+    } else if (tableSeat !== null) {
       // Keep the seated pair in the clear space to the left of the paper.
       const panZ = tableSeat === 0 ? 0.82 : -0.82;
       camera.position.set(
@@ -1151,6 +1169,7 @@ export function CameraRig({
     interiorIndex,
     onFocusCabin,
     tableSeat,
+    cardTableSeat,
   ]);
   useFrame((_, dt) => {
     const c = controls.current;
@@ -1169,6 +1188,7 @@ export function CameraRig({
     }
     if (
       tableSeat === null &&
+      cardTableSeat === null &&
       interiorIndex === null &&
       (mode === "walk" || mode === "study")
     ) {
@@ -1187,11 +1207,12 @@ export function CameraRig({
       enabled={!transitioning}
       enablePan={
         tableSeat === null &&
+        cardTableSeat === null &&
         interiorIndex === null &&
         (mode === "overview" || mode === "settlement" || mode === "home")
       }
       minDistance={
-        tableSeat !== null
+        tableSeat !== null || cardTableSeat !== null
           ? 2
           : interiorIndex !== null
             ? 9
@@ -1200,7 +1221,7 @@ export function CameraRig({
               : 2.5
       }
       maxDistance={
-        tableSeat !== null
+        tableSeat !== null || cardTableSeat !== null
           ? 6
           : interiorIndex !== null
             ? 18

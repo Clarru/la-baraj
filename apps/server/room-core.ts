@@ -1,3 +1,11 @@
+import { CruceTable } from "./cruce-table";
+import { CruceError, type CruceSeat } from "../../packages/shared/cruce";
+import {
+  CRUCE_TABLE,
+  CRUCE_SEATS,
+  cruceSeatSide,
+  cruceSeatPose,
+} from "../../packages/shared/cruce-station";
 import type { LakeWeather } from "../../packages/shared/weather";
 import {
   MAX_PLAYERS,
@@ -38,6 +46,7 @@ export type SessionState = {
   nameAt?: number;
   housingEpoch?: number;
   resumeTable?: boolean;
+  resumeCruce?: boolean;
 };
 export interface RoomConnection {
   readonly state: Readonly<SessionState> | null;
@@ -50,6 +59,7 @@ export type RoomRuntime = {
   saveFire(fire: FireState): Promise<void>;
   homes: HomeAssignments;
   planes?: PlanesTable;
+  cruce?: CruceTable;
   retryPlaneCleanup?: () => Promise<void>;
   requestWeather?: () => void;
 };
@@ -72,6 +82,7 @@ export class RoomCore {
   private weather: LakeWeather | null = null;
   private homeClaims = new WeakMap<RoomConnection, Promise<HomeAssignment>>();
   private planes: PlanesTable;
+  private cruce: CruceTable;
   private cleanupRetryAt = 0;
   private seatQueues = new WeakMap<RoomConnection, Promise<void>>();
   constructor(
@@ -80,6 +91,7 @@ export class RoomCore {
   ) {
     this.fire = fire;
     this.planes = runtime.planes ?? new PlanesTable({ save: async () => {} });
+    this.cruce = runtime.cruce ?? new CruceTable({ save: async () => {} });
   }
   setWeather(weather: LakeWeather | null) {
     if (JSON.stringify(this.weather) === JSON.stringify(weather)) return;
@@ -96,6 +108,50 @@ export class RoomCore {
       socket: state.player.id,
       name: state.player.nickname,
     };
+  }
+  private broadcastCruce() {
+    for (const c of this.active())
+      this.send(c, {
+        type: "cruce",
+        view: this.cruce.view(this.tableActor(c)),
+      });
+  }
+  private restoreCruceSeat(c: RoomConnection, seat: CruceSeat) {
+    if (!this.active().includes(c)) return;
+    c.setState({
+      ...c.state!,
+      resumeCruce: false,
+      player: {
+        ...c.state!.player,
+        ...cruceSeatPose(seat),
+        seatId: CRUCE_SEATS[seat],
+        activity: "sit",
+        animation: "Activity_Sit",
+      },
+    });
+    this.broadcast({ type: "seats", seats: this.seats() });
+    this.broadcast({ type: "pose", player: c.state!.player }, c);
+    this.snapshot(c);
+  }
+  private async resumeCruceActors(now = Date.now()) {
+    for (const c of this.active()) {
+      if (!c.state!.resumeCruce) continue;
+      const actor = this.tableActor(c);
+      if (!actor) continue;
+      // A player cannot own both game tables in different tabs.
+      if (
+        this.planes.hasSocket(actor.socket) ||
+        this.planes.hasOtherSocket(actor)
+      )
+        continue;
+      const seat = await this.cruce.resume(actor, now);
+      if (seat !== null) this.restoreCruceSeat(c, seat);
+      else if (
+        !this.cruce.canResume(actor, now) &&
+        !this.cruce.hasOtherSocket(actor)
+      )
+        c.setState({ ...c.state!, resumeCruce: false });
+    }
   }
   private broadcastPlanes() {
     for (const c of this.active())
@@ -131,6 +187,11 @@ export class RoomCore {
       if (!c.state!.resumeTable) continue;
       const actor = this.tableActor(c);
       if (!actor) continue;
+      if (
+        this.cruce.hasSocket(actor.socket) ||
+        this.cruce.hasOtherSocket(actor)
+      )
+        continue;
       const side = await this.planes.resume(actor, now);
       if (side !== null) {
         this.restoreGameSeat(c, side);
@@ -146,9 +207,14 @@ export class RoomCore {
   private reconcileGameSeats() {
     let changed = false;
     for (const c of this.active()) {
+      const cruceSeat = cruceSeatSide(c.state!.player.seatId);
       const side = planesSeatSide(c.state!.player.seatId),
         actor = this.tableActor(c);
-      if (side !== null && (!actor || this.planes.sideFor(actor) !== side)) {
+      if (
+        (side !== null && (!actor || this.planes.sideFor(actor) !== side)) ||
+        (cruceSeat !== null &&
+          (!actor || this.cruce.sideFor(actor) !== cruceSeat))
+      ) {
         const { seatId: _seat, ...player } = c.state!.player;
         c.setState({
           ...c.state!,
@@ -206,13 +272,20 @@ export class RoomCore {
       fire: this.fire,
       seats: this.seats(),
       planes: this.planes.view(this.tableActor(connection)),
+      cruce: this.cruce.view(this.tableActor(connection)),
       ...(connection.state.home ? { home: connection.state.home } : {}),
     });
   }
   async commitNames(now = Date.now()) {
     if (await this.runtime.homes.commitDueNames(now)) this.broadcastVillage();
     await this.planes.flush();
+    await this.cruce.flush();
     await this.resumeWaitingActors(now);
+    await this.resumeCruceActors(now);
+    if (await this.cruce.expire(now)) {
+      this.reconcileGameSeats();
+      this.broadcastCruce();
+    }
     if (await this.planes.expire(now)) {
       this.reconcileGameSeats();
       this.broadcastPlanes();
@@ -298,13 +371,20 @@ export class RoomCore {
     // its alarm. Ordinary live traffic retries at most once per second.
     if (
       (this.planes.needsFlush ||
-        this.active().some((c) => c.state!.resumeTable)) &&
+        this.cruce.needsFlush ||
+        this.active().some(
+          (c) => c.state!.resumeTable || c.state!.resumeCruce,
+        )) &&
       now >= this.cleanupRetryAt
     ) {
       this.cleanupRetryAt = now + 1000;
       try {
         await this.planes.flush();
+        await this.cruce.flush();
         await this.resumeWaitingActors(now);
+        await this.resumeCruceActors(now);
+        if (await this.cruce.expire(now)) this.reconcileGameSeats();
+        this.broadcastCruce();
         if (await this.planes.expire(now)) this.reconcileGameSeats();
         this.broadcastPlanes();
       } catch {
@@ -430,6 +510,39 @@ export class RoomCore {
       return;
     }
     connection.setState({ ...current, action });
+    if (message.type === "cruce-action") {
+      const actor = this.tableActor(connection);
+      let error: string | undefined;
+      try {
+        if (!actor)
+          throw new CruceError("Alege-ți un nume și așază-te la masă.");
+        if (await this.cruce.expire(now)) {
+          this.reconcileGameSeats();
+          this.broadcastCruce();
+        }
+        await this.cruce.act(
+          actor,
+          message.action,
+          message.requestId,
+          message.revision,
+          now,
+        );
+        this.reconcileGameSeats();
+        this.broadcastCruce();
+      } catch (e) {
+        error =
+          e instanceof CruceError
+            ? e.message
+            : "Mutarea nu a putut fi salvată. Încearcă din nou.";
+      }
+      this.send(connection, {
+        type: "cruce",
+        view: this.cruce.view(actor),
+        requestId: message.requestId,
+        ...(error ? { error } : {}),
+      });
+      return;
+    }
     if (message.type === "planes-action") {
       const actor = this.tableActor(connection);
       let error: string | undefined;
@@ -451,7 +564,7 @@ export class RoomCore {
         this.broadcastPlanes();
       } catch (e) {
         error =
-          e instanceof TableError
+          e instanceof TableError || e instanceof CruceError
             ? e.message
             : "The table couldn't save that move. Please try again.";
       }
@@ -588,6 +701,28 @@ export class RoomCore {
           } catch {}
         }
       }
+      if (actor) {
+        if (
+          this.cruce.canResume(actor, now) ||
+          this.cruce.hasOtherSocket(actor)
+        )
+          connection.setState({ ...connection.state!, resumeCruce: true });
+        try {
+          await this.cruce.bindActor(actor);
+          if (
+            !this.planes.hasSocket(actor.socket) &&
+            !this.planes.hasOtherSocket(actor)
+          ) {
+            const seat = await this.cruce.resume(actor, now);
+            if (seat !== null) this.restoreCruceSeat(connection, seat);
+          }
+          this.broadcastCruce();
+        } catch {
+          try {
+            await this.runtime.retryPlaneCleanup?.();
+          } catch {}
+        }
+      }
       this.broadcast({ type: "pose", player: connection.state!.player });
       if (message.requestHome) this.snapshot(connection);
       return;
@@ -650,17 +785,60 @@ export class RoomCore {
         requestId: message.requestId,
         accepted: false,
         seatId: player.seatId ?? null,
-        reason: "Someone is already sitting here.",
+        reason:
+          cruceSeatSide(message.seatId) !== null
+            ? "Acest loc este deja ocupat. Alege alt loc liber."
+            : "Someone is already sitting here.",
       });
       this.send(connection, { type: "seats", seats: this.seats() });
       return;
     }
+    const cruceSide = cruceSeatSide(message.seatId);
     const gameSide = planesSeatSide(message.seatId),
       actor = this.tableActor(connection);
     try {
-      if (gameSide !== null) {
+      if (gameSide !== null && actor && this.cruce.hasSocket(actor.socket))
+        throw new CruceError("Ridică-te mai întâi de la masa de Cruce.");
+      if (cruceSide !== null) {
         if (!actor)
-          throw new TableError("Choose a name before joining the table.");
+          throw new CruceError(
+            "Alege-ți un nume înainte de a te așeza la masă.",
+          );
+        if (
+          this.planes.hasSocket(actor.socket) ||
+          this.planes.hasOtherSocket(actor) ||
+          this.planes.canResume(actor, now)
+        )
+          throw new CruceError("Ridică-te mai întâi de la masa de Planes.");
+        if (await this.cruce.expire(now)) {
+          this.reconcileGameSeats();
+          this.broadcastCruce();
+        }
+        const p = connection.state!.player.position;
+        if (
+          !this.cruce.canResume(actor, now) &&
+          Math.hypot(p[0] - CRUCE_TABLE.x, p[2] - CRUCE_TABLE.z) > 8
+        )
+          throw new CruceError(
+            "Apropie-te de masa de Cruce înainte de a ocupa un loc.",
+          );
+        await this.cruce.join(actor, cruceSide, now);
+        if (!this.active().includes(connection)) {
+          await this.cruce.disconnect(actor, now);
+          return;
+        }
+      } else if (actor && this.cruce.hasSocket(actor.socket))
+        await this.cruce.leave(actor);
+      if (gameSide !== null) {
+        if (
+          actor &&
+          (this.cruce.hasOtherSocket(actor) || this.cruce.canResume(actor, now))
+        )
+          throw new CruceError("Ridică-te mai întâi de la masa de Cruce.");
+        if (!actor)
+          throw new TableError(
+            "Alege-ți un nume înainte de a te așeza la masă.",
+          );
         if (await this.planes.expire(now)) {
           this.reconcileGameSeats();
           this.broadcastPlanes();
@@ -685,9 +863,11 @@ export class RoomCore {
         accepted: false,
         seatId: connection.state!.player.seatId ?? null,
         reason:
-          e instanceof TableError
+          e instanceof TableError || e instanceof CruceError
             ? e.message
-            : "The table couldn't save your seat. Try again.",
+            : cruceSide !== null
+              ? "Locul nu a putut fi rezervat. Încearcă din nou."
+              : "The table couldn't save your seat. Try again.",
       });
       return;
     }
@@ -707,6 +887,8 @@ export class RoomCore {
     this.broadcast({ type: "pose", player: nextPlayer }, connection);
     if (gameSide !== null || planesSeatSide(player.seatId) !== null)
       this.broadcastPlanes();
+    if (cruceSide !== null || cruceSeatSide(player.seatId) !== null)
+      this.broadcastCruce();
   }
   disconnect(connection: RoomConnection) {
     if (!connection.state) return;
@@ -717,6 +899,25 @@ export class RoomCore {
     // The PartyServer iterator no longer contains the closed connection.
     this.broadcast({ type: "seats", seats: this.seats() }, connection);
     const actor = this.tableActor(connection);
+    if (actor && this.cruce.hasSocket(actor.socket))
+      return this.cruce
+        .disconnect(actor)
+        .catch(async () => {
+          try {
+            await this.runtime.retryPlaneCleanup?.();
+          } catch {}
+        })
+        .then(async () => {
+          this.broadcastCruce();
+          try {
+            await this.resumeCruceActors();
+            this.broadcastCruce();
+          } catch {
+            try {
+              await this.runtime.retryPlaneCleanup?.();
+            } catch {}
+          }
+        });
     if (actor && this.planes.hasSocket(actor.socket))
       return this.planes
         .disconnect(actor)

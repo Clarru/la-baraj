@@ -36,3 +36,6 @@ docs/deployment/captures/*-raw.png
 
 # Local design-tool session cache
 .impeccable/hook.cache.json
+
+# Full-resolution Cruce generation masters are local; ship optimized WebPs and prompts.
+docs/art-direction/cruce/generated/

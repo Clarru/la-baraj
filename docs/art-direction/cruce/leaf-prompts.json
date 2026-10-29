@@ -1,0 +1,44 @@
+[
+  {
+    "id": "leaf-unter",
+    "source": "generated/leaf-unter.png",
+    "prompt": "Use case: stylized-concept. Asset: ONE individual Hungarian Tell-pattern card, portrait 363:585. Attached real card is a structural reference. Faithfully retain its suit pip positions, double-ended geometry and figure pose. Clean traditional hand-colored woodcut with black outlines, saturated primary printing colors, PURE WHITE untextured stock. Thin rounded black inset border. Exactly ONE card filling frame, no outside background, no shadows, no perspective, no vintage yellow paper. Upper half duplicates into lower half by exactly 180-degree rotation, NOT reflection, joined at horizontal center. Suit LEAVES / VERDE, not spades or clubs. UNTER / DOIAR: waist-up man in blue cap, green cape and red sleeves, holding a wooden staff. ONE leaf pip on the LEFT by his WAIST, well below shoulder; rotated duplicate bottom right. Only TWO pips full card. Blank corner near his head.",
+    "reference": "https://github.com/tomasdrus/hungarian-playing-cards/blob/master/cards-large/leaf-unter.png",
+    "tool": "image_gen (built-in)"
+  },
+  {
+    "id": "leaf-ober",
+    "source": "generated/leaf-ober.png",
+    "prompt": "Use case: stylized-concept. Asset: ONE individual Hungarian Tell-pattern card, portrait 363:585. Attached real card is a structural reference. Faithfully retain its suit pip positions, double-ended geometry and figure pose. Clean traditional hand-colored woodcut with black outlines, saturated primary printing colors, PURE WHITE untextured stock. Thin rounded black inset border. Exactly ONE card filling frame, no outside background, no shadows, no perspective, no vintage yellow paper. Upper half duplicates into lower half by exactly 180-degree rotation, NOT reflection, joined at horizontal center. Suit LEAVES / VERDE, not spades or clubs. OBER / TREIAR: moustached man in broad green-blue hat, green tunic and red sleeves, sword on belt, hand on hip. ONE leaf pip at upper LEFT beside his HEAD, rotated duplicate lower right. Only TWO pips full card.",
+    "reference": "https://github.com/tomasdrus/hungarian-playing-cards/blob/master/cards-large/leaf-ober.png",
+    "tool": "image_gen (built-in)"
+  },
+  {
+    "id": "leaf-king",
+    "source": "generated/leaf-king.png",
+    "prompt": "Use case: stylized-concept. Asset: ONE individual Hungarian Tell-pattern card, portrait 363:585. Attached real card is a structural reference. Faithfully retain its suit pip positions, double-ended geometry and figure pose. Clean traditional hand-colored woodcut with black outlines, saturated primary printing colors, PURE WHITE untextured stock. Thin rounded black inset border. Exactly ONE card filling frame, no outside background, no shadows, no perspective, no vintage yellow paper. Upper half duplicates into lower half by exactly 180-degree rotation, NOT reflection, joined at horizontal center. Suit LEAVES / VERDE, not spades or clubs. KING / PATRAR: gold-crowned king with red sleeves, purple cloak and armored chest on a decorated brown horse. ONE leaf pip upper LEFT and rotated duplicate bottom RIGHT: TWO pips total.",
+    "reference": "https://github.com/tomasdrus/hungarian-playing-cards/blob/master/cards-large/leaf-king.png",
+    "tool": "image_gen (built-in)"
+  },
+  {
+    "id": "leaf-nine",
+    "source": "generated/leaf-nine.png",
+    "prompt": "Use case: stylized-concept. Asset: ONE Hungarian Tell-pattern card, vertical portrait 363:585. Attached real card is the exact structural guide. Reproduce its pip arrangement and directions faithfully; improve only line crispness and print clarity. Pure WHITE card stock, thin rounded double black border. Vibrant original traditional woodcut linework. NO castle, NO landscape, NO people, NO decorative scenery on this card. Exact rotationally symmetric double-ended layout joined at horizontal middle. Do not transfer the Hearts or Bells arrangement to this suit. Exactly ONE card fills frame, no margin outside card, no shadows, no perspective. NINE / IX: TOP HALF has FOUR horizontal overlapping yellow-and-green leaf pips down the LEFT, FOUR horizontal leaf pips down RIGHT, and ONE upright leaf at TOP CENTER above a thin bare red branching stem (4+1+4=9). No other large center leaves. The leaf shape is the distinctive yellow/green tulip-shaped serrated leaf in the reference, not a heart-shaped maple or spade. The thin center stem extends down to the waist with faint gray twigs connecting to outer leaf stems. BOTTOM HALF exact 180-degree rotation. Eighteen large pips total full card. Roman IX upper-left, rotated lower-right.",
+    "reference": "https://github.com/tomasdrus/hungarian-playing-cards/blob/master/cards-large/leaf-nine.png",
+    "tool": "image_gen (built-in)"
+  },
+  {
+    "id": "leaf-ten",
+    "source": "generated/leaf-ten.png",
+    "prompt": "Use case: stylized-concept. Asset: ONE Hungarian Tell-pattern card, vertical portrait 363:585. Attached real card is the exact structural guide. Reproduce its pip arrangement and directions faithfully; improve only line crispness and print clarity. Pure WHITE card stock, thin rounded double black border. Vibrant original traditional woodcut linework. NO castle, NO landscape, NO people, NO decorative scenery on this card. Exact rotationally symmetric double-ended layout joined at horizontal middle. Do not transfer the Hearts or Bells arrangement to this suit. Exactly ONE card fills frame, no margin outside card, no shadows, no perspective. TEN / X: TOP HALF has exactly FIVE horizontal overlapping yellow-and-green leaf pips down LEFT and FIVE down RIGHT. Center contains ONLY a thin bare red stem with delicate gray twigs, absolutely NO large leaf pip in center. 5+0+5 = TEN in each half. The leaves point outwards horizontally; serrated yellow/green tulip-shaped leaves as in reference, not heart-shaped or spade-shaped leaves. Bottom half exact 180-degree rotation. Twenty pips total full card. Roman X at top center, rotated X bottom center.",
+    "reference": "https://github.com/tomasdrus/hungarian-playing-cards/blob/master/cards-large/leaf-ten.png",
+    "tool": "image_gen (built-in)"
+  },
+  {
+    "id": "leaf-ace",
+    "source": "generated/leaf-ace.png",
+    "prompt": "Use case: stylized-concept. Asset: ONE individual Hungarian Tell-pattern card, portrait 363:585. Attached real card is a structural reference. Faithfully retain its suit pip positions, double-ended geometry and figure pose. Clean traditional hand-colored woodcut with black outlines, saturated primary printing colors, PURE WHITE untextured stock. Thin rounded black inset border. Exactly ONE card filling frame, no outside background, no shadows, no perspective, no vintage yellow paper. Upper half duplicates into lower half by exactly 180-degree rotation, NOT reflection, joined at horizontal center. Suit LEAVES / VERDE, not spades or clubs. ACE / AS: AUTUMN grape harvester in red hat, white shirt, red breeches working at a barrel and grape basket in a green vineyard. TWO tilted leaves one in each top corner and rotated duplicates bottom: FOUR leaf pips full card. Preserve reference scene. No letter A.",
+    "reference": "https://github.com/tomasdrus/hungarian-playing-cards/blob/master/cards-large/leaf-ace.png",
+    "tool": "image_gen (built-in)"
+  }
+]
