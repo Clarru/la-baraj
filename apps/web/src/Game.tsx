@@ -11,7 +11,7 @@ import {
   type ReactNode,
 } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Sky } from "@react-three/drei";
+import { WorldBackdrop, worldFog } from "./WorldBackdrop";
 import { Physics } from "@react-three/rapier";
 import { GameIcon } from "./GameArt";
 import * as THREE from "three";
@@ -53,6 +53,7 @@ import {
   PerformancePanel,
   PerformanceScene,
   PerformanceMeasurement,
+  PerformanceCamera,
   type PerformanceScenario,
 } from "./PerformanceLab";
 import {
@@ -297,6 +298,18 @@ export default function Game({ initialName }: { initialName: string }) {
   return (
     <main
       className="game-shell"
+      style={
+        performanceLab
+          ? {
+              width: 1707,
+              height: 960,
+              minHeight: 960,
+              position: "absolute",
+              left: 0,
+              top: 0,
+            }
+          : undefined
+      }
       data-cabin-count={cabins.length}
       data-cabins={JSON.stringify(cabins)}
       data-home={hasHome ? homeIndex + 1 : undefined}
@@ -308,7 +321,7 @@ export default function Game({ initialName }: { initialName: string }) {
         <Suspense fallback={<SceneLoading />}>
           <Canvas
             shadows="percentage"
-            dpr={[1, 1.5]}
+            dpr={performanceLab ? 1.5 : [1, 1.5]}
             camera={{ position: [58, 35, 72], fov: 48, near: 0.1, far: 6000 }}
             gl={{
               antialias: true,
@@ -317,26 +330,9 @@ export default function Game({ initialName }: { initialName: string }) {
               toneMappingExposure: 0.92,
             }}
           >
-            <color
-              attach="background"
-              args={[evening ? "#becbc8" : "#cadfd8"]}
-            />
-            <fog
-              attach="fog"
-              args={[evening ? "#becbc8" : "#cadfd8", 380, 3300]}
-            />
-            <group>
-              <Sky
-                distance={10000}
-                sunPosition={sunDirection(evening)
-                  .multiplyScalar(1000)
-                  .toArray()}
-                inclination={0.5}
-                azimuth={0.25}
-                turbidity={2.8}
-                rayleigh={1.9}
-              />
-            </group>
+            <color attach="background" args={[worldFog(evening)]} />
+            <fog attach="fog" args={[worldFog(evening), 480, 3300]} />
+            <WorldBackdrop evening={evening} />
             <hemisphereLight
               args={["#eef1db", "#7c8458", evening ? 0.55 : 0.75]}
             />
@@ -443,6 +439,7 @@ export default function Game({ initialName }: { initialName: string }) {
               transitioning={doorTransition}
             />
             <SceneReady onReady={onSceneReady} />
+            {performanceLab && <PerformanceCamera />}
             {import.meta.env.DEV && (
               <DeveloperMeasurement onMetrics={setMetrics} />
             )}

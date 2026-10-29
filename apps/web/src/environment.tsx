@@ -1,10 +1,11 @@
 import { memo, useEffect, useMemo } from "react";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import { RigidBody, TrimeshCollider } from "@react-three/rapier";
 import * as THREE from "three";
 import { Water } from "three/examples/jsm/objects/Water.js";
 import { ModelInstances, type Placement } from "./assets";
 import { NearbySolids, type NaturalSolid } from "./NearbySolids";
+import { makeRoadRibbon, makeBackgroundForest } from "./landscape-geometry";
 import { useTexture, Detailed } from "@react-three/drei";
 import impostorInfo from "../public/assets/impostors/manifest.json";
 import {
@@ -35,7 +36,8 @@ function terrainPatch(
   geo.rotateX(-Math.PI / 2);
   geo.translate(cx, 0, cz);
   const p = geo.attributes.position,
-    colors = new Float32Array(p.count * 3);
+    colors = new Float32Array(p.count * 3),
+    detail = new Uint8Array(p.count);
   const grass = new THREE.Color("#69844b"),
     shore = new THREE.Color("#b8a67b"),
     forest = new THREE.Color("#3b5836");
@@ -49,12 +51,15 @@ function terrainPatch(
       d = shoreDistance(x, z),
       wet = inWater(x, z);
     p.setY(i, terrainHeight(x, z, d, wet));
+    geo.attributes.uv.setXY(i, x / 6, z / 6);
+    detail[i] = Math.round(THREE.MathUtils.clamp((d - 3) / 5, 0, 1) * 255);
     const c = grass.clone().lerp(shore, Math.max(0, 1 - d / 5));
     if (d > 30) c.lerp(forest, Math.min(0.65, (d - 30) / 170));
     c.multiplyScalar(0.95 + Math.sin(x * 0.13) * Math.cos(z * 0.11) * 0.06);
     c.toArray(colors, i * 3);
   }
   geo.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+  geo.setAttribute("terrainDetail", new THREE.BufferAttribute(detail, 1, true));
   geo.computeVertexNormals();
   return geo;
 }
@@ -82,36 +87,46 @@ export function makeTerrain() {
   ]);
   return [terrainPatch(1, 1, xs.length - 1, zs.length - 1, 0, 0, xs, zs)];
 }
-function groundTexture() {
-  const c = document.createElement("canvas");
-  c.width = c.height = 256;
-  const ctx = c.getContext("2d")!;
-  ctx.fillStyle = "#dde2c8";
-  ctx.fillRect(0, 0, 256, 256);
-  const rand = rng(323);
-  for (let i = 0; i < 15000; i++) {
-    const v = Math.round(170 + rand() * 70);
-    ctx.fillStyle = `rgba(${v},${v + 5},${v - 12},${0.08 + rand() * 0.2})`;
-    const x = rand() * 256,
-      y = rand() * 256;
-    ctx.fillRect(x, y, 0.8 + rand() * 1.5, 1 + rand() * 3);
-  }
-  const t = new THREE.CanvasTexture(c);
-  t.wrapS = t.wrapT = THREE.RepeatWrapping;
-  t.repeat.set(80, 40);
-  t.colorSpace = THREE.SRGBColorSpace;
-  return t;
+/** Keep painted grass detail off the sand, using one byte per terrain vertex. */
+function groundMaterial(
+  shader: Parameters<THREE.MeshStandardMaterial["onBeforeCompile"]>[0],
+) {
+  shader.vertexShader = shader.vertexShader
+    .replace(
+      "#include <common>",
+      "#include <common>\nattribute float terrainDetail;\nvarying float vTerrainDetail;",
+    )
+    .replace(
+      "#include <begin_vertex>",
+      "#include <begin_vertex>\nvTerrainDetail=terrainDetail;",
+    );
+  shader.fragmentShader = shader.fragmentShader
+    .replace(
+      "#include <common>",
+      "#include <common>\nvarying float vTerrainDetail;",
+    )
+    .replace(
+      "#include <map_fragment>",
+      `
+    #ifdef USE_MAP
+      vec3 grain=texture2D(map,vMapUv).rgb;
+      diffuseColor.rgb*=mix(vec3(0.73,0.76,0.65),grain,0.72*vTerrainDetail);
+    #endif
+  `,
+    );
 }
 // Suspense discards useMemo on an uncommitted render. Loading each GLB retried
 // the whole initial scene and rebuilt this mesh ~15 times. These immutable,
 // page-lifetime resources must survive those retries, like the GLTF loader cache.
-let terrainResources:
-  { patches: THREE.PlaneGeometry[]; tex: THREE.CanvasTexture } | undefined;
+let terrainResources: { patches: THREE.PlaneGeometry[] } | undefined;
 export function Terrain() {
-  const { patches, tex } = (terrainResources ??= {
-    patches: makeTerrain(),
-    tex: groundTexture(),
-  });
+  const tex = useTexture("/assets/environment/ground-detail.webp");
+  useMemo(() => {
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.anisotropy = 4;
+  }, [tex]);
+  const { patches } = (terrainResources ??= { patches: makeTerrain() });
   return (
     <>
       {patches.map((geometry, i) => (
@@ -130,6 +145,7 @@ export function Terrain() {
           >
             <meshStandardMaterial
               vertexColors
+              onBeforeCompile={groundMaterial}
               map={i === 0 ? tex : undefined}
               roughness={0.95}
             />
@@ -234,13 +250,13 @@ export function LakeWater({ evening }: { evening: boolean }) {
         "vec3 outgoingLight = mix(albedo, waterColor * 1.3, 0.48);",
       )
       .replace("100.0, 2.0, 0.5", "240.0, 0.65, 0.5");
-    // Waves still animate every frame. Re-render the reflected world at 30Hz,
+    // Waves still animate every frame. Re-render the reflected world at 20Hz,
     // rather than drawing all houses and players again at 120Hz.
     const reflect = w.onBeforeRender.bind(w);
     let reflectedAt = -Infinity;
     w.onBeforeRender = (...args) => {
       const now = performance.now();
-      if (now - reflectedAt < 1000 / 30) return;
+      if (now - reflectedAt < 1000 / 20) return;
       reflectedAt = now;
       reflect(...args);
     };
@@ -258,72 +274,37 @@ export function LakeWater({ evening }: { evening: boolean }) {
   });
   return <primitive object={water} dispose={null} />;
 }
-function roadGeometry() {
-  const positions: number[] = [],
-    indices: number[] = [];
-  for (const road of roads) {
-    if (
-      ["steps", "path", "track", "footway", "cycleway", "bridleway"].includes(
-        road.kind,
-      )
-    )
-      continue;
-    for (let i = 1; i < road.points.length; i++) {
-      const a = road.points[i - 1],
-        b = road.points[i],
-        dx = b[0] - a[0],
-        dz = b[1] - a[1],
-        len = Math.hypot(dx, dz);
-      if (
-        len < 0.05 ||
-        Math.abs((a[0] + b[0]) / 2 + 950) > 2175 ||
-        Math.abs((a[1] + b[1]) / 2 + 50) > 1500
-      )
-        continue;
-      const width = ["tertiary", "secondary", "primary"].includes(road.kind)
-          ? 2.8
-          : 1.8,
-        ox = (-dz / len) * width,
-        oz = (dx / len) * width,
-        count = Math.max(1, Math.ceil(len / 5));
-      for (let j = 0; j < count; j++) {
-        const t0 = j / count,
-          t1 = (j + 1) / count,
-          start = [a[0] + dx * t0, a[1] + dz * t0],
-          end = [a[0] + dx * t1, a[1] + dz * t1],
-          index = positions.length / 3;
-        for (const p of [
-          [start[0] + ox, start[1] + oz],
-          [start[0] - ox, start[1] - oz],
-          [end[0] + ox, end[1] + oz],
-          [end[0] - ox, end[1] - oz],
-        ])
-          positions.push(p[0], terrainHeight(p[0], p[1]) + 0.09, p[1]);
-        indices.push(
-          index,
-          index + 2,
-          index + 1,
-          index + 1,
-          index + 2,
-          index + 3,
-        );
-      }
-    }
-  }
-  const g = new THREE.BufferGeometry();
-  g.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
-  g.setIndex(indices);
-  g.computeVertexNormals();
-  return g;
-}
 let sharedRoadGeometry: THREE.BufferGeometry | undefined;
 export function Roads() {
-  const geometry = (sharedRoadGeometry ??= roadGeometry());
+  const { gl } = useThree();
+  const coverage = useMemo(
+    () => gl.getContext().getContextAttributes()?.antialias === true,
+    [gl],
+  );
+  const tex = useTexture("/assets/environment/asphalt.webp");
+  useMemo(() => {
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.anisotropy = 4;
+  }, [tex]);
+  const geometry = (sharedRoadGeometry ??= makeRoadRibbon());
   return (
-    <mesh geometry={geometry} receiveShadow dispose={null}>
+    <mesh
+      name="Cincis road ribbon"
+      geometry={geometry}
+      receiveShadow
+      dispose={null}
+    >
       <meshStandardMaterial
-        color="#86827b"
-        roughness={0.96}
+        map={tex}
+        vertexColors
+        alphaToCoverage={coverage}
+        transparent={!coverage}
+        depthWrite={coverage}
+        polygonOffset
+        polygonOffsetFactor={-1}
+        polygonOffsetUnits={-1}
+        roughness={1}
         side={THREE.DoubleSide}
       />
     </mesh>
@@ -410,8 +391,9 @@ const vegetationData = (() => {
   }
   return groups;
 })();
-const naturalSolids: NaturalSolid[] = Object.entries(vegetationData).flatMap(
-  ([id, items]) => {
+const backgroundForest = makeBackgroundForest();
+const naturalSolids: NaturalSolid[] = [
+  ...Object.entries(vegetationData).flatMap(([id, items]) => {
     const modelId = id.replace("_Distant", "");
     const tree = /^(CommonTree|Pine)/.test(modelId);
     if (!tree && !/^(Rock|Bush)/.test(modelId)) return [];
@@ -426,8 +408,16 @@ const naturalSolids: NaturalSolid[] = Object.entries(vegetationData).flatMap(
           }
         : {}),
     }));
-  },
-);
+  }),
+  ...Object.entries(backgroundForest).flatMap(([id, items]) =>
+    items.map((item, index) => ({
+      ...item,
+      id,
+      key: `background-${id}-${index}`,
+      treeHeight: impostorInfo[id as keyof typeof impostorInfo].height * 0.72,
+    })),
+  ),
+];
 export const environmentCounts = Object.fromEntries(
   Object.entries(vegetationData).map(([k, v]) => [k, v.length]),
 );
@@ -435,6 +425,10 @@ const treeIds = ["CommonTree_1", "CommonTree_3", "Pine_2", "Pine_4"] as const;
 const treeImpostorUrls = treeIds.map((id) => `/assets/impostors/${id}.png`);
 // Metrics update the App every second. Keep placement identities stable so those
 // renders never rebuild instance matrices, bounding spheres, or forest meshes.
+export const backgroundForestCount = Object.values(backgroundForest).reduce(
+  (sum, list) => sum + list.length,
+  0,
+);
 const vegetationGroups = Object.entries(vegetationData).flatMap(
   ([id, placements]) => {
     if (id.endsWith("_Distant"))
@@ -442,7 +436,10 @@ const vegetationGroups = Object.entries(vegetationData).flatMap(
         {
           id: id.replace("_Distant", ""),
           key: id,
-          placements,
+          placements: [
+            ...placements,
+            ...backgroundForest[id.replace("_Distant", "")],
+          ],
           distant: true,
           cx: 0,
           cz: 0,

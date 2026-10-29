@@ -1,0 +1,258 @@
+{
+  "frames": 600,
+  "fps": 75.0957470774118,
+  "meanMs": 13.316333333353201,
+  "p95Ms": 17.19999998807907,
+  "over33Ms": 0,
+  "calls": 1603.4016666666666,
+  "triangles": 7039770.31,
+  "gpuGeometries": 260,
+  "gpuTextures": 97,
+  "programs": 53,
+  "sceneObjects": 7418,
+  "meshes": 2622,
+  "materials": 892,
+  "geometries": 942,
+  "heapMiB": 262.7710704803467,
+  "dpr": 1.5,
+  "viewport": [
+    1707,
+    960
+  ],
+  "camera": [
+    50.4192479998657,
+    8.403607426127289,
+    56.762402419907936
+  ],
+  "firstSceneFrameMs": 2095.699999988079,
+  "bodies": 80,
+  "colliders": 345,
+  "physicsMeanMs": 0.0486666672428449,
+  "physicsMaxMs": 0.20000004768371582,
+  "longTasks": [
+    {
+      "start": 70.19999998807907,
+      "duration": 265
+    },
+    {
+      "start": 457.69999998807907,
+      "duration": 1264
+    },
+    {
+      "start": 1723.5,
+      "duration": 173
+    },
+    {
+      "start": 2095.599999964237,
+      "duration": 263
+    },
+    {
+      "start": 2359.199999988079,
+      "duration": 90
+    },
+    {
+      "start": 13666.899999976158,
+      "duration": 86
+    },
+    {
+      "start": 13765.399999976158,
+      "duration": 75
+    },
+    {
+      "start": 13841.899999976158,
+      "duration": 248
+    },
+    {
+      "start": 15331.899999976158,
+      "duration": 356
+    }
+  ],
+  "slowResources": [],
+  "resources": [
+    {
+      "name": "index-BV_4ls71.css",
+      "bytes": 4879,
+      "duration": 5.899999976158142
+    },
+    {
+      "name": "index-DdwumPMr.js",
+      "bytes": 70130,
+      "duration": 6.299999952316284
+    },
+    {
+      "name": "Game-C5BYX3y8.js",
+      "bytes": 1247979,
+      "duration": 10.199999988079071
+    },
+    {
+      "name": "la-baraj-banner.webp",
+      "bytes": 49692,
+      "duration": 2.600000023841858
+    },
+    {
+      "name": "lake-vignette.webp",
+      "bytes": 217650,
+      "duration": 4.300000011920929
+    },
+    {
+      "name": "rapier-D4OUQuNj.js",
+      "bytes": 835,
+      "duration": 1.800000011920929
+    },
+    {
+      "name": "sign-plaque.webp",
+      "bytes": 90248,
+      "duration": 3.300000011920929
+    },
+    {
+      "name": "CommonTree_1.png",
+      "bytes": 92622,
+      "duration": 4.099999964237213
+    },
+    {
+      "name": "CommonTree_3.png",
+      "bytes": 87821,
+      "duration": 4.100000023841858
+    },
+    {
+      "name": "Pine_2.png",
+      "bytes": 87432,
+      "duration": 4
+    },
+    {
+      "name": "Pine_4.png",
+      "bytes": 85721,
+      "duration": 4.5
+    },
+    {
+      "name": "sign-plaque.webp",
+      "bytes": 90248,
+      "duration": 1.199999988079071
+    },
+    {
+      "name": "Table_Large.glb",
+      "bytes": 154548,
+      "duration": 3.199999988079071
+    },
+    {
+      "name": "Bench.glb",
+      "bytes": 141072,
+      "duration": 2.699999988079071
+    },
+    {
+      "name": "Prop_WoodenFence_Single.glb",
+      "bytes": 79428,
+      "duration": 3.200000047683716
+    },
+    {
+      "name": "Lakeside_Man.glb",
+      "bytes": 1867672,
+      "duration": 5.699999988079071
+    },
+    {
+      "name": "notebook-paper.webp",
+      "bytes": 12414,
+      "duration": 5.600000023841858
+    },
+    {
+      "name": "Rock_Medium_1.glb",
+      "bytes": 36216,
+      "duration": 2
+    },
+    {
+      "name": "CommonTree_1.glb",
+      "bytes": 304208,
+      "duration": 3.100000023841858
+    },
+    {
+      "name": "CommonTree_3.glb",
+      "bytes": 220512,
+      "duration": 2.299999952316284
+    },
+    {
+      "name": "Pine_2.glb",
+      "bytes": 157132,
+      "duration": 2.600000023841858
+    },
+    {
+      "name": "Pine_4.glb",
+      "bytes": 157860,
+      "duration": 2.100000023841858
+    },
+    {
+      "name": "Bush_Common.glb",
+      "bytes": 89492,
+      "duration": 2
+    },
+    {
+      "name": "Fern_1.glb",
+      "bytes": 64784,
+      "duration": 2.299999952316284
+    },
+    {
+      "name": "Grass_Common_Short.glb",
+      "bytes": 9928,
+      "duration": 2.300000011920929
+    },
+    {
+      "name": "Flower_3_Group.glb",
+      "bytes": 124176,
+      "duration": 3.5
+    },
+    {
+      "name": "Rock_Medium_2.glb",
+      "bytes": 32360,
+      "duration": 2.900000035762787
+    },
+    {
+      "name": "Lake_Cabin_Sage.glb",
+      "bytes": 919092,
+      "duration": 3.699999988079071
+    },
+    {
+      "name": "Crate_Wooden.glb",
+      "bytes": 161276,
+      "duration": 2.199999988079071
+    },
+    {
+      "name": "character-actions.json",
+      "bytes": 153788,
+      "duration": 17
+    },
+    {
+      "name": "pictograms.webp",
+      "bytes": 345568,
+      "duration": 6.200000047683716
+    },
+    {
+      "name": "parchment-panel.webp",
+      "bytes": 131420,
+      "duration": 10.899999976158142
+    },
+    {
+      "name": "Lake_Cabin_Gable.glb",
+      "bytes": 888248,
+      "duration": 9.300000011920929
+    },
+    {
+      "name": "Lake_Cabin_SagePergola.glb",
+      "bytes": 1097640,
+      "duration": 11.700000047683716
+    },
+    {
+      "name": "Lake_Cabin_GableBlue.glb",
+      "bytes": 1126508,
+      "duration": 12.699999988079071
+    },
+    {
+      "name": "Lake_Cabin_AFrame.glb",
+      "bytes": 554080,
+      "duration": 7.800000011920929
+    },
+    {
+      "name": "Lake_Cabin_AFrameCopper.glb",
+      "bytes": 587360,
+      "duration": 8.400000035762787
+    }
+  ]
+}

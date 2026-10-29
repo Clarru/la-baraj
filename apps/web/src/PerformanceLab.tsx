@@ -1,5 +1,5 @@
 /** Local opt-in load fixture. Never connects fake players to the shared world. */
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import {
   useRapier,
@@ -9,14 +9,19 @@ import {
 import { RemoteAvatar } from "./multiplayer-players";
 import { RemoteScooterFleet } from "./RemoteScooterFleet";
 import type { RemotePlayer } from "./multiplayer";
-import { homeSpawn } from "./home";
-import { terrainHeight } from "./geography";
+import { homeSpawn, homeWalkCameraOffset } from "./home";
+import { terrainHeight, settlementRoadZ } from "./geography";
+import * as THREE from "three";
 
 export type PerformanceScenario =
   "solo" | "village" | "crowd" | "riders" | "distant";
 export const performanceLab =
   import.meta.env.VITE_PERFORMANCE_LAB === "1" &&
   ["127.0.0.1", "localhost"].includes(location.hostname);
+
+type SceneView =
+  "arrival" | "lake" | "road" | "north" | "east" | "south" | "west";
+let sceneView: SceneView = "arrival";
 
 export function PerformancePanel({
   scenario,
@@ -25,6 +30,7 @@ export function PerformancePanel({
   scenario: PerformanceScenario;
   onScenario: (value: PerformanceScenario) => void;
 }) {
+  const [view, setView] = useState<SceneView>("arrival");
   return (
     <aside
       style={{
@@ -52,6 +58,26 @@ export function PerformancePanel({
           <option value="distant">50 cabins / 49 distant players</option>
         </select>
       </label>
+      <label>
+        Scene view{" "}
+        <select
+          aria-label="Performance scene view"
+          value={view}
+          onChange={(e) => {
+            const next = e.target.value as SceneView;
+            sceneView = next;
+            setView(next);
+          }}
+        >
+          <option value="arrival">Arrival</option>
+          <option value="lake">Across the lake</option>
+          <option value="road">Road surface</option>
+          <option value="north">North horizon</option>
+          <option value="east">East horizon</option>
+          <option value="south">South horizon</option>
+          <option value="west">West horizon</option>
+        </select>
+      </label>
       <button
         onClick={() =>
           document
@@ -67,6 +93,54 @@ export function PerformancePanel({
       />
     </aside>
   );
+}
+
+/** Fixed local-only views make before/after frame cost and captures comparable. */
+export function PerformanceCamera() {
+  const { camera, controls } = useThree();
+  const points = useMemo(() => {
+    const roadZ = settlementRoadZ(5),
+      base = terrainHeight(0, 220),
+      spawn = homeSpawn(0),
+      offset = homeWalkCameraOffset(0);
+    return {
+      arrival: {
+        position: spawn.position.map((v, i) => v + offset[i]),
+        target: [
+          spawn.position[0],
+          spawn.position[1] + 0.65,
+          spawn.position[2],
+        ],
+      },
+      lake: { position: [-8, 3.6, 72], target: [-9, 2, 62] },
+      road: {
+        position: [5, terrainHeight(5, roadZ) + 2.7, roadZ],
+        target: [
+          15,
+          terrainHeight(15, settlementRoadZ(15)) + 0.3,
+          settlementRoadZ(15),
+        ],
+      },
+      north: { position: [0, base + 3.2, 220], target: [0, base + 2, 210] },
+      east: { position: [0, base + 3.2, 220], target: [10, base + 2, 220] },
+      south: { position: [0, base + 3.2, 220], target: [0, base + 2, 230] },
+      west: { position: [0, base + 3.2, 220], target: [-10, base + 2, 220] },
+    };
+  }, []);
+  useFrame(() => {
+    const point = points[sceneView];
+    camera.position.fromArray(point.position);
+    camera.lookAt(point.target[0], point.target[1], point.target[2]);
+    const orbit = controls as unknown as {
+      target: THREE.Vector3;
+      update: () => void;
+    } | null;
+    if (orbit) {
+      orbit.target.fromArray(point.target);
+      orbit.update();
+    }
+  });
+  return null;
 }
 
 export function PerformanceScene({
