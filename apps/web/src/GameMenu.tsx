@@ -102,6 +102,7 @@ export function GameMenu({
   onControls,
   onHome,
   onReset,
+  onWave,
   onClose,
 }: {
   nickname: string;
@@ -113,6 +114,7 @@ export function GameMenu({
   onControls: () => void;
   onHome: () => void;
   onReset: () => void;
+  onWave?: () => void;
   onClose: () => void;
 }) {
   const [name, setName] = useState(nickname);
@@ -157,6 +159,13 @@ export function GameMenu({
         </p>
       )}
       <div className="game-menu-actions">
+        {onWave && (
+          <button onClick={onWave}>
+            <GameIcon name="people" size={29} />
+            <span>Wave hello</span>
+            <kbd>G</kbd>
+          </button>
+        )}
         <button onClick={onControls}>
           <GameIcon name="controls" size={29} />
           <span>Controls</span>
@@ -215,6 +224,7 @@ const controlRows = [
   ["Shift", "Run"],
   ["Space", "Jump"],
   ["C / Z", "Toggle crouch / lie prone"],
+  ["G", "Wave hello while standing still"],
   ["Enter / Esc", "Chat above your character / close chat"],
   ["P / middle click", "Punch a nearby player while standing"],
   ["Left or right drag / scroll", "Look around / zoom"],

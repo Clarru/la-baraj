@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
+import { createSocialWaveClip } from "./social-wave";
 import { createRunJumpClips } from "./run-jump-clips";
 import { createFishingGestureClips } from "./character-actions";
 
@@ -24,6 +25,7 @@ export function characterClips(
     ...authored,
     ...createFishingGestureClips(),
     createCrouchPoseClip(),
+    createSocialWaveClip(),
   ];
   // Swimming is already a strong, fully authored prone body pose on this rig.
   // Alias it instead of flattening the mesh or inventing an unconvincing

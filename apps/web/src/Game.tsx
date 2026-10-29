@@ -148,6 +148,7 @@ export default function Game({ initialName }: { initialName: string }) {
   const [resetKey, setResetKey] = useState(0),
     [ready, setReady] = useState(false);
   const [panel, setPanel] = useState<GamePanel>(null);
+  const [waveRequest, setWaveRequest] = useState(0);
   const [chatMode, setChatMode] = useState<"closed" | "editing" | "display">(
     "closed",
   );
@@ -524,6 +525,7 @@ export default function Game({ initialName }: { initialName: string }) {
                     planesOpen ||
                     chatOpen
                   }
+                  waveRequest={waveRequest}
                   onMove={ignoreMovement}
                   onMotion={updateMotion}
                   onVehicleChange={setVehicleMounted}
@@ -726,6 +728,11 @@ export default function Game({ initialName }: { initialName: string }) {
               onRename={(name) => room.rename(name)}
               onControls={() => setPanel("controls")}
               onHome={lookHome}
+              onWave={() => {
+                setMode("walk");
+                setPanel(null);
+                setWaveRequest((n) => n + 1);
+              }}
               onReset={resetHome}
               onClose={() => setPanel(null)}
             />

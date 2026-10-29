@@ -1,3 +1,4 @@
+import { SOCIAL_WAVE_CLIP_NAME } from "./social-wave";
 import {
   useEffect,
   useMemo,
@@ -120,6 +121,7 @@ function RemoteAvatarRig({
   const swimmingRef = useRef(false);
   const scooterMounted = useRef(false);
   const target = useMemo(() => new THREE.Vector3(), []);
+  const wasWaving = useRef(false);
   const previousAnimation = useRef(""),
     previousActivityAt = useRef(-1),
     previousGesture = useRef<string | null>(null),
@@ -228,6 +230,21 @@ function RemoteAvatarRig({
     const stunned = combatRoom?.stunned(id) ?? false;
     const punching = combatRoom?.punching(id) ?? false;
     if (stars.current) stars.current.style.display = stunned ? "" : "none";
+    const waving =
+      player.animation === SOCIAL_WAVE_CLIP_NAME &&
+      !stunned &&
+      !punching &&
+      stance === "standing" &&
+      player.activity === "none" &&
+      !riding &&
+      !nowSwimming;
+    const waveAction = rig.actions.get(SOCIAL_WAVE_CLIP_NAME);
+    if (waving && !wasWaving.current && waveAction) {
+      waveAction.reset().setLoop(THREE.LoopOnce, 1);
+      waveAction.clampWhenFinished = true;
+      waveAction.setEffectiveWeight(1).fadeIn(0.12).play();
+    } else if (!waving && wasWaving.current) waveAction?.fadeOut(0.12);
+    wasWaving.current = waving;
     const chosen = stunned
       ? "Punch_Hit"
       : punching
@@ -237,7 +254,9 @@ function RemoteAvatarRig({
             !riding &&
             !nowSwimming
           ? proneAnimation
-          : player.animation;
+          : waving
+            ? "Idle_Neutral"
+            : player.animation;
     const crouchActive =
       stance === "crouching" &&
       !nowSwimming &&

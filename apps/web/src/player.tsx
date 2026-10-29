@@ -1,3 +1,9 @@
+import {
+  requestSocialWave,
+  socialWaveFinished,
+  SOCIAL_WAVE_CLIP_NAME,
+  type SocialWaveState,
+} from "./social-wave";
 import { CRUCE_TABLE } from "../../../packages/shared/cruce-station";
 import type { CruceSeat } from "../../../packages/shared/cruce";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -126,6 +132,7 @@ export function Player({
   onVehicleHint,
   indoors = false,
   doorTransition = false,
+  waveRequest = 0,
 }: {
   homeIndex: number;
   mode: ViewMode;
@@ -137,6 +144,7 @@ export function Player({
   onVehicleHint?: (near: boolean) => void;
   indoors?: boolean;
   doorTransition?: boolean;
+  waveRequest?: number;
 }) {
   const arrival = useMemo(() => homeSpawn(homeIndex), [homeIndex]);
   const controller = useRef<EcctrlHandle>(null);
@@ -146,6 +154,14 @@ export function Player({
   const { camera, gl } = useThree();
   const visual = useRef<THREE.Group>(null);
   const keys = useRef(new Set<string>());
+  const waveQueued = useRef(false);
+  const waveState = useRef<SocialWaveState | null>(null);
+  const waveLastStarted = useRef(-Infinity);
+  const previousWaveRequest = useRef(waveRequest);
+  useEffect(() => {
+    if (waveRequest !== previousWaveRequest.current) waveQueued.current = true;
+    previousWaveRequest.current = waveRequest;
+  }, [waveRequest]);
   const stanceRef = useRef<Stance>("standing");
   const [stance, setStance] = useState<Stance>("standing");
   const moving = useRef(false);
@@ -339,6 +355,11 @@ export function Player({
       )
         return;
       if (e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.code === "KeyG" && !e.repeat && !paused && mode === "walk") {
+        waveQueued.current = true;
+        e.preventDefault();
+        return;
+      }
       if (getVehicleState().mounted && ["KeyF", "KeyE"].includes(e.code)) {
         e.preventDefault();
         e.stopImmediatePropagation();
@@ -913,6 +934,41 @@ export function Player({
           );
     }
     const speed = holding ? 0 : Math.hypot(velocity.x, velocity.z);
+    const waveEligible =
+      active &&
+      !doorTransition &&
+      !nowSwimming &&
+      !mounted &&
+      !punching &&
+      stanceRef.current === "standing" &&
+      c.isOnGround &&
+      speed < 0.2;
+    const waveAction = actions[SOCIAL_WAVE_CLIP_NAME];
+    if (waveQueued.current) {
+      waveQueued.current = false;
+      if (!waveState.current && waveEligible) {
+        const request = requestSocialWave(
+          performance.now(),
+          waveLastStarted.current,
+        );
+        if (request && waveAction) {
+          waveState.current = request;
+          waveLastStarted.current = request.startedAt;
+          waveAction.reset().setLoop(THREE.LoopOnce, 1);
+          waveAction.clampWhenFinished = true;
+          waveAction.setEffectiveWeight(1).fadeIn(0.12).play();
+        }
+      }
+    }
+    if (
+      waveState.current &&
+      (!waveEligible ||
+        socialWaveFinished(waveState.current, performance.now()))
+    ) {
+      waveState.current = null;
+      waveAction?.fadeOut(0.12);
+    }
+
     const jumpClip = jumpAnimation(
         jumpState.current.phase,
         jumpState.current.style,
@@ -1083,7 +1139,7 @@ export function Player({
         contact: c.standPoint.toArray(),
         grounded: holding || (!nowSwimming && c.isOnGround),
         activity: pose.kind,
-        animation: next,
+        animation: waveState.current ? SOCIAL_WAVE_CLIP_NAME : next,
         posture: stanceRef.current,
         groundY,
         velocity: [velocity.x, velocity.y, velocity.z],
