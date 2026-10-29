@@ -62,19 +62,18 @@ export function NearbySolids({ items }: { items: NaturalSolid[] }) {
     if (clock.current < 0.25) return;
     clock.current = 0;
     for (const item of items) {
-      const distance = Math.hypot(
-        item.x - playerPosition.x,
-        item.z - playerPosition.z,
-      );
+      const dx = item.x - playerPosition.x,
+        dz = item.z - playerPosition.z;
+      const distanceSquared = dx * dx + dz * dz;
       const existing = active.current.get(item.key);
-      if (distance > 100) {
+      if (distanceSquared > 10000) {
         if (existing) {
           world.removeCollider(existing, false);
           active.current.delete(item.key);
         }
         continue;
       }
-      if (existing || distance > 85) continue;
+      if (existing || distanceSquared > 7225) continue;
       let desc;
       if (item.treeHeight) {
         const height = item.treeHeight * item.scale;
