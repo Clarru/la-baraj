@@ -49,12 +49,21 @@ async function rig() {
     )
     .play();
   mixer.update(0.5);
-  return { scene, mixer };
+  return {
+    scene,
+    mixer,
+    grip: T.AnimationClip.parse(
+      json.clips.find((c: { name: string }) => c.name === "Activity_HoldRod"),
+    ),
+  };
 }
 describe("character-held Cruce cards", () => {
   it("raises real retained hands to chest level without changing limb lengths or accumulating pose", async () => {
-    const { scene, mixer } = await rig();
-    const cards = createCruceCharacterRig(scene);
+    const { scene, mixer, grip } = await rig();
+    const reference = await rig();
+    const cards = createCruceCharacterRig(scene, null, grip);
+    const finger = scene.getObjectByName("index_02_l")!;
+    const originalFinger = finger.quaternion.clone();
     const h = scene.getObjectByName("hand_l")!;
     const baseline = h.quaternion.clone();
     const lengths = ["lowerarm_l", "hand_l", "lowerarm_r", "hand_r"].map((n) =>
@@ -63,9 +72,11 @@ describe("character-held Cruce cards", () => {
     for (let i = 0; i < 150; i++) {
       cards.beginFrame();
       mixer.update(0.016);
+      reference.mixer.update(0.016);
       cards.update(view(), 0, 1000 + i * 16);
     }
     expect(cards.fan.visible).toBe(true);
+    expect(finger.quaternion.angleTo(originalFinger)).toBeGreaterThan(0.2);
     expect(cards.fan.children.filter((c) => c.visible)).toHaveLength(6);
     expect(h.getWorldPosition(new T.Vector3()).y).toBeGreaterThan(0.82);
     for (const [n, i] of ["lowerarm_l", "hand_l", "lowerarm_r", "hand_r"].map(
@@ -78,6 +89,17 @@ describe("character-held Cruce cards", () => {
     cards.beginFrame();
     cards.update(null, null, 5000);
     expect(cards.fan.visible).toBe(false);
+    expect(
+      finger.quaternion
+        .clone()
+        .normalize()
+        .angleTo(
+          reference.scene
+            .getObjectByName("index_02_l")!
+            .quaternion.clone()
+            .normalize(),
+        ),
+    ).toBeLessThan(1e-6);
     expect(h.quaternion.angleTo(baseline)).toBeLessThan(0.1);
     cards.dispose();
     expect(scene.getObjectByName("Cruce hand fan")).toBeUndefined();
@@ -101,6 +123,10 @@ describe("character-held Cruce cards", () => {
     cards.beginFrame();
     cards.update(v, 1, 2400);
     expect(cards.flight.visible).toBe(true);
+    scene.updateWorldMatrix(true, true);
+    expect(
+      cards.flight.children[0].getWorldDirection(new T.Vector3()).y,
+    ).toBeGreaterThan(0.99);
     const middle = cards.flight.position.clone();
     expect(middle.toArray().every(Number.isFinite)).toBe(true);
     cards.beginFrame();
@@ -110,5 +136,36 @@ describe("character-held Cruce cards", () => {
     cards.update(v, 1, 3100);
     expect(cards.held.visible).toBe(false);
     cards.dispose();
+  });
+  it("keeps a valid hand origin through a skipped release frame and cleans repeated mounts", async () => {
+    const { scene } = await rig();
+    scene.position.set(5, 0.8330894938951581, 69.64531356447997);
+    scene.rotation.y = Math.PI;
+    for (let cycle = 0; cycle < 2; cycle++) {
+      const cards = createCruceCharacterRig(scene),
+        v = view();
+      cards.update(v, 0, 1000);
+      v.trick = [{ seat: 0, card: 5, announcement: 0 }];
+      v.handCounts[0] = 5;
+      v.hand = v.hand.filter((c) => c !== 5);
+      cards.beginFrame();
+      cards.update(v, 0, 2000);
+      cards.beginFrame();
+      cards.update(v, 0, 2400);
+      expect(cards.flight.visible).toBe(true);
+      expect(cards.flight.position.length()).toBeLessThan(2);
+      expect(cards.flight.position.y).toBeGreaterThan(0.7);
+      let fans = 0;
+      scene.traverse((o: T.Object3D) => {
+        if (o.name === "Cruce hand fan") fans++;
+      });
+      expect(fans).toBe(1);
+      cards.dispose();
+      fans = 0;
+      scene.traverse((o: T.Object3D) => {
+        if (o.name === "Cruce hand fan") fans++;
+      });
+      expect(fans).toBe(0);
+    }
   });
 });

@@ -30,20 +30,36 @@ export function CruceWorldLab({ room }: { room: MultiplayerRoom }) {
     [status, setStatus] = useState("");
   const send = (p: Peer, m: ClientMessage) =>
     p.port.postMessage({ kind: "message", raw: JSON.stringify(m) });
-  const stop = () => {
-    peers.current.forEach((p) => {
-      p.port.postMessage({ kind: "disconnect" });
+  const releasePeer = (p: Peer) => {
+    let timer: ReturnType<typeof setTimeout>;
+    const finish = () => {
+      clearTimeout(timer);
+      p.port.onmessage = null;
       p.port.close();
+    };
+    p.port.onmessage = (e) => {
+      if (e.data?.kind === "closed") finish();
+    };
+    p.port.postMessage({
+      kind: "message",
+      raw: JSON.stringify({
+        type: "seat",
+        seatId: null,
+        requestId: `lab-leave:${++sequence.current}`,
+      }),
     });
+    p.port.postMessage({ kind: "disconnect" });
+    timer = setTimeout(finish, 5000);
+  };
+  const stop = () => {
+    peers.current.forEach(releasePeer);
     peers.current = [];
     setStatus("Jucătorii de test au plecat.");
   };
   useEffect(
     () => () => {
-      peers.current.forEach((p) => {
-        p.port.postMessage({ kind: "disconnect" });
-        p.port.close();
-      });
+      peers.current.forEach(releasePeer);
+      peers.current = [];
     },
     [],
   );

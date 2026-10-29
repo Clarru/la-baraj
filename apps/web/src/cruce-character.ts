@@ -18,6 +18,7 @@ export function cruceFaceTexture(card: number) {
 export function createCruceCharacterRig(
   object: T.Object3D,
   back: T.Texture | null = null,
+  gripClip?: T.AnimationClip,
 ) {
   const names = [
     "upperarm_l",
@@ -26,6 +27,18 @@ export function createCruceCharacterRig(
     "upperarm_r",
     "lowerarm_r",
     "hand_r",
+    "spine_01",
+    ...[
+      ...new Set(
+        (gripClip?.tracks ?? [])
+          .filter(
+            (t) =>
+              /^(index|middle|ring|pinky|thumb)_/.test(t.name) &&
+              t.name.endsWith(".quaternion"),
+          )
+          .map((t) => t.name.split(".")[0]),
+      ),
+    ],
   ];
   const bones = names.map((n) => object.getObjectByName(n));
   const saved = bones.map((b) => b?.quaternion.clone() ?? new T.Quaternion());
@@ -174,9 +187,11 @@ export function createCruceCharacterRig(
       }
       const played = view.trick.find((p) => p.seat === seat);
       const playKey = played ? `${round}:${played.card}` : "";
+      let acceptedPlay = false;
       if (playKey && playKey !== lastPlayed) {
         if (initialized) {
           started = now;
+          acceptedPlay = true;
           for (const c of [held, flight]) {
             const m = (c.userData.front as T.Mesh)
               .material as T.MeshStandardMaterial;
@@ -196,6 +211,17 @@ export function createCruceCharacterRig(
         if (b) saved[i].copy(b.quaternion);
       });
       applied = true;
+      if (bones[6])
+        bones[6].quaternion.multiply(q.setFromEuler(new T.Euler(0.12, 0, 0)));
+      for (const track of gripClip?.tracks ?? []) {
+        if (
+          !/^(index|middle|ring|pinky|thumb)_/.test(track.name) ||
+          !track.name.endsWith(".quaternion")
+        )
+          continue;
+        const bone = object.getObjectByName(track.name.split(".")[0]);
+        if (bone) bone.quaternion.slerp(q.fromArray(track.values), 0.75);
+      }
       object.updateWorldMatrix(true, true);
       const reach = t >= 0 && t < 0.9 ? Math.sin((Math.PI * t) / 0.9) : 0;
       for (let side = 0; side < 2; side++) {
@@ -203,8 +229,8 @@ export function createCruceCharacterRig(
         if (!upper || !lower || !hand) continue;
         target.set(
           side === 0 ? 0.12 : -0.12,
-          0.9 - (side === 1 ? 0.06 * reach : 0),
-          0.14 + (side === 1 ? 0.16 * reach : 0),
+          side === 0 ? 0.9 : 0.8 + 0.04 * reach,
+          side === 0 ? 0.14 : 0.25 + 0.08 * reach,
         );
         object.localToWorld(target);
         pole.set(side === 0 ? 0.48 : -0.48, 0.67, -0.04);
@@ -212,13 +238,17 @@ export function createCruceCharacterRig(
         solve(upper, lower, hand);
         object.getWorldQuaternion(worldQ);
         q.setFromEuler(
-          new T.Euler(side === 1 ? reach * 0.8 : 0, 0, side === 0 ? -0.1 : 0.1),
+          new T.Euler(
+            side === 1 ? Math.PI / 2 : -0.15,
+            side === 0 ? 0.3 : 0,
+            side === 0 ? -0.1 : 0.1,
+          ),
         );
         worldQ.multiply(q);
         rotation(hand, worldQ);
       }
       object.updateWorldMatrix(true, true);
-      if (t >= 0 && t < 0.22) {
+      if (acceptedPlay || (t >= 0 && t < 0.22)) {
         held.getWorldPosition(origin);
         object.worldToLocal(origin);
       }
@@ -230,7 +260,7 @@ export function createCruceCharacterRig(
         flight.position.lerpVectors(origin, end, ease);
         flight.position.y += 0.12 * Math.sin(Math.PI * f);
         object.getWorldQuaternion(worldQ).invert();
-        q.setFromEuler(new T.Euler(-Math.PI / 2, 0, seat * 0.1));
+        q.setFromEuler(new T.Euler(Math.PI / 2, 0, seat * 0.1));
         flight.quaternion.copy(worldQ).multiply(q);
       }
     },

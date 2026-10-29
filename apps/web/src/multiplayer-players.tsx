@@ -317,7 +317,12 @@ function RemoteAvatarRig({
       <Html
         center
         position={[0, 2.15, 0]}
-        distanceFactor={planesSeatSide(player?.seatId) !== null ? 5 : 12}
+        distanceFactor={
+          planesSeatSide(player?.seatId) !== null ||
+          cruceSeatSide(player?.seatId) !== null
+            ? 5
+            : 12
+        }
         zIndexRange={[5, 0]}
         style={{ pointerEvents: "none" }}
       >

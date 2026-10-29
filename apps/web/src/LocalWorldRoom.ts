@@ -12,8 +12,8 @@ export function localWorldEnabled(
 function localToken() {
   const key = "la-baraj-local-preview-resume";
   try {
-    const saved = sessionStorage.getItem(key);
-    if (saved && /^[A-Za-z0-9_-]{43}$/.test(saved)) return saved;
+    const t = sessionStorage.getItem(key);
+    if (t && /^[A-Za-z0-9_-]{43}$/.test(t)) return t;
   } catch {}
   const token = btoa(
     String.fromCharCode(...crypto.getRandomValues(new Uint8Array(32))),
@@ -26,10 +26,13 @@ function localToken() {
   } catch {}
   return token;
 }
-export function openLocalWorldPort() {
-  return new SharedWorker(new URL("./local-world.worker.ts", import.meta.url), {
-    type: "module",
-  }).port;
+export function openLocalWorldPort(onError?: () => void) {
+  const worker = new SharedWorker(
+    new URL("./local-world.worker.ts", import.meta.url),
+    { type: "module" },
+  );
+  if (onError) worker.onerror = onError;
+  return worker.port;
 }
 export class LocalWorldRoom extends MultiplayerRoom {
   override readonly localPreview = true;
@@ -39,42 +42,64 @@ export class LocalWorldRoom extends MultiplayerRoom {
     super(name, false);
   }
   override connect() {
-    const stop = super.connect(true);
-    this.token = localToken();
+    const stop = this.connectLocalSession();
+    this.token ||= localToken();
     let port: MessagePort;
-    try {
-      port = openLocalWorldPort();
-    } catch {
+    const report = () => {
+      stop();
       this.receive({
         type: "error",
         code: "local-preview-unavailable",
         message:
-          "Acest browser nu poate porni lumea locală. Folosește un browser cu SharedWorker sau jocul online.",
+          "Lumea locală s-a întrerupt. Reîncarcă pagina ca să te reconectezi.",
       });
+    };
+    try {
+      port = openLocalWorldPort(() => fail());
+    } catch {
+      report();
       return stop;
     }
     this.port = port;
+    let closed = false,
+      closeTimer: ReturnType<typeof setTimeout> | null = null;
+    const pulse = setInterval(
+      () => port.postMessage({ kind: "heartbeat" }),
+      10_000,
+    );
+    const finish = () => {
+      if (closeTimer) clearTimeout(closeTimer);
+      closeTimer = null;
+      port.onmessage = null;
+      port.close();
+    };
+    const leave = () => {
+      if (closed) return;
+      closed = true;
+      clearInterval(pulse);
+      if (this.port === port) this.port = null;
+      port.postMessage({ kind: "disconnect" });
+      closeTimer = setTimeout(finish, 5000);
+    };
+    function fail() {
+      if (closed) return;
+      leave();
+      report();
+    }
     port.onmessage = (e) => {
+      if (e.data?.kind === "closed") {
+        if (!closed) fail();
+        finish();
+        return;
+      }
+      if (closed) return;
       if (e.data?.kind === "server") this.receive(e.data.message);
       else if (e.data?.kind === "ready")
         this.send({ type: "hello", nickname: this.getSnapshot().nickname });
     };
     port.start();
-    const pulse = setInterval(
-      () => port.postMessage({ kind: "heartbeat" }),
-      10_000,
-    );
-    let closed = false;
-    const leave = () => {
-      if (closed) return;
-      closed = true;
-      clearInterval(pulse);
-      port.postMessage({ kind: "disconnect" });
-      port.close();
-      if (this.port === port) this.port = null;
-    };
-    const hide = (event: PageTransitionEvent) => {
-      if (!event.persisted) leave();
+    const hide = (e: PageTransitionEvent) => {
+      if (!e.persisted) leave();
     };
     window.addEventListener("pagehide", hide);
     return () => {

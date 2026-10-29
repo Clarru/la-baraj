@@ -684,7 +684,27 @@
     max-height: calc(100dvh - 110px);
   }
   .cruce-overlay--world .cruce-felt {
+    display: block;
+    min-height: 0;
+    color: #243831;
+    margin: 0 14px;
+    background: none;
+    border: 0;
+    box-shadow: none;
+  }
+  .cruce-overlay--world .cruce-player {
     display: none;
+  }
+  .cruce-overlay--world .cruce-center {
+    position: static;
+    padding: 8px 0;
+    gap: 6px;
+  }
+  .cruce-overlay--world .cruce-played .cruce-card {
+    width: 43px;
+  }
+  .cruce-overlay--world .cruce-notice {
+    font-size: 13px;
   }
   .cruce-overlay--world .cruce-header {
     padding: 12px 14px;

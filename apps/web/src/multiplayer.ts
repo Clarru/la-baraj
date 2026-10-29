@@ -213,6 +213,18 @@ export class MultiplayerRoom {
       }),
     );
   }
+  /** Local transport owns its channel; reuse activity tracking and disconnect cleanup. */
+  protected connectLocalSession() {
+    activeRoom = this;
+    this.publish({ status: "connecting", error: "", errorCode: null });
+    let stopped = false;
+    return () => {
+      if (stopped) return;
+      stopped = true;
+      this.connectionClosed();
+      if (activeRoom === this) activeRoom = null;
+    };
+  }
   connect(offlinePreview = false) {
     activeRoom = this;
     const configured = offlinePreview
