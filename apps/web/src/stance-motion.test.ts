@@ -46,6 +46,7 @@ describe("player stance contract", () => {
     expect(stanceBaseAnimation("prone", true)).toBe("Prone_Crawl");
     expect(stanceBaseAnimation("crouching", true)).toBe("Crouch_Walk");
     expect(stanceBaseAnimation("crouching", false)).toBe("Crouch_Idle");
+    expect(postureFromAnimation("standing", "Prone_Idle")).toBe("standing");
     expect(stanceVisualLift("prone")).toBeGreaterThan(0);
     expect(stanceVisualLift("crouching")).toBe(0);
   });

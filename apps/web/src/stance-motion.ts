@@ -43,7 +43,8 @@ export function postureFromAnimation(
   posture: unknown,
   animation: string,
 ): Stance {
-  if (posture === "crouching" || posture === "prone") return posture;
+  if (posture === "standing" || posture === "crouching" || posture === "prone")
+    return posture;
   // Older rooms do not send posture yet. The explicit animation aliases keep
   // those clients from rendering a lowered pose as a normal swimmer.
   if (animation.startsWith("Prone_")) return "prone";
