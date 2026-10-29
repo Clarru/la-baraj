@@ -785,3 +785,19 @@ describe("temporary chat bubbles", () => {
     disconnect();
   });
 });
+
+it("renews a remote bubble's lifetime when the same text is published again", () => {
+  const room = new MultiplayerRoom(),
+    disconnect = room.connect(),
+    socket = sockets[0];
+  socket.open();
+  snapshot(socket);
+  socket.receive({ type: "bubble-chat", id: friend.id, text: "See you there" });
+  vi.mocked(performance.now).mockReturnValue(4000);
+  socket.receive({ type: "bubble-chat", id: friend.id, text: "See you there" });
+  vi.mocked(performance.now).mockReturnValue(7000);
+  expect(room.chatFor(friend.id)).toBe("See you there");
+  vi.mocked(performance.now).mockReturnValue(9001);
+  expect(room.chatFor(friend.id)).toBe("");
+  disconnect();
+});

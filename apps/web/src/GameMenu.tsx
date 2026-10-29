@@ -246,8 +246,8 @@ export function ControlsHelp({
         ))}
       </dl>
       <p className="game-help-note">
-        Chat appears as you type. Enter adds a line; it clears after five
-        seconds without typing.
+        Chat appears as you type. Enter adds a line. Click outside to walk while
+        it lingers for five seconds, or press Escape to close.
       </p>
       <p className="game-help-note">
         On the scooter: W to accelerate, S to brake, A/D to steer, Shift to
