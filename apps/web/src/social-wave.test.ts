@@ -5,17 +5,9 @@ import {
   SOCIAL_WAVE_CLIP_NAME,
   SOCIAL_WAVE_COOLDOWN_MS,
   SOCIAL_WAVE_DURATION,
-  SOCIAL_WAVE_DURATION_MS,
-  canStartSocialWave,
-  cancelSocialWave,
   createSocialWaveClip,
-  createSocialWaveClips,
   requestSocialWave,
-  socialWaveCooldownReady,
-  socialWaveElapsed,
   socialWaveFinished,
-  socialWaveProgress,
-  startSocialWave,
 } from "./social-wave";
 
 const { loadRig } = (await import(
@@ -31,35 +23,18 @@ const rigPath = new URL(
 ).pathname;
 
 describe("social hello wave", () => {
-  it("has a cancellable, clamped one-shot state", () => {
-    const state = startSocialWave(1000);
-    expect(socialWaveElapsed(state, 900)).toBe(0);
-    expect(socialWaveProgress(state, 1000)).toBe(0);
-    expect(socialWaveProgress(state, 1000 + SOCIAL_WAVE_DURATION_MS / 2)).toBe(
-      0.5,
-    );
-    expect(socialWaveProgress(state, Infinity)).toBe(1);
-    expect(socialWaveFinished(state, 1000 + SOCIAL_WAVE_DURATION_MS)).toBe(
+  it("uses eligibility, cooldown and duration without hidden timers", () => {
+    expect(requestSocialWave(10000, 9000, false)).toBeNull();
+    expect(requestSocialWave(10000, 9500)).toBeNull();
+    expect(requestSocialWave(10000, 10000 - SOCIAL_WAVE_COOLDOWN_MS)).toEqual({
+      startedAt: 10000,
+    });
+    expect(requestSocialWave(NaN)).toBeNull();
+    const state = requestSocialWave(10000)!;
+    expect(socialWaveFinished(state, 10001)).toBe(false);
+    expect(socialWaveFinished(state, 10000 + SOCIAL_WAVE_DURATION * 1000)).toBe(
       true,
     );
-
-    const cancelled = cancelSocialWave(state);
-    expect(cancelled.cancelled).toBe(true);
-    expect(socialWaveFinished(cancelled, 1001)).toBe(true);
-    expect(cancelSocialWave(cancelled)).toBe(cancelled);
-  });
-
-  it("shares eligibility and cooldown rules between key and menu requests", () => {
-    expect(socialWaveCooldownReady(10_000)).toBe(true);
-    expect(
-      socialWaveCooldownReady(10_000, 10_000 - SOCIAL_WAVE_COOLDOWN_MS + 1),
-    ).toBe(false);
-    expect(canStartSocialWave(10_000, 9_000, false)).toBe(false);
-    expect(requestSocialWave(10_000, 9_000, true)).toMatchObject({
-      startedAt: 10_000,
-      cancelled: false,
-    });
-    expect(requestSocialWave(10_000, 9_500, true)).toBeNull();
   });
 
   it("is a named additive clip with identity entry and exit", () => {
@@ -67,9 +42,6 @@ describe("social hello wave", () => {
     expect(clip.name).toBe(SOCIAL_WAVE_CLIP_NAME);
     expect(clip.duration).toBeCloseTo(SOCIAL_WAVE_DURATION);
     expect(clip.blendMode).toBe(THREE.AdditiveAnimationBlendMode);
-    expect(createSocialWaveClips()[0].blendMode).toBe(
-      THREE.AdditiveAnimationBlendMode,
-    );
     const names = clip.tracks.map((track) => track.name);
     expect(names.slice(0, 4)).toEqual([
       "clavicle_r.quaternion",
@@ -100,7 +72,7 @@ describe("social hello wave", () => {
     const mixer = new THREE.AnimationMixer(scene);
     mixer.clipAction(idle).play();
     const wave = mixer
-      .clipAction(createSocialWaveClips()[0])
+      .clipAction(createSocialWaveClip())
       .setLoop(THREE.LoopOnce, 1);
     wave.clampWhenFinished = true;
     wave.play();
@@ -184,7 +156,7 @@ describe("social hello wave", () => {
       )
       .play();
     const wave = mixer
-      .clipAction(createSocialWaveClips()[0])
+      .clipAction(createSocialWaveClip())
       .setLoop(THREE.LoopOnce, 1);
     wave.clampWhenFinished = true;
     wave.play();
@@ -207,7 +179,7 @@ describe("social hello wave", () => {
       .clipAction(animations.find((clip) => clip.name === "Idle_Neutral")!)
       .play();
     const wave = mixer
-      .clipAction(createSocialWaveClips()[0])
+      .clipAction(createSocialWaveClip())
       .setLoop(THREE.LoopOnce, 1);
     wave.clampWhenFinished = true;
 

@@ -1203,8 +1203,8 @@ export function Player({
       enabledRotations={[false, false, false]}
       autoBalance={false}
       enableToggleRun={false}
-      capsuleHalfHeight={0.35}
-      capsuleRadius={0.3}
+      capsuleHalfHeight={STANCE_METRICS.standing.capsuleHalfHeight}
+      capsuleRadius={STANCE_METRICS.standing.capsuleRadius}
       ccd
       useCustomForward={riding}
       maxWalkVel={

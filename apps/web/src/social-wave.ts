@@ -3,76 +3,26 @@ import * as THREE from "three";
 /** The dedicated one-shot layer, distinct from the source rig's conversational `Wave` clip. */
 export const SOCIAL_WAVE_CLIP_NAME = "Social_Wave";
 export const SOCIAL_WAVE_DURATION = 1.6;
-export const SOCIAL_WAVE_DURATION_MS = SOCIAL_WAVE_DURATION * 1000;
 export const SOCIAL_WAVE_FADE_SECONDS = 0.24;
 export const SOCIAL_WAVE_COOLDOWN_MS = 700;
 
-/** A small, serializable local state machine for callers that need cancellation. */
-export type SocialWaveState = Readonly<{
-  startedAt: number;
-  cancelled: boolean;
-}>;
-
-export function startSocialWave(now: number): SocialWaveState {
-  return { startedAt: now, cancelled: false };
-}
-
-/** Keep the input path deterministic; callers own the last-request timestamp. */
-export function socialWaveCooldownReady(
-  now: number,
-  lastStartedAt = -Infinity,
-  cooldownMs = SOCIAL_WAVE_COOLDOWN_MS,
-) {
-  return (
-    Number.isFinite(now) &&
-    (!Number.isFinite(lastStartedAt) || now - lastStartedAt >= cooldownMs)
-  );
-}
-
-/**
- * `eligible` is intentionally supplied by the game (world active, not paused,
- * not swimming/mounted, etc.). No timers or synthetic key events are hidden in
- * this helper, so a menu action and the G key can share the same request path.
- */
-export function canStartSocialWave(
-  now: number,
-  lastStartedAt = -Infinity,
-  eligible = true,
-  cooldownMs = SOCIAL_WAVE_COOLDOWN_MS,
-) {
-  return eligible && socialWaveCooldownReady(now, lastStartedAt, cooldownMs);
-}
+/** The player owns cancellation by clearing this state and fading the action. */
+export type SocialWaveState = Readonly<{ startedAt: number }>;
 
 export function requestSocialWave(
   now: number,
   lastStartedAt = -Infinity,
   eligible = true,
-  cooldownMs = SOCIAL_WAVE_COOLDOWN_MS,
-) {
-  return canStartSocialWave(now, lastStartedAt, eligible, cooldownMs)
-    ? startSocialWave(now)
+): SocialWaveState | null {
+  return eligible &&
+    Number.isFinite(now) &&
+    now - lastStartedAt >= SOCIAL_WAVE_COOLDOWN_MS
+    ? { startedAt: now }
     : null;
 }
 
-export function cancelSocialWave(state: SocialWaveState): SocialWaveState {
-  return state.cancelled ? state : { ...state, cancelled: true };
-}
-
-export function socialWaveElapsed(state: SocialWaveState, now: number) {
-  return Math.max(0, (now - state.startedAt) / 1000);
-}
-
-export function socialWaveProgress(state: SocialWaveState, now: number) {
-  if (state.cancelled) return 1;
-  return THREE.MathUtils.clamp(
-    socialWaveElapsed(state, now) / SOCIAL_WAVE_DURATION,
-    0,
-    1,
-  );
-}
-
 export function socialWaveFinished(state: SocialWaveState, now: number) {
-  return state.cancelled || socialWaveProgress(state, now) >= 1;
+  return now - state.startedAt >= SOCIAL_WAVE_DURATION * 1000;
 }
 
 const smoothStep = (value: number) => {
@@ -179,9 +129,4 @@ export function createSocialWaveClip() {
   );
   clip.blendMode = THREE.AdditiveAnimationBlendMode;
   return clip;
-}
-
-/** Convenience for character resource caches that expect a clip array. */
-export function createSocialWaveClips() {
-  return [createSocialWaveClip()];
 }
