@@ -21,3 +21,7 @@ Produce a single isolated mature sessile oak tree as input reference for a 3D re
 
 Transparent input edit — built-in ImageGen, source `oak-reconstruction-reference.png`:
 Remove the entire light gray background from this image and return the same oak tree as a precise transparent cutout for 3D reconstruction. Preserve the tree's exact shape, branch positions, foliage colors, scale and framing. Preserve the empty gaps between branches as transparent. Do not alter the tree, add shadows, haze, scenery or text. True transparent alpha background.
+
+
+Painted oak cluster experiment, 29 October 2026, transparent background:
+Create an original game-art texture reference for a stylized 3D broadleaf oak tree for a colorful lakeside video game. Transparent background. One compact, irregular, roughly circular cluster of 9 to 13 overlapping sessile oak leaves, viewed face-on; each leaf has a recognizable rounded lobed outline, varied sizes and orientations. Simple hand-painted shapes in fresh mid green, olive green and a few warm light green accents, with quiet shadows. The cluster must have a legible irregular perimeter and open gaps between some leaves. Graphic, painterly, clean and cohesive, no photographic texture, no needles, no spiky silhouettes, no visible stems or branches, no text, no borders, no ambient glow, no background. This is an alpha-masked foliage card source, not a picture of an entire tree.
