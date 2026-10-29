@@ -1,0 +1,41 @@
+# La Baraj: relaxed movement and social play
+
+Goal: make the existing lakeside world feel more expressive and comfortable for friends spending time together. Keep the established character, assets, single world, sparse HUD, homes and activities. This is an implementation and verification plan, not a claim of finished work.
+
+## Current evidence
+
+Baseline is main `67c59ab`: one shared world, persistent cabins, benches, temporary chat bubbles, swimming, scooter, punching/stun, Planes and Cruce. Both primary mouse buttons already rotate the camera. Scroll zooms. Punch currently uses Q; the controller uses a standing capsule. The shared 4173 preview includes an approved experimental rock and an independent Cruce QA page. Another active chat owns vegetation and other asset studies.
+
+## First delivery: posture and comfortable controls
+
+- C toggles crouch; Z toggles prone. Pressing the current stance key returns to standing when there is enough room. Switching between lowered stances should be predictable.
+- Make real poses on the approved rig, with transitions and slower movement appropriate to each posture. Keep feet/body contact coherent on slopes and avoid stretching or flattening the character mesh.
+- Fit collision to posture and refuse an expansion that intersects the world. Verify standing under furniture/roofs, not just open-ground visuals. Prevent vertical pops and invalid body transforms.
+- Jump, water, scooter, furniture, cabin doors, stun and reset must have explicit compatible transitions. Text entry, menus and card games own their keys. Window blur must release held input.
+- Other players see the same posture through the existing pose transport; avoid a new persistence subsystem or extra per-frame React state.
+- Punch uses P or middle click on the world canvas, only while standing. Preserve left/right camera drags and wheel zoom. Keep the existing cooldown and server hit validation.
+- Update on-demand help. Do not add permanent key legends or a large posture HUD.
+
+## Next delivery: small social expression
+
+Ask independent reviewers to choose one worthwhile addition after the first delivery works. A wave using the existing Wave clip is the leading candidate: visible intent between friends without a chat message, another activity or persistent state. Confirm control conflicts, cancellation, remote playback and discoverability before implementation. Prefer an accessible action in the existing menu plus a single documented shortcut over an emote wheel.
+
+## Ownership and sequence
+
+The release chat owns `codex/chill-movement`: plan, punch pointer adapter, help, integration and shared preview. A separate worker owns `codex/stance-movement`: posture, animation, controller and remote pose integration. Product and technical reviewers inspect independently. The asset chat keeps ownership of trees, rocks, grass and other art studies. Only the release owner publishes 4173 or integrates main.
+
+1. Inventory actual input, animation, networking and collision code; review this plan independently.
+2. Implement and test pure stance/input rules and rig poses on feature branches.
+3. Integrate with current main, review failure paths and run frontend/protocol tests, both type checks and production build.
+4. Publish a reversible local candidate to the existing 4173 listener, preserving the rock and QA fixture. Inspect crouch/prone from multiple angles, movement and transitions, and compare actual collider clearance.
+5. Exercise two independent clients using the existing isolated in-memory browser transport. Verify remote transitions and cancellation without allocating production homes or touching live match state.
+6. Address review findings and verify performance at a representative multiplayer load; compare renderer/frame metrics on the same scene rather than claim speed from polygon counts.
+7. Add the selected social improvement, repeat the relevant checks, and open reviewable PRs with evidence. Release only verified changes under the standing workflow.
+
+## Completion evidence
+
+Record actual code/commit, automated checks, local screenshots, two-client behavior, clearance tests, mode-transition regressions, and a bounded performance comparison. Green unit tests alone do not establish believable animation or collision. Do not call this whole objective complete while any explicit movement/control requirement or selected social delivery lacks evidence.
+
+## Deliberate boundaries
+
+No account system, progression economy, new currency, combat progression, new rooms, mobile work, visual asset replacement, paid hosting, or world reset. Do not turn lowering posture into a competitive stealth mechanic. Keep time available for visual correction and testing rather than expanding the feature list.
