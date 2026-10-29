@@ -1,7 +1,8 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { PerspectiveCamera, Vector3 } from "three";
 import { OrbitControls } from "three-stdlib";
 import { bindCameraMouse } from "./camera-mouse";
+import { bindPunchPointer } from "./punch-input";
 
 /** Real OrbitControls with a tiny DOM event target; captures run before bubbling. */
 class Target {
@@ -24,7 +25,19 @@ class Target {
     const list = [...(this.listeners.get(type) ?? [])].sort(
       (a, b) => Number(b.capture) - Number(a.capture),
     );
-    for (const { fn } of list) fn(event);
+    let stopped = false;
+    const dispatched = {
+      ...event,
+      preventDefault() {},
+      stopPropagation() {},
+      stopImmediatePropagation() {
+        stopped = true;
+      },
+    };
+    for (const { fn } of list) {
+      fn(dispatched);
+      if (stopped) break;
+    }
   }
 }
 class Canvas extends Target {
@@ -67,9 +80,30 @@ function rig(enablePan = false, install = true) {
     disposeBinding();
     controls.dispose();
   };
-  return { camera, controls, drag, dispose };
+  return { canvas, camera, controls, drag, dispose };
 }
 describe("camera during sprint", () => {
+  it("middle click punches without moving the camera, while wheel zoom still works", () => {
+    const r = rig();
+    const punch = vi.fn();
+    const unbind = bindPunchPointer(r.canvas as unknown as HTMLElement, punch);
+    const before = r.camera.position.clone();
+    const event = {
+      button: 1,
+      pointerId: 1,
+      pointerType: "mouse",
+      clientX: 100,
+      clientY: 100,
+    };
+    r.canvas.emit("pointerdown", event);
+    r.canvas.emit("pointerup", event);
+    expect(punch).toHaveBeenCalledOnce();
+    expect(r.camera.position.distanceTo(before)).toBeLessThan(1e-8);
+    r.canvas.emit("wheel", { deltaY: 100 });
+    expect(r.camera.position.distanceTo(before)).toBeGreaterThan(0.1);
+    unbind();
+    r.dispose();
+  });
   it("reproduces the library's Shift-drag failure when panning is disabled", () => {
     const r = rig(false, false),
       before = r.camera.position.clone();
