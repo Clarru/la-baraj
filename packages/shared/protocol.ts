@@ -66,6 +66,8 @@ export type ServerMessage =
       type: "snapshot";
       version: typeof PROTOCOL_VERSION;
       selfId: string;
+      /** Current server UTC time, optional for compatibility with older rooms. */
+      serverTime?: number;
       players: PlayerPresence[];
       fire: FireState;
       seats: Record<string, string>;

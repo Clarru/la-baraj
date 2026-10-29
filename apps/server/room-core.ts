@@ -177,6 +177,7 @@ export class RoomCore {
       type: "snapshot",
       version: PROTOCOL_VERSION,
       selfId: connection.state.player.id,
+      serverTime: now,
       village: {
         epoch: HOUSING_EPOCH,
         cabins: this.runtime.homes.publicCabins(),

@@ -861,6 +861,7 @@ describe("input activity presence", () => {
     const snapshot = b.messages.at(-1);
     expect(snapshot?.type).toBe("snapshot");
     if (snapshot?.type === "snapshot") {
+      expect(snapshot.serverTime).toBe(183800);
       expect(snapshot.players.find((player) => player.id === "a")?.idleMs).toBe(
         180000,
       );

@@ -1,20 +1,12 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
+import { useFrame } from "@react-three/fiber";
+import { currentLighting } from "./day-night";
 import * as THREE from "three";
 import { makeHorizonLand } from "./landscape-geometry";
 
-export const worldFog = (evening: boolean) => (evening ? "#9eafa7" : "#aec5b5");
 let horizonGeometry: THREE.BufferGeometry | undefined;
 const skyGeometry = new THREE.BoxGeometry(2, 2, 2);
-const landMaterials = ["#ffffff", "#b8c0c4"].map(
-  (color) =>
-    new THREE.MeshBasicMaterial({
-      vertexColors: true,
-      fog: false,
-      toneMapped: false,
-      color,
-      side: THREE.DoubleSide,
-    }),
-);
+
 const vertexShader = `
 varying vec3 skyDirection;
 void main(){
@@ -35,7 +27,13 @@ void main(){
   #include <colorspace_fragment>
 }`;
 /** Static gradient sky and one low-poly land mesh replace a white, finite-map horizon. */
-export function WorldBackdrop({ evening }: { evening: boolean }) {
+export function WorldBackdrop({
+  evening,
+  forceDay,
+}: {
+  evening: boolean;
+  forceDay: boolean;
+}) {
   const geometry = (horizonGeometry ??= makeHorizonLand());
   const sky = useMemo(
     () =>
@@ -43,7 +41,7 @@ export function WorldBackdrop({ evening }: { evening: boolean }) {
         uniforms: {
           topColor: { value: new THREE.Color("#82b0c7") },
           horizonColor: { value: new THREE.Color("#bed0be") },
-          lowerColor: { value: new THREE.Color(worldFog(false)) },
+          lowerColor: { value: new THREE.Color("#aec5b5") },
         },
         vertexShader,
         fragmentShader,
@@ -55,12 +53,34 @@ export function WorldBackdrop({ evening }: { evening: boolean }) {
       }),
     [],
   );
-  useEffect(() => {
-    sky.uniforms.topColor.value.set(evening ? "#6b879d" : "#82b0c7");
-    sky.uniforms.horizonColor.value.set(evening ? "#b5b9a6" : "#bed0be");
-    sky.uniforms.lowerColor.value.set(worldFog(evening));
-  }, [evening, sky]);
-  useEffect(() => () => sky.dispose(), [sky]);
+  const land = useMemo(
+    () =>
+      new THREE.MeshBasicMaterial({
+        vertexColors: true,
+        fog: false,
+        toneMapped: false,
+        side: THREE.DoubleSide,
+      }),
+    [],
+  );
+  const last = useRef(-Infinity);
+  useFrame(() => {
+    const now = performance.now();
+    if (now - last.current < 250) return;
+    last.current = now;
+    const { colors } = currentLighting(evening, forceDay);
+    sky.uniforms.topColor.value.copy(colors.sky);
+    sky.uniforms.horizonColor.value.copy(colors.horizon);
+    sky.uniforms.lowerColor.value.copy(colors.fog);
+    land.color.copy(colors.land);
+  });
+  useEffect(
+    () => () => {
+      sky.dispose();
+      land.dispose();
+    },
+    [sky, land],
+  );
   return (
     <group name="Distant landscape">
       <mesh
@@ -74,7 +94,7 @@ export function WorldBackdrop({ evening }: { evening: boolean }) {
       <mesh
         name="Distant rolling hills"
         geometry={geometry}
-        material={landMaterials[evening ? 1 : 0]}
+        material={land}
         dispose={null}
       />
     </group>

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { GameIcon } from "./GameArt";
+import { GameClock } from "./GameClock";
 
 import type { MultiplayerRoom } from "./multiplayer";
 import { MultiplayerHud } from "./multiplayer-hud";
@@ -24,6 +25,7 @@ export function GameHeader({
         />
       </h1>
       <div className="play-actions">
+        <GameClock />
         <MultiplayerHud room={room} />
         <button
           className="game-menu-toggle"
