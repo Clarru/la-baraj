@@ -80,3 +80,8 @@ The actual `oak-triposr-front.png` and `oak-triposr-side.png` renders show a dar
 ## Painted foliage card experiment
 
 `oak-painted-cluster.png` is a newly generated, transparent painted leaf cluster; its prompt is recorded in `imagegen-prompts.txt`. `scripts/explore-oak-painted.mjs` applies it to smaller, more numerous cards on the existing v2 trunk, with solid brown bark. The actual exported `cincis-oak-painted-experiment.glb` was rendered at front and side in `oak-painted-experiment-front.png` and `oak-painted-experiment-side.png`. Although the texture is less photographic, the assembled canopy still has dark, spiky card edges and repetitive clumps, and the regular exposed forks remain obvious. This does not pass the visual bar and is not integrated. This is a material-and-card construction test, not the redesigned trunk or proof of an in-game improvement.
+
+
+## Individual leaf geometry experiment
+
+`scripts/explore-oak-leaf-geometry.mjs` generates a separate test with individually modeled lobed leaves, solid vertex colors and staggered branches instead of textured foliage cards. The resulting `cincis-oak-leaf-geometry-experiment.glb` was inspected interactively in Blender and in the actual export renders `oak-leaf-geometry-front.png` and `oak-leaf-geometry-side.png`. The canopy looks sparse and scattered, the flat leaves resemble confetti, and the exposed trunk remains too smooth and simple. Its 11,305 leaf triangles alone already exceed the existing tree’s reported 6,265 triangles, before counting the trunk. It is neither a visual nor a geometry-budget improvement and remains non-runtime research. These counts do not establish actual frame-time cost.
