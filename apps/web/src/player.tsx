@@ -382,6 +382,7 @@ export function Player({
         const room = currentMultiplayerRoom();
         if (
           e.repeat ||
+          !controller.current?.isOnGround ||
           mode !== "walk" ||
           paused ||
           swimmingRef.current ||
