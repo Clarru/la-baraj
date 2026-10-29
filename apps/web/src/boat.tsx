@@ -2,7 +2,12 @@ import { forwardRef, useEffect, useImperativeHandle, useMemo } from "react";
 import { RigidBody, CuboidCollider } from "@react-three/rapier";
 import type { Vector3 } from "three";
 import { getBoatState } from "./boat-state";
-import { applyBoatLean, BOAT_METRICS, type BoatSide } from "./boat-geometry";
+import {
+  applyBoatLean,
+  setBoatWheelAngle,
+  BOAT_METRICS,
+  type BoatSide,
+} from "./boat-geometry";
 import { cloneBoatRig } from "./boat-resources";
 
 export { BOAT_METRICS, boatGripPosition } from "./boat-geometry";
@@ -20,7 +25,7 @@ export const Boat = forwardRef<BoatHandle, { visible?: boolean }>(function Boat(
     ref,
     () => ({
       update({ wheelAngle, lean }) {
-        rig.wheelSpin.rotation.z = -wheelAngle;
+        setBoatWheelAngle(rig, wheelAngle);
         applyBoatLean(rig, lean);
       },
       gripWorldPosition(side, target) {

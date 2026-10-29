@@ -187,6 +187,11 @@ export type BoatRig = {
   dispose(): void;
 };
 
+/** Turns the visible wheel; positive (left turn) reads counter-clockwise to the driver. */
+export function setBoatWheelAngle(rig: BoatRig, wheelAngle: number): void {
+  rig.wheelSpin.rotation.z = Number.isFinite(wheelAngle) ? -wheelAngle : 0;
+}
+
 /** Rolls the whole boat so seat, console and wheel lean together; positive dips +X (left). */
 export function applyBoatLean(rig: BoatRig, lean: number): void {
   rig.group.rotation.z = -lean;

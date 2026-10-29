@@ -3,6 +3,7 @@ import * as THREE from "three";
 import {
   BOAT_METRICS,
   applyBoatLean,
+  setBoatWheelAngle,
   boatGripPosition,
   createBoatRig,
   type BoatSide,
@@ -63,7 +64,7 @@ it("grips sit on the rim and turn with the wheel", () => {
 it("visible wheel agrees with boatGripPosition", () => {
   const rig = createBoatRig();
   for (const a of [0, 1.2, -2.4, Math.PI / 2]) {
-    rig.wheelSpin.rotation.z = -a;
+    setBoatWheelAngle(rig, a);
     rig.group.updateMatrixWorld(true);
     for (const side of ["left", "right"] as const) {
       const world = new THREE.Vector3(...BOAT_METRICS.grips[side]).applyMatrix4(
