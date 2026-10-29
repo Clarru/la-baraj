@@ -1,3 +1,4 @@
+import { remoteCruceView, type RemoteCardRoom } from "./remote-cruce";
 import { useCruceCharacter } from "./use-cruce-character";
 import { cruceSeatSide } from "../../../packages/shared/cruce-station";
 import {
@@ -56,7 +57,7 @@ export function RemoteAvatar({
   room,
 }: {
   id: string;
-  room: Pick<MultiplayerRoom, "remotes">;
+  room: RemoteCardRoom;
 }) {
   const [near, setNear] = useState(false);
   const mounted = useRef(false);
@@ -78,13 +79,7 @@ export function RemoteAvatar({
   }, -5);
   return near ? <RemoteAvatarRig id={id} room={room} /> : null;
 }
-function RemoteAvatarRig({
-  id,
-  room,
-}: {
-  id: string;
-  room: Pick<MultiplayerRoom, "remotes">;
-}) {
+function RemoteAvatarRig({ id, room }: { id: string; room: RemoteCardRoom }) {
   const { scene, animations } = useGLTF(assetUrl("Lakeside_Man"));
   const supplemental = useLoader(
     THREE.FileLoader,
@@ -92,11 +87,14 @@ function RemoteAvatarRig({
   );
   const object = useMemo(() => cloneCharacter(scene), [scene]);
   const tableReaction = useMemo(() => createTableReactionRig(object), [object]);
-  const cruceCharacter = useCruceCharacter(object);
   useEffect(() => () => tableReaction.dispose(), [tableReaction]);
   const clips = useMemo(() => {
     return characterClips(animations, String(supplemental));
   }, [animations, supplemental]);
+  const cruceCharacter = useCruceCharacter(
+    object,
+    clips.find((c) => c.name === "Activity_HoldRod"),
+  );
   const rig = useMemo(() => {
     const mixer = new THREE.AnimationMixer(object);
     return {
@@ -280,7 +278,7 @@ function RemoteAvatarRig({
       (performance.now() - remote.activityAt) / 1000,
     );
     cruceCharacter.update(
-      (room as MultiplayerRoom).getSnapshot().cruce,
+      remoteCruceView(room),
       player.activity === "sit" || player.activity === "sit-down"
         ? cruceSeatSide(player.seatId)
         : null,

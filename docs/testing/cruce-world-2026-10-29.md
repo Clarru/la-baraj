@@ -13,6 +13,8 @@ The canonical localhost preview had no room-server configuration. The original C
 
 The fresh independent finish review is SHIP. It verified the worker-error cleanup, close-acknowledgement handshake, hitch-safe card-flight origin and effect-owned StrictMode rig lifecycle; no material finding remains for this follow-up.
 
+The final release-gate review also resolved the two late regressions. `createCruceCharacterController` is side-effect-free for idle avatars and allocates the card rig only while a seated character has a hand or public trick; the back texture is lazy, the existing shared `characterClips` cache supplies `Activity_HoldRod`, and leaving disposes the complete mesh/material/geometry set. The stripped `PerformanceLab`/crowd fixture contract now permits remotes without `getSnapshot`; `remoteCruceView` returns `null` for that fixture and passes through a real Cruce view when available. This prevents eager card work for idle crowds and avoids the `{remotes}`-only fixture crash.
+
 ## Browser checks on the one existing 4173 listener
 
 An explicitly flagged QA build ran the actual 3D Game. Its labelled local test controls position the test actor and add three isolated local peers, each using ordinary protocol packets and only its own projected hand. Those controls are excluded from normal production builds.
@@ -35,10 +37,12 @@ Within the play sequence, `play-04.jpg` and `play-09.jpg` are the concrete held-
 
 ## Automated checks
 
-The targeted 15 world-follow-up tests pass. The parent is rerunning the full suite; the expected totals are 206 frontend tests and 114 server/protocol tests. This document intentionally does not claim that final full-suite count until that run completes. New coverage includes LocalWorldRoom worker errors, close acknowledgement and StrictMode reconnect teardown; four registered seats and geometry clearance; retained-skeleton hand pose and unchanged limb lengths; reversible finger grip against an unmodified animation mixer; remote back-only card mapping; once-only accepted-card motion; hitch-safe face-up flight; and repeated resource cleanup. The existing rules/server suites retain coverage for all six variants, privacy and authoritative moves. Frontend/server TypeScript and the production build were reported passing before the final release-owner check.
+The final `npm test` run passes 211 frontend tests; `npm run test:protocol` remains green with 114 protocol/server tests. The targeted world follow-up checks also pass. Coverage includes LocalWorldRoom worker errors, close acknowledgement and StrictMode reconnect teardown; four registered seats and geometry clearance; retained-skeleton hand pose and unchanged limb lengths; reversible finger grip against an unmodified animation mixer; remote back-only card mapping; once-only accepted-card motion; hitch-safe face-up flight; repeated resource cleanup; zero card-resource loads for 50 idle avatars; full disposal over three seated/standing cycles; and both real-snapshot and stripped `{remotes}` fixture contracts. Normal TypeScript and production build checks pass.
 
 The Impeccable detector also ran once for this follow-up. It reported 80 advisory findings (46 palette, 9 radius, 25 type-size) and 0 non-advisory findings. These are documented as detector drift against the older global design file; they were not repaired or promoted into the global design system during this ordinary extension.
 
 The production release and integrated smoke check remain the release owner's responsibility. Browser evidence here proves the actual 3D local game and local shared authority, not an unobserved remote four-person production session.
 
 Final normal bundle was checked for the authored QA toolbar strings; no test controls were present. A single existing listener remained on port4173.
+
+Local normal fixes are published by the release owner. Production rollout remains pending the corrected commit and review; this record does not claim a deployed multiplayer follow-up.

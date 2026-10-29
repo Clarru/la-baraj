@@ -1,7 +1,10 @@
 import { describe, it, expect } from "vitest";
 import * as T from "three";
 import { readFileSync } from "node:fs";
-import { createCruceCharacterRig } from "./cruce-character";
+import {
+  createCruceCharacterRig,
+  createCruceCharacterController,
+} from "./cruce-character";
 import { freshCruce, type CruceView } from "../../../packages/shared/cruce";
 const { loadRig } = await import(
   /* @vite-ignore */ new URL(
@@ -167,5 +170,90 @@ describe("character-held Cruce cards", () => {
       });
       expect(fans).toBe(0);
     }
+  });
+  it("allocates zero card nodes for idle characters and releases all resources on leaving", async () => {
+    const { scene, grip } = await rig();
+    let textures = 0;
+    const controller = createCruceCharacterController(
+      scene,
+      () => {
+        textures++;
+        return null;
+      },
+      grip,
+    );
+    const count = () => {
+      let n = 0;
+      scene.traverse((o: T.Object3D) => {
+        if (o instanceof T.Mesh) n++;
+      });
+      return n;
+    };
+    const base = count(),
+      v = view();
+    for (let i = 0; i < 50; i++) {
+      controller.beginFrame();
+      controller.update(v, null, i);
+    }
+    expect(count()).toBe(base);
+    expect(textures).toBe(0);
+    v.handCounts[0] = 0;
+    controller.update(v, 0, 1000);
+    expect(count()).toBe(base);
+    for (let i = 0; i < 3; i++) {
+      v.handCounts[0] = 6;
+      controller.update(v, 0, 2000 + i * 1000);
+      expect(count()).toBe(base + 24);
+      const fan = scene.getObjectByName("Cruce hand fan")!,
+        mesh = fan.children[0].children[0] as T.Mesh;
+      let geometryDisposed = 0,
+        materialDisposed = 0;
+      mesh.geometry.addEventListener("dispose", () => geometryDisposed++);
+      (mesh.material as T.Material).addEventListener(
+        "dispose",
+        () => materialDisposed++,
+      );
+      controller.beginFrame();
+      controller.update(v, null, 2500 + i * 1000);
+      expect(count()).toBe(base);
+      expect(geometryDisposed).toBe(1);
+      expect(materialDisposed).toBe(1);
+    }
+    controller.dispose();
+    expect(count()).toBe(base);
+    expect(textures).toBe(3);
+  });
+  it("keeps fifty idle avatars at their original mesh count without loading card resources", async () => {
+    const { scene, grip } = await rig();
+    let loads = 0;
+    const avatars = Array.from({ length: 50 }, () => scene.clone(true));
+    const meshes = () => {
+      let count = 0;
+      avatars.forEach((a) =>
+        a.traverse((o: T.Object3D) => {
+          if (o instanceof T.Mesh) count++;
+        }),
+      );
+      return count;
+    };
+    const baseline = meshes();
+    const controllers = avatars.map((a) =>
+      createCruceCharacterController(
+        a,
+        () => {
+          loads++;
+          return null;
+        },
+        grip,
+      ),
+    );
+    controllers.forEach((c) => {
+      c.beginFrame();
+      c.update(view(), null, 1000);
+    });
+    expect(meshes()).toBe(baseline);
+    expect(loads).toBe(0);
+    controllers.forEach((c) => c.dispose());
+    expect(meshes()).toBe(baseline);
   });
 });

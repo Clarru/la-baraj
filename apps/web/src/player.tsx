@@ -195,7 +195,10 @@ export function Player({
   );
   const { actions, mixer } = useAnimations(allAnimations, object);
   const tableReaction = useMemo(() => createTableReactionRig(object), [object]);
-  const cruceCharacter = useCruceCharacter(object);
+  const cruceCharacter = useCruceCharacter(
+    object,
+    allAnimations.find((c) => c.name === "Activity_HoldRod"),
+  );
   useFrame(() => tableReaction.beginFrame(), -2);
   useEffect(() => () => tableReaction.dispose(), [tableReaction]);
   useEffect(() => () => disposeCharacterSkeletons(object), [object]);

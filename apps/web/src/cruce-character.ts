@@ -274,3 +274,44 @@ export function createCruceCharacterRig(
     },
   };
 }
+
+let sharedBack: T.Texture | null = null;
+export function cruceBackTexture() {
+  if (typeof document === "undefined") return null;
+  if (!sharedBack) {
+    sharedBack = new T.TextureLoader().load("/assets/cruce/back.svg");
+    sharedBack.colorSpace = T.SRGBColorSpace;
+  }
+  return sharedBack;
+}
+/** No props/materials/geometries are created for idle avatars. Owned rig exists only while needed. */
+export function createCruceCharacterController(
+  object: T.Object3D,
+  back: () => T.Texture | null = () => null,
+  grip?: T.AnimationClip,
+) {
+  let rig: ReturnType<typeof createCruceCharacterRig> | null = null;
+  const dispose = () => {
+    rig?.dispose();
+    rig = null;
+  };
+  return {
+    beginFrame() {
+      rig?.beginFrame();
+    },
+    update(view: CruceView | null, seat: CruceSeat | null, now: number) {
+      const needed =
+        view &&
+        seat !== null &&
+        (view.handCounts[seat] > 0 ||
+          (rig && view.trick.some((p) => p.seat === seat)));
+      if (!needed) {
+        dispose();
+        return;
+      }
+      rig ??= createCruceCharacterRig(object, back(), grip);
+      rig.update(view, seat, now);
+    },
+    dispose,
+  };
+}
