@@ -71,14 +71,11 @@ describe("animated character frustum bounds", () => {
     const bounded = cloneCharacter(scene),
       meshes = skinnedMeshes(bounded);
     expect(meshes.length).toBeGreaterThan(0);
-    expect(new Set(meshes.map((mesh) => mesh.geometry)).size).toBe(
-      meshes.length,
-    );
     for (const mesh of meshes) {
       expect(mesh.frustumCulled).toBe(true);
-      expect(mesh.geometry.boundingSphere).toBeTruthy();
-      expect(mesh.geometry.boundingSphere!.radius).toBe(envelopeRadius);
-      expect(mesh.geometry.boundingSphere!.center).toEqual(envelopeCenter);
+      expect(mesh.boundingSphere).toBeTruthy();
+      expect(mesh.boundingSphere!.radius).toBe(envelopeRadius);
+      expect(mesh.boundingSphere!.center).toEqual(envelopeCenter);
     }
 
     const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100),

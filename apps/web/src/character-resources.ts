@@ -12,7 +12,6 @@ const clipCache = new WeakMap<
 >();
 const characterCullCenter = new THREE.Vector3(0, 0.8, 0);
 const characterCullRadius = 2.5;
-const boundedGeometries = new WeakSet<THREE.BufferGeometry>();
 export function characterClips(
   animations: THREE.AnimationClip[],
   source: string,
@@ -52,22 +51,13 @@ export function cloneCharacter(source: THREE.Object3D) {
       node.receiveShadow = true;
     }
     if (!(node instanceof THREE.SkinnedMesh)) return;
-    // Geometry bounds describe the standing bind pose. Use one conservative
-    // root-space envelope for every animated part instead of disabling
-    // frustum culling for the entire skinned rig. The approved character has
-    // one unique identity-transformed geometry per skinned mesh; the matrix
-    // conversion keeps this correct if that bind layout changes later.
-    if (!boundedGeometries.has(node.geometry)) {
-      const rootToNode = node.matrixWorld
-        .clone()
-        .invert()
-        .multiply(rootToWorld);
-      node.geometry.boundingSphere = new THREE.Sphere(
-        characterCullCenter.clone().applyMatrix4(rootToNode),
-        characterCullRadius * rootToNode.getMaxScaleOnAxis(),
-      );
-      boundedGeometries.add(node.geometry);
-    }
+    // SkinnedMesh owns the sphere used by Three's frustum test. Geometry-only
+    // bounds are ignored for skins and would leave hair on stale bind bounds.
+    const rootToNode = node.matrixWorld.clone().invert().multiply(rootToWorld);
+    node.boundingSphere = new THREE.Sphere(
+      characterCullCenter.clone().applyMatrix4(rootToNode),
+      characterCullRadius * rootToNode.getMaxScaleOnAxis(),
+    );
     node.frustumCulled = true;
     const skeleton = node.skeleton;
     const shared = skeletons.find(

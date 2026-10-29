@@ -16,7 +16,7 @@ The optional `posture` enum travels over the existing pose transport. Server pun
 
 Rapier target-shape queries exclude the player's body and sensors. Collider changes preserve vertical support extent, and the Ecctrl ground-probe origin follows that extent. Prone rotation uses a horizontal footprint and refuses a turn into a solid. Cabin transfers attempt safe expansion at departure and destination rather than bypassing clearance. Reset relocates to the established spawn and clears pending gestures.
 
-Local motion transmits the visual root position (`sample.feet`); the stance visual offset is already included there, so remote avatars must not add the same lift a second time. Whole-avatar distance culling remains enabled. Skinned submeshes bypass stale standing-bind frustum bounds to avoid missing hair, beard, eyes or clothes during low poses.
+Local motion transmits the visual root position (`sample.feet`); the stance visual offset is already included there, so remote avatars must not add the same lift a second time. Whole-avatar distance culling remains enabled. Skinned submeshes use a conservative animated root envelope in their own mesh-level bounding sphere, avoiding stale standing-bind culling while retaining behind-camera culling. Geometry-only bounds are insufficient for Three SkinnedMesh.
 
 ## Verification status
 
