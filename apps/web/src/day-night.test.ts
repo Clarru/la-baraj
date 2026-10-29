@@ -1,7 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   formatGameTime,
-  GAME_DAY_MS,
   gameMinutes,
   lightingAt,
   syncWorldTime,
@@ -9,12 +8,16 @@ import {
 } from "./day-night";
 
 describe("shared game day", () => {
-  it("uses a 60 minute cycle and wraps at midnight", () => {
-    expect(formatGameTime(0)).toBe("00:00");
-    expect(formatGameTime(GAME_DAY_MS / 2)).toBe("12:00");
-    expect(formatGameTime(GAME_DAY_MS - 1)).toBe("23:59");
-    expect(formatGameTime(GAME_DAY_MS)).toBe("00:00");
-    expect(gameMinutes(-1)).toBe(1439);
+  it("uses Romanian civil time with the right winter and summer offsets", () => {
+    expect(formatGameTime(Date.parse("2026-01-15T10:05:00Z"))).toBe("12:05");
+    expect(formatGameTime(Date.parse("2026-07-15T10:05:00Z"))).toBe("13:05");
+    expect(gameMinutes(Date.parse("2026-01-15T22:00:00Z"))).toBe(0);
+  });
+  it("follows Romania's daylight-saving transition", () => {
+    expect(formatGameTime(Date.parse("2026-03-29T00:59:00Z"))).toBe("02:59");
+    expect(formatGameTime(Date.parse("2026-03-29T01:00:00Z"))).toBe("04:00");
+    expect(formatGameTime(Date.parse("2026-10-25T00:59:00Z"))).toBe("03:59");
+    expect(formatGameTime(Date.parse("2026-10-25T01:00:00Z"))).toBe("03:00");
   });
   it("uses server time to correct a skewed device clock", () => {
     const clock = vi.spyOn(performance, "now").mockReturnValue(100);
