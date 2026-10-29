@@ -389,7 +389,10 @@ const naturalSolids: NaturalSolid[] = [
       ...item,
       id,
       key: `background-${id}-${index}`,
-      ...treeCollision(id, impostorInfo[id as keyof typeof impostorInfo].height),
+      ...treeCollision(
+        id,
+        impostorInfo[id as keyof typeof impostorInfo].height,
+      ),
     })),
   ),
 ];
@@ -475,7 +478,10 @@ export const Vegetation = memo(function Vegetation({
           return [
             id,
             {
-              geometry: distantTreeGeometry(impostorInfo[id], id === "Cincis_Oak_1" ? 3 : 2),
+              geometry: distantTreeGeometry(
+                impostorInfo[id],
+                id === "Cincis_Oak_1" ? 3 : 2,
+              ),
               material: new THREE.MeshBasicMaterial({
                 map: texture,
                 alphaTest: 0.4,
@@ -491,7 +497,10 @@ export const Vegetation = memo(function Vegetation({
   );
   const lastOakLighting = useRef(-Infinity);
   const oakTints = useMemo(
-    () => ({ day: new THREE.Color("#c0d1be"), night: new THREE.Color("#899782") }),
+    () => ({
+      day: new THREE.Color("#c0d1be"),
+      night: new THREE.Color("#899782"),
+    }),
     [],
   );
   useFrame(() => {
@@ -500,9 +509,13 @@ export const Vegetation = memo(function Vegetation({
     lastOakLighting.current = now;
     const light = currentLighting(evening, forceDay);
     const dayWeight = THREE.MathUtils.clamp(
-      (light.sunIntensity - 0.75) / (3.3 - 0.75), 0, 1,
+      (light.sunIntensity - 0.75) / (3.3 - 0.75),
+      0,
+      1,
     );
-    impostors.Cincis_Oak_1.material.color.copy(oakTints.night).lerp(oakTints.day, dayWeight);
+    impostors.Cincis_Oak_1.material.color
+      .copy(oakTints.night)
+      .lerp(oakTints.day, dayWeight);
   });
   useEffect(
     () => () => {
@@ -525,6 +538,41 @@ export const Vegetation = memo(function Vegetation({
                 resources={impostors[id]}
                 placements={placements}
               />
+            );
+          if (id === "Cincis_Oak_1")
+            return (
+              <Detailed
+                key={key}
+                position={[cx, 0, cz]}
+                distances={[0, 120, 220]}
+                hysteresis={0.12}
+                autoUpdate={false}
+              >
+                <group position={[-cx, 0, -cz]}>
+                  <ModelInstances
+                    id={id}
+                    placements={placements}
+                    flat={flat}
+                    shadows
+                    detail="near"
+                  />
+                </group>
+                <group position={[-cx, 0, -cz]}>
+                  <ModelInstances
+                    id={id}
+                    placements={placements}
+                    flat={flat}
+                    shadows={false}
+                    detail="mid"
+                  />
+                </group>
+                <group position={[-cx, 0, -cz]}>
+                  <DistantTrees
+                    resources={impostors[id]}
+                    placements={placements}
+                  />
+                </group>
+              </Detailed>
             );
           return (
             <Detailed
@@ -557,12 +605,17 @@ export const Vegetation = memo(function Vegetation({
     </>
   );
 });
-function distantTreeGeometry(info: { width: number; height: number }, planes = 2) {
-  const positions: number[] = [], uv: number[] = [], indices: number[] = [];
+function distantTreeGeometry(
+  info: { width: number; height: number },
+  planes = 2,
+) {
+  const positions: number[] = [],
+    uv: number[] = [],
+    indices: number[] = [];
   for (let i = 0; i < planes; i++) {
     const angle = (i * Math.PI) / planes;
-    const x = Math.cos(angle) * info.width / 2;
-    const z = Math.sin(angle) * info.width / 2;
+    const x = (Math.cos(angle) * info.width) / 2;
+    const z = (Math.sin(angle) * info.width) / 2;
     const base = i * 4;
     positions.push(-x, 0, -z, x, 0, z, x, info.height, z, -x, info.height, -z);
     uv.push(0, 0, 1, 0, 1, 1, 0, 1);

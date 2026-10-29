@@ -107,11 +107,13 @@ export function ModelInstances({
   placements,
   flat = false,
   shadows = true,
+  detail,
 }: {
   id: string;
   placements: Placement[];
   flat?: boolean;
   shadows?: boolean;
+  detail?: "near" | "mid";
 }) {
   const { scene } = useGLTF(assetUrl(id));
   const templates = useMemo(() => {
@@ -121,14 +123,20 @@ export function ModelInstances({
       material: THREE.Material | THREE.Material[];
       matrix: THREE.Matrix4;
     }[] = [];
-    const box = new THREE.Box3().setFromObject(scene);
+    const nearRoot = detail ? scene.getObjectByName("Oak_Near") : scene;
+    const root = detail
+      ? scene.getObjectByName(detail === "near" ? "Oak_Near" : "Oak_Mid")
+      : scene;
+    if (!nearRoot || !root)
+      throw new Error(`Missing ${detail} geometry for ${id}`);
+    const box = new THREE.Box3().setFromObject(nearRoot);
     const center = box.getCenter(new THREE.Vector3());
     const normalize = new THREE.Matrix4().makeTranslation(
       -center.x,
       -box.min.y,
       -center.z,
     );
-    scene.traverse((o) => {
+    root.traverse((o) => {
       if (o instanceof THREE.Mesh) {
         results.push({
           geometry: o.geometry,
@@ -140,7 +148,7 @@ export function ModelInstances({
       }
     });
     return results;
-  }, [scene, flat]);
+  }, [scene, flat, detail, id]);
   return (
     <>
       {templates.map((t, i) => (
