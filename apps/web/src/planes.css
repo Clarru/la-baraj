@@ -43,9 +43,10 @@
   letter-spacing: -0.015em;
   color: #244b70;
 }
-.planes-heading > div > span {
-  font-size: 15px;
-  color: #51697b;
+.planes-heading-actions {
+  display: flex;
+  align-items: center;
+  gap: 18px;
 }
 .planes-notebook button {
   font-family: var(--font-body);
@@ -153,7 +154,7 @@
   top: 20px;
   width: calc(100% - 20px);
   height: calc(100% - 20px);
-  overflow: visible;
+  overflow: hidden;
   fill: none;
   stroke: #244b70;
   stroke-width: 0.035;
@@ -165,6 +166,19 @@
 }
 .paper-plane-outlines .paper-plane-outline--downed {
   stroke: #a44937;
+}
+.paper-plane-outlines .paper-plane-outline--drag-source {
+  opacity: 0.25;
+}
+.paper-plane-outlines .paper-plane-outline--preview-valid,
+.paper-plane-outlines .paper-plane-outline--preview-invalid {
+  stroke-width: 0.09;
+}
+.paper-plane-outlines .paper-plane-outline--preview-valid {
+  stroke: #247342;
+}
+.paper-plane-outlines .paper-plane-outline--preview-invalid {
+  stroke: #a93e31;
 }
 .paper-grid--small .paper-plane-outlines {
   left: 16px;
@@ -210,6 +224,37 @@
 }
 .planes-notebook .paper-cell--selected {
   background: #31638d50;
+}
+.paper-grid--editable {
+  touch-action: none;
+}
+.paper-grid--editable[data-drop-valid="false"] {
+  box-shadow: 0 0 0 2px #a93e31;
+}
+.planes-notebook .paper-grid--editable .paper-cell--plane,
+.planes-notebook .paper-grid--editable .paper-cell--cockpit {
+  cursor: grab;
+}
+.planes-notebook .paper-grid--editable[data-drop-valid] .paper-cell {
+  cursor: grabbing;
+}
+.planes-notebook .paper-cell--drag-source {
+  opacity: 0.35;
+}
+.planes-notebook .paper-cell--preview-valid {
+  background: #69af7180;
+  opacity: 1;
+}
+.planes-notebook .paper-cell--preview-invalid {
+  background: #d7696180;
+  opacity: 1;
+}
+.paper-cell--preview-cockpit::before {
+  content: "";
+  position: absolute;
+  inset: 28%;
+  border: 2px solid currentColor;
+  border-radius: 50%;
 }
 .paper-cell--cockpit::before {
   content: "";
@@ -265,6 +310,17 @@
   line-height: 1.35;
   margin: 0;
   color: #465e71;
+}
+.planes-setup-tools .planes-drop-hint {
+  min-height: 1.35em;
+  font-weight: 700;
+  font-size: 13px;
+}
+.planes-setup-tools .planes-drop-hint--valid {
+  color: #24633b;
+}
+.planes-setup-tools .planes-drop-hint--invalid {
+  color: #8c3d31;
 }
 .planes-plane-picker {
   display: flex;
@@ -324,10 +380,10 @@
 }
 .planes-footer {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 18px;
   border-top: 1px solid #a4bace;
-  margin-top: 16px;
+  margin-top: 6px;
   padding-top: 8px;
 }
 .planes-notebook .planes-leave {
@@ -335,14 +391,51 @@
 }
 .planes-notebook .planes-error {
   color: #8c3d31;
-  margin: 12px 0 0;
-  font-weight: 700;
-}
-.planes-rules {
+  height: 2.8em;
+  overflow-y: auto;
   margin: 8px 0 0;
   font-size: 14px;
+  line-height: 1.35;
+  font-weight: 700;
+}
+.planes-guide {
+  position: absolute;
+  z-index: 4;
+  top: 66px;
+  right: 22px;
+  width: min(350px, calc(100% - 44px));
+  max-height: calc(100% - 85px);
+  overflow: auto;
+  padding: 18px 20px;
+  background: #f8f5ec url("/assets/planes/notebook-paper.webp") center / 520px;
+  border: 1px solid #a4bace;
+  box-shadow: 0 8px 22px rgb(18 30 20 / 0.18);
+  font-size: 14px;
   line-height: 1.45;
+}
+.planes-guide-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.planes-guide-heading h3 {
+  margin: 0;
+  font-size: 18px;
+}
+.planes-guide ol {
+  padding-left: 20px;
+  margin: 14px 0;
+}
+.planes-guide li + li {
+  margin-top: 12px;
+}
+.planes-guide p {
+  margin: 0;
   color: #465e71;
+}
+.planes-guide strong {
+  color: #244b70;
 }
 .planes-spectator {
   display: grid;

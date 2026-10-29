@@ -1,10 +1,16 @@
-import { useEffect, useRef, useState, type KeyboardEvent } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type PointerEvent,
+} from "react";
 import {
   planeCells,
+  isGridPoint,
   randomFleet,
   legalFleet,
   otherSide,
-  targetUnavailable,
   coordinate,
   type Plane,
   type GridPoint,
@@ -13,6 +19,12 @@ import {
   type PlanesView,
   type PlanesAction,
 } from "../../../packages/shared/planes";
+import {
+  draggedPlane,
+  fleetWithPlane,
+  rotateGrab,
+  validPlacement,
+} from "./plane-placement";
 import "./planes.css";
 
 export type PlanesBoardProps = {
@@ -48,6 +60,12 @@ function PaperGrid({
   active = false,
   label,
   small = false,
+  dragPreview,
+  onPlanePointerDown,
+  onPlanePointerMove,
+  onPlanePointerUp,
+  onPlanePointerCancel,
+  suppressClick,
 }: {
   planes?: readonly Plane[];
   shots: readonly Shot[];
@@ -56,13 +74,61 @@ function PaperGrid({
   active?: boolean;
   label: string;
   small?: boolean;
+  dragPreview?: { plane: Plane; index: number; valid: boolean } | null;
+  onPlanePointerDown?: (
+    event: PointerEvent<HTMLDivElement>,
+    point: GridPoint,
+  ) => void;
+  onPlanePointerMove?: (event: PointerEvent<HTMLDivElement>) => void;
+  onPlanePointerUp?: (event: PointerEvent<HTMLDivElement>) => void;
+  onPlanePointerCancel?: () => void;
+  suppressClick?: () => boolean;
 }) {
   const last = shots.at(-1);
+  const key = (x: number, y: number) => `${x}:${y}`;
+  const planesByCell = new Map<string, number>();
+  planes.forEach((plane, index) =>
+    planeCells(plane).forEach(({ x, y }) => planesByCell.set(key(x, y), index)),
+  );
+  const shotsByCell = new Map(shots.map((shot) => [key(shot.x, shot.y), shot]));
+  const downedCells = new Set(
+    shots.flatMap((shot) =>
+      shot.revealed
+        ? planeCells(shot.revealed).map(({ x, y }) => key(x, y))
+        : [],
+    ),
+  );
+  const previewCells = new Set(
+    dragPreview
+      ? planeCells(dragPreview.plane).map(({ x, y }) => key(x, y))
+      : [],
+  );
   return (
     <div
-      className={`paper-grid${small ? " paper-grid--small" : ""}`}
+      className={`paper-grid${small ? " paper-grid--small" : ""}${onPlanePointerDown ? " paper-grid--editable" : ""}`}
       role="group"
       aria-label={label}
+      data-drop-valid={dragPreview ? String(dragPreview.valid) : undefined}
+      onPointerDown={(event) => {
+        const cell = (event.target as HTMLElement).closest<HTMLElement>(
+          "[data-grid-cell]",
+        );
+        if (cell && onPlanePointerDown)
+          onPlanePointerDown(event, {
+            x: Number(cell.dataset.x),
+            y: Number(cell.dataset.y),
+          });
+      }}
+      onPointerMove={onPlanePointerMove}
+      onPointerUp={onPlanePointerUp}
+      onPointerCancel={onPlanePointerCancel}
+      onLostPointerCapture={onPlanePointerCancel}
+      onClickCapture={(event) => {
+        if (suppressClick?.()) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+      }}
     >
       <span className="paper-axis-corner" aria-hidden="true" />
       {Array.from({ length: 10 }, (_, x) => (
@@ -76,15 +142,11 @@ function PaperGrid({
             {y + 1}
           </span>
           {Array.from({ length: 10 }, (_, x) => {
-            const index = cellPlane(planes, x, y),
+            const index = planesByCell.get(key(x, y)) ?? -1,
               plane = index < 0 ? null : planes[index];
-            const shot = shots.find((s) => s.x === x && s.y === y);
-            const downed = shots.find(
-              (s) =>
-                s.revealed &&
-                planeCells(s.revealed).some((c) => c.x === x && c.y === y),
-            );
-            const blocked = !planes.length && targetUnavailable(x, y, shots);
+            const shot = shotsByCell.get(key(x, y));
+            const downed = downedCells.has(key(x, y));
+            const blocked = !planes.length && Boolean(shot || downed);
             const status =
               shot?.result ??
               (downed
@@ -98,6 +160,15 @@ function PaperGrid({
               "paper-cell",
               `paper-cell--${status}`,
               index === selected && plane ? "paper-cell--selected" : "",
+              dragPreview && index === dragPreview.index
+                ? "paper-cell--drag-source"
+                : "",
+              dragPreview && previewCells.has(key(x, y))
+                ? `paper-cell--preview-${dragPreview.valid ? "valid" : "invalid"}`
+                : "",
+              dragPreview?.plane.x === x && dragPreview?.plane.y === y
+                ? "paper-cell--preview-cockpit"
+                : "",
               last?.x === x && last?.y === y ? "paper-cell--last" : "",
             ]
               .filter(Boolean)
@@ -108,6 +179,9 @@ function PaperGrid({
                 type="button"
                 className={classes}
                 key={x}
+                data-grid-cell=""
+                data-x={x}
+                data-y={y}
                 aria-label={description}
                 disabled={!active || blocked}
                 onClick={() => onCell({ x, y })}
@@ -132,9 +206,15 @@ function PaperGrid({
           <path
             key={i}
             d={outline(p)}
-            className={i === selected ? "paper-plane-outline--selected" : ""}
+            className={`${i === selected ? "paper-plane-outline--selected" : ""}${dragPreview?.index === i ? " paper-plane-outline--drag-source" : ""}`}
           />
         ))}
+        {dragPreview && (
+          <path
+            d={outline(dragPreview.plane)}
+            className={`paper-plane-outline--preview-${dragPreview.valid ? "valid" : "invalid"}`}
+          />
+        )}
         {shots
           .filter((s) => s.revealed)
           .map((s, i) => (
@@ -162,6 +242,22 @@ export default function PlanesBoard({
     [error, setError] = useState("");
   const [now, setNow] = useState(Date.now()),
     [rules, setRules] = useState(false);
+  const [preview, setPreview] = useState<{
+    plane: Plane;
+    index: number;
+    valid: boolean;
+  } | null>(null);
+  const drag = useRef<{
+    pointerId: number;
+    index: number;
+    plane: Plane;
+    grabbed: GridPoint;
+    target: GridPoint;
+    startX: number;
+    startY: number;
+    moved: boolean;
+  } | null>(null);
+  const ignoreClick = useRef(false);
   const initialized = useRef<string>("");
   const paperRef = useRef<HTMLElement>(null);
   useEffect(() => {
@@ -177,6 +273,12 @@ export default function PlanesBoard({
     !own?.ready &&
     !pending &&
     connected;
+  useEffect(() => {
+    if (!canPlace || !open) {
+      drag.current = null;
+      setPreview(null);
+    }
+  }, [canPlace, open]);
   useEffect(() => {
     if (!open) return;
     setNow(Date.now());
@@ -223,15 +325,123 @@ export default function PlanesBoard({
       setError("");
     } else setError("Keep the whole plane on the paper, clear of the others.");
   };
+  const pointUnderPointer = (
+    event: PointerEvent<HTMLDivElement>,
+  ): GridPoint | null => {
+    const first = event.currentTarget.querySelector<HTMLElement>(
+      '[data-x="0"][data-y="0"]',
+    );
+    if (!first) return null;
+    const cell = first.getBoundingClientRect();
+    if (!cell.width || !cell.height) return null;
+    return {
+      x: Math.floor((event.clientX - cell.left) / cell.width),
+      y: Math.floor((event.clientY - cell.top) / cell.height),
+    };
+  };
+  const updateDragPreview = (current: NonNullable<typeof drag.current>) => {
+    const plane = draggedPlane(current.plane, current.grabbed, current.target);
+    setPreview({
+      index: current.index,
+      plane,
+      valid: validPlacement(draft, current.index, plane),
+    });
+  };
+  const pointerDown = (
+    event: PointerEvent<HTMLDivElement>,
+    point: GridPoint,
+  ) => {
+    if (!canPlace || event.button !== 0 || drag.current) return;
+    const index = cellPlane(draft, point.x, point.y);
+    if (index < 0) return;
+    event.preventDefault();
+    (event.target as HTMLElement).focus();
+    event.currentTarget.setPointerCapture(event.pointerId);
+    drag.current = {
+      pointerId: event.pointerId,
+      index,
+      plane: draft[index],
+      grabbed: point,
+      target: point,
+      startX: event.clientX,
+      startY: event.clientY,
+      moved: false,
+    };
+    setSelected(index);
+    setError("");
+  };
+  const pointerMove = (event: PointerEvent<HTMLDivElement>) => {
+    const current = drag.current;
+    if (!current || current.pointerId !== event.pointerId) return;
+    if (
+      Math.hypot(
+        event.clientX - current.startX,
+        event.clientY - current.startY,
+      ) >= 4
+    )
+      current.moved = true;
+    const target = pointUnderPointer(event);
+    if (target) current.target = target;
+    if (current.moved) updateDragPreview(current);
+  };
+  const pointerUp = (event: PointerEvent<HTMLDivElement>) => {
+    const current = drag.current;
+    if (!current || current.pointerId !== event.pointerId) return;
+    const target = pointUnderPointer(event);
+    if (target) current.target = target;
+    if (current.moved && canPlace) {
+      const plane = draggedPlane(
+        current.plane,
+        current.grabbed,
+        current.target,
+      );
+      if (validPlacement(draft, current.index, plane)) {
+        setDraft(fleetWithPlane(draft, current.index, plane));
+        setError("");
+      } else {
+        setError(
+          planeCells(plane).some(({ x, y }) => !isGridPoint(x, y))
+            ? "Keep the whole plane inside the grid."
+            : "Planes can't overlap. Choose a clear spot.",
+        );
+      }
+    }
+    drag.current = null;
+    setPreview(null);
+    ignoreClick.current = true;
+    window.setTimeout(() => {
+      ignoreClick.current = false;
+    }, 0);
+  };
+  const cancelDrag = () => {
+    drag.current = null;
+    setPreview(null);
+  };
   const rotate = () => {
     if (!canPlace) return;
+    if (drag.current) {
+      drag.current.moved = true;
+      drag.current.grabbed = rotateGrab(
+        drag.current.plane,
+        drag.current.grabbed,
+      );
+      drag.current.plane = {
+        ...drag.current.plane,
+        rotation: (drag.current.plane.rotation + 1) % 4,
+      };
+      updateDragPreview(drag.current);
+      return;
+    }
     const next = draft.map((p, i) =>
       i === selected ? { ...p, rotation: (p.rotation + 1) % 4 } : p,
     );
     if (legalFleet(next)) {
       setDraft(next);
       setError("");
-    } else setError("Not enough room to turn this plane. Move it first.");
+    } else
+      setError(
+        "Move the plane to a clear spot to rotate it, or press R while dragging.",
+      );
   };
   const turn = phase === "playing" && you !== null && view?.turn === you;
   const winner = phase === "finished" ? (view?.winner ?? null) : null;
@@ -270,12 +480,41 @@ export default function PlanesBoard({
                 : "The players are placing their planes."
               : own?.ready
                 ? "You're ready. Waiting for your opponent."
-                : "Three planes. Keep their cockpits hidden.";
+                : "Arrange your planes, then get ready.";
   const keyboard = (event: KeyboardEvent) => {
     event.stopPropagation();
     if (event.key === "Escape") {
       event.preventDefault();
-      onClose();
+      if (drag.current) cancelDrag();
+      else if (rules) setRules(false);
+      else onClose();
+    }
+    const directions: Record<string, [number, number]> = {
+      ArrowLeft: [-1, 0],
+      ArrowRight: [1, 0],
+      ArrowUp: [0, -1],
+      ArrowDown: [0, 1],
+    };
+    const direction = directions[event.key];
+    if (
+      direction &&
+      canPlace &&
+      !rules &&
+      !drag.current &&
+      (event.target as HTMLElement).closest(
+        ".paper-grid--editable, .planes-plane-picker",
+      )
+    ) {
+      event.preventDefault();
+      const plane = {
+        ...draft[selected],
+        x: draft[selected].x + direction[0],
+        y: draft[selected].y + direction[1],
+      };
+      if (validPlacement(draft, selected, plane)) {
+        setDraft(fleetWithPlane(draft, selected, plane));
+        setError("");
+      } else setError("Move to a clear square within the grid.");
     }
     if (event.key.toLowerCase() === "r" && canPlace) {
       event.preventDefault();
@@ -298,13 +537,25 @@ export default function PlanesBoard({
       data-side={you ?? "spectator"}
     >
       <header className="planes-heading">
-        <div>
-          <h2>Planes</h2>
-          <span>Avioane, on squared paper.</span>
+        <h2>Planes</h2>
+        <div className="planes-heading-actions">
+          <button
+            type="button"
+            className="planes-text-button"
+            aria-expanded={rules}
+            aria-controls="planes-guide"
+            onClick={() => setRules(!rules)}
+          >
+            How to play
+          </button>
+          <button
+            type="button"
+            className="planes-text-button"
+            onClick={onClose}
+          >
+            Fold <span aria-hidden="true">Esc</span>
+          </button>
         </div>
-        <button type="button" className="planes-text-button" onClick={onClose}>
-          Fold paper <span aria-hidden="true">Esc</span>
-        </button>
       </header>
       <div className="planes-players" aria-label="Players">
         {([0, 1] as Side[]).map((side) => (
@@ -371,7 +622,7 @@ export default function PlanesBoard({
           {phase === "playing" ? (
             <>
               <div className="planes-main-grid">
-                <h3>{opponent?.name ?? "Opponent"}'s sky</h3>
+                <h3>{opponent?.name ?? "Opponent"}'s planes</h3>
                 <PaperGrid
                   shots={attackShots}
                   onCell={(p) => void act({ kind: "shot", ...p })}
@@ -381,28 +632,25 @@ export default function PlanesBoard({
                 <p className="planes-shot-note">
                   {latest
                     ? `${coordinate(latest)} · ${latest.result === "head" ? "Head hit. Plane down." : latest.result === "body" ? "Body hit. Find the cockpit." : "Miss."}`
-                    : "Your first clue is out there."}
+                    : turn
+                      ? "Choose a square to fire."
+                      : ""}
                 </p>
               </div>
               <div className="planes-fleet-mini">
-                <h3>Your sky</h3>
+                <h3>Your planes</h3>
                 <PaperGrid
                   planes={view?.ownPlanes ?? []}
                   shots={incoming}
                   small
                   label="Your private fleet"
                 />
-                <p>Your planes are visible only to you.</p>
               </div>
             </>
           ) : (
             <>
               <div className="planes-main-grid">
-                <h3>
-                  {phase === "finished"
-                    ? "A fresh layout for the next round"
-                    : "Your sky"}
-                </h3>
+                <h3>Your planes</h3>
                 <PaperGrid
                   planes={draft}
                   shots={[]}
@@ -410,6 +658,16 @@ export default function PlanesBoard({
                   selected={canPlace ? selected : -1}
                   active={canPlace}
                   label="Your plane placement grid"
+                  dragPreview={preview}
+                  onPlanePointerDown={canPlace ? pointerDown : undefined}
+                  onPlanePointerMove={pointerMove}
+                  onPlanePointerUp={pointerUp}
+                  onPlanePointerCancel={cancelDrag}
+                  suppressClick={() => {
+                    const ignore = ignoreClick.current;
+                    ignoreClick.current = false;
+                    return ignore;
+                  }}
                 />
               </div>
               <div className="planes-setup-tools">
@@ -424,9 +682,19 @@ export default function PlanesBoard({
                           : "The other player left the table."}
                   </p>
                 )}
-                <p>
-                  Select a plane, then a square to move its cockpit. Turn it
-                  with <kbd>R</kbd>.
+                <p className="planes-placement-hint">
+                  Drag to move. Press <kbd>R</kbd> to rotate, even while
+                  dragging.
+                </p>
+                <p
+                  className={`planes-drop-hint${preview ? (preview.valid ? " planes-drop-hint--valid" : " planes-drop-hint--invalid") : ""}`}
+                  aria-live="polite"
+                >
+                  {preview
+                    ? preview.valid
+                      ? "Release to place"
+                      : "Can't place here"
+                    : "Green fits · red doesn't."}
                 </p>
                 <div className="planes-plane-picker">
                   {draft.map((_, i) => (
@@ -447,7 +715,7 @@ export default function PlanesBoard({
                   disabled={!canPlace}
                   onClick={rotate}
                 >
-                  Rotate plane
+                  Rotate <kbd>R</kbd>
                 </button>
                 <button
                   type="button"
@@ -490,20 +758,10 @@ export default function PlanesBoard({
           )}
         </div>
       )}
-      {error && (
-        <p className="planes-error" role="alert">
-          {error}
-        </p>
-      )}
+      <p className="planes-error" role="alert">
+        {error}
+      </p>
       <footer className="planes-footer">
-        <button
-          type="button"
-          className="planes-text-button"
-          aria-expanded={rules}
-          onClick={() => setRules(!rules)}
-        >
-          How to play
-        </button>
         {you !== null && (
           <button
             type="button"
@@ -515,12 +773,41 @@ export default function PlanesBoard({
         )}
       </footer>
       {rules && (
-        <p className="planes-rules">
-          Hide three planes on the 10 × 10 grid. Take turns calling squares. A
-          body hit is a clue; a cockpit hit downs the entire plane. Find all
-          three cockpits to win. Destroyed planes are revealed. Each turn allows
-          60 seconds; a lost connection holds your place for 30 seconds.
-        </p>
+        <aside
+          className="planes-guide"
+          id="planes-guide"
+          aria-label="How to play Planes"
+        >
+          <div className="planes-guide-heading">
+            <h3>How to play</h3>
+            <button
+              type="button"
+              className="planes-text-button"
+              onClick={() => setRules(false)}
+            >
+              Close
+            </button>
+          </div>
+          <ol>
+            <li>
+              <strong>Arrange your planes.</strong> Drag them to clear squares.
+              Press R to turn, even while dragging. You can also select a plane
+              and move it with arrow keys.
+            </li>
+            <li>
+              <strong>Take turns firing.</strong> Choose a square on your
+              opponent's grid. A miss is a circle; a body hit is a cross.
+            </li>
+            <li>
+              <strong>Find the cockpits.</strong> A cockpit hit takes down the
+              whole plane. Find all three to win.
+            </li>
+          </ol>
+          <p>
+            Your planes stay hidden from your opponent. You have 60 seconds per
+            turn.
+          </p>
+        </aside>
       )}
     </section>
   );
