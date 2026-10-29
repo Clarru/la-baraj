@@ -7,7 +7,7 @@ import {
   normalizeBubbleText,
 } from "../../../packages/shared/bubble-chat";
 import type { MultiplayerRoom } from "./multiplayer";
-import { playerViewPosition } from "./player";
+import { playerBubbleAnchor } from "./player";
 
 /** Editing and lingering speech share an anchor, but only editing captures input. */
 export function LocalBubbleChat({
@@ -94,7 +94,7 @@ export function LocalBubbleChat({
       display.current.scrollTop = display.current.scrollHeight;
   }, [text, editing]);
   useFrame(() => {
-    anchor.current?.position.copy(playerViewPosition);
+    anchor.current?.position.copy(playerBubbleAnchor);
     const node = input.current;
     // Drei hides its HTML until the first projection; wait until it is visible.
     if (
@@ -108,7 +108,7 @@ export function LocalBubbleChat({
     }
   });
   return (
-    <group ref={anchor} position={playerViewPosition.toArray()}>
+    <group ref={anchor} position={playerBubbleAnchor.toArray()}>
       <Html
         center
         position={[0, 1.7, 0]}

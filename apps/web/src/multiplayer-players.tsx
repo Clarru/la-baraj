@@ -124,6 +124,7 @@ function RemoteAvatarRig({ id, room }: { id: string; room: RemoteCardRoom }) {
     previousGesture = useRef<string | null>(null),
     wasRiding = useRef(false),
     initialized = useRef(false);
+  const badgeAnchor = useRef<THREE.Group>(null);
   const badge = useRef<HTMLSpanElement>(null);
   const stars = useRef<HTMLSpanElement>(null);
   const afk = useRef<HTMLSpanElement>(null);
@@ -177,6 +178,16 @@ function RemoteAvatarRig({ id, room }: { id: string; room: RemoteCardRoom }) {
       dt = Math.min(delta, 0.1),
       riding = player.vehicle === "scooter";
     const stance = postureFromAnimation(player.posture, player.animation);
+    if (badgeAnchor.current) {
+      const height =
+        stance === "prone" ? 0.7 : stance === "crouching" ? 1.55 : 2.15;
+      badgeAnchor.current.position.y = THREE.MathUtils.damp(
+        badgeAnchor.current.position.y,
+        height,
+        12,
+        dt,
+      );
+    }
     const nowSwimming =
       player.animation === "Swim_Forward" || player.animation === "Swim_Idle";
     if (swimmingRef.current !== nowSwimming) {
@@ -342,46 +353,47 @@ function RemoteAvatarRig({ id, room }: { id: string; room: RemoteCardRoom }) {
           <RemoteScooter ref={scooter} />
         </group>
       )}
-      <Html
-        center
-        position={[0, 2.15, 0]}
-        distanceFactor={
-          planesSeatSide(player?.seatId) !== null ||
-          cruceSeatSide(player?.seatId) !== null
-            ? 5
-            : 12
-        }
-        zIndexRange={[5, 0]}
-        style={{ pointerEvents: "none" }}
-      >
-        <span
-          ref={chatBubble}
-          className="bubble-chat bubble-chat-remote"
-          style={{ display: "none" }}
-          aria-label="Player chat"
+      <group ref={badgeAnchor} position={[0, 2.15, 0]}>
+        <Html
+          center
+          distanceFactor={
+            planesSeatSide(player?.seatId) !== null ||
+            cruceSeatSide(player?.seatId) !== null
+              ? 5
+              : 12
+          }
+          zIndexRange={[5, 0]}
+          style={{ pointerEvents: "none" }}
         >
-          <span ref={chatMessage} className="bubble-chat-message" />
-        </span>
-        <span
-          ref={afk}
-          className="multiplayer-afk"
-          style={{ display: "none" }}
-          aria-label="Away from keyboard"
-        >
-          AFK
-        </span>
-        <span
-          ref={stars}
-          className="stun-stars"
-          style={{ display: "none" }}
-          aria-label="Stunned"
-        >
-          ✦ ★ ✦
-        </span>
-        <span ref={badge} className="multiplayer-name" data-player-id={id}>
-          {player?.nickname ?? "Friend"}
-        </span>
-      </Html>
+          <span
+            ref={chatBubble}
+            className="bubble-chat bubble-chat-remote"
+            style={{ display: "none" }}
+            aria-label="Player chat"
+          >
+            <span ref={chatMessage} className="bubble-chat-message" />
+          </span>
+          <span
+            ref={afk}
+            className="multiplayer-afk"
+            style={{ display: "none" }}
+            aria-label="Away from keyboard"
+          >
+            AFK
+          </span>
+          <span
+            ref={stars}
+            className="stun-stars"
+            style={{ display: "none" }}
+            aria-label="Stunned"
+          >
+            ✦ ★ ✦
+          </span>
+          <span ref={badge} className="multiplayer-name" data-player-id={id}>
+            {player?.nickname ?? "Friend"}
+          </span>
+        </Html>
+      </group>
     </group>
   );
 }

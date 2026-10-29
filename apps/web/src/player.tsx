@@ -92,6 +92,8 @@ export const playerPosition = new THREE.Vector3(
 );
 /** Camera follows the interpolated render body, not the discrete physics step. */
 export const playerViewPosition = playerPosition.clone();
+/** Speech follows the camera/body anchor, with a lower offset while lying down. */
+export const playerBubbleAnchor = playerViewPosition.clone();
 export function Avatar({
   position,
   rotation = 0,
@@ -1126,6 +1128,9 @@ export function Player({
     if (visual.current?.parent)
       visual.current.parent.getWorldPosition(playerViewPosition);
     else playerViewPosition.copy(playerPosition);
+    playerBubbleAnchor.copy(playerViewPosition);
+    if (stanceRef.current === "prone" && !holding && !nowSwimming && !mounted)
+      playerBubbleAnchor.y -= 0.4;
     activityRig.current?.update(pose, elapsed);
     const cardRoom = currentMultiplayerRoom();
     cruceCharacter.update(
