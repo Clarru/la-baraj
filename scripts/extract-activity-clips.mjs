@@ -52,6 +52,8 @@ async function main() {
     Swim_Idle_Loop: "Swim_Idle",
     Punch_Jab: "Punch_Jab",
     Hit_Head: "Punch_Hit",
+    Crouch_Idle_Loop: "Crouch_Idle",
+    Crouch_Fwd_Loop: "Crouch_Walk",
   };
   const clips = source.animations
     .filter((clip) => wanted[clip.name])
