@@ -26,6 +26,7 @@ export type SessionState = {
   all: Bucket;
   pose: Bucket;
   action: Bucket;
+  chat?: Bucket;
   violations: number;
   lastInputAt?: number;
   lastActivityReportAt?: number;
@@ -341,6 +342,20 @@ export class RoomCore {
       });
       this.broadcast(
         { type: "activity", id: current.player.id, idleMs: message.idleMs },
+        connection,
+      );
+      return;
+    }
+    if (message.type === "bubble-chat") {
+      // Typing is transient and not saved. Drop excess edits without disconnecting.
+      if (current.nameAt === undefined) return;
+      if (message.text) {
+        const chat = consume(current.chat ?? { tokens: 4, at: now }, now, 8, 4);
+        if (!chat) return;
+        connection.setState({ ...current, chat });
+      }
+      this.broadcast(
+        { type: "bubble-chat", id: current.player.id, text: message.text },
         connection,
       );
       return;

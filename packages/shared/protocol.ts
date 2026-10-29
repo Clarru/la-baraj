@@ -1,3 +1,4 @@
+import { isBubbleText } from "./bubble-chat.ts";
 import type { LakeWeather } from "./weather.ts";
 import {
   legalFleet,
@@ -53,6 +54,7 @@ export type ClientMessage =
   | { type: "pose"; pose: PlayerPose }
   | { type: "activity"; idleMs: number }
   | { type: "weather-refresh" }
+  | { type: "bubble-chat"; text: string }
   | { type: "punch" }
   | { type: "fire"; lit: boolean }
   | { type: "seat"; seatId: string | null; requestId: string }
@@ -84,6 +86,7 @@ export type ServerMessage =
   | { type: "left"; id: string }
   | { type: "weather"; weather: LakeWeather | null }
   | { type: "activity"; id: string; idleMs: number }
+  | { type: "bubble-chat"; id: string; text: string }
   | { type: "punch"; attackerId: string; targetId: string | null }
   | { type: "fire"; fire: FireState }
   | { type: "seats"; seats: Record<string, string> }
@@ -172,6 +175,10 @@ export function parseClientMessage(raw: string): ClientMessage | null {
         value.idleMs >= 0 &&
         value.idleMs <= AFK_AFTER_MS
         ? { type: "activity", idleMs: value.idleMs }
+        : null;
+    case "bubble-chat":
+      return isBubbleText(value.text)
+        ? { type: "bubble-chat", text: value.text }
         : null;
     case "weather-refresh":
       return { type: "weather-refresh" };

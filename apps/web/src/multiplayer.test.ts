@@ -762,3 +762,42 @@ describe("weather freshness", () => {
     disconnect();
   });
 });
+
+describe("temporary chat bubbles", () => {
+  it("displays live text, expires it and clears it when the player leaves", () => {
+    const room = new MultiplayerRoom(),
+      disconnect = room.connect(),
+      socket = sockets[0];
+    socket.open();
+    snapshot(socket);
+    socket.receive({ type: "bubble-chat", id: friend.id, text: "hi 👋" });
+    expect(room.chatFor(friend.id)).toBe("hi 👋");
+    vi.mocked(performance.now).mockReturnValue(6001);
+    expect(room.chatFor(friend.id)).toBe("");
+    socket.receive({ type: "bubble-chat", id: friend.id, text: "again" });
+    socket.receive({ type: "left", id: friend.id });
+    expect(room.chatFor(friend.id)).toBe("");
+    room.publishChat("one\ntwo\nthree");
+    expect(socket.sent.at(-1)).toEqual({
+      type: "bubble-chat",
+      text: "two\nthree",
+    });
+    disconnect();
+  });
+});
+
+it("renews a remote bubble's lifetime when the same text is published again", () => {
+  const room = new MultiplayerRoom(),
+    disconnect = room.connect(),
+    socket = sockets[0];
+  socket.open();
+  snapshot(socket);
+  socket.receive({ type: "bubble-chat", id: friend.id, text: "See you there" });
+  vi.mocked(performance.now).mockReturnValue(4000);
+  socket.receive({ type: "bubble-chat", id: friend.id, text: "See you there" });
+  vi.mocked(performance.now).mockReturnValue(7000);
+  expect(room.chatFor(friend.id)).toBe("See you there");
+  vi.mocked(performance.now).mockReturnValue(9001);
+  expect(room.chatFor(friend.id)).toBe("");
+  disconnect();
+});

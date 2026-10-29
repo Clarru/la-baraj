@@ -214,6 +214,7 @@ const controlRows = [
   ["W A S D / arrows", "Move"],
   ["Shift", "Run"],
   ["Space", "Jump"],
+  ["Enter / Esc", "Chat above your character / close chat"],
   ["Q", "Punch a nearby player"],
   ["Left or right drag / scroll", "Look around / zoom"],
   ["E", "Enter a door, fish, or use the campfire nearby"],
@@ -244,6 +245,10 @@ export function ControlsHelp({
           </div>
         ))}
       </dl>
+      <p className="game-help-note">
+        Chat appears as you type. Enter adds a line. Click outside to walk while
+        it lingers for five seconds, or press Escape to close.
+      </p>
       <p className="game-help-note">
         On the scooter: W to accelerate, S to brake, A/D to steer, Shift to
         boost.
