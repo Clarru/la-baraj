@@ -22,11 +22,10 @@ export function NearbySolids({ items }: { items: NaturalSolid[] }) {
   // Match ModelInstances' individual loader keys; an array key fetched these twice.
   const rock1 = useGLTF(assetUrl("Rock_Medium_1"));
   const rock2 = useGLTF(assetUrl("Rock_Medium_2"));
-  const bush = useGLTF(assetUrl("Bush_Common"));
   const shapes = useMemo(
     () =>
       Object.fromEntries(
-        [rock1, rock2, bush].map((m, i) => {
+        [rock1, rock2].map((m, i) => {
           const raw = collisionMesh(m.scene);
           const box = new THREE.Box3().setFromObject(m.scene),
             center = box.getCenter(new THREE.Vector3());
@@ -37,12 +36,12 @@ export function NearbySolids({ items }: { items: NaturalSolid[] }) {
             vertices[j + 2] -= center.z;
           }
           return [
-            ["Rock_Medium_1", "Rock_Medium_2", "Bush_Common"][i],
+            ["Rock_Medium_1", "Rock_Medium_2"][i],
             { vertices, indices: raw.indices },
           ];
         }),
       ),
-    [rock1, rock2, bush],
+    [rock1, rock2],
   );
   const active = useRef(new Map<string, Collider>());
   const body = useRef<PhysicsBody | null>(null);

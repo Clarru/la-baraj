@@ -148,11 +148,11 @@
     {
       "id": "Lake_Cabin_Sage",
       "compressed": true,
-      "beforeBytes": 1485040,
-      "bytes": 919092,
-      "originalSha256": "6f706826e66fd0ae837d1f1594a0ac4de6f1852f97bd42ed8957589b604cfee4",
-      "sha256": "76d20501aa989c4e92a678a1f2037099418f65a5ba40a681a5bfa18e96139af4",
-      "geometrySha256": "e3f2bf6571fb2ab8646e1f24771006eb8ab127961770133e93e682b37aff4227"
+      "beforeBytes": 1433664,
+      "bytes": 886400,
+      "originalSha256": "84a91eea9bb75fe0df555c81fef04e9a35ca9aa36c3ebdfda1c1dc3390cd02b4",
+      "sha256": "a124955ec9e4bdc25c577161e17f783533da8c095f493312a3c0daa0afa2f35e",
+      "geometrySha256": "01fd184ff22aa1184c4cbfa8771e3ed89e028d219d9bee25c67f46379ac14f45"
     },
     {
       "id": "Lake_Cabin_GableBlue",
@@ -175,11 +175,11 @@
     {
       "id": "Lake_Cabin_SagePergola",
       "compressed": true,
-      "beforeBytes": 1784144,
-      "bytes": 1097640,
-      "originalSha256": "873f1d14f9451e0ee68078196921fbed9755a97a74e8459aca9d27ecbcce982c",
-      "sha256": "2a6bd78b8897aa60cbfa664b645a6bff529eb5db71a62b21b124ce0487e5d13f",
-      "geometrySha256": "ce05702395744725e8b3b0d28b36d1ca58e113a7bd79c379e81cf079dc3d66bd"
+      "beforeBytes": 1748436,
+      "bytes": 1074612,
+      "originalSha256": "c5081ef2fb293bbdc84c55f56788a553acc499cc69705e6007032b547c8c7cc1",
+      "sha256": "f82bce7baa83fe61066d89faff2ec0aef6c5e4cf292a94b27e3755a644e5322a",
+      "geometrySha256": "f2b0c3017713960c3ef1a033ab7db963361639c50f30ed4cb0eab264ca602ba9"
     },
     {
       "id": "Lake_Interior_Timber",

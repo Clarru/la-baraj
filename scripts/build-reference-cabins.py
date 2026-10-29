@@ -243,7 +243,8 @@ def build_sage():
  for x in [.12,3.2]:beam('Porch fascia',(x,-4.7,3.22),(x,-2.75,3.62),.14,struct)
  for x in [.2,.8,1.4,2.0,2.6,3.12]:beam('Porch roof seam',(x,-4.7,3.26),(x,-2.75,3.66),.035,roof)
  for j in range(3):box('Porch entry step',(1.65,-4.86-j*.28,.4-j*.13),(1.9,.43,.17),woods[j],.018)
- bench(2.1,-3.65);planter(.5,-4.2);chimney(.3,1.4,4.2,5.1)
+ # Keep the narrow porch and its door clear of furniture.
+ planter(.5,-4.2);chimney(.3,1.4,4.2,5.1)
 
 # Bake modifiers and merge by material once: practical asset assembly, no runtime generator.
 def finish(name,objects):

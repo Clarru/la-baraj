@@ -128,16 +128,6 @@ const currentCabinSockets: Record<string, PrefabBenchSocket[]> = {
     floorHeight: 0.6,
     endMargin: 0.1,
   })),
-  Lake_Cabin_Sage: [
-    {
-      id: "porch",
-      center: [2.1, 1.12, 3.67],
-      width: 1.6,
-      depth: 0.46,
-      floorHeight: 0.6,
-      endMargin: 0.1,
-    },
-  ],
 };
 export function usePrefabBenches(
   object: THREE.Object3D,
