@@ -1,3 +1,9 @@
+import type {
+  Collider,
+  RigidBody,
+  Shape,
+  World,
+} from "@dimforge/rapier3d-compat";
 import {
   STANCE_METRICS,
   stanceCandidateY,
@@ -5,6 +11,11 @@ import {
   stanceExpansionAllowed,
   type Stance,
 } from "./stance-motion";
+
+type StanceRapier = {
+  Capsule: new (halfHeight: number, radius: number) => Shape;
+  QueryFilterFlags: { EXCLUDE_SENSORS: number };
+};
 
 /**
  * Resize the player's actual Rapier collider while keeping its bottom in
@@ -14,38 +25,15 @@ import {
 export function resizeStanceCollider(input: {
   current: Stance;
   next: Stance;
-  body: {
-    translation: () => { x: number; y: number; z: number };
-    rotation: () => unknown;
-    setTranslation: (
-      position: { x: number; y: number; z: number },
-      wake: boolean,
-    ) => void;
-    wakeUp: () => void;
-  };
-  collider: {
-    isValid: () => boolean;
-    setShape: (shape: any) => void;
-    setRotation: (rotation: {
-      x: number;
-      y: number;
-      z: number;
-      w: number;
-    }) => void;
-  };
-  world: {
-    intersectionWithShape: (...args: any[]) => unknown;
-  };
-  rapier: {
-    Capsule: new (halfHeight: number, radius: number) => unknown;
-    QueryFilterFlags: { EXCLUDE_SENSORS: number };
-  };
+  body: RigidBody;
+  collider: Pick<Collider, "isValid" | "setShape" | "setRotation">;
+  world: Pick<World, "intersectionWithShape">;
+  rapier: StanceRapier;
   yaw?: number;
   checkHeadroom?: boolean;
 }) {
   const { current, next, body, collider, world, rapier } = input;
   if (current === next || !collider.isValid()) return true;
-  const from = STANCE_METRICS[current];
   const to = STANCE_METRICS[next];
   const position = body.translation();
   const candidate = {
@@ -76,5 +64,28 @@ export function resizeStanceCollider(input: {
   collider.setRotation(targetRotation);
   body.setTranslation(candidate, true);
   body.wakeUp();
+  return true;
+}
+
+/** Rotate a prone footprint only when the complete target shape remains clear. */
+export function rotateProneCollider(input: {
+  body: RigidBody;
+  collider: Pick<Collider, "shape" | "setRotation">;
+  world: Pick<World, "intersectionWithShape">;
+  rapier: Pick<StanceRapier, "QueryFilterFlags">;
+  yaw: number;
+}) {
+  const rotation = stanceColliderRotation("prone", input.yaw);
+  const blocked = input.world.intersectionWithShape(
+    input.body.translation(),
+    rotation,
+    input.collider.shape,
+    input.rapier.QueryFilterFlags.EXCLUDE_SENSORS,
+    undefined,
+    undefined,
+    input.body,
+  );
+  if (blocked) return false;
+  input.collider.setRotation(rotation);
   return true;
 }

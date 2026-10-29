@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import RAPIER from "@dimforge/rapier3d-compat";
-import { resizeStanceCollider } from "./stance-physics";
+import { resizeStanceCollider, rotateProneCollider } from "./stance-physics";
 import { stanceColliderRotation } from "./stance-motion";
 
 beforeAll(async () => {
@@ -136,6 +136,29 @@ describe("stance collider clearance", () => {
         yaw: 0,
       }),
     ).toBe(false);
+    world.free();
+  });
+
+  it("blocks prone yaw turns whose rotated footprint would enter a wall", () => {
+    const { world, body, collider } = worldWithBody();
+    body.setTranslation({ x: 0, y: 0.73, z: 0 }, true);
+    collider.setShape(new RAPIER.Capsule(0.65, 0.4));
+    collider.setRotation(stanceColliderRotation("prone", 0));
+    world.createCollider(
+      RAPIER.ColliderDesc.cuboid(0.05, 2, 0.05).setTranslation(0.9, 0.8, 0),
+    );
+    world.step();
+    const before = collider.rotation();
+    expect(
+      rotateProneCollider({
+        body,
+        collider,
+        world,
+        rapier: RAPIER,
+        yaw: Math.PI / 2,
+      }),
+    ).toBe(false);
+    expect(collider.rotation()).toEqual(before);
     world.free();
   });
 });

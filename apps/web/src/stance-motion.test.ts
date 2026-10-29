@@ -7,6 +7,7 @@ import {
   stanceCandidateY,
   stanceExpansionAllowed,
   stanceForToggle,
+  stanceRayOriginOffset,
   stanceVisualLift,
 } from "./stance-motion";
 
@@ -21,6 +22,9 @@ describe("player stance contract", () => {
     expect(STANCE_METRICS.crouching.walkSpeed).toBe(1.5);
     expect(STANCE_METRICS.prone.walkSpeed).toBe(0.65);
     expect(STANCE_METRICS.prone.runSpeed).toBe(0.65);
+    expect(stanceRayOriginOffset("standing")).toBeCloseTo(-0.35);
+    expect(stanceRayOriginOffset("crouching")).toBeCloseTo(-0.18);
+    expect(stanceRayOriginOffset("prone")).toBeCloseTo(-0.1);
   });
 
   it("toggles C and Z without making prone a transient crouch", () => {

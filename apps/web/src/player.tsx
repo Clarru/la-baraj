@@ -74,12 +74,12 @@ import {
 import {
   STANCE_METRICS,
   stanceBaseAnimation,
-  stanceColliderRotation,
   stanceForToggle,
+  stanceRayOriginOffset,
   stanceVisualLift,
   type Stance,
 } from "./stance-motion";
-import { resizeStanceCollider } from "./stance-physics";
+import { resizeStanceCollider, rotateProneCollider } from "./stance-physics";
 export type ViewMode = "walk" | "overview" | "study" | "settlement" | "home";
 export const spawn = { x: 45, z: southShore(45) + 12 };
 export const playerPosition = new THREE.Vector3(
@@ -163,6 +163,7 @@ export function Player({
     previousWaveRequest.current = waveRequest;
   }, [waveRequest]);
   const stanceRef = useRef<Stance>("standing");
+  const proneYaw = useRef(0);
   const [stance, setStance] = useState<Stance>("standing");
   const moving = useRef(false);
   const [riding, setRiding] = useState(false);
@@ -282,6 +283,7 @@ export function Player({
             visual.current.getWorldQuaternion(new THREE.Quaternion()),
           )
         : null;
+      const yaw = facing ? Math.atan2(facing.x, facing.z) : rideYaw.current;
       if (
         !resizeStanceCollider({
           current,
@@ -291,10 +293,11 @@ export function Player({
           world,
           rapier,
           checkHeadroom,
-          yaw: facing ? Math.atan2(facing.x, facing.z) : rideYaw.current,
+          yaw,
         })
       )
         return false;
+      if (next === "prone") proneYaw.current = yaw;
       stanceRef.current = next;
       setStance(next);
       return true;
@@ -1063,9 +1066,20 @@ export function Player({
       const facing = new THREE.Vector3(0, 0, 1).applyQuaternion(
         visual.current.getWorldQuaternion(new THREE.Quaternion()),
       );
-      c.collider.setRotation(
-        stanceColliderRotation("prone", Math.atan2(facing.x, facing.z)),
-      );
+      const yaw = Math.atan2(facing.x, facing.z);
+      const rotated = rotateProneCollider({
+        body: c.body,
+        collider: c.collider,
+        world,
+        rapier,
+        yaw,
+      });
+      if (rotated) proneYaw.current = yaw;
+      else {
+        visual.current.parent?.getWorldQuaternion(facingParent);
+        localFacing(proneYaw.current, facingParent, facingTarget);
+        visual.current.quaternion.copy(facingTarget);
+      }
     }
     const gesture =
       pose.kind === "reel"
@@ -1192,6 +1206,7 @@ export function Player({
       decDeltaTime={0.3}
       slopeMaxAngle={Math.PI * 0.4}
       rayRadius={0.22}
+      rayOriginOffest={stanceRayOriginOffset(stance)}
       rayHitForgiveness={jumping ? 0.05 : 0.28}
       floatHeight={0.3}
     >

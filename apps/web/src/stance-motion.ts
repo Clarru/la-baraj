@@ -74,6 +74,11 @@ export function stanceBottomExtent(stance: Stance) {
   );
 }
 
+/** Keep Ecctrl's spring origin at the same 30cm support gap for each stance. */
+export function stanceRayOriginOffset(stance: Stance, floatHeight = 0.3) {
+  return -(stanceBottomExtent(stance) - floatHeight);
+}
+
 /** Rapier capsules are Y-aligned; rotate the prone capsule onto local +Z. */
 export function stanceColliderRotation(stance: Stance, yaw: number) {
   if (stance !== "prone") return { x: 0, y: 0, z: 0, w: 1 };
@@ -86,7 +91,7 @@ export function stanceColliderRotation(stance: Stance, yaw: number) {
   return {
     x: cy * qx,
     y: sy * qw,
-    z: sy * qx,
+    z: -sy * qx,
     w: cy * qw,
   };
 }
