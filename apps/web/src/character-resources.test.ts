@@ -84,7 +84,7 @@ describe("approved character resource reuse", () => {
     // isn't the sole height; inspect the actual deformed boot/body vertices.
     let lowestVertex = Infinity;
     const vertex = new THREE.Vector3();
-    scene.traverse((node) => {
+    scene.traverse((node: THREE.Object3D) => {
       if (!(node instanceof THREE.SkinnedMesh)) return;
       node.skeleton.update();
       for (let i = 0; i < node.geometry.getAttribute("position").count; i++) {
