@@ -1,4 +1,6 @@
-import { useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
+import type { MultiplayerRoom } from "./multiplayer";
+import { readMapPlayers, sameMapPlayers } from "./minimap-players";
 import type { PublicCabin } from "../../../packages/shared/protocol";
 import type { NavigationFeed } from "./navigation-feed";
 import { GameIcon } from "./GameArt";
@@ -24,11 +26,28 @@ export function Minimap({
   navigation: feed,
   homeIndex,
   cabins = [],
+  room,
 }: {
   navigation: NavigationFeed;
   homeIndex: number | null;
   cabins?: readonly PublicCabin[];
+  room?: Pick<MultiplayerRoom, "remotes">;
 }) {
+  const [players, setPlayers] = useState(() => readMapPlayers(room));
+  useEffect(() => {
+    let previous = readMapPlayers(room);
+    setPlayers((current) =>
+      sameMapPlayers(current, previous) ? current : previous,
+    );
+    const timer = setInterval(() => {
+      const next = readMapPlayers(room);
+      if (!sameMapPlayers(previous, next)) {
+        previous = next;
+        setPlayers(next);
+      }
+    }, 250);
+    return () => clearInterval(timer);
+  }, [room]);
   const navigation = useSyncExternalStore(
     feed.subscribe,
     feed.getSnapshot,
@@ -51,7 +70,7 @@ export function Minimap({
     >
       <svg
         role="img"
-        aria-label="Nearby lake, roads, cabins and activities"
+        aria-label="Nearby lake, roads, cabins, activities and other players. Other players are circles; you are the arrow."
         viewBox={`${center.x - range / 2} ${center.z - range / 2} ${range} ${range}`}
         width={size}
         height={size}
@@ -80,6 +99,31 @@ export function Minimap({
             vectorEffect="non-scaling-stroke"
           />
         ))}
+        <g data-testid="other-player-map-layer">
+          {players
+            .filter(
+              (p) =>
+                Math.hypot(p.x - center.x, p.z - center.z) <=
+                range / 2 - 5 * scale,
+            )
+            .map((p) => (
+              <g
+                key={p.id}
+                transform={`translate(${p.x} ${p.z})`}
+                data-testid="other-player-map-marker"
+              >
+                <circle
+                  r={4.4 * scale}
+                  fill="#21454b"
+                  stroke="#f6eddb"
+                  strokeWidth={1.1}
+                  vectorEffect="non-scaling-stroke"
+                />
+                <circle r={1.2 * scale} fill="#f6eddb" />
+                <title>Other player</title>
+              </g>
+            ))}
+        </g>
         {cabins.map((home) => {
           const p = cabinSpots[home.index];
           return (
