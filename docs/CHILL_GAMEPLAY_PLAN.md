@@ -45,3 +45,11 @@ No account system, progression economy, new currency, combat progression, new ro
 ## Product review outcomes
 
 The product reviewer supports C/Z toggles and P with a middle-click alternative, requests a 6px movement threshold to cancel accidental mouse punches, and recommends G for a one-shot greeting using the existing rig. Keep stance collision conservative and prove it before enabling traversal benefits. They also found stale Q/left-mouse punch documentation, now updated in this branch. A roster is deferred until people actually need it. Technical review and runtime verification remain pending.
+
+## Progress evidence (29 October, current feature branches)
+
+- `codex/chill-movement`: pointer helper reserves stationary middle click, cancels travel over 6px, pointer leave/cancel/lost capture and window blur; keyboard integration remains owned by stance worker. Focused pointer/camera/UI tests passed (15 at initial pass); subsequent pointer/camera checks passed (8). Frontend typecheck passed before stance integration.
+- Dedicated `Social_Wave` additive clip has been integrated from `f51db3a`. Real-rig tests verify normalized finite transforms, raised hand and restoration. Under Node 24.22.1, wave + world collision + remote scooter suites pass 9 tests. Visual fixture and in-world gesture integration are still pending; do not equate bone-height assertions with a visually accepted greeting.
+- Stance implementation is still under review on `codex/stance-movement`. Initial draft review flagged expansion clearance for prone-to-crouch, pointer/keyboard grounded parity, visual root offset and the need to replace swimming-like prone motion with credible land motion. Real Rapier clearance tests are being added by that worker.
+- The Cruce follow-up chat owns the localhost in-memory transport, square table geometry and held-card gestures. Its future shared-file hooks will be merged deliberately with stance/wave changes. Production origin remains strict.
+- The currently served 4173 main game, approved rock swap and Cruce QA fixture have not been replaced by this goal's unfinished branches.
