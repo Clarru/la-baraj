@@ -85,3 +85,10 @@ The actual `oak-triposr-front.png` and `oak-triposr-side.png` renders show a dar
 ## Individual leaf geometry experiment
 
 `scripts/explore-oak-leaf-geometry.mjs` generates a separate test with individually modeled lobed leaves, solid vertex colors and staggered branches instead of textured foliage cards. The resulting `cincis-oak-leaf-geometry-experiment.glb` was inspected interactively in Blender and in the actual export renders `oak-leaf-geometry-front.png` and `oak-leaf-geometry-side.png`. The canopy looks sparse and scattered, the flat leaves resemble confetti, and the exposed trunk remains too smooth and simple. Its 11,305 leaf triangles alone already exceed the existing tree’s reported 6,265 triangles, before counting the trunk. It is neither a visual nor a geometry-budget improvement and remains non-runtime research. These counts do not establish actual frame-time cost.
+
+
+## Existing foliage construction and density test
+
+Inspection of the source `CommonTree_1.gltf` found 1,920 triangles in its foliage material: 960 disconnected two-triangle planes. Its foliage image has a mostly flat green color with a mask containing multiple separated leaf silhouettes; the remaining reported triangles are in the bark material. This is source inspection, not a measurement of runtime overdraw. The old tree was used only for study, not as geometry or texture in the experiments.
+
+A test using 540 smaller planes and the generated painted oak cluster produced the fuller but dark, streaked crown in `oak-dense-cards-front.png`. A second used the same card arrangement and an independently drawn flat oak-leaf mask; `oak-flat-cards-front.png` shows a thin, fragmented crown. Both retain the earlier regular-forked trunk. Neither is an improvement ready for integration. The experiments show that simply increasing card count or flattening texture colors does not by itself fix silhouette, card orientation, crown density, lighting and branch design. Revisit those together and measure masked overdraw before treating the method as an optimization.
