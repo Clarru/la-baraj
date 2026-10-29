@@ -67,6 +67,9 @@ describe("stance collider clearance", () => {
       stanceControllerHeight("prone"),
       6,
     );
+    // World-space setRotation is overwritten by the parent on the next step.
+    // The relative collider orientation must survive real simulation updates.
+    for (let step = 0; step < 4; step++) world.step();
     expect(Math.abs(collider.rotation().x)).toBeGreaterThan(0.4);
     expect(Math.abs(collider.rotation().y)).toBeGreaterThan(0.4);
     world.free();
@@ -96,7 +99,7 @@ describe("stance collider clearance", () => {
       true,
     );
     prone.collider.setShape(new RAPIER.Capsule(0.65, 0.4));
-    prone.collider.setRotation(stanceColliderRotation("prone", 0));
+    prone.collider.setRotationWrtParent(stanceColliderRotation("prone", 0));
     prone.world.createCollider(
       RAPIER.ColliderDesc.cuboid(4, 0.05, 4).setTranslation(0, 1.05, 0),
     );
@@ -167,7 +170,7 @@ describe("stance collider clearance", () => {
       true,
     );
     collider.setShape(new RAPIER.Capsule(0.65, 0.4));
-    collider.setRotation(stanceColliderRotation("prone", 0));
+    collider.setRotationWrtParent(stanceColliderRotation("prone", 0));
     world.createCollider(
       RAPIER.ColliderDesc.cuboid(0.05, 2, 0.05).setTranslation(0.9, 0.8, 0),
     );

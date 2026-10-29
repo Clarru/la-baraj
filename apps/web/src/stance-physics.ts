@@ -26,7 +26,7 @@ export function resizeStanceCollider(input: {
   current: Stance;
   next: Stance;
   body: RigidBody;
-  collider: Pick<Collider, "isValid" | "setShape" | "setRotation">;
+  collider: Pick<Collider, "isValid" | "setShape" | "setRotationWrtParent">;
   world: Pick<World, "intersectionWithShape">;
   rapier: StanceRapier;
   yaw?: number;
@@ -61,7 +61,7 @@ export function resizeStanceCollider(input: {
     );
   if (!stanceExpansionAllowed(current, next, intersects)) return false;
   collider.setShape(targetShape);
-  collider.setRotation(targetRotation);
+  collider.setRotationWrtParent(targetRotation);
   body.setTranslation(candidate, true);
   body.wakeUp();
   return true;
@@ -70,7 +70,7 @@ export function resizeStanceCollider(input: {
 /** Rotate a prone footprint only when the complete target shape remains clear. */
 export function rotateProneCollider(input: {
   body: RigidBody;
-  collider: Pick<Collider, "shape" | "setRotation">;
+  collider: Pick<Collider, "shape" | "setRotationWrtParent">;
   world: Pick<World, "intersectionWithShape">;
   rapier: Pick<StanceRapier, "QueryFilterFlags">;
   yaw: number;
@@ -86,6 +86,6 @@ export function rotateProneCollider(input: {
     input.body,
   );
   if (blocked) return false;
-  input.collider.setRotation(rotation);
+  input.collider.setRotationWrtParent(rotation);
   return true;
 }
