@@ -513,6 +513,7 @@ export default function Game({ initialName }: { initialName: string }) {
             onMenu={() => setPanel((current) => (current ? null : "menu"))}
           />
           <Minimap
+            room={room}
             navigation={navigation}
             homeIndex={hasHome ? homeIndex : null}
             cabins={cabins}
