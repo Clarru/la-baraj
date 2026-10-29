@@ -1,7 +1,7 @@
 """Build playable cutaway room prefabs following interior-reference-grid.png."""
 from pathlib import Path
 import json
-base=Path('/Users/claumarin/Documents/ChatGPT/multiplayer-game')
+base=Path(__file__).resolve().parents[1]
 exec((base/'scripts/build-reference-cabins.py').read_text().split('# Bake modifiers')[0])
 green=material('Forest upholstery',(.14,.21,.11),.96)
 rust=material('Rust upholstery',(.36,.14,.065),.96)

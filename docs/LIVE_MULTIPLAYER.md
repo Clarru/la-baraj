@@ -15,7 +15,7 @@ The frontend uses Vercel Hobby and the room server uses Cloudflare Workers with 
 
 ## Release workflow
 
-This release repository is an isolated snapshot at `/Users/claumarin/Documents/ChatGPT/multiplayer-game-release`. Parallel game development continues in the original sibling `multiplayer-game` workspace. Copy completed changes into the release repository deliberately, preserving the multiplayer integration, then run the checks before publishing. Changes in the original directory are not automatically live.
+This release repository is an isolated snapshot at `~/Documents/ChatGPT/multiplayer-game-release`. Parallel game development continues in the original sibling `multiplayer-game` workspace. Copy completed changes into the release repository deliberately, preserving the multiplayer integration, then run the checks before publishing. Changes in the original directory are not automatically live.
 
 Use Node 24 and `npm ci`. The frontend reads `VITE_ROOM_SERVER_URL` at build time; Vercel has it set to the deployed multiplayer host. The Worker entry point is `apps/server/index.ts`; its binding and SQLite migration are in `apps/server/wrangler.jsonc`. Deploy an intentional backend change with `npm run server:deploy`. Credentials stay outside the repository.
 

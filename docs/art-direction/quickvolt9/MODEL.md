@@ -36,7 +36,7 @@ From the project root, with the existing Node and Blender installations:
 
 ```sh
 node --experimental-strip-types scripts/export-quickvolt.mjs
-"/Users/claumarin/Library/Application Support/Steam/steamapps/common/Blender/Blender.app/Contents/MacOS/Blender" --background --python scripts/build-quickvolt-blender.py
+"~/Library/Application Support/Steam/steamapps/common/Blender/Blender.app/Contents/MacOS/Blender" --background --python scripts/build-quickvolt-blender.py
 ```
 
 The Blender script creates a new background process and writes only the scooter source and its preview. It does not open or modify the running Blender window or the house library.

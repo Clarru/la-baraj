@@ -1,7 +1,7 @@
 """Build the three additional columns in cabin-variants-grid.png using the established cabin library."""
 from pathlib import Path
 import json
-base=Path('/Users/claumarin/Documents/ChatGPT/multiplayer-game')
+base=Path(__file__).resolve().parents[1]
 # Reuse established mesh/material construction, never execute its export/render driver.
 exec((base/'scripts/build-reference-cabins.py').read_text().split('# Bake modifiers')[0])
 red=material('Terracotta standing seam',(.34,.095,.055),.60,.25)

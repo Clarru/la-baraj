@@ -1,7 +1,7 @@
 import bpy,math,json
 from pathlib import Path
 from mathutils import Vector
-root=Path('/Users/claumarin/Documents/ChatGPT/multiplayer-game');out=root/'apps/web/public/assets/impostors';out.mkdir(exist_ok=True)
+root=Path(__file__).resolve().parents[1];out=root/'apps/web/public/assets/impostors';out.mkdir(exist_ok=True)
 manifest={}
 for name in ['CommonTree_1','CommonTree_3','Pine_2','Pine_4']:
  bpy.ops.wm.read_factory_settings(use_empty=True)

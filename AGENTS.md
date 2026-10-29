@@ -9,10 +9,10 @@
 ## GitHub and parallel work
 
 - Canonical repository: **https://github.com/Clarru/la-baraj** (private). Follow [the GitHub workflow](docs/GITHUB_WORKFLOW.md) for assigned branches/directories and release rules.
-- One dedicated Git worktree and feature branch per chat. The release checkout is `/Users/claumarin/Documents/ChatGPT/multiplayer-game-release`; only **Putting it live** owns main and integration/deployment.
+- One dedicated Git worktree and feature branch per chat. The release checkout is `~/Documents/ChatGPT/multiplayer-game-release`; only **Putting it live** owns main and integration/deployment.
 - Feature chats may commit, push their feature branches and open PRs. Do not push main, merge your own PR or force-push without explicit user/release-owner coordination. Main automatically deploys the frontend.
-- Required Git author and committer: `Clau Marin <46570067+Clarru@users.noreply.github.com>`. Never use `clau.marin@usbc.xyz`.
-- The old shared folder `/Users/claumarin/Documents/ChatGPT/multiplayer-game` is preserved legacy source/preview, not a GitHub checkout. Do not pull/reset/clean/checkout/stage/commit/push there. Port only completed owned changes into your assigned worktree while preserving current multiplayer integration.
+- Required Git author and committer: `Clau Marin <46570067+Clarru@users.noreply.github.com>`. Never use a personal or work email address for Git authorship.
+- The old shared folder `~/Documents/ChatGPT/multiplayer-game` is preserved legacy source/preview, not a GitHub checkout. Do not pull/reset/clean/checkout/stage/commit/push there. Port only completed owned changes into your assigned worktree while preserving current multiplayer integration.
 - Do not start per-worktree servers. Keep the single localhost:4173 preview rule below.
 
 ## One shared production world
