@@ -102,6 +102,10 @@ describe("bounded friend-room protocol", () => {
       ),
     ).toEqual({ type: "hello", nickname: "Claudiu" });
   });
+  it("relays a boat pose unchanged", () => {
+    const message = { type: "pose", pose: { ...pose, vehicle: "boat" } };
+    expect(parseClientMessage(JSON.stringify(message))).toEqual(message);
+  });
   it("rejects malformed, oversized, nonfinite and out-of-bounds data", () => {
     for (const raw of [
       "{",
@@ -116,6 +120,7 @@ describe("bounded friend-room protocol", () => {
         type: "pose",
         pose: { ...pose, position: [5001, 0, 0] },
       }),
+      JSON.stringify({ type: "pose", pose: { ...pose, vehicle: "yacht" } }),
       JSON.stringify({ type: "hello", nickname: "<script>" }),
       JSON.stringify({ type: "seat", seatId: "__proto__", requestId: "a" }),
     ])
@@ -815,6 +820,7 @@ describe("playful punches", () => {
       [[0, 0, 1], { activity: "sit" }],
       [[0, 0, 1], { animation: "Swim_Idle" }],
       [[0, 0, 1], { vehicle: "scooter" }],
+      [[0, 0, 1], { vehicle: "boat" }],
     ] as [PlayerPose["position"], Partial<PlayerPose>][]) {
       const f = fixture(),
         a = f.connect("a"),

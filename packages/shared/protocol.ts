@@ -27,7 +27,7 @@ export type PlayerPose = {
   yaw: number;
   animation: string;
   activity: string;
-  vehicle: "none" | "scooter";
+  vehicle: "none" | "scooter" | "boat";
   speed?: number;
   jumpPhase?: string;
   seatId?: string;
@@ -245,7 +245,7 @@ export function parseClientMessage(raw: string): ClientMessage | null {
         Math.abs(pose.yaw) > 100 * Math.PI ||
         !label(pose.animation) ||
         !label(pose.activity) ||
-        !["none", "scooter"].includes(pose.vehicle as string) ||
+        !["none", "scooter", "boat"].includes(pose.vehicle as string) ||
         (pose.seatId !== undefined && !isSeatId(pose.seatId)) ||
         (pose.speed !== undefined &&
           (typeof pose.speed !== "number" ||

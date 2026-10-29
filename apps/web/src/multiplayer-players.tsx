@@ -27,6 +27,9 @@ import type { MultiplayerRoom } from "./multiplayer";
 import { createTableReactionRig } from "./table-reactions";
 import { planesSeatSide } from "../../../packages/shared/planes-station";
 import { SwimWake } from "./SwimWake";
+import { Boat, type BoatHandle } from "./boat";
+import { createBoatRiderRig } from "./boat-rider";
+import { BOAT_TUNING, boatWheelTarget, inferBoatTurnRate } from "./boat-motion";
 import { AFK_AFTER_MS } from "../../../packages/shared/protocol";
 
 // Only the isolated local browser lab may shorten the visual timeout for QA.
@@ -106,6 +109,7 @@ function RemoteAvatarRig({
   const helpers = useRef<{
     rider: ReturnType<typeof createScooterRiderRig>;
     activity: ReturnType<typeof createCharacterActivityRig>;
+    boatRider: ReturnType<typeof createBoatRiderRig>;
   } | null>(null);
   const root = useRef<THREE.Group>(null),
     scooterGroup = useRef<THREE.Group>(null),
@@ -113,6 +117,13 @@ function RemoteAvatarRig({
   const [hasScooter, setHasScooter] = useState(false);
   const [swimming, setSwimming] = useState(false);
   const swimmingRef = useRef(false);
+  const boat = useRef<BoatHandle>(null);
+  const [hasBoat, setHasBoat] = useState(false);
+  const [boating, setBoating] = useState(false);
+  const boatingRef = useRef(false);
+  const boatState = useRef({ previousYaw: 0, wheelAngle: 0, lean: 0 });
+  const gripLeft = useMemo(() => new THREE.Vector3(), []);
+  const gripRight = useMemo(() => new THREE.Vector3(), []);
   const scooterMounted = useRef(false);
   const target = useMemo(() => new THREE.Vector3(), []);
   const previousAnimation = useRef(""),
@@ -134,6 +145,7 @@ function RemoteAvatarRig({
         animations.find((clip) => clip.name === "Idle_Neutral"),
       ),
       activity: createCharacterActivityRig(object),
+      boatRider: createBoatRiderRig(object),
     };
     helpers.current = runtime;
     return () => {
@@ -142,6 +154,7 @@ function RemoteAvatarRig({
       disposeCharacterSkeletons(object);
       runtime.rider.dispose();
       runtime.activity.dispose();
+      runtime.boatRider.dispose();
       helpers.current = null;
     };
   }, [rig, object, animations]);
@@ -177,6 +190,19 @@ function RemoteAvatarRig({
     if (swimmingRef.current !== nowSwimming) {
       swimmingRef.current = nowSwimming;
       setSwimming(nowSwimming);
+    }
+    const nowBoating = player.vehicle === "boat";
+    if (boatingRef.current !== nowBoating) {
+      boatingRef.current = nowBoating;
+      setBoating(nowBoating);
+      if (nowBoating) {
+        setHasBoat(true);
+        boatState.current = {
+          previousYaw: NaN, // adopted after this frame's yaw smoothing
+          wheelAngle: 0,
+          lean: 0,
+        };
+      } else helpers.current?.boatRider.reset();
     }
     target.fromArray(player.position);
     // Presence still arrives; distant rigs need neither bone/IK updates nor badges.
@@ -272,6 +298,36 @@ function RemoteAvatarRig({
       previousGesture.current = gesture;
     }
     rig.mixer.update(dt);
+    if (nowBoating) {
+      const state = boatState.current,
+        yaw = group.rotation.y;
+      if (!Number.isFinite(state.previousYaw)) state.previousYaw = yaw;
+      if (Number.isFinite(yaw) && dt > 0) {
+        const turnRate = inferBoatTurnRate(state.previousYaw, yaw, dt);
+        state.wheelAngle +=
+          (boatWheelTarget(turnRate) - state.wheelAngle) *
+          (1 - Math.exp(-10 * dt));
+        state.lean +=
+          (THREE.MathUtils.clamp(
+            turnRate * Math.abs(player.speed ?? 0) * 0.01,
+            -BOAT_TUNING.leanMax,
+            BOAT_TUNING.leanMax,
+          ) -
+            state.lean) *
+          (1 - Math.exp(-4 * dt));
+        state.previousYaw = yaw;
+      }
+      const handle = boat.current;
+      if (handle) {
+        handle.update({ wheelAngle: state.wheelAngle, lean: state.lean });
+        handle.gripWorldPosition("left", gripLeft);
+        handle.gripWorldPosition("right", gripRight);
+        helpers.current?.boatRider.update({
+          left: gripLeft,
+          right: gripRight,
+        });
+      }
+    }
     helpers.current?.activity.update(
       { kind: player.activity as ActivityKind, startedAt: remote.activityAt },
       (performance.now() - remote.activityAt) / 1000,
@@ -299,6 +355,8 @@ function RemoteAvatarRig({
     <group ref={root} name={`Online player ${id}`}>
       <primitive object={object} dispose={null} />
       {swimming && <SwimWake />}
+      {boating && <SwimWake scale={2.6} />}
+      {hasBoat && <Boat ref={boat} visible={boating} />}
       {hasScooter && (
         <group ref={scooterGroup}>
           <RemoteScooter ref={scooter} />
