@@ -123,6 +123,9 @@ function RemoteAvatarRig({
   const badge = useRef<HTMLSpanElement>(null);
   const stars = useRef<HTMLSpanElement>(null);
   const afk = useRef<HTMLSpanElement>(null);
+  const chatBubble = useRef<HTMLSpanElement>(null);
+  const chatMessage = useRef<HTMLSpanElement>(null);
+  const chatText = useRef("");
   const wasAfk = useRef(false);
   useEffect(() => {
     const runtime = {
@@ -153,6 +156,18 @@ function RemoteAvatarRig({
     if (afk.current && isAfk !== wasAfk.current) {
       wasAfk.current = isAfk;
       afk.current.style.display = isAfk ? "" : "none";
+    }
+    const nextChat =
+      "chatFor" in room ? (room as MultiplayerRoom).chatFor(id) : "";
+    if (
+      chatBubble.current &&
+      chatMessage.current &&
+      nextChat !== chatText.current
+    ) {
+      chatText.current = nextChat;
+      chatMessage.current.textContent = nextChat;
+      chatBubble.current.style.display = nextChat ? "block" : "none";
+      chatMessage.current.scrollTop = chatMessage.current.scrollHeight;
     }
     const player = remote.player,
       dt = Math.min(delta, 0.1),
@@ -296,6 +311,14 @@ function RemoteAvatarRig({
         zIndexRange={[5, 0]}
         style={{ pointerEvents: "none" }}
       >
+        <span
+          ref={chatBubble}
+          className="bubble-chat bubble-chat-remote"
+          style={{ display: "none" }}
+          aria-label="Player chat"
+        >
+          <span ref={chatMessage} className="bubble-chat-message" />
+        </span>
         <span
           ref={afk}
           className="multiplayer-afk"

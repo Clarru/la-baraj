@@ -1,5 +1,9 @@
 import PartySocket from "partysocket";
 import { InputActivity } from "./input-activity";
+import {
+  BUBBLE_CHAT_IDLE_MS,
+  normalizeBubbleText,
+} from "../../../packages/shared/bubble-chat";
 import { syncWorldTime, worldNow } from "./day-night";
 import { setWorldWeather } from "./weather-visual";
 import {
@@ -95,6 +99,7 @@ export function currentMultiplayerRoom() {
 export class MultiplayerRoom {
   readonly roomId = roomFromLocation();
   readonly remotes = new Map<string, RemotePlayer>();
+  private chatBubbles = new Map<string, { text: string; expiresAt: number }>();
   private weatherExpiry: ReturnType<typeof setTimeout> | null = null;
   private inputActivity = new InputActivity((idleMs) =>
     this.send({ type: "activity", idleMs }),
@@ -280,6 +285,7 @@ export class MultiplayerRoom {
   protected connectionClosed() {
     this.homeAcknowledged = false;
     this.remotes.clear();
+    this.chatBubbles.clear();
     this.punchTimes.clear();
     this.stunTimes.clear();
     this.seats = {};
@@ -349,6 +355,18 @@ export class MultiplayerRoom {
     if (publish) this.publish({ weather });
     else this.view = { ...this.view, weather };
   }
+  publishChat(text: string) {
+    if (this.view.status === "online")
+      this.send({ type: "bubble-chat", text: normalizeBubbleText(text) });
+  }
+  chatFor(id: string) {
+    const bubble = this.chatBubbles.get(id);
+    if (!bubble || bubble.expiresAt <= performance.now()) {
+      this.chatBubbles.delete(id);
+      return "";
+    }
+    return bubble.text;
+  }
   private updateRemote(player: PlayerPresence) {
     if (player.id === this.view.selfId) return;
     const old = this.remotes.get(player.id);
@@ -374,6 +392,18 @@ export class MultiplayerRoom {
   }
   protected receive(message: ServerMessage) {
     switch (message.type) {
+      case "bubble-chat": {
+        if (message.id === this.view.selfId || !this.remotes.has(message.id))
+          break;
+        const text = normalizeBubbleText(message.text);
+        if (text)
+          this.chatBubbles.set(message.id, {
+            text,
+            expiresAt: performance.now() + BUBBLE_CHAT_IDLE_MS,
+          });
+        else this.chatBubbles.delete(message.id);
+        break;
+      }
       case "weather": {
         if (message.weather !== null && !validLakeWeather(message.weather))
           break;
@@ -472,6 +502,7 @@ export class MultiplayerRoom {
         this.updateRemote(message.player);
         break;
       case "left":
+        this.chatBubbles.delete(message.id);
         this.punchTimes.delete(message.id);
         this.stunTimes.delete(message.id);
         this.remotes.delete(message.id);

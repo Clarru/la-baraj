@@ -909,3 +909,50 @@ describe("shared weather messages", () => {
     ).toEqual({ type: "weather-refresh" });
   });
 });
+
+describe("temporary player bubble chat", () => {
+  it("broadcasts live text to peers, not the author, and never adds it to snapshots", async () => {
+    const f = fixture(),
+      a = f.connect("a"),
+      b = f.connect("b");
+    await f.send(a, { type: "hello", nickname: "A" });
+    await f.send(b, { type: "hello", nickname: "B" });
+    const before = a.messages.length;
+    await f.send(a, { type: "bubble-chat", text: "Salut 👋\nce faci?" }, 1000);
+    expect(b.messages.at(-1)).toEqual({
+      type: "bubble-chat",
+      id: "a",
+      text: "Salut 👋\nce faci?",
+    });
+    expect(a.messages.length).toBe(before);
+    f.room.snapshot(b, 1001);
+    expect(JSON.stringify(b.messages.at(-1))).not.toContain("Salut");
+    await f.send(a, { type: "bubble-chat", text: "" }, 1002);
+    expect(b.messages.at(-1)).toEqual({
+      type: "bubble-chat",
+      id: "a",
+      text: "",
+    });
+  });
+  it("bounds and rate-limits edits without closing ordinary users", async () => {
+    const f = fixture(),
+      a = f.connect("a"),
+      b = f.connect("b");
+    await f.send(a, { type: "hello", nickname: "A" });
+    for (let i = 0; i < 5; i++)
+      await f.send(a, { type: "bubble-chat", text: String(i) }, 1000);
+    expect(b.messages.filter((m) => m.type === "bubble-chat")).toHaveLength(4);
+    expect(a.closed).toBeNull();
+    await f.send(a, { type: "bubble-chat", text: "" }, 1000);
+    expect(b.messages.at(-1)).toEqual({
+      type: "bubble-chat",
+      id: "a",
+      text: "",
+    });
+    for (const text of ["one\ntwo\nthree", "x".repeat(181), "bad\ttext"]) {
+      expect(
+        parseClientMessage(JSON.stringify({ type: "bubble-chat", text })),
+      ).toBeNull();
+    }
+  });
+});

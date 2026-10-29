@@ -36,6 +36,7 @@ import {
 import { Player, CameraRig, Crowd, type ViewMode } from "./player";
 import { MultiplayerRoom } from "./multiplayer";
 import { MultiplayerPlayers } from "./multiplayer-players";
+import { LocalBubbleChat } from "./BubbleChat";
 import { ControlsHelp, GameHeader, GameMenu } from "./GameMenu";
 import { captureGameKey, type GamePanel } from "./game-input";
 import { planesSeatSide } from "../../../packages/shared/planes-station";
@@ -141,6 +142,8 @@ export default function Game({ initialName }: { initialName: string }) {
   const [resetKey, setResetKey] = useState(0),
     [ready, setReady] = useState(false);
   const [panel, setPanel] = useState<GamePanel>(null);
+  const [chatOpen, setChatOpen] = useState(false);
+  const closeChat = useCallback(() => setChatOpen(false), []);
   const [planesOpen, setPlanesOpen] = useState(false);
   const ownGameSide = planesSeatSide(room.ownSeatId());
   const lastGameSeat = useRef<number | null>(null);
@@ -216,7 +219,42 @@ export default function Game({ initialName }: { initialName: string }) {
   }, []);
   useEffect(() => {
     const capture = (event: KeyboardEvent) => {
+      if (chatOpen) {
+        if (event.code === "Escape") {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          closeChat();
+        }
+        return;
+      }
       const target = event.target;
+      const isTypingTarget =
+        target instanceof HTMLElement &&
+        (target.isContentEditable ||
+          Boolean(
+            target.closest(
+              "input, textarea, select, button, a, [role=button], [role=dialog]",
+            ),
+          ));
+      if (
+        event.key === "Enter" &&
+        !event.repeat &&
+        !event.isComposing &&
+        !event.ctrlKey &&
+        !event.metaKey &&
+        !event.altKey &&
+        !isTypingTarget &&
+        panel === null &&
+        !planesOpen &&
+        mode === "walk" &&
+        !doorTransition &&
+        hasHome
+      ) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        setChatOpen(true);
+        return;
+      }
       if (
         event.repeat &&
         (planesOpen || ownGameSide !== null) &&
@@ -287,7 +325,18 @@ export default function Game({ initialName }: { initialName: string }) {
     planesOpen,
     ownGameSide,
     openPlanes,
+    chatOpen,
+    closeChat,
+    doorTransition,
+    hasHome,
   ]);
+  useEffect(() => {
+    if (
+      chatOpen &&
+      (panel !== null || planesOpen || doorTransition || !hasHome)
+    )
+      closeChat();
+  }, [chatOpen, closeChat, panel, planesOpen, doorTransition, hasHome]);
   const displayedPrompt: ActivityPrompt =
     interiorIndex !== null ||
     panel !== null ||
@@ -378,7 +427,8 @@ export default function Game({ initialName }: { initialName: string }) {
                     panel !== null ||
                     activityBusy ||
                     doorTransition ||
-                    planesOpen
+                    planesOpen ||
+                    chatOpen
                   }
                   onMove={ignoreMovement}
                   onMotion={updateMotion}
@@ -388,6 +438,7 @@ export default function Game({ initialName }: { initialName: string }) {
                   doorTransition={doorTransition}
                 />
               )}
+              {chatOpen && <LocalBubbleChat room={room} onClose={closeChat} />}
               <group>
                 {import.meta.env.DEV && <Crowd enabled={crowd} />}
                 <MultiplayerPlayers room={room} />
@@ -405,7 +456,8 @@ export default function Game({ initialName }: { initialName: string }) {
                     !hasHome ||
                     panel !== null ||
                     mode !== "walk" ||
-                    interiorIndex !== null
+                    interiorIndex !== null ||
+                    chatOpen
                   }
                   onPrompt={setActivityPrompt}
                   onBusy={setActivityBusy}
@@ -497,6 +549,7 @@ export default function Game({ initialName }: { initialName: string }) {
             paused={
               panel !== null ||
               planesOpen ||
+              chatOpen ||
               (!import.meta.env.DEV && mode !== "walk")
             }
             busy={activityBusy}
