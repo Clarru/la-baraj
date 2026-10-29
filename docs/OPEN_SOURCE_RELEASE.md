@@ -22,6 +22,12 @@ This checklist is for the release owner. Do not change repository visibility unt
 
 The project workflow assigns `main`, integration, and deployments to the release owner. This checklist does not grant permission to push `main`, merge a PR, force-push, or reset world data.
 
+## Proposed branch-protection settings
+
+The [example API payload](branch-protection.example.json) is a reviewable starting point, not an active rule. It requires pull requests, a passing up-to-date `check` status, resolved conversations, and applies protections to administrators; it blocks force-pushes and deletion. It requires zero separate approving reviews so a sole maintainer can merge their own changes. Restricting who can merge relies on keeping repository and app write access limited to the owner; personal repositories do not offer the organization-only branch push restrictions. Keep auto-merge disabled.
+
+After publication and after the Actions check has run on the target repository, the owner can apply the payload with the GitHub branch protection API. Check that `check` resolves to the intended GitHub Actions app and that the API accepted every field, then test with a genuinely unprivileged fork and an owner-authored pull request. If GitHub rejects a field or branch rule, resolve that before inviting public contributions. This example has not been applied or validated against the target public repository.
+
 ## Investigation of the existing repository URL
 
 On 29 October 2026, a read-only audit fetched the advertised remote branch and pull-request head refs into a separate temporary bare clone. The product photograph was present at the tips of 21 of 22 branches and 29 of 30 pull-request head refs. The remaining tips had removed it from their current trees but still inherited its history. These counts are a snapshot, not an inventory of every GitHub-managed object or a guarantee that the refs will remain unchanged.
