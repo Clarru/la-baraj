@@ -142,8 +142,12 @@ export default function Game({ initialName }: { initialName: string }) {
   const [resetKey, setResetKey] = useState(0),
     [ready, setReady] = useState(false);
   const [panel, setPanel] = useState<GamePanel>(null);
-  const [chatOpen, setChatOpen] = useState(false);
-  const closeChat = useCallback(() => setChatOpen(false), []);
+  const [chatMode, setChatMode] = useState<"closed" | "editing" | "display">(
+    "closed",
+  );
+  const chatOpen = chatMode === "editing";
+  const closeChat = useCallback(() => setChatMode("closed"), []);
+  const finishChat = useCallback(() => setChatMode("display"), []);
   const [planesOpen, setPlanesOpen] = useState(false);
   const ownGameSide = planesSeatSide(room.ownSeatId());
   const lastGameSeat = useRef<number | null>(null);
@@ -219,14 +223,17 @@ export default function Game({ initialName }: { initialName: string }) {
   }, []);
   useEffect(() => {
     const capture = (event: KeyboardEvent) => {
-      if (chatOpen) {
-        if (event.code === "Escape") {
-          event.preventDefault();
-          event.stopImmediatePropagation();
-          closeChat();
-        }
+      if (
+        chatMode !== "closed" &&
+        event.code === "Escape" &&
+        (chatOpen || (panel === null && !planesOpen))
+      ) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        closeChat();
         return;
       }
+      if (chatOpen) return;
       const target = event.target;
       const isTypingTarget =
         target instanceof HTMLElement &&
@@ -252,7 +259,7 @@ export default function Game({ initialName }: { initialName: string }) {
       ) {
         event.preventDefault();
         event.stopImmediatePropagation();
-        setChatOpen(true);
+        setChatMode("editing");
         return;
       }
       if (
@@ -326,6 +333,7 @@ export default function Game({ initialName }: { initialName: string }) {
     ownGameSide,
     openPlanes,
     chatOpen,
+    chatMode,
     closeChat,
     doorTransition,
     hasHome,
@@ -438,7 +446,14 @@ export default function Game({ initialName }: { initialName: string }) {
                   doorTransition={doorTransition}
                 />
               )}
-              {chatOpen && <LocalBubbleChat room={room} onClose={closeChat} />}
+              {chatMode !== "closed" && (
+                <LocalBubbleChat
+                  room={room}
+                  editing={chatOpen}
+                  onFinishEditing={finishChat}
+                  onClose={closeChat}
+                />
+              )}
               <group>
                 {import.meta.env.DEV && <Crowd enabled={crowd} />}
                 <MultiplayerPlayers room={room} />
