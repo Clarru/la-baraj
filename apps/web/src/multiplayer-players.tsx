@@ -29,6 +29,14 @@ import { planesSeatSide } from "../../../packages/shared/planes-station";
 import { SwimWake } from "./SwimWake";
 import { AFK_AFTER_MS } from "../../../packages/shared/protocol";
 
+// Only the isolated local browser lab may shorten the visual timeout for QA.
+const displayAfkAfter =
+  import.meta.env.VITE_PLANES_PAIRED_LAB === "1" &&
+  ["localhost", "127.0.0.1"].includes(location.hostname) &&
+  new URLSearchParams(location.search).has("fast-afk")
+    ? 3000
+    : AFK_AFTER_MS;
+
 /** Membership alone reconciles React. Pose packets update mutable targets read by each rig. */
 export function MultiplayerPlayers({ room }: { room: MultiplayerRoom }) {
   const { ids } = useSyncExternalStore(room.subscribe, room.getSnapshot);
@@ -141,10 +149,10 @@ function RemoteAvatarRig({
     if (!remote || !group) return;
     const isAfk =
       remote.lastInputAt !== undefined &&
-      performance.now() - remote.lastInputAt >= AFK_AFTER_MS;
-    if (isAfk !== wasAfk.current) {
+      performance.now() - remote.lastInputAt >= displayAfkAfter;
+    if (afk.current && isAfk !== wasAfk.current) {
       wasAfk.current = isAfk;
-      if (afk.current) afk.current.style.display = isAfk ? "" : "none";
+      afk.current.style.display = isAfk ? "" : "none";
     }
     const player = remote.player,
       dt = Math.min(delta, 0.1),
