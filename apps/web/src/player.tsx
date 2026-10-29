@@ -53,6 +53,7 @@ import {
   swimVelocity,
 } from "./swim-motion";
 import { SwimWake } from "./SwimWake";
+import { StunStars } from "./StunStars";
 import { bindCameraMouse } from "./camera-mouse";
 import {
   activityAnimation,
@@ -236,6 +237,25 @@ export function Player({
     return hit ? 1000 - hit.timeOfImpact : terrainHeight(x, z);
   };
   useEffect(() => {
+    const preventActionsWhileStunned = (event: KeyboardEvent) => {
+      const room = currentMultiplayerRoom();
+      if (!room?.stunned(room.getSnapshot().selfId)) return;
+      if (
+        event.target instanceof HTMLElement &&
+        (event.target.isContentEditable ||
+          ["INPUT", "TEXTAREA", "SELECT"].includes(event.target.tagName))
+      )
+        return;
+      if (["KeyE", "KeyF", "KeyV", "KeyQ", "Space"].includes(event.code)) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+      }
+    };
+    window.addEventListener("keydown", preventActionsWhileStunned, true);
+    return () =>
+      window.removeEventListener("keydown", preventActionsWhileStunned, true);
+  }, []);
+  useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (
         e.target instanceof HTMLElement &&
@@ -314,6 +334,32 @@ export function Player({
         keys.current.clear();
         jumpRequest.current = false;
         jumpState.current = initialJumpMotion();
+        return;
+      }
+      if (
+        e.code === "KeyQ" &&
+        !e.repeat &&
+        mode === "walk" &&
+        !paused &&
+        !indoors &&
+        !swimmingRef.current &&
+        !getVehicleState().mounted &&
+        getActivityPose().kind === "none" &&
+        controller.current?.isOnGround
+      ) {
+        const room = currentMultiplayerRoom();
+        if (
+          room &&
+          visual.current &&
+          !room.stunned(room.getSnapshot().selfId)
+        ) {
+          const feet = visual.current.getWorldPosition(new THREE.Vector3());
+          const facing = new THREE.Vector3(0, 0, 1).applyQuaternion(
+            visual.current.getWorldQuaternion(new THREE.Quaternion()),
+          );
+          room.punch(feet.toArray(), Math.atan2(facing.x, facing.z));
+        }
+        e.preventDefault();
         return;
       }
       if (e.code === "Space" && !e.repeat) jumpRequest.current = true;
@@ -528,7 +574,17 @@ export function Player({
       anchored.current = false;
       keys.current.clear();
     }
-    const active = mode === "walk" && !paused && !holding;
+    const room = currentMultiplayerRoom();
+    const selfId = room?.getSnapshot().selfId ?? "";
+    const stunned = Boolean(room?.stunned(selfId));
+    const punching = Boolean(room?.punching(selfId));
+    if (stunned) {
+      keys.current.clear();
+      jumpRequest.current = false;
+      const v = c.body.linvel();
+      c.body.setLinvel({ x: 0, y: v.y, z: 0 }, true);
+    }
+    const active = mode === "walk" && !paused && !holding && !stunned;
     const p = c.body.translation();
     const sample = waterSample.current;
     sample.elapsed += dt;
@@ -745,6 +801,7 @@ export function Player({
       ),
       clipConfig = activity ?? jumpClip;
     const next =
+      (stunned ? "Punch_Hit" : punching ? "Punch_Jab" : undefined) ??
       activity?.name ??
       (nowSwimming
         ? speed > 0.3
@@ -774,10 +831,18 @@ export function Player({
         if (next === "Run" && animation.current === "Jump_RunLand")
           action.time = action.getClip().duration * 0.64;
         action.setLoop(
-          clipConfig && !clipConfig.loop ? THREE.LoopOnce : THREE.LoopRepeat,
+          next === "Punch_Jab" ||
+            next === "Punch_Hit" ||
+            (clipConfig && !clipConfig.loop)
+            ? THREE.LoopOnce
+            : THREE.LoopRepeat,
           Infinity,
         );
-        action.clampWhenFinished = Boolean(clipConfig && !clipConfig.loop);
+        action.clampWhenFinished = Boolean(
+          next === "Punch_Jab" ||
+          next === "Punch_Hit" ||
+          (clipConfig && !clipConfig.loop),
+        );
         action.setEffectiveTimeScale(
           clipConfig ? action.getClip().duration / clipConfig.duration : 1,
         );
@@ -929,6 +994,7 @@ export function Player({
     >
       <group ref={visual} position={[0, -0.9, 0]}>
         <primitive object={object} dispose={null} />
+        <StunStars room={currentMultiplayerRoom()} />
         <Scooter ref={scooter} visible={riding} />
       </group>
       {swimming && <SwimWake />}

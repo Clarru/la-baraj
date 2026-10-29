@@ -112,6 +112,7 @@ function RemoteAvatarRig({
     wasRiding = useRef(false),
     initialized = useRef(false);
   const badge = useRef<HTMLSpanElement>(null);
+  const stars = useRef<HTMLSpanElement>(null);
   useEffect(() => {
     const runtime = {
       rider: createScooterRiderRig(
@@ -179,9 +180,16 @@ function RemoteAvatarRig({
         player.animation.startsWith("Jump_Run") ? "run" : "walk",
       );
     const config = activity ?? jump;
-    const next = rig.actions.has(player.animation)
-      ? player.animation
-      : "Idle_Neutral";
+    const combatRoom = "stunned" in room ? (room as MultiplayerRoom) : null;
+    const stunned = combatRoom?.stunned(id) ?? false;
+    const punching = combatRoom?.punching(id) ?? false;
+    if (stars.current) stars.current.style.display = stunned ? "" : "none";
+    const chosen = stunned
+      ? "Punch_Hit"
+      : punching
+        ? "Punch_Jab"
+        : player.animation;
+    const next = rig.actions.has(chosen) ? chosen : "Idle_Neutral";
     if (
       next !== previousAnimation.current ||
       (activity && remote.activityAt !== previousActivityAt.current)
@@ -194,12 +202,20 @@ function RemoteAvatarRig({
         action
           .reset()
           .setLoop(
-            config && !config.loop ? THREE.LoopOnce : THREE.LoopRepeat,
+            next === "Punch_Jab" ||
+              next === "Punch_Hit" ||
+              (config && !config.loop)
+              ? THREE.LoopOnce
+              : THREE.LoopRepeat,
             Infinity,
           );
         if (next === "Run" && previousAnimation.current === "Jump_RunLand")
           action.time = action.getClip().duration * 0.64;
-        action.clampWhenFinished = Boolean(config && !config.loop);
+        action.clampWhenFinished = Boolean(
+          next === "Punch_Jab" ||
+          next === "Punch_Hit" ||
+          (config && !config.loop),
+        );
         action
           .setEffectiveTimeScale(
             config ? action.getClip().duration / config.duration : 1,
@@ -262,6 +278,14 @@ function RemoteAvatarRig({
         zIndexRange={[5, 0]}
         style={{ pointerEvents: "none" }}
       >
+        <span
+          ref={stars}
+          className="stun-stars"
+          style={{ display: "none" }}
+          aria-label="Stunned"
+        >
+          ✦ ★ ✦
+        </span>
         <span ref={badge} className="multiplayer-name" data-player-id={id}>
           {player?.nickname ?? "Friend"}
         </span>

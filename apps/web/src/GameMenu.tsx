@@ -187,6 +187,7 @@ const controlRows = [
   ["W A S D / arrows", "Move"],
   ["Shift", "Run"],
   ["Space", "Jump"],
+  ["Q", "Punch a nearby player"],
   ["Left or right drag / scroll", "Look around / zoom"],
   ["E", "Enter a door, fish, or use the campfire nearby"],
   ["F", "Sit or stand beside a bench"],

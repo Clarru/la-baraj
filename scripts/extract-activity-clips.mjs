@@ -31,10 +31,12 @@ export async function loadRig(path) {
   header.writeUInt32LE(data.length, 12);
   header.writeUInt32LE(0x4e4f534a, 16);
   const glb = Buffer.concat([header, data, binary]);
-  return new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).parseAsync(
-    glb.buffer.slice(glb.byteOffset, glb.byteOffset + glb.byteLength),
-    "",
-  );
+  return new GLTFLoader()
+    .setMeshoptDecoder(MeshoptDecoder)
+    .parseAsync(
+      glb.buffer.slice(glb.byteOffset, glb.byteOffset + glb.byteLength),
+      "",
+    );
 }
 
 async function main() {
@@ -48,6 +50,8 @@ async function main() {
     PickUp_Table: "Activity_Catch",
     Swim_Fwd_Loop: "Swim_Forward",
     Swim_Idle_Loop: "Swim_Idle",
+    Punch_Jab: "Punch_Jab",
+    Hit_Head: "Punch_Hit",
   };
   const clips = source.animations
     .filter((clip) => wanted[clip.name])
