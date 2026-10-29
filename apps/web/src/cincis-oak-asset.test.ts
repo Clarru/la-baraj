@@ -6,7 +6,7 @@ import manifest from "../public/assets/impostors/manifest.json";
 import * as THREE from "three";
 import sharp from "sharp";
 
-const file = fileURLToPath(new URL("../../../docs/art-direction/trees/cincis-oak-v2.glb", import.meta.url));
+const file = fileURLToPath(new URL("../../../docs/art-direction/trees/cincis-oak-v3.glb", import.meta.url));
 
 describe("experimental Cinciș oak export", () => {
   it("has outward-facing bark and masked, double-sided foliage", async () => {
@@ -33,14 +33,14 @@ describe("experimental Cinciș oak export", () => {
   it("ships the reviewed model and its matched grounded impostor", async () => {
     const shippedModel = fileURLToPath(new URL("../public/assets/optimized/Cincis_Oak_1.glb", import.meta.url));
     const shippedImpostor = fileURLToPath(new URL("../public/assets/impostors/Cincis_Oak_1.png", import.meta.url));
-    const reviewedImpostor = fileURLToPath(new URL("../../../docs/art-direction/trees/oak-v2-impostor-experimental.png", import.meta.url));
+    const reviewedImpostor = fileURLToPath(new URL("../../../docs/art-direction/trees/oak-v3-impostor.png", import.meta.url));
     expect(await readFile(shippedModel)).toEqual(await readFile(file));
     expect(await readFile(shippedImpostor)).toEqual(await readFile(reviewedImpostor));
     expect(manifest.Cincis_Oak_1.width).toBeCloseTo(7.6294384);
     expect(manifest.Cincis_Oak_1.height).toBeCloseTo(11.4441576);
   });
   it("bakes a transparent impostor with the tree grounded at the lower edge", async () => {
-    const file = fileURLToPath(new URL("../../../docs/art-direction/trees/oak-v2-impostor-experimental.png", import.meta.url));
+    const file = fileURLToPath(new URL("../../../docs/art-direction/trees/oak-v3-impostor.png", import.meta.url));
     const { data, info } = await sharp(file).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
     expect([info.width, info.height, info.channels]).toEqual([256, 384, 4]);
     const alphaAt = (x: number, y: number) => data[(y * info.width + x) * 4 + 3];

@@ -6,6 +6,8 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
+const modelPath = process.argv[2] ?? 'docs/art-direction/trees/cincis-oak-v2.glb';
+const outputPath = process.argv[3] ?? 'docs/art-direction/trees/oak-v2-impostor-experimental.png';
 const modulePath = process.env.PLAYWRIGHT_MODULE;
 const { chromium } = await import(modulePath ? pathToFileURL(resolve(modulePath)).href : 'playwright');
 const directory = await mkdtemp(join(tmpdir(), 'la-baraj-oak-'));
@@ -25,7 +27,7 @@ try {
       scene.add(g.scene);renderer.render(scene,camera);window.result={width,height,modelHeight:size.y,modelWidth:size.x,png:renderer.domElement.toDataURL('image/png')};document.body.dataset.ready='yes';
     },e=>{window.failure=String(e);document.body.dataset.ready='error'});`;
   const bundle = await build({stdin:{contents:source,resolveDir:process.cwd()},bundle:true,format:'iife',write:false});
-  const model = (await readFile('docs/art-direction/trees/cincis-oak-v2.glb')).toString('base64');
+  const model = (await readFile(modelPath)).toString('base64');
   const pagePath = join(directory,'bake.html');
   await writeFile(pagePath,`<body><script>window.model=${JSON.stringify(model)}</script><script>${bundle.outputFiles[0].text}</script>`);
   browser = await chromium.launch({headless:true,...(process.env.CHROME_PATH ? {executablePath:process.env.CHROME_PATH} : {}),args:['--enable-webgl','--use-gl=angle','--use-angle=swiftshader']});
@@ -35,7 +37,7 @@ try {
   const outcome = await page.evaluate(() => ({state:document.body.dataset.ready, result:window.result, failure:window.failure}));
   if (outcome.state !== 'yes') throw new Error(outcome.failure ?? 'Model render failed');
   const {png,...dimensions} = outcome.result;
-  await writeFile('docs/art-direction/trees/oak-v2-impostor-experimental.png',Buffer.from(png.split(',')[1],'base64'));
+  await writeFile(outputPath,Buffer.from(png.split(',')[1],'base64'));
   console.log(JSON.stringify(dimensions,null,2));
 } finally {
   await browser?.close();
