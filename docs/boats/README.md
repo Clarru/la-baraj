@@ -34,7 +34,7 @@ The existing pose carries `vehicle: "boat"`; no new message type is added. A rem
 - Boat position is not persisted; it resets to the dock on reload.
 - The north shore terrain is a proxy, so boat-to-bank behaviour there is approximate.
 - Remote players and remote boats were not verified: the run was offline and the production Worker was not contacted.
-- At a gentle bank the boat stops in water that is still about 0.67 m deep, about 5 m from the shoreline. The exit reach now extends to 4.5 m and wadeable shallows up to 0.4 m deep count as ground, so V at a shallows stop wades ashore on gentle banks. North-shore crossing: see Browser verification item 7.
+- At a gentle bank the boat stops in shallow water a few metres from the shoreline. The exit reach extends to 4.5 m and shallows up to 0.4 m deep (`BOAT_WADE_DEPTH`) count as ground, but V at a shallows stop on gentle banks may still drop the driver into water; wading ashore takes a few seconds; docks and steeper banks give land exits. North-shore crossing: see Browser verification item 7.
 - Dev-mode verification is blocked by a bug that predates the boats. `React.StrictMode` runs effects twice, and the cleanup at `apps/web/src/NearbySolids.tsx:38` calls `isValid()` on a Rapier world that is already freed. The error is "null pointer passed to rust" and the scene boundary shows "The lake couldn't load". It reproduces on the base commit (6d6e3d8) as well as this branch.
 
 ## Browser verification
@@ -47,13 +47,14 @@ Because dev mode cannot load the scene, the run used the production bundle: `VIT
 4. Exit at the bank and at the dock. V at the bank stop dropped the driver into the water; this run predates the 4.5 m far exit ring. V at the dock boat steps onto the deck at (1.6, 1.98, 46.9), grounded.
 5. Mid-lake exit. V at (3.2, -16.5) at 7.4 m/s: the driver swims 1.6 m to port of the boat (`Swim_Idle`, y settles to 0.55, vehicle null) and the re-board prompt shows. V again re-boards from the water.
 6. Return. R from anywhere, including the stranded pre-fix state, puts the player at the home spawn (55.4, 6.05, 63.8) and the boat back at the dock spawn, confirmed by boarding there again.
+7. North-shore crossing (bundle d6e102e). From the central dock the boat ran 651 m north at a steady 8 m/s and stopped after ~82 s at (3.2, 0.8, −604.3), still in water (analytic depth 0.36 m at the hull), y steady 0.77–0.83, no climb (`captures/boat-north-shore.png`). V at that stop still produced a water exit at the first candidate (1.6, −604.3) even though the analytic lake bed there is only 0.32 m deep; this reproduced twice after re-boarding (`captures/boat-north-shore-exit.png`). From there the driver waded ashore in about 2 s: standing (grounded) at z −606.8 in 0.18 m of water, on dry land at z −613 (y 1.47), no fall-through. R returned the player home and the boat to the dock. Console: 0 errors (favicon 404 only).
 
 Console in the preview session: 0 errors and 2 existing warnings (THREE.Clock deprecation; Rapier "deprecated parameters for the initialization function"). A favicon.ico 404 appears only in dev.
 
 ## Observed issues
 
 - Fixed during verification: the boat could cross the shoreline at full throttle and strand the player in terrain (fix 48e95a5).
-- Changed after verification, browser re-run pending: the gentle-bank exit now has a 4.5 m far exit ring and wades ashore in water up to 0.4 m deep (see Known limits).
+- Open: on the north shore (item 7), V at the shallows stop gave a water exit although the analytic lake bed at the first candidate is only 0.32 m deep, so the 4.5 m exit ring and the 0.4 m wade depth could not be confirmed on a gentle bank. Hypothesis, not confirmed: the exit floor ray reads the physics trimesh, while `boatBlockedAhead` and the telemetry use the analytic `terrainHeight`, and near the proxy north shore the two appear to disagree. The swimmer also stays in swim mode at an analytic depth of 0.32 m, below `EXIT_DEPTH` 0.42. Suggested next step: make the shallows probe and the exit ray read the same surface, either by probing the physics floor or by evaluating the exit against analytic depth.
 - Open: dev-mode scene load fails because of the StrictMode and Rapier cleanup bug, unrelated to the boats.
 
 ## Captures
@@ -62,3 +63,7 @@ Console in the preview session: 0 errors and 2 existing warnings (THREE.Clock de
 - `captures/boat-turning.png`: wheel turned with both hands on the grips, hull leaning, wake ring.
 - `captures/boat-beached.png`: boat stopped at the south bank, still in water (after the fix).
 - `captures/boat-swim-exit.png`: driver swimming beside the boat after a mid-lake exit, with the re-board prompt.
+- `captures/boat-north-shore.png`: boat stopped in the shallows off the north shore after the 651 m crossing.
+- `captures/boat-north-shore-exit.png`: driver in the water beside the boat after V at the north-shore stop, with the re-board prompt.
+
+All captures were taken offline, so the header shows "Offline" and a "Room server is not configured" notice.
