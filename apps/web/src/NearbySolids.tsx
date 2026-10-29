@@ -10,6 +10,7 @@ import * as THREE from "three";
 import { playerPosition } from "./player";
 import { assetUrl, type Placement } from "./assets";
 import { collisionMesh, surfaceGrip } from "./static-collision";
+import { treeColliderDesc } from "./vegetation-collision";
 
 export type NaturalSolid = Placement & {
   id: string;
@@ -76,11 +77,10 @@ export function NearbySolids({ items }: { items: NaturalSolid[] }) {
       if (existing || distanceSquared > 7225) continue;
       let desc;
       if (item.treeHeight) {
-        const height = item.treeHeight * item.scale;
-        desc = rapier.ColliderDesc.cylinder(
-          height / 2,
-          (item.treeRadius ?? 0.24) * item.scale,
-        ).setTranslation(item.x, item.y + height / 2, item.z);
+        desc = treeColliderDesc(rapier, {
+          ...item,
+          treeHeight: item.treeHeight,
+        });
       } else {
         const shape = shapes[item.id];
         const vertices = new Float32Array(shape.vertices.length);
