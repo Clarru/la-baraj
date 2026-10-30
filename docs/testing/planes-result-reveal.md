@@ -13,7 +13,7 @@ Storage version1 remains additive/compatible. Snapshot arrays are validated and 
 ## Checks
 
 - Node24 frontend and server TypeScript, production build and Worker dry-run pass.
-- 459 frontend tests pass. They cover five-second gating, retained boards after expiry, explicit preparation with no automatic command, visible opponent planes with preserved marks for both viewer sides, no reveal during play, historical/reconnect behavior and the accepted-shot queue.
+- 484 frontend tests pass after integrating meadow main755c7f7 (459 passed before that merge). They cover five-second gating, retained boards after expiry, explicit preparation with no automatic command, visible opponent planes with preserved marks for both viewer sides, no reveal during play, historical/reconnect behavior and the accepted-shot queue.
 - 166 protocol/server tests pass. Both winner0 and winner1 reveal completed layouts to players/spectators only after finish; one-ready and reloaded records retain the old layouts and shots while new fleets stay private. Fresh setup/new play clear the reveal. Legacy reconstruction/omission, invalid snapshot rejection, copy isolation and actual WorldRoom alarm/fanout persistence are checked.
 - Browser confirmation is queued with the release owner on the existing4173 listener. No shared build writes or additional listeners have been started for this change.
 
