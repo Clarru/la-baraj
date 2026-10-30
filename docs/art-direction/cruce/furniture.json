@@ -1,31 +1,32 @@
 {
   "source": "scripts/build-cruce-furniture.mjs",
-  "reference": "Existing Table_Large and Bench beside Cruce; user screenshot 2026-10-30.",
-  "license": "Same as source furniture; see apps/web/public/assets/CREDITS.md and source-manifest.json.",
+  "geometry": "Original beveled plank and braced timber furniture; existing world furniture is style reference only.",
+  "texture": "Built-in ImageGen; wood-prompt.json; per-beam grain UVs.",
+  "felt": "Existing felt.webp and 1.28m surface unchanged.",
   "models": [
     {
-      "source": "Table_Large",
-      "id": "Cruce_Table",
+      "id": "Cruce_Table_Wood",
       "size": [
         1.6,
         0.82,
         1.6
       ],
-      "sourceSha256": "94155f03f208e90e867ad48d48315da5dd46be446a771fe7f40be1c950085698",
-      "bytes": 145964,
-      "texturePolicy": "Original source textures and UVs retained byte for byte."
+      "triangles": 3584,
+      "bytes": 350216,
+      "materials": 3,
+      "textureSha256": "9360c5247df14dfc71026d82cfbb563cd2174a49bc7c508c40f32a69af2a6855"
     },
     {
-      "source": "Bench",
-      "id": "Cruce_Bench",
+      "id": "Cruce_Bench_Wood",
       "size": [
         1.12,
         0.47,
         0.44
       ],
-      "sourceSha256": "acc7821bfac9e2fc059891a1cdae8f8e9ce8544a341ed97ebc82e480d52856e4",
-      "bytes": 131716,
-      "texturePolicy": "Original source textures and UVs retained byte for byte."
+      "triangles": 1316,
+      "bytes": 248280,
+      "materials": 3,
+      "textureSha256": "9360c5247df14dfc71026d82cfbb563cd2174a49bc7c508c40f32a69af2a6855"
     }
   ]
 }

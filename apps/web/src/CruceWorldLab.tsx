@@ -25,6 +25,7 @@ type Peer = {
   seat: CruceSeat;
 };
 export function CruceWorldLab({ room }: { room: MultiplayerRoom }) {
+  const [toolsVisible, setToolsVisible] = useState(true);
   const peers = useRef<Peer[]>([]),
     sequence = useRef(0),
     [status, setStatus] = useState("");
@@ -107,7 +108,7 @@ export function CruceWorldLab({ room }: { room: MultiplayerRoom }) {
     }, 800);
     return () => clearInterval(timer);
   }, []);
-  if (!cruceWorldLab || !room.localPreview) return null;
+  if (!cruceWorldLab || !room.localPreview || !toolsVisible) return null;
   const add = () => {
     stop();
     const view = room.getSnapshot().cruce;
@@ -175,6 +176,7 @@ export function CruceWorldLab({ room }: { room: MultiplayerRoom }) {
       aria-label="Teste 3D Cruce"
     >
       <strong>Test local Cruce</strong>
+      <button onClick={() => setToolsVisible(false)}>Ascunde testele</button>
       <p>{status}</p>
       <button
         onClick={() =>

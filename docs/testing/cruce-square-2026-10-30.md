@@ -1,5 +1,7 @@
 # Cruce furniture and square UI · 30 October 2026
 
+Historical candidate: owner subsequently rejected the compact UI scale and timber finish. Superseded by `cruce-fullscreen-wood-2026-10-30.md`.
+
 Candidate: `07359d0`, PR36. Existing canonical4173 listener only. The release owner published the candidate under internal QA fixture routes while keeping the root game unchanged; no additional game/backend listener was started. The root/public rollout belongs to the release owner.
 
 ## Actual browser evidence

@@ -22,7 +22,7 @@ export function CruceBench({
   const angle = (seat * Math.PI) / 2;
   return (
     <Model
-      id="Cruce_Bench"
+      id="Cruce_Bench_Wood"
       height={TABLE.seatHeight}
       flat={flat}
       position={[
@@ -96,12 +96,14 @@ function PublicTrick() {
 export function CruceStation({ flat }: { flat: boolean }) {
   const felt = useTexture("/assets/cruce/felt.webp");
   felt.colorSpace = T.SRGBColorSpace;
+  const wood = useTexture("/assets/cruce/wood-grain-v2.webp");
+  wood.colorSpace = T.SRGBColorSpace;
   return (
     <group
       name="Cruce square card table"
       position={[TABLE.x, TABLE.ground, TABLE.z]}
     >
-      <Model id="Cruce_Table" height={TABLE.surface} flat={flat} />
+      <Model id="Cruce_Table_Wood" height={TABLE.surface} flat={flat} />
       <mesh
         position={[0, TABLE.surface + 0.001, 0]}
         rotation={[-Math.PI / 2, 0, 0]}
@@ -126,7 +128,7 @@ export function CruceStation({ flat }: { flat: boolean }) {
         <RigidBody type="fixed" colliders={false}>
           <mesh position={[0, 0.68, -0.035]} castShadow receiveShadow>
             <boxGeometry args={[0.095, 1.36, 0.095]} />
-            <meshStandardMaterial color="#69452c" roughness={0.95} />
+            <meshStandardMaterial map={wood} color="#c5b49f" roughness={0.9} />
           </mesh>
           <CuboidCollider
             args={[0.0475, 0.68, 0.0475]}
@@ -136,7 +138,7 @@ export function CruceStation({ flat }: { flat: boolean }) {
         <group position={[0, 1.28, 0]}>
           <mesh castShadow>
             <boxGeometry args={[0.66, 0.28, 0.045]} />
-            <meshStandardMaterial color="#6f5436" roughness={0.95} />
+            <meshStandardMaterial map={wood} color="#7c6852" roughness={0.9} />
           </mesh>
           <Text
             geometry-instanceCount={0}

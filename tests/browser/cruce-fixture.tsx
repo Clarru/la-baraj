@@ -38,20 +38,38 @@ async function setup(scenario: string) {
         : scenario === "waiting"
           ? 2
           : 4;
-  for (let i = 0; i < count; i++)
-    await table.join(actors[i], i as CruceSeat, now);
+  const seats: CruceSeat[] =
+    scenario === "duel"
+      ? [0, 2]
+      : scenario === "exchange"
+        ? [0, 1, 2]
+        : Array.from({ length: count }, (_, i) => i as CruceSeat);
+  for (const seat of seats) await table.join(actors[seat], seat, now);
+  if (scenario === "duel" || scenario === "exchange")
+    await action(0, {
+      kind: "configure",
+      settings: {
+        ...table.view(null).settings,
+        mode: scenario === "duel" ? "duel" : "trio-talon",
+      },
+    });
   if (["empty", "alone", "waiting", "full"].includes(scenario)) return;
-  for (let i = scenario === "ready" ? 1 : 0; i < 4; i++)
-    await action(i, { kind: "ready" });
+  const active = activeCruceSeats(table.view(null).settings.mode);
+  for (const seat of active)
+    if (scenario !== "ready" || seat !== 0)
+      await action(seat, { kind: "ready" });
   if (scenario === "ready") return;
   await action(table.view(null).turn!, { kind: "cut", cut: false });
-  for (let i = 0; i < 4; i++)
+  for (let i = 0; i < active.length; i++)
     await action(table.view(null).turn!, { kind: "bid", value: i ? 0 : 1 });
+  if (scenario === "exchange" && table.view(null).phase === "trump")
+    await action(table.view(null).turn!, { kind: "trump", suit: 0 });
   if (scenario === "away") await table.disconnect(actors[1], now);
   if (scenario === "stopped") await table.leave(actors[1]);
 }
 function Fixture() {
   const [view, setView] = useState<CruceView | null>(null);
+  const [toolsVisible, setToolsVisible] = useState(true);
   const [actor, setActor] = useState(0),
     [open, setOpen] = useState(true),
     [connected, setConnected] = useState(true);
@@ -100,60 +118,74 @@ function Fixture() {
   };
   return (
     <>
-      <aside
-        className="fixture-tools"
-        aria-label="Controale pentru testul local"
-      >
-        <label>
-          Stare UI{" "}
-          <select
-            defaultValue="game"
-            onChange={(e) => {
-              const state = e.target.value;
-              const who = state === "full" ? 4 : 0;
-              setActor(who);
-              setConnected(true);
+      {toolsVisible && (
+        <aside
+          className="fixture-tools"
+          aria-label="Controale pentru testul local"
+        >
+          <button onClick={() => setToolsVisible(false)}>
+            Ascunde testele
+          </button>
+          <label>
+            Stare UI{" "}
+            <select
+              defaultValue="game"
+              onChange={(e) => {
+                const state = e.target.value;
+                const who = state === "full" ? 4 : 0;
+                setActor(who);
+                setConnected(true);
+                setOpen(true);
+                void setup(state).then(() => {
+                  const selected =
+                    state === "exchange" ? (table.view(null).bidder ?? 0) : who;
+                  setActor(selected);
+                  refresh(selected);
+                });
+              }}
+            >
+              <option value="game">În joc</option>
+              <option value="duel">Duel · 8 cărți</option>
+              <option value="exchange">Talon · 10 cărți</option>
+              <option value="empty">Masă liberă</option>
+              <option value="alone">Singur la masă</option>
+              <option value="waiting">Așteptăm jucători</option>
+              <option value="ready">Toți așezați</option>
+              <option value="full">Masă completă · spectator</option>
+              <option value="away">Reconectare</option>
+              <option value="stopped">Partidă oprită</option>
+            </select>
+          </label>
+          <button
+            onClick={() => {
               setOpen(true);
-              void setup(state).then(() => refresh(who));
+              refresh();
             }}
           >
-            <option value="game">În joc</option>
-            <option value="empty">Masă liberă</option>
-            <option value="alone">Singur la masă</option>
-            <option value="waiting">Așteptăm jucători</option>
-            <option value="ready">Toți așezați</option>
-            <option value="full">Masă completă · spectator</option>
-            <option value="away">Reconectare</option>
-            <option value="stopped">Partidă oprită</option>
-          </select>
-        </label>
-        <button
-          onClick={() => {
-            setOpen(true);
-            refresh();
-          }}
-        >
-          Deschide Cruce
-        </button>
-        <button onClick={() => void next()}>Mutarea următoare (test)</button>
-        <button onClick={() => void seatFriends()}>Așază colegii (test)</button>
-        <button onClick={() => void readyFriends()}>
-          Pregătește colegii (test)
-        </button>
-        <button
-          onClick={() => {
-            const next = (actor + 1) % actors.length;
-            setActor(next);
-            refresh(next);
-          }}
-        >
-          Schimbă jucătorul (test)
-        </button>
-        <button onClick={() => setConnected((c) => !c)}>
-          Conexiune (test)
-        </button>
-        <span>Test local · masa este simulată în această pagină</span>
-      </aside>
+            Deschide Cruce
+          </button>
+          <button onClick={() => void next()}>Mutarea următoare (test)</button>
+          <button onClick={() => void seatFriends()}>
+            Așază colegii (test)
+          </button>
+          <button onClick={() => void readyFriends()}>
+            Pregătește colegii (test)
+          </button>
+          <button
+            onClick={() => {
+              const next = (actor + 1) % actors.length;
+              setActor(next);
+              refresh(next);
+            }}
+          >
+            Schimbă jucătorul (test)
+          </button>
+          <button onClick={() => setConnected((c) => !c)}>
+            Conexiune (test)
+          </button>
+          <span>Test local · masa este simulată în această pagină</span>
+        </aside>
+      )}
       <CruceBoard
         view={view}
         connected={connected}

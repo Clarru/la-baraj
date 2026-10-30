@@ -40,7 +40,7 @@ for (const [font, name, weight] of [
     css += `@font-face{font-family:'${font}';font-weight:${weight};src:url(data:font/woff2;base64,${bytes.toString("base64")});unicode-range:${subset === "latin-ext" ? "U+0100-02FF,U+1E00-1EFF" : "U+0000-00FF,U+2000-206F"}}`;
   }
 }
-for (const image of ["felt", "table-surround"]) {
+for (const image of ["felt", "table-surround", "wood-grain-v2"]) {
   const bytes = await readFile(`apps/web/public/assets/cruce/${image}.webp`);
   css = css.replaceAll(
     `/assets/cruce/${image}.webp`,
