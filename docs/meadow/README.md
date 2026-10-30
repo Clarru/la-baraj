@@ -2,6 +2,8 @@
 
 Branch `meadow`, cut from main `462252f`. Plan: [plan.md](plan.md).
 
+**Current review:** [controlled acceptance and resource limits](review-2026-10-30.md) supersedes the historical contended cost estimates below. It covers the reviewed guard/draw-range fixes, matched 600-frame windows, forced-low visuals and explicit hardware/vsync limits. Historical M2 Pro captures and measurements remain as labelled evidence.
+
 ## Owner request
 
 The world looked barren: the ~2,300 instanced MegaKit plants in `environment.tsx` only cover a band around the cabins, and the open banks, hills and clearings were bare painted terrain. Add grass and flowers across the land without losing frame rate: player-following chunks within ~40–60 m, density and fade falling off with distance (no pop), instanced with few draw calls, solid blade geometry, no shadow casting, wind in the vertex shader, no hitching chunk rebuilds, clumped wildflower patches in the DESIGN.md palette, nothing on sand, water, roads, cabin footprints, activity spots or the dock, a quality tier for weak devices, and a good read at day, dusk and night.
@@ -9,13 +11,15 @@ The world looked barren: the ~2,300 instanced MegaKit plants in `environment.tsx
 ## What was built
 
 - `apps/web/src/meadow.ts` — the pure core. Quality tiers (`TIERS.high`: 16 m chunks, 7×7 window, full density to 26 m, zero at 48 m, 400 tufts + 96 flowers per chunk; `TIERS.low`: 5×5 window, 14/30 m, 190 + 48), `meadowTier()` (mobile, ≤4 cores, ≤4 GiB or an Intel/SwiftShader/Mali/Adreno renderer → low), `canMeadow()` (not water, shore distance > 4 m, drawn-road distance > 3.2 m, `activityClearance`, no cabin plot within 7.5 m, dock clearance 16 m), the chunk window, a resumable per-chunk sampler (geography evaluated on a 2 m grid, 81 samples per chunk, split across frames; tufts derive heights bilinearly; a 512-entry grid cache makes revisits free), deterministic per chunk key. Solid geometry: a tuft is 6 blades × 3 triangles with upward-biased normals so it shades like the ground; a wildflower is a low plant (0.22 m, no stem) with three leaf quads at the base and five small crossed-quad blooms at different heights (26 triangles), so from the gameplay camera it reads as a speck of saturated colour sitting in the grass rather than a stalk with a cap; scale varies 0.8–1.3×. `meadowMaterial(kind)` is a `MeshStandardMaterial` patched in `onBeforeCompile`: per-instance random + camera distance give a smooth grow-in/shrink (no pop), world-space sway from `uTime`/`uWind`, base-to-tip darkening on grass, leaf green vs. `instanceColor` blooms on flowers (one `step` on uv.x), two-sided lighting without the back-face normal flip. Fog, hemisphere/sun/ambient lighting and shadow receiving come from the standard material, so the day-night palette applies automatically.
-- `apps/web/src/MeadowLayer.tsx` — the R3F component `Meadow`. Two `InstancedMesh`es (all grass, all flowers), `frustumCulled=false`, `castShadow=false`, `receiveShadow=true`. Each of the 49 (or 25) window chunks owns a fixed slot range; builds write only that range and upload it with `addUpdateRange`. `useFrame` does nothing per instance: it advances `uTime`, detects a camera chunk change, and spends at most 3 ms per frame stepping the nearest unbuilt chunk. An adaptive guard downgrades high → low once if the 120-frame mean stays above 38 ms for 3 s after a 6 s warm-up (frames over 250 ms are ignored, so a tab resume cannot trigger it; disabled in the performance lab). `prefers-reduced-motion` sets the wind amplitude to 0. Nothing here is a collider.
+- `apps/web/src/MeadowLayer.tsx` — the R3F component `Meadow`. Two `InstancedMesh`es (all grass, all flowers), `frustumCulled=false`, `castShadow=false`, `receiveShadow=true`. Each of the 49 (or 25) window chunks owns a fixed slot range; builds write only that range and upload it with `addUpdateRange`. `useFrame` advances `uTime`, detects a camera chunk change, and targets a soft 3 ms deadline while stepping the nearest unbuilt chunk. The clock is checked every nine grid samples; finishing and writing one completed chunk can overrun that sampling deadline, so it is not a strict frame-time cap. Empty meshes are hidden and draw count ends at the last occupied instance while fixed slot offsets are retained. Hidden partial-upload ranges are cleared; reappearing meshes refresh their complete attributes. An adaptive guard downgrades high → low once if an up-to-120-frame mean stays above 38 ms for 3 s after a 6 s warm-up. Long active frames are counted with capped contributions rather than ignored, and visibility return resets observation (the guard is disabled in the performance lab). `prefers-reduced-motion` sets the wind amplitude to 0. Nothing here is a collider.
 - `apps/web/src/Game.tsx` mounts `<Meadow forceHigh={performanceLab} />` beside the existing `<Vegetation>`; the MegaKit plants are unchanged. `geography.ts` exports `FISHING_CLEARANCE` and `SHARED_GROUND_CLEARANCE` so the sampler and `activityClearance` share one source. The localhost-only performance lab gains a "Meadow at eye height" view.
 - Diagnostics builds (`VITE_GAME_DIAGNOSTICS=1`) accept `?meadow=off|low|high`.
 
 Flower colours: white daisy `#f4f1e6`, buttercup `#e8c23a`, cornflower `#7a6fb5`, poppy `#c8402f`, pink `#d987a8` (the earlier cream/ochre/mustard trio read as mushroom caps and was dropped); each ~12 m patch has a dominant colour with 20 % strays. Grass tint `#4a6636`–`#6b8545`, matched to the painted terrain (`#69844b` × its detail mask).
 
-## Performance
+## Historical performance — author measurements
+
+These earlier measurements and estimates are preserved for provenance. Use the [current controlled review](review-2026-10-30.md) for acceptance of the reviewed implementation; the hardware, capture conditions and changed draw behavior differ.
 
 Hardware: MacBook Pro 14" (Mac14,10), Apple M2 Pro, 16 GB, macOS 27.0. Chrome 150 in a separate profile launched with `--disable-gpu-vsync --disable-frame-rate-limit`, so frame time is real render cost rather than a vsync-pinned 120 Hz. Metrics are the performance lab's own 600-frame rolling window (`VITE_PERFORMANCE_LAB=1 VITE_GAME_DIAGNOSTICS=1 npm run build`, `?time=12`, 1707 × 960 CSS px at DPR 1.5, offline, same fixed camera per view), read through the DevTools protocol; raw samples are in [perf/](perf/). "Before" is this branch's merge base (main `462252f`), served from the same preview from a saved copy of its `dist/`; "after" is `6d72d9a`. Draw and triangle totals include the water reflection pass; the meadow does not cast shadows, so it is absent from the shadow pass.
 
@@ -51,16 +55,18 @@ Final-head timing (`perf/before4/5-*.json` vs `perf/final3/4-*.json`, two interl
 
 - Chunks follow the camera's x/z, not the player, so survey and lab cameras get grass too. Cost if wrong: the ring sits ~5 m behind the player in third person.
 - Footpaths (`path`, `footway`, `track`, …) are not drawn by the road ribbon, so grass may cover them; only drawn roads get the 3.2 m clearance. Cost if wrong: one constant.
-- One `InstancedMesh` per kind with fixed per-chunk slot ranges instead of a mesh per chunk (2 vs 49 draw calls per pass; no frustum culling, degenerate instances still cost vertex work and inflate the triangle metric).
+- One `InstancedMesh` per kind with fixed per-chunk slot ranges instead of a mesh per chunk (2 vs 49 draw calls per pass; no frustum culling; holes within the occupied span still cost vertex work, while reviewed empty/trailing ranges are skipped).
 - Distance thinning/fade in the vertex shader from a per-instance random; nothing per instance in JS.
 - Component file is `MeadowLayer.tsx` because macOS's case-insensitive filesystem makes `./Meadow` resolve to `meadow.ts`.
 - Cabin clearance 7.5 m (plus the 1.5 m grid margin) rather than the 18 m the MegaKit scatter uses; shared grounds, fishing spots and the dock keep their owner-mandated radii, so the lawn around the spawn cabin and fire circle is bare on purpose.
 - Two reviewer minors fixed as rulings: the visibility formula no longer culls 12 % of tufts at full density; two-sided lighting ignores facing so back faces are not lit from below.
-- Resumable chunk builds plus a grid cache to hold the 3 ms budget on slower CPUs.
+- Resumable chunk builds plus a grid cache target a soft 3 ms sampling deadline; completion work can overrun it.
 - Flower heads shrunk and cupped (0.10 m, ring 3 cm below the centre) after the first captures read as flat plates; a dev-only eye-level lab view was added for reproducible player-height captures.
 - Commits use the worktree's configured identity (`georgeab550`) per the task brief, although AGENTS.md names a different required author; the release owner should decide before merging.
 
-## Deferred
+## Historical deferred notes
+
+These are the original author’s notes. The current review above records subsequent fixes, tested coverage and remaining hardware limitations.
 
 - Tests: `canMeadow` has no explicit drawn-road/footway/dock assertion; flower positions are not asserted against the terrain; the sampler's shared-ground radius is not covered; the stepped-vs-one-shot equivalence test shares the grid cache; `windAmplitude(false)` is asserted `> 0` rather than `0.09`.
 - `MeadowLayer.tsx` has no automated test (R3F); verified in the lab captures above.
