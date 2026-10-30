@@ -1,0 +1,9 @@
+# Cruce online lobby, bidding and compass cards
+
+Rules now save immediately through the existing configure action. Controls display the authoritative settings and are disabled while saving; Ready waits for that response and confirms its new revision. A failed save retains the prior visible settings and reports the failure. Variants with too few places for the current roster are disabled. There is no Apply button or unsubmitted draft.
+
+The own-turn bidding selector sits immediately above the own username, with a compact4+3 button grid. Point conversions remain inside that selector. Each player's accepted bid is visible as its level only, including earlier lower bids. An announcement20/40 has one marker centered above its played card, outside the rounded image crop. Player/card positions use the same physical compass rotated around the viewer: own south, opposite north, sides west/east, including three-player and reverse-seat views.
+
+Online authority now deals automatically after allReady/Continue and after all-pass. The default is the previous cut:false full-hand deal (four-standard bids from all six cards); the pure engine/protocol still accepts the legacy cut representation for compatibility. A restored online cut settles once, while absent/away players pause it. Save failures do not change the current state; duplicate sync/Ready/late legacy cut requests cannot redeal an already dealt hand. No room, homes, diagnostics,20/40 scoring or card-frame schema changes.
+
+Validation:389 frontend and137 protocol tests, frontend/server TypeScript. New checks cover delayed configure→rapidReady, failed configuration, current authoritative revision, all relative seat mappings, under-name bid numbers/own-name bidding placement, immediate dealing/all-pass, restored-cut retry/away/idempotency, and next round after a complete Duel. Browser captures and shared-preview restoration are pending before release acceptance.

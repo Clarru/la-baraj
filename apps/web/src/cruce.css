@@ -122,6 +122,7 @@
 }
 .cruce-felt {
   position: relative;
+  container-type: inline-size;
   width: min(100cqh, calc(100cqw - 200px));
   aspect-ratio: 1;
   background: #245b45 url("/assets/cruce/felt.webp") center / 300px 300px;
@@ -325,7 +326,8 @@
   height: 100%;
   min-height: 0;
   container-type: size;
-  overflow: hidden;
+  padding-top: 30px;
+  overflow: visible;
 }
 .cruce-call {
   width: 160px;
@@ -406,8 +408,8 @@
 }
 .cruce-trick {
   position: relative;
-  width: min(270px, calc(100cqw - 20px), calc((100cqh - 20px) * 1.35));
-  aspect-ratio: 1.35;
+  width: min(270px, calc(100cqw - 20px), calc((100cqh - 20px) * 1.15));
+  aspect-ratio: 1.15;
 }
 .cruce-trick:empty {
   display: none;
@@ -452,23 +454,52 @@
   z-index: 3;
   transform: rotate(7deg);
 }
-.cruce-trick--duel .cruce-played {
-  width: 45%;
-}
-.cruce-trick--duel .cruce-played--0 {
-  left: 0;
-}
-.cruce-trick--duel .cruce-played--2 {
-  left: auto;
-  right: 0;
+.cruce-played {
+  transform: none;
 }
 .cruce-played > strong {
   position: absolute;
-  bottom: 3px;
-  right: 4px;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
   color: #243831;
   background: #f3df9a;
-  padding: 2px 4px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  font-size: 20px;
+  line-height: 1;
+  box-shadow: 0 3px 6px rgb(12 25 18 / 25%);
+}
+.cruce-auction {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(360px, calc(100cqw - 16px));
+  padding: 8px;
+  background: #194331;
+  color: #f8efd6;
+  border-radius: 6px;
+  box-shadow: 0 6px 18px rgb(12 25 18 / 30%);
+  text-align: center;
+}
+.cruce-player--0:has(.cruce-auction) {
+  z-index: 8;
+}
+.cruce-auction .cruce-bids button {
+  min-height: 48px;
+  padding: 4px;
+}
+.cruce-auction .cruce-bids strong {
+  font-size: 24px;
+}
+.cruce-auction .cruce-bids span {
+  font-size: 15px;
+}
+.cruce-felt--bidding .cruce-center {
+  inset-block: 84px 208px;
 }
 .cruce-stock {
   position: absolute;
@@ -956,6 +987,12 @@
   }
   .cruce-call > span {
     font-size: 12px;
+  }
+  .cruce-felt--bidding .cruce-center {
+    inset-block: 64px 188px;
+  }
+  .cruce-auction .cruce-bids strong {
+    font-size: 21px;
   }
   .cruce-center {
     inset: 68px 8px 60px;
