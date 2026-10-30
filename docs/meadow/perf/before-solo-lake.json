@@ -1,0 +1,103 @@
+{
+  "url": "http://127.0.0.1:4173/?time=12",
+  "scenario": "solo",
+  "view": "lake",
+  "when": "2026-10-30T15:35:34.444Z",
+  "fps": 74.81051284575254,
+  "meanMs": 13.367105263157894,
+  "p95Ms": 4.200000047683716,
+  "over33Ms": 1,
+  "calls": 336.16052631578947,
+  "triangles": 2031119.7868421052,
+  "frames": 380,
+  "gpuGeometries": 270,
+  "gpuTextures": 78,
+  "programs": 78,
+  "meshes": 552,
+  "materials": 187,
+  "dpr": 1.5,
+  "viewport": [
+    1707,
+    960
+  ],
+  "camera": [
+    -8,
+    3.6000000000000005,
+    72
+  ],
+  "physicsMeanMs": 0.054166666865348816,
+  "longTasks": [
+    {
+      "start": 208.5999999642372,
+      "duration": 593
+    },
+    {
+      "start": 868.0999999642372,
+      "duration": 93
+    },
+    {
+      "start": 1022.5999999642372,
+      "duration": 2165
+    },
+    {
+      "start": 3208.399999976158,
+      "duration": 372
+    },
+    {
+      "start": 3605.899999976158,
+      "duration": 153
+    },
+    {
+      "start": 3984.7999999523163,
+      "duration": 270
+    },
+    {
+      "start": 4255.699999988079,
+      "duration": 5001
+    },
+    {
+      "start": 9257,
+      "duration": 196
+    },
+    {
+      "start": 9453.699999988079,
+      "duration": 69
+    },
+    {
+      "start": 9526.799999952316,
+      "duration": 308
+    },
+    {
+      "start": 587484.2999999523,
+      "duration": 55
+    },
+    {
+      "start": 617424,
+      "duration": 325
+    },
+    {
+      "start": 636978.3999999762,
+      "duration": 221
+    },
+    {
+      "start": 637253,
+      "duration": 82
+    },
+    {
+      "start": 637338.3999999762,
+      "duration": 561
+    },
+    {
+      "start": 638452.5,
+      "duration": 598
+    },
+    {
+      "start": 639050.5999999642,
+      "duration": 341
+    },
+    {
+      "start": 653441.6999999881,
+      "duration": 4075
+    }
+  ]
+}
