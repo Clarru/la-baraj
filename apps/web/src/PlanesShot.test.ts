@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { newPresentedShot } from "./PlanesShot";
+import { newPresentedShots } from "./PlanesShot";
 import { type PlanesView, type Side } from "../../../packages/shared/planes";
 function state(you: Side | null = 0): PlanesView {
   return {
@@ -23,7 +23,7 @@ function next(previous: PlanesView, side: Side = 1): PlanesView {
   view.revision++;
   view.shots[side].push({ x: 3, y: 3, result: "body" });
   view.event = {
-    id: 2,
+    id: view.revision,
     at: Date.now(),
     actor: "socket-a",
     target: "socket-b",
@@ -33,63 +33,69 @@ function next(previous: PlanesView, side: Side = 1): PlanesView {
   view.turn = side === 0 ? 1 : 0;
   return view;
 }
-describe("new shot presentation boundaries", () => {
-  it.each([0, 1] as const)("locates an incoming shot for side %i", (you) => {
+describe("accepted shot presentation order", () => {
+  it.each([0, 1] as const)("locates incoming shots for side %i", (you) => {
     const before = state(you);
     before.turn = you === 0 ? 1 : 0;
     const after = next(before, before.turn!);
-    expect(newPresentedShot(before, after)).toMatchObject({
-      incoming: true,
-      you,
-      shot: { x: 3, y: 3, result: "body" },
-    });
-    expect(newPresentedShot(after, after)).toBeNull();
+    expect(newPresentedShots(before, after)).toMatchObject([
+      { incoming: true, you, shot: { x: 3, y: 3, result: "body" } },
+    ]);
+    expect(newPresentedShots(after, after)).toEqual([]);
   });
-  it("locates your outgoing shot without exposing another fleet", () => {
+  it("locates outgoing shots", () => {
     const before = state();
     before.turn = 0;
-    expect(newPresentedShot(before, next(before, 0))).toMatchObject({
-      incoming: false,
-    });
+    expect(newPresentedShots(before, next(before, 0))).toMatchObject([
+      { incoming: false },
+    ]);
   });
   it("does not replay joined, spectator, changed-seat, or new-round histories", () => {
     const before = state(),
       after = next(before);
-    expect(newPresentedShot(null, after)).toBeNull();
+    expect(newPresentedShots(null, after)).toEqual([]);
     for (const change of [
       { you: null },
       { you: 1 as const },
       { round: 5 },
       { phase: "setup" as const },
     ])
-      expect(newPresentedShot(before, { ...after, ...change })).toBeNull();
+      expect(newPresentedShots(before, { ...after, ...change })).toEqual([]);
   });
-  it("skips a catch-up snapshot with multiple missed shots", () => {
+  it("recovers every shot in alternating order when several updates are coalesced", () => {
     const before = state(),
-      after = next(before);
-    after.shots[0].push({ x: 1, y: 1, result: "miss" });
-    expect(newPresentedShot(before, after)).toBeNull();
-    after.shots[0] = [];
-    after.shots[1].push({ x: 2, y: 1, result: "miss" });
-    expect(newPresentedShot(before, after)).toBeNull();
+      after = next(next(next(before, 1), 0), 1);
+    expect(
+      newPresentedShots(before, after).map((p) => [p.side, p.index, p.id]),
+    ).toEqual([
+      [1, 0, "1:0"],
+      [0, 0, "0:0"],
+      [1, 1, "1:1"],
+    ]);
   });
-  it("keeps the winning cockpit shot, but never animates a forfeit", () => {
+  it("rejects an invalid extension or truncated history", () => {
+    const before = state(),
+      after = next(next(before, 1), 1);
+    expect(newPresentedShots(before, after)).toEqual([]);
+    expect(newPresentedShots(after, before)).toEqual([]);
+  });
+  it("keeps the winning cockpit shot but never animates a forfeit", () => {
     const before = state(),
       after = next(before);
     after.phase = "finished";
     after.reason = "fleet";
     after.shots[1][0].result = "head";
     after.event!.result = "head";
-    expect(newPresentedShot(before, after)?.shot.result).toBe("head");
+    expect(newPresentedShots(before, after)[0]?.shot.result).toBe("head");
     after.reason = "left";
-    expect(newPresentedShot(before, after)).toBeNull();
+    expect(newPresentedShots(before, after)).toEqual([]);
   });
   it("ignores unrelated revisions and inconsistent event results", () => {
     const before = state(),
       after = next(before);
     after.event!.result = "miss";
-    expect(newPresentedShot(before, after)).toBeNull();
+    expect(newPresentedShots(before, after)).toEqual([]);
     after.event = null;
-    expect(newPresentedShot(before, after)).toBeNull();
+    expect(newPresentedShots(before, after)).toEqual([]);
   });
 });
