@@ -29,12 +29,18 @@ type Scenario =
   | "chain"
   | "dock";
 let heldCodes: string[] = [],
-  keyTimer: number | null = null;
+  keyTimer: number | null = null,
+  repeatTimer: number | null = null;
+let steeringTimers: number[] = [];
 let recording = true,
   finishedAt = 0;
 function releaseControls() {
   if (keyTimer !== null) window.clearTimeout(keyTimer);
   keyTimer = null;
+  if (repeatTimer !== null) window.clearInterval(repeatTimer);
+  repeatTimer = null;
+  for (const timer of steeringTimers) window.clearTimeout(timer);
+  steeringTimers = [];
   for (const code of heldCodes)
     window.dispatchEvent(
       new KeyboardEvent("keyup", {
@@ -51,7 +57,7 @@ function releaseControls() {
   }
   finishedAt = performance.now();
 }
-function holdControls(codes: string[]) {
+function holdControls(codes: string[], rubbing = false) {
   releaseControls();
   heldCodes = codes;
   recording = true;
@@ -68,6 +74,41 @@ function holdControls(codes: string[]) {
   if (out) {
     out.textContent = "Controls active";
     out.setAttribute("data-state", "active");
+  }
+  // Each tab represents an independently focused driver. Repeating real input
+  // events prevents switching the observer tab from releasing its held throttle.
+  repeatTimer = window.setInterval(() => {
+    for (const code of heldCodes)
+      window.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          code,
+          key: code.replace("Key", "").toLowerCase(),
+          repeat: true,
+          bubbles: true,
+        }),
+      );
+  }, 100);
+  if (rubbing) {
+    steeringTimers.push(
+      window.setTimeout(() => {
+        heldCodes.push("KeyA");
+        window.dispatchEvent(
+          new KeyboardEvent("keydown", {
+            code: "KeyA",
+            key: "a",
+            bubbles: true,
+          }),
+        );
+      }, 1000),
+    );
+    steeringTimers.push(
+      window.setTimeout(() => {
+        heldCodes = heldCodes.filter((c) => c !== "KeyA");
+        window.dispatchEvent(
+          new KeyboardEvent("keyup", { code: "KeyA", key: "a", bubbles: true }),
+        );
+      }, 1300),
+    );
   }
   keyTimer = window.setTimeout(releaseControls, 4000);
 }
@@ -214,6 +255,9 @@ function App() {
         <button onClick={() => holdControls(["KeyW"])}>Drive forward 4s</button>
         <button onClick={() => holdControls(["KeyW", "KeyA"])}>
           Turn forward 4s
+        </button>
+        <button onClick={() => holdControls(["KeyW"], true)}>
+          Rub alongside 4s
         </button>
         <button onClick={releaseControls}>Release controls</button>
         <output id="boat-control-status" data-state="released">
