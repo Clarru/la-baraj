@@ -1,0 +1,15 @@
+{
+  "candidate": "6f3b98183f709ad6507799f31cdb725b697bcea2",
+  "visualYaw": "45 degrees; fronts and focused screen confirmed",
+  "pointerMoveAccepted": true,
+  "exitHeadingPreserved": true,
+  "discoveredFailure": {
+    "authoredApproachStation": 1,
+    "distanceAhead": 1.5,
+    "observedOwnStationIds": [
+      2
+    ],
+    "cause": "nearest-centre selection chooses neighbour across the angled row"
+  },
+  "finalVerdict": "fix selection then recapture"
+}

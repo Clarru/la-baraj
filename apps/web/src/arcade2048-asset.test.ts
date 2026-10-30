@@ -9,6 +9,7 @@ import { inWater, terrainHeight, roadDistance } from "./geography";
 import {
   ARCADE_STATION as station,
   ARCADE_STATIONS,
+  arcadeStationYaw,
 } from "../../../packages/shared/arcade2048-station";
 it("ships a small independently decoded GLB with live-screen UVs, moving nodes, and real PBR maps", async () => {
   await MeshoptDecoder.ready;
@@ -126,7 +127,13 @@ it("keeps all three lakeside cabinets dry, stable, and clear of the existing tab
       [0.38, -0.36],
       [-0.38, 0.36],
       [0.38, 0.36],
-    ].map(([x, z]) => terrainHeight(s.x + x, s.z + z));
+    ].map(([x, z]) => {
+      const yaw = arcadeStationYaw(s.id);
+      return terrainHeight(
+        s.x + x * Math.cos(yaw) + z * Math.sin(yaw),
+        s.z - x * Math.sin(yaw) + z * Math.cos(yaw),
+      );
+    });
     expect(Math.max(...h) - Math.min(...h)).toBeLessThan(0.12);
   }
   for (let i = 1; i < 3; i++)

@@ -5,7 +5,10 @@ import Game from "../../apps/web/src/Game";
 import { currentMultiplayerRoom } from "../../apps/web/src/multiplayer";
 import { requestCruceTestMove } from "../../apps/web/src/cruce-world-test";
 import { terrainHeight } from "../../apps/web/src/geography";
-import { ARCADE_STATIONS } from "../../packages/shared/arcade2048-station";
+import {
+  ARCADE_STATIONS,
+  arcadeStationYaw,
+} from "../../packages/shared/arcade2048-station";
 import "../../apps/web/src/multiplayer.css";
 import "../../apps/web/src/scene-loading.css";
 import "../../apps/web/src/style.css";
@@ -21,11 +24,10 @@ if (
   throw Error("Local QA only");
 function approach(id: number, distance = 1.5) {
   const s = ARCADE_STATIONS[id];
-  requestCruceTestMove([
-    s.x,
-    terrainHeight(s.x, s.z + distance) + 0.1,
-    s.z + distance,
-  ]);
+  const yaw = arcadeStationYaw(id),
+    x = s.x + Math.sin(yaw) * distance,
+    z = s.z + Math.cos(yaw) * distance;
+  requestCruceTestMove([x, terrainHeight(x, z) + 0.1, z]);
 }
 function Fixture() {
   const output = useRef<HTMLOutputElement>(null),

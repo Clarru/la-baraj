@@ -13,6 +13,8 @@ import { RigidBody, CuboidCollider } from "@react-three/rapier";
 import * as THREE from "three";
 import {
   ARCADE_STATIONS,
+  arcadeStationYaw,
+  closestArcadeStation,
   LEGACY_ARCADE_STATION,
   type ArcadeStation,
 } from "../../../packages/shared/arcade2048-station";
@@ -59,10 +61,7 @@ export function availableArcadeStations(
 }
 export function closestArcade(navigation: NavigationFeed, supported: boolean) {
   const p = navigation.getSnapshot();
-  return [...availableArcadeStations(supported)].sort(
-    (a, b) =>
-      Math.hypot(p.x - a.x, p.z - a.z) - Math.hypot(p.x - b.x, p.z - b.z),
-  )[0];
+  return closestArcadeStation(p.x, p.z, availableArcadeStations(supported));
 }
 export function ArcadeCabinet({
   controls,
@@ -166,6 +165,7 @@ function StationMachine({
   return (
     <group
       position={[station.x, arcadeGround(station), station.z]}
+      rotation={[0, arcadeStationYaw(station.id), 0]}
       name={`2048 cabinet ${station.id + 1}`}
     >
       <RigidBody type="fixed" colliders={false}>

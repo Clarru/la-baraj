@@ -1,4 +1,4 @@
-import { arcadeExitCamera } from "./arcade2048-camera";
+import { arcadeExitCamera, arcadeFocusCamera } from "./arcade2048-camera";
 import {
   ARCADE_STATION,
   arcadeStation,
@@ -1775,22 +1775,14 @@ export function CameraRig({
     priorInterior.current = interiorIndex;
     if (arcadeFocus) {
       const station = arcadeStation(arcadeStationId ?? -1) ?? ARCADE_STATION;
-      const y = terrainHeight(station.x, station.z) + 1.321;
-      c.target.set(station.x, y, station.z + 0.181);
-      const fov = camera instanceof THREE.PerspectiveCamera ? camera.fov : 50;
-      const distance = Math.max(
-        1.12,
-        0.6 / (2 * Math.tan((fov * Math.PI) / 360) * focusAspect * 0.94),
+      const focus = arcadeFocusCamera(
+        arcadeStationId ?? -1,
+        terrainHeight(station.x, station.z),
+        focusAspect,
+        camera instanceof THREE.PerspectiveCamera ? camera.fov : 50,
       );
-      camera.position
-        .copy(c.target)
-        .add(
-          new THREE.Vector3(
-            0,
-            Math.sin((Math.PI * 8) / 180) * distance,
-            Math.cos((Math.PI * 8) / 180) * distance,
-          ),
-        );
+      c.target.copy(focus.target);
+      camera.position.copy(focus.position);
     } else if (leavingArcade) {
       const exit = arcadeExitCamera(from, fromTarget, playerViewPosition);
       camera.position.copy(exit.position);
