@@ -31,6 +31,7 @@ const layToIdle = source.animations.find((clip) => clip.name === "LayToIdle");
 if (!layToIdle) throw new Error("LayToIdle was not found in the source rig");
 const idle = createBellyProneClip(target.scene, layToIdle, {
   sampleTime: 0,
+  openHandSource: source.animations.find((clip) => clip.name === "A_TPose"),
   groundLift: 0.46,
 });
 const crawl = createBellyProneCrawlClip(target.scene, idle, 2);

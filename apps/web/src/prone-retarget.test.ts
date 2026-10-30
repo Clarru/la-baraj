@@ -93,12 +93,48 @@ function assertTargetPose(scene: THREE.Object3D) {
   for (const side of ["l", "r"] as const) {
     const basis = handBasis(scene, side);
     expect(basis.finger.dot(new THREE.Vector3(0, 0, 1))).toBeGreaterThan(0.85);
-    expect(basis.normal.dot(new THREE.Vector3(0, 1, 0))).toBeGreaterThan(0.65);
+    // The across-finger basis has opposite handedness on the two palms.
+    const palmDown = basis.normal.clone().multiplyScalar(side === "l" ? 1 : -1);
+    expect(palmDown.dot(new THREE.Vector3(0, -1, 0))).toBeGreaterThan(0.95);
+    const sign = side === "l" ? 1 : -1;
+    const hand = worldPosition(scene, `hand_${side}`);
+    const elbow = worldPosition(scene, `lowerarm_${side}`);
+    const foot = worldPosition(scene, `foot_${side}`);
+    const knee = worldPosition(scene, `calf_${side}`);
+    expect((hand.x - pelvis.x) * sign).toBeGreaterThan(0.15);
+    expect((elbow.x - pelvis.x) * sign).toBeGreaterThan(0.15);
+    expect((foot.x - pelvis.x) * sign).toBeGreaterThan(0.06);
+    expect((knee.x - pelvis.x) * sign).toBeGreaterThan(0.03);
+    // All coordinates here are raw clip space; runtime adds the existing .46m lift.
+    expect(hand.y + 0.46).toBeGreaterThan(0.01);
+    expect(hand.y + 0.46).toBeLessThan(0.075);
+    expect(elbow.y + 0.46).toBeLessThan(0.17);
+    expect(knee.y + 0.46).toBeLessThan(0.14);
+    expect(foot.z).toBeLessThan(pelvis.z - 0.7);
+    const thumb = worldPosition(scene, `thumb_04_leaf_${side}`);
+    expect(
+      Math.abs(thumb.y - worldPosition(scene, `thumb_01_${side}`).y),
+    ).toBeLessThan(0.015);
   }
   expect(bounds.min.y).toBeGreaterThan(-0.48);
   expect(bounds.min.y).toBeLessThan(-0.44);
-  expect(bounds.max.y).toBeLessThan(0.32);
+  expect(bounds.max.y + 0.46).toBeLessThan(0.48);
   expect(bounds.max.y - bounds.min.y).toBeGreaterThan(0.25);
+  for (const name of [
+    "Male_Peasant_Body",
+    "Male_Peasant_Legs",
+    "Male_Peasant_Feet",
+  ]) {
+    const part = scene.getObjectByName(name)!;
+    const bounds = new THREE.Box3().setFromObject(part, true);
+    expect(bounds.min.y + 0.46, `${name} floats off the ground`).toBeLessThan(
+      0.045,
+    );
+    expect(
+      bounds.min.y + 0.46,
+      `${name} penetrates the ground`,
+    ).toBeGreaterThan(-0.02);
+  }
   scene.traverse((object) => {
     if (!(object instanceof THREE.Bone)) return;
     expect(object.quaternion.length()).toBeCloseTo(1, 3);
@@ -153,11 +189,25 @@ describe("baked belly retarget on the approved target rig", () => {
     assertTargetPose(target.scene);
   });
 
+  it("keeps the trunk planted instead of lifting it for a hand or sleeve", async () => {
+    const { clips } = bakedClips();
+    const { scene } = await loadRig(targetPath);
+    const mixer = new THREE.AnimationMixer(scene);
+    mixer.clipAction(clips[1]).play();
+    const heights: number[] = [];
+    for (let frame = 0; frame <= 32; frame++) {
+      mixer.setTime(frame / 16);
+      scene.updateMatrixWorld(true);
+      heights.push(worldPosition(scene, "pelvis").y);
+    }
+    expect(Math.max(...heights) - Math.min(...heights)).toBeLessThan(0.002);
+  });
+
   it("keeps every baked crawl phase forward, grounded and finite", () => {
     const { clips } = bakedClips();
     const mixer = new THREE.AnimationMixer(target.scene);
     const action = mixer.clipAction(clips[1]).play();
-    for (const time of [0, 0.5, 1, 1.5, 2]) {
+    for (const time of Array.from({ length: 33 }, (_, index) => index / 16)) {
       action.reset().play();
       mixer.setTime(time);
       target.scene.updateMatrixWorld(true);
