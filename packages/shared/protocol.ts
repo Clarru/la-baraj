@@ -91,6 +91,15 @@ export type ClientMessage =
       action: CruceAction;
     }
   | { type: "sync" };
+export type CruceRecovery = {
+  phase: CruceView["phase"];
+  revision: number;
+  deadline: number | null;
+  trickCount: number;
+  awayCount: number;
+  transitioned: boolean;
+  error?: boolean;
+};
 export type ServerMessage =
   | { type: "arcade2048"; view: ArcadeView; requestId: string; error?: string }
   | { type: "boat-impact"; revision: number; boat: BoatPose }
@@ -109,6 +118,7 @@ export type ServerMessage =
       planes?: PlanesView;
       cruce?: CruceView;
       features?: { arcade2048?: boolean };
+      cruceRecovery?: CruceRecovery;
     }
   | { type: "village"; village: VillageState }
   | { type: "joined"; player: PlayerPresence }

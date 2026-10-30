@@ -2,6 +2,11 @@ import type {
   ArcadeAction,
   ArcadeView,
 } from "../../../packages/shared/arcade2048";
+import { cruceRecoveryDelay, publicCruceDiagnostics } from "./cruce-recovery";
+import {
+  reportClientDiagnostic,
+  setClientDiagnosticState,
+} from "./client-diagnostics";
 import type { CruceAction, CruceView } from "../../../packages/shared/cruce";
 import PartySocket from "partysocket";
 import { InputActivity } from "./input-activity";
@@ -157,6 +162,68 @@ export class MultiplayerRoom {
       timer: ReturnType<typeof setTimeout>;
     }
   >();
+  private cruceRecoveryTimer: ReturnType<typeof setTimeout> | null = null;
+  private cruceRecoveryRevision = -1;
+  private cruceRecoveryAttempts = 0;
+  private pendingCruceRecovery: Record<
+    string,
+    string | number | boolean | null
+  > | null = null;
+  private stopCruceRecovery() {
+    if (this.cruceRecoveryTimer) clearTimeout(this.cruceRecoveryTimer);
+    this.cruceRecoveryTimer = null;
+    this.cruceRecoveryRevision = -1;
+    this.cruceRecoveryAttempts = 0;
+  }
+  private armCruceRecovery() {
+    const view = this.view.cruce,
+      now = worldNow(),
+      delay =
+        this.view.status === "online" ? cruceRecoveryDelay(view, now) : null;
+    setClientDiagnosticState({
+      ...publicCruceDiagnostics(view),
+      transport: this.view.status,
+    });
+    if (delay === null || !view) {
+      this.stopCruceRecovery();
+      return;
+    }
+    if (this.cruceRecoveryTimer && this.cruceRecoveryRevision === view.revision)
+      return;
+    if (this.cruceRecoveryTimer) clearTimeout(this.cruceRecoveryTimer);
+    if (this.cruceRecoveryRevision !== view.revision) {
+      this.cruceRecoveryRevision = view.revision;
+      this.cruceRecoveryAttempts = 0;
+    }
+    if (this.cruceRecoveryAttempts >= 3) return;
+    const wait = this.cruceRecoveryAttempts
+      ? Math.max(delay, 2000 * 2 ** (this.cruceRecoveryAttempts - 1))
+      : delay;
+    this.cruceRecoveryTimer = setTimeout(() => {
+      this.cruceRecoveryTimer = null;
+      if (
+        this.view.status !== "online" ||
+        this.view.cruce?.phase !== "trick" ||
+        this.view.cruce.revision !== view.revision
+      )
+        return;
+      this.cruceRecoveryAttempts++;
+      this.pendingCruceRecovery = {
+        ...publicCruceDiagnostics(view),
+        deadlineLagMs:
+          view.deadline === null ? -1 : Math.round(worldNow() - view.deadline),
+      };
+      reportClientDiagnostic("cruce_stall", this.pendingCruceRecovery);
+      this.send({ type: "sync" });
+      this.armCruceRecovery();
+    }, wait);
+  }
+  syncCruce() {
+    this.stopCruceRecovery();
+    this.pendingCruceRecovery = { ...publicCruceDiagnostics(this.view.cruce) };
+    this.send({ type: "sync" });
+    this.armCruceRecovery();
+  }
   private cruceRequests = new Map<
     string,
     {
@@ -213,6 +280,7 @@ export class MultiplayerRoom {
   private publish(patch: Partial<RoomView> = {}) {
     this.view = { ...this.view, ...patch };
     this.listeners.forEach((listener) => listener());
+    if ("cruce" in patch || "status" in patch) this.armCruceRecovery();
     this.writeDiagnostics(true);
   }
   private publishWorld() {
@@ -323,6 +391,8 @@ export class MultiplayerRoom {
     return () => {
       this.socket = null;
       clearInterval(weatherTimer);
+      this.stopCruceRecovery();
+      this.pendingCruceRecovery = null;
       if (this.weatherExpiry) clearTimeout(this.weatherExpiry);
       this.weatherExpiry = null;
       socket.close();
@@ -335,6 +405,8 @@ export class MultiplayerRoom {
   }
   /** Shared by the real socket and the isolated browser transport. */
   protected connectionClosed() {
+    this.stopCruceRecovery();
+    this.pendingCruceRecovery = null;
     this.pendingBoatImpact = null;
     this.boatRevision = 0;
     this.homeAcknowledged = false;
@@ -525,6 +597,21 @@ export class MultiplayerRoom {
         this.publish({
           arcadeAvailable: message.features?.arcade2048 === true,
         });
+        if (this.pendingCruceRecovery && message.cruce) {
+          const info = message.cruceRecovery;
+          reportClientDiagnostic("cruce_sync", {
+            ...this.pendingCruceRecovery,
+            serverPhase: info?.phase ?? message.cruce.phase,
+            serverRevision: info?.revision ?? message.cruce.revision,
+            serverDeadline: info ? info.deadline : message.cruce.deadline,
+            serverTrickCount: info?.trickCount ?? message.cruce.trick.length,
+            serverAwayCount: info?.awayCount ?? 0,
+            recovered: message.cruce.phase !== "trick",
+            serverError: Boolean(info?.error),
+          });
+          this.pendingCruceRecovery = null;
+        }
+
         this.boatRevision =
           message.players.find((p) => p.id === message.selfId)
             ?.boatImpactRevision ?? 0;

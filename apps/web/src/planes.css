@@ -293,12 +293,103 @@
   z-index: 1;
 }
 .planes-setup-tools {
-  padding-top: 21px;
+  padding-top: 20px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 14px;
+  min-width: 0;
 }
-.planes-setup-tools p,
+.planes-setup-tools p {
+  margin: 0;
+  color: #465e71;
+  font-size: 14px;
+  line-height: 1.45;
+}
+.planes-setup-tools h3 {
+  margin: 6px 0 -6px;
+  font-size: 17px;
+}
+.planes-setup-tools .planes-round-summary {
+  padding-bottom: 14px;
+  border-bottom: 1px solid #a4bace;
+}
+.planes-notebook .planes-drop-hint {
+  font-size: 13px;
+  color: #51697b;
+  min-height: 19px;
+}
+.planes-notebook .planes-drop-hint--valid {
+  color: #247342;
+}
+.planes-notebook .planes-drop-hint--invalid {
+  color: #a93e31;
+}
+.planes-plane-picker {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid #a4bace;
+  border-radius: 3px;
+}
+.planes-notebook .planes-plane-picker button {
+  min-height: 38px;
+  padding: 7px 3px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #244b70;
+  border-radius: 2px;
+  font-weight: 700;
+}
+.planes-notebook .planes-plane-picker button[aria-pressed="true"] {
+  background: #d1dfe9;
+  border-color: #244b70;
+}
+.planes-notebook .planes-plane-picker button:not(:disabled):hover {
+  background: #e0e8ec;
+}
+.planes-layout-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.planes-notebook .planes-secondary {
+  min-height: 40px;
+  padding: 8px 10px;
+  background: transparent;
+  border: 1px solid #839ab0;
+  border-radius: 2px;
+  text-align: center;
+}
+.planes-notebook .planes-secondary:not(:disabled):hover {
+  background: #244b7010;
+  border-color: #244b70;
+}
+.planes-notebook .planes-secondary kbd {
+  font: 700 11px/1 var(--font-body);
+  display: inline-block;
+  margin-left: 7px;
+  padding: 3px 5px;
+  border: 1px solid #839ab0;
+  border-radius: 2px;
+}
+.planes-notebook .planes-ready {
+  margin-top: 12px;
+  min-height: 48px;
+  padding: 12px 18px;
+  background: #244b70;
+  color: #f9f5e9;
+  border: 1px solid #244b70;
+  border-radius: 3px;
+  font-size: 17px;
+  font-weight: 700;
+}
+.planes-notebook .planes-ready:not(:disabled):hover {
+  background: #193d5c;
+}
+.planes-notebook .planes-ready:disabled {
+  opacity: 0.6;
+}
 .planes-shot-note {
   min-height: 18px;
   font-size: 14px;
@@ -413,18 +504,18 @@
 .planes-shot-trail {
   stroke-width: 1;
   stroke-dasharray: 1;
-  animation: planes-trail 600ms ease-out both;
+  animation: planes-trail 1100ms ease-out both;
 }
 .planes-shot-core {
   stroke-width: 2.8;
   stroke-dasharray: 0.055 1;
-  animation: planes-projectile 310ms cubic-bezier(0.42, 0, 0.72, 0.6) both;
+  animation: planes-projectile 650ms cubic-bezier(0.42, 0, 0.72, 0.6) both;
 }
 .planes-shot-impact {
   stroke-width: 1.5;
   transform-box: fill-box;
   transform-origin: center;
-  animation: planes-impact 370ms cubic-bezier(0.16, 1, 0.3, 1) 290ms both;
+  animation: planes-impact 370ms cubic-bezier(0.16, 1, 0.3, 1) 630ms both;
 }
 .planes-shot--head .planes-shot-impact {
   stroke-width: 2.5;
@@ -432,22 +523,22 @@
 .planes-shot-contact {
   fill: var(--shot-color);
   stroke: none;
-  animation: planes-contact 200ms ease-out 280ms both;
+  animation: planes-contact 200ms ease-out 630ms both;
 }
 .planes-shot-sparks {
   stroke-width: 1.5;
   transform-box: fill-box;
   transform-origin: center;
-  animation: planes-sparks 260ms cubic-bezier(0.16, 1, 0.3, 1) 290ms both;
+  animation: planes-sparks 260ms cubic-bezier(0.16, 1, 0.3, 1) 630ms both;
 }
 .planes-notebook .paper-cell--landing::before {
-  animation: planes-ink 150ms ease-out 300ms both;
+  animation: planes-ink 200ms ease-out 650ms both;
 }
 .planes-notebook .paper-cell--landing::after {
-  animation: planes-ink 150ms ease-out 350ms both;
+  animation: planes-ink 200ms ease-out 720ms both;
 }
 .planes-notebook .paper-cell--landing-head {
-  animation: planes-cockpit 620ms ease-out both;
+  animation: planes-cockpit 1500ms ease-out both;
 }
 @keyframes planes-projectile {
   0% {
@@ -473,7 +564,7 @@
   10% {
     opacity: 0.3;
   }
-  52% {
+  60% {
     stroke-dashoffset: 0;
     opacity: 0.3;
   }
@@ -529,14 +620,136 @@
 }
 @keyframes planes-cockpit {
   0%,
-  45% {
+  42% {
     background-color: transparent;
   }
-  55% {
+  48% {
+    background-color: #e8b26390;
+  }
+  65% {
     background-color: #b75b4160;
   }
   100% {
     background-color: #b75b4126;
+  }
+}
+.planes-shot-explosion {
+  stroke: #a44937;
+}
+.planes-explosion-flash {
+  fill: #e8b263;
+  stroke: #a44937;
+  stroke-width: 2;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: planes-flash 350ms ease-out 630ms both;
+}
+.planes-explosion-ring {
+  stroke-width: 2.5;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: planes-blast-ring 850ms cubic-bezier(0.16, 1, 0.3, 1) 650ms both;
+}
+.planes-explosion-ring--late {
+  stroke-width: 1.2;
+  animation-delay: 800ms;
+}
+.planes-explosion-debris {
+  stroke-width: 2.5;
+  animation: planes-debris 800ms cubic-bezier(0.16, 1, 0.3, 1) 660ms both;
+}
+.planes-explosion-debris--1 {
+  stroke: #c17f35;
+  stroke-width: 3;
+  animation-delay: 700ms;
+}
+.planes-explosion-debris--2 {
+  stroke-width: 1.5;
+  animation-delay: 740ms;
+}
+@keyframes planes-flash {
+  0% {
+    opacity: 0;
+    transform: scale(0.1);
+  }
+  15% {
+    opacity: 0.95;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.8);
+  }
+}
+@keyframes planes-blast-ring {
+  0% {
+    opacity: 0;
+    transform: scale(0.25);
+  }
+  10% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(3);
+  }
+}
+@keyframes planes-debris {
+  0% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+  10% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(calc(-1 * var(--burst-distance)));
+  }
+}
+.planes-round-result {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: #10232edb;
+  pointer-events: auto;
+}
+.planes-round-result-paper {
+  width: min(620px, 100%);
+  padding: 48px 32px 34px;
+  text-align: center;
+  background: #f7f3e8 url("/assets/planes/notebook-paper.webp") center / 520px;
+  border-radius: 3px;
+  box-shadow: 0 12px 40px #071c2650;
+}
+.planes-round-result-paper h2 {
+  margin: 0 0 20px;
+  font: 400 clamp(38px, 6vw, 66px)/1.08 var(--font-heading);
+  color: #244b70;
+  overflow-wrap: anywhere;
+}
+.planes-round-result-paper p {
+  margin: 0;
+  font-size: 20px;
+}
+.planes-result-count {
+  display: block;
+  margin-top: 10px;
+  color: #a44937;
+  font: 400 80px/1.1 var(--font-heading);
+  font-variant-numeric: tabular-nums;
+  animation: planes-count 220ms ease-out both;
+}
+@keyframes planes-count {
+  from {
+    opacity: 0.35;
+    transform: scale(1.12);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
   }
 }
 @media (max-width: 900px) {
@@ -562,6 +775,12 @@
   .planes-play-area--battle {
     gap: 14px;
   }
+  .planes-play-area:not(.planes-play-area--battle) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .planes-setup-tools {
+    padding-top: 0;
+  }
   .planes-play-area--battle .paper-grid {
     grid-template-columns: 16px repeat(10, minmax(0, 1fr));
   }
@@ -580,7 +799,8 @@
   .planes-shot-trail,
   .planes-shot-core,
   .planes-shot-sparks,
-  .planes-shot-contact {
+  .planes-shot-contact,
+  .planes-shot-explosion {
     display: none;
   }
   .planes-shot-impact {
@@ -590,7 +810,37 @@
   }
   .planes-notebook .paper-cell--landing::before,
   .planes-notebook .paper-cell--landing::after,
-  .planes-notebook .paper-cell--landing-head {
+  .planes-notebook .paper-cell--landing-head,
+  .planes-result-count {
     animation: none;
   }
+}
+
+/* Player identity is tied to the authoritative seat, including the reverse view. */
+.planes-side-0 {
+  --player-color: #244b70;
+}
+.planes-side-1 {
+  --player-color: #a44937;
+}
+.planes-player strong {
+  color: var(--player-color, #244b70);
+}
+.planes-player--turn strong::before {
+  background: var(--player-color, #244b70);
+}
+.planes-notebook .planes-side-0 > h3,
+.planes-notebook .planes-side-1 > h3 {
+  color: var(--player-color);
+  border-bottom: 1px solid currentColor;
+  padding-bottom: 6px;
+  margin-bottom: 8px;
+}
+.planes-shot-trail,
+.planes-shot-core {
+  stroke: var(--player-color, #244b70);
+}
+.planes-round-result-paper h2,
+.planes-round-result-paper .planes-result-count {
+  color: var(--player-color, #244b70);
 }

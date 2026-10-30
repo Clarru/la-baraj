@@ -116,6 +116,7 @@ export type CruceView = Omit<
     ready: boolean;
     awayUntil: number | null;
   })[];
+  turnOverdue?: boolean;
   deadline: number | null;
   host: CruceSeat | null;
 };
@@ -495,11 +496,15 @@ export function moveCruce(
     if (!legal) g.violations.push({ seat, card: action.card, round: g.round });
     if (g.trump === null) g.trump = suitOf(action.card);
     let announcement = 0;
+    const eligibleAnnouncement = canAnnounce(g, seat, action.card);
     if (action.announce) {
       requireRule(
-        canAnnounce(g, seat, action.card),
+        eligibleAnnouncement,
         "Poți anunța doar când ieși cu treiarul sau pătrarul și le ai pe amândouă în mână.",
       );
+    }
+    // A legal held pair is called automatically, including plays from older clients.
+    if (eligibleAnnouncement) {
       announcement = suitOf(action.card) === g.trump ? 40 : 20;
       g.announcements[seat] += announcement;
       g.announced.push(suitOf(action.card));

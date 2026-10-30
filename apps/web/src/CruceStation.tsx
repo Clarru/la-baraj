@@ -1,4 +1,5 @@
-import { useRef } from "react";
+import { useRef, useMemo, useEffect } from "react";
+import { createCruceCardGeometry } from "./cruce-card-geometry";
 import { Text, useTexture } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { RigidBody, CuboidCollider } from "@react-three/rapier";
@@ -43,6 +44,8 @@ export function CruceBench({
   );
 }
 function PublicTrick() {
+  const cardGeometry = useMemo(createCruceCardGeometry, []);
+  useEffect(() => () => cardGeometry.dispose(), [cardGeometry]);
   const meshes = useRef<(T.Mesh | null)[]>([]),
     seen = useRef(new Map<string, number>());
   useFrame(() => {
@@ -79,8 +82,8 @@ function PublicTrick() {
             position={[p[0] - TABLE.x, p[1] - TABLE.ground, p[2] - TABLE.z]}
             rotation={[-Math.PI / 2, 0, seat * 0.1]}
             visible={false}
+            geometry={cardGeometry}
           >
-            <planeGeometry args={[0.085, 0.137]} />
             <meshStandardMaterial
               color="#fffdf4"
               side={T.DoubleSide}

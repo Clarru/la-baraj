@@ -1,0 +1,12 @@
+{
+  "restoredExactly": true,
+  "baselineFiles": 230,
+  "removedAdditions": [
+    "__planes-sequence-526edc5-qa.html",
+    "assets/planes-presentation-ecTd1xad.js",
+    "assets/planes-presentation-w-ZFvdfO.css",
+    "__planes-sequence-e2b22f7-qa.html",
+    "assets/planes-presentation-CE6qbSve.js"
+  ],
+  "indexSha256": "260d7c7bfe126117a4216a12151bb369dd80bf9cc9a5a2ebdc361174b37b1feb"
+}

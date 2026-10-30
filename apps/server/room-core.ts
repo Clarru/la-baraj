@@ -219,6 +219,27 @@ export class RoomCore {
       const cruceSeat = cruceSeatSide(c.state!.player.seatId);
       const side = planesSeatSide(c.state!.player.seatId),
         actor = this.tableActor(c);
+      const actualCruce = actor ? this.cruce.sideFor(actor) : null;
+      if (
+        cruceSeat !== null &&
+        actualCruce !== null &&
+        actualCruce !== cruceSeat
+      ) {
+        c.setState({
+          ...c.state!,
+          player: {
+            ...c.state!.player,
+            ...cruceSeatPose(actualCruce),
+            seatId: CRUCE_SEATS[actualCruce],
+            activity: "sit",
+            animation: "Activity_Sit",
+            posture: "standing",
+          },
+        });
+        changed = true;
+        this.broadcast({ type: "pose", player: c.state!.player }, c);
+        continue;
+      }
       if (
         (side !== null && (!actor || this.planes.sideFor(actor) !== side)) ||
         (cruceSeat !== null &&
@@ -260,7 +281,11 @@ export class RoomCore {
       ),
     );
   }
-  snapshot(connection: RoomConnection, now = Date.now()) {
+  snapshot(
+    connection: RoomConnection,
+    now = Date.now(),
+    recovery?: import("../../packages/shared/protocol").CruceRecovery,
+  ) {
     if (!connection.state) return;
     this.send(connection, {
       type: "snapshot",
@@ -288,6 +313,7 @@ export class RoomCore {
       planes: this.planes.view(this.tableActor(connection)),
       cruce: this.cruce.view(this.tableActor(connection)),
       ...(this.runtime.arcade ? { features: { arcade2048: true } } : {}),
+      ...(recovery ? { cruceRecovery: recovery } : {}),
       ...(connection.state.home ? { home: connection.state.home } : {}),
     });
   }
@@ -455,6 +481,21 @@ export class RoomCore {
         player.speed =
           player.boat.velocity[0] * Math.sin(player.yaw) +
           player.boat.velocity[1] * Math.cos(player.yaw);
+      }
+      // A pose queued before an automatic reseat cannot move the actor back.
+      const tableActor = this.tableActor(connection);
+      const tableSeat = tableActor ? this.cruce.sideFor(tableActor) : null;
+      if (tableSeat !== null) {
+        Object.assign(player, cruceSeatPose(tableSeat));
+        player.seatId = CRUCE_SEATS[tableSeat];
+        player.vehicle = "none";
+        if (player.boat) player.boat = { ...player.boat, velocity: [0, 0] };
+        player.speed = 0;
+        player.posture = "standing";
+        if (!["sit", "sit-down", "stand-up"].includes(player.activity)) {
+          player.activity = "sit";
+          player.animation = "Activity_Sit";
+        }
       }
       connection.setState({ ...current, pose, player, boatPoseAt: now });
       resolveRoomBoatCollision(connection, current, this.active(), now);
@@ -697,7 +738,37 @@ export class RoomCore {
       return;
     }
     if (message.type === "sync") {
-      this.snapshot(connection);
+      const before = this.cruce.view(null);
+      let transitioned = false,
+        failed = false;
+      try {
+        transitioned = await this.cruce.expire(now);
+        if (transitioned) {
+          this.reconcileGameSeats();
+          this.broadcastCruce();
+        }
+      } catch (error) {
+        failed = true;
+        console.error(
+          "cruce_sync_failed",
+          error instanceof Error ? error.message : "unknown",
+        );
+      }
+      const recovery = {
+        phase: before.phase,
+        revision: before.revision,
+        deadline: before.deadline,
+        trickCount: before.trick.length,
+        awayCount: before.players.filter((p) => p && !p.online).length,
+        transitioned,
+        ...(failed ? { error: true } : {}),
+      };
+      if (
+        before.phase === "trick" &&
+        (before.deadline === null || before.deadline < now - 1000)
+      )
+        console.warn("cruce_sync_recovery", JSON.stringify(recovery));
+      this.snapshot(connection, now, recovery);
       return;
     }
     if (message.type === "hello") {

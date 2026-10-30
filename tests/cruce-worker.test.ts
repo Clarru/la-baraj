@@ -17,7 +17,11 @@ import {
 import { type TableActor } from "../apps/server/planes-table";
 import { parseClientMessage } from "../packages/shared/protocol";
 import { nextWorldDeadline } from "../apps/server/world-alarm";
-import type { CruceAction, CruceSeat } from "../packages/shared/cruce";
+import {
+  suitOf,
+  type CruceAction,
+  type CruceSeat,
+} from "../packages/shared/cruce";
 const actors: TableActor[] = [0, 1, 2, 3].map((i) => ({
   owner: `home:2:${i}`,
   socket: `s${i}`,
@@ -298,6 +302,189 @@ describe("Cruce authoritative table", () => {
     expect(t.view(null).deadline).toBe(before.deadline);
     await expect(t.join(actors[0], 1, 2000)).rejects.toThrow();
   });
+  it("automatically seats every two-player pairing opposite and keeps host/request identity", async () => {
+    for (const first of [0, 1, 2, 3] as const)
+      for (const second of [0, 1, 2, 3] as const) {
+        if (first === second) continue;
+        const t = new CruceTable({ save: async () => {} });
+        await t.join(actors[first], first, 1000);
+        await t.join(actors[second], second, 1000);
+        const revision = t.view(null).revision,
+          settings = {
+            mode: "duel" as const,
+            target: 11 as const,
+            iber: false,
+            cheating: false,
+          };
+        await t.act(
+          actors[first],
+          { kind: "configure", settings },
+          "duel",
+          revision,
+          1100,
+        );
+        const a = t.view(actors[first]),
+          b = t.view(actors[second]);
+        expect([a.you, b.you].sort()).toEqual([0, 2]);
+        expect(a.host).toBe(a.you);
+        expect(a.players.filter(Boolean)).toHaveLength(2);
+        expect(a.players.every((p) => !p?.ready)).toBe(true);
+        const applied = a.revision;
+        await t.act(
+          actors[first],
+          { kind: "configure", settings },
+          "duel",
+          revision,
+          1101,
+        );
+        expect(t.view(null).revision).toBe(applied);
+        await expect(
+          t.act(actors[second], { kind: "ready" }, "stale", revision, 1102),
+        ).rejects.toThrow(/actualizat/);
+        await Promise.all(
+          [actors[first], actors[second]].map((actor, index) =>
+            t.act(actor, { kind: "ready" }, `ready${index}`, applied, 1200),
+          ),
+        );
+        expect(t.view(null).phase).toBe("cut");
+      }
+  });
+  it("handles three-player capacity, reservations and failed persistence without ejecting anybody", async () => {
+    let fail = false;
+    const t = new CruceTable({
+      save: async () => {
+        if (fail) throw Error("storage down");
+      },
+    });
+    for (const seat of [0, 2, 3] as const)
+      await t.join(actors[seat], seat, 1000);
+    const before = t.view(null);
+    await expect(
+      act(
+        t,
+        0,
+        {
+          kind: "configure",
+          settings: { mode: "duel", target: 11, iber: false, cheating: false },
+        },
+        1100,
+      ),
+    ).rejects.toThrow(/3 jucători/);
+    expect(t.view(null)).toEqual(before);
+    fail = true;
+    await expect(
+      act(
+        t,
+        0,
+        {
+          kind: "configure",
+          settings: {
+            mode: "trio-standard",
+            target: 11,
+            iber: false,
+            cheating: false,
+          },
+        },
+        1100,
+      ),
+    ).rejects.toThrow("storage down");
+    expect(t.view(null)).toEqual(before);
+    fail = false;
+    await t.disconnect(actors[3], 1150);
+    await act(
+      t,
+      0,
+      {
+        kind: "configure",
+        settings: {
+          mode: "trio-standard",
+          target: 11,
+          iber: false,
+          cheating: false,
+        },
+      },
+      1200,
+    );
+    expect(t.view(null).players[3]).toBeNull();
+    expect(t.view(null).players[1]?.online).toBe(false);
+    const replacement = { ...actors[3], socket: "rejoined-reservation" };
+    expect(await t.resume(replacement, 1300)).toBe(1);
+    expect(t.view(replacement).you).toBe(1);
+  });
+  it("plays and scores a complete duel after automatic reseating and mid-hand reconnect", async () => {
+    const people = [{ ...actors[1] }, { ...actors[3] }],
+      t = new CruceTable({ save: async () => {}, random: () => 0.43 });
+    let now = 1000,
+      plays = 0,
+      resumed = false;
+    await t.join(people[0], 1, now);
+    await t.join(people[1], 3, now);
+    await t.act(
+      people[0],
+      {
+        kind: "configure",
+        settings: { mode: "duel", target: 11, iber: false, cheating: false },
+      },
+      "configure",
+      t.view(null).revision,
+      ++now,
+    );
+    for (const actor of people)
+      await t.act(
+        actor,
+        { kind: "ready" },
+        `ready:${actor.socket}`,
+        t.view(null).revision,
+        ++now,
+      );
+    for (
+      let step = 0;
+      step < 100 && !["round-end", "finished"].includes(t.view(null).phase);
+      step++
+    ) {
+      const v = t.view(null);
+      if (v.phase === "trick") {
+        now = v.deadline!;
+        await t.expire(now);
+        continue;
+      }
+      if (plays === 2 && !resumed) {
+        const old = people[1],
+          seat = t.sideFor(old),
+          hand = t.view(old).hand;
+        await t.disconnect(old, ++now);
+        people[1] = { ...old, socket: "duel-reconnect" };
+        expect(await t.resume(people[1], ++now)).toBe(seat);
+        expect(t.view(people[1]).hand).toEqual(hand);
+        resumed = true;
+      }
+      const current = t.view(null),
+        actor = people.find((a) => t.sideFor(a) === current.turn)!;
+      let action: CruceAction;
+      if (current.phase === "cut") action = { kind: "cut", cut: false };
+      else if (current.phase === "bidding")
+        action = { kind: "bid", value: current.bid ? 0 : 1 };
+      else if (current.phase === "trump")
+        action = { kind: "trump", suit: suitOf(t.view(actor).hand[0]) };
+      else {
+        expect(current.phase).toBe("playing");
+        action = {
+          kind: "play",
+          card: t.view(actor).legalCards[0],
+          announce: false,
+        };
+        plays++;
+      }
+      await t.act(actor, action, `step${step}`, current.revision, ++now);
+    }
+    expect(plays).toBe(24);
+    expect(resumed).toBe(true);
+    expect(t.view(null).phase).toBe("round-end");
+    const result = t.view(null);
+    expect(result.roundPoints.reduce((a, b) => a + b, 0)).toBe(
+      120 + result.announcements.reduce((a, b) => a + b, 0),
+    );
+  });
   it("rejects corrupt saved decks rather than duplicating cards", async () => {
     const { t, saved } = await table();
     await start(t);
@@ -321,6 +508,86 @@ class Connection implements RoomConnection {
   }
 }
 describe("Cruce room integration", () => {
+  it("broadcasts reseated identities and rejects queued old positions without losing either player", async () => {
+    const connections = [new Connection(), new Connection()],
+      cruce = new CruceTable({ save: async () => {} });
+    const room = new RoomCore({
+      connections: () => connections,
+      saveFire: async () => {},
+      homes: new HomeAssignments({ save: async () => {} }),
+      cruce,
+    });
+    let now = 100000;
+    const send = async (i: number, m: ClientMessage) => {
+      now += 1000;
+      await room.message(connections[i], JSON.stringify(m), now);
+    };
+    for (const i of [0, 1]) {
+      room.connect(connections[i], `pair${i}`, now);
+      await send(i, { type: "hello", nickname: `Pair ${i}` });
+      const seat = (i ? 3 : 1) as CruceSeat;
+      await send(i, {
+        type: "pose",
+        pose: {
+          ...cruceSeatPose(seat),
+          animation: "Idle_Neutral",
+          activity: "none",
+          vehicle: "none",
+        },
+      });
+      await send(i, {
+        type: "seat",
+        seatId: CRUCE_SEATS[seat],
+        requestId: `join${i}`,
+      });
+    }
+    await send(0, {
+      type: "cruce-action",
+      requestId: "duel",
+      revision: cruce.view(null).revision,
+      action: {
+        kind: "configure",
+        settings: { mode: "duel", target: 11, iber: false, cheating: false },
+      },
+    });
+    for (const i of [0, 1]) {
+      const seat = (i ? 2 : 0) as CruceSeat;
+      expect(connections[i].state!.player.seatId).toBe(CRUCE_SEATS[seat]);
+      expect(connections[i].state!.player.position).toEqual(
+        cruceSeatPose(seat).position,
+      );
+      expect(
+        connections[i].messages.filter((m) => m.type === "cruce").at(-1),
+      ).toMatchObject({ view: { you: seat, settings: { mode: "duel" } } });
+      await send(i, {
+        type: "pose",
+        pose: {
+          ...cruceSeatPose((i ? 3 : 1) as CruceSeat),
+          animation: "Idle_Neutral",
+          activity: "none",
+          vehicle: "none",
+        },
+      });
+      expect(connections[i].state!.player.position).toEqual(
+        cruceSeatPose(seat).position,
+      );
+      expect(connections[i].state!.player.activity).toBe("sit");
+    }
+    const revision = cruce.view(null).revision;
+    await Promise.all(
+      [0, 1].map((i) =>
+        send(i, {
+          type: "cruce-action",
+          requestId: `ready${i}`,
+          revision,
+          action: { kind: "ready" },
+        }),
+      ),
+    );
+    expect(cruce.view(null).phase).toBe("cut");
+    expect(cruce.view(null).players.filter(Boolean)).toHaveLength(2);
+  });
+
   it("requires proximity, reserves authoritative seats and retains Cruce on rejected Planes transfer", async () => {
     const connections = [
       new Connection(),

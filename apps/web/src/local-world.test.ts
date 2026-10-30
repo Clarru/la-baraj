@@ -130,7 +130,10 @@ describe("local authority on the existing 4173 origin", () => {
       }
       expect(played).toBe(24);
       expect(people[0].view.phase).toBe("round-end");
-      expect(people[0].view.roundPoints.reduce((a, b) => a + b)).toBe(120);
+      expect(
+        people[0].view.roundPoints.reduce((a, b) => a + b) -
+          people[0].view.announcements.reduce((a, b) => a + b),
+      ).toBe(120);
       for (const p of people) {
         for (const m of p.messages.filter((m) => m.type === "cruce"))
           expect(m.view).not.toHaveProperty("hands");

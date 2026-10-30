@@ -6,7 +6,7 @@
   "installCommand": "npm ci",
   "rewrites": [
     {
-      "source": "/((?!assets/|fonts/).*)",
+      "source": "/((?!api/|assets/|fonts/).*)",
       "destination": "/index.html"
     }
   ]

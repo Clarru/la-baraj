@@ -6,6 +6,7 @@ import {
 } from "./Arcade2048";
 import { useArcade2048 } from "./use-arcade2048";
 import type { ArcadeDirection } from "../../../packages/shared/arcade2048";
+import { reportClientDiagnostic } from "./client-diagnostics";
 import { cruceWorldLab } from "./cruce-world-test";
 import { CruceWorldLab } from "./CruceWorldLab";
 import { LocalWorldRoom, localWorldEnabled } from "./LocalWorldRoom";
@@ -61,6 +62,7 @@ import { ControlsHelp, GameHeader, GameMenu } from "./GameMenu";
 import { captureGameKey, type GamePanel } from "./game-input";
 import { planesSeatSide } from "../../../packages/shared/planes-station";
 import { requestTableStand } from "./planes-activity";
+import { blockPlanesResultExit } from "./planes-input";
 import { PlanesEntry } from "./PlanesEntry";
 import { planesLab, LocalPlanesRoom, PlanesLabControls } from "./PlanesLab";
 import {
@@ -88,6 +90,9 @@ class SceneBoundary extends Component<
   state = { error: null as string | null };
   static getDerivedStateFromError(error: Error) {
     return { error: error.message };
+  }
+  componentDidCatch(error: Error) {
+    reportClientDiagnostic("scene_error", {}, error);
   }
   render() {
     return this.state.error ? (
@@ -353,6 +358,7 @@ export default function Game({ initialName }: { initialName: string }) {
         return;
       }
 
+      if (blockPlanesResultExit(event, planesOpen && panel === null)) return;
       if (
         (cruceOpen || ownCruceSeat !== null) &&
         event.repeat &&
@@ -807,6 +813,7 @@ export default function Game({ initialName }: { initialName: string }) {
                   requestTableStand();
                 }}
                 onSit={(seat) => room.claimSeat(CRUCE_SEATS[seat])}
+                onSync={() => room.syncCruce()}
               />
             </Suspense>
           )}

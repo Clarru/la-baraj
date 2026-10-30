@@ -1,5 +1,6 @@
 /** Isolated visual fixture. The actual PlanesBoard and rules; no sockets or saved state. */
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { blockPlanesResultExit } from "../../apps/web/src/planes-input";
 import { createRoot } from "react-dom/client";
 import PlanesBoard from "../../apps/web/src/PlanesBoard";
 import {
@@ -11,6 +12,8 @@ import {
   type PlanesView,
   type Shot,
 } from "../../packages/shared/planes";
+import "../../apps/web/src/style.css";
+import "../../apps/web/src/game-art.css";
 import "./planes-presentation.css";
 const fleet: Plane[] = [
   { x: 3, y: 2, rotation: 0 },
@@ -54,52 +57,99 @@ function Review() {
     [open, setOpen] = useState(true),
     [connected, setConnected] = useState(true);
   const [result, setResult] = useState<Shot["result"]>("body");
+  const [loading, setLoading] = useState(false);
+  useEffect(() => {
+    if (!loading) return;
+    const timeout = setTimeout(() => setLoading(false), 150);
+    return () => clearTimeout(timeout);
+  }, [loading]);
+  useEffect(() => {
+    const capture = (event: KeyboardEvent) => {
+      if (blockPlanesResultExit(event, open)) return;
+      if (
+        !event.ctrlKey &&
+        !event.metaKey &&
+        !event.altKey &&
+        event.code === "Escape"
+      )
+        setOpen((current) => !current);
+      if (
+        !event.ctrlKey &&
+        !event.metaKey &&
+        !event.altKey &&
+        event.code === "KeyF"
+      )
+        setOpen(false);
+    };
+    window.addEventListener("keydown", capture, true);
+    return () => window.removeEventListener("keydown", capture, true);
+  }, [open]);
+  function applyShot(
+    before: PlanesView,
+    side: 0 | 1,
+    x: number,
+    y: number,
+  ): PlanesView {
+    const shot = resolveShot(fleet, before.shots[side], x, y);
+    const won = fleet.every((plane) =>
+      destroyed(plane, [...before.shots[side], shot]),
+    );
+    return {
+      ...before,
+      revision: before.revision + 1,
+      turn: won ? null : side === 0 ? 1 : 0,
+      players: before.players.map((player, index) =>
+        player
+          ? {
+              ...player,
+              ready: won ? false : player.ready,
+              remaining:
+                index === (side === 0 ? 1 : 0)
+                  ? fleet.filter(
+                      (plane) =>
+                        !destroyed(plane, [...before.shots[side], shot]),
+                    ).length
+                  : player.remaining,
+            }
+          : null,
+      ) as PlanesView["players"],
+      ...(won
+        ? ({
+            phase: "finished",
+            reason: "fleet",
+            winner: side,
+          } as const)
+        : {}),
+      shots:
+        side === 0
+          ? [[...before.shots[0], shot], before.shots[1]]
+          : [before.shots[0], [...before.shots[1], shot]],
+      deadline: won ? null : Date.now() + 60000,
+      event: {
+        id: before.revision + 1,
+        at: Date.now(),
+        actor: "fixture",
+        target: "fixture",
+        result: shot.result,
+        winner: won ? side : null,
+      },
+    };
+  }
   function accept(side: 0 | 1, x: number, y: number) {
+    setView((before) => applyShot(before, side, x, y));
+  }
+  function rapidExchange() {
     setView((before) => {
-      const shot = resolveShot(fleet, before.shots[side], x, y);
-      const won = fleet.every((plane) =>
-        destroyed(plane, [...before.shots[side], shot]),
-      );
-      return {
-        ...before,
-        revision: before.revision + 1,
-        turn: won ? null : side === 0 ? 1 : 0,
-        players: before.players.map((player, index) =>
-          player
-            ? {
-                ...player,
-                ready: won ? false : player.ready,
-                remaining:
-                  index === (side === 0 ? 1 : 0)
-                    ? fleet.filter(
-                        (plane) =>
-                          !destroyed(plane, [...before.shots[side], shot]),
-                      ).length
-                    : player.remaining,
-              }
-            : null,
-        ) as PlanesView["players"],
-        ...(won
-          ? ({
-              phase: "finished",
-              reason: "fleet",
-              winner: side,
-            } as const)
-          : {}),
-        shots:
-          side === 0
-            ? [[...before.shots[0], shot], before.shots[1]]
-            : [before.shots[0], [...before.shots[1], shot]],
-        deadline: won ? null : Date.now() + 60000,
-        event: {
-          id: before.revision + 1,
-          at: Date.now(),
-          actor: "fixture",
-          target: "fixture",
-          result: shot.result,
-          winner: won ? side : null,
-        },
-      };
+      let next = before;
+      for (let i = 0; i < 3 && next.turn !== null; i++) {
+        const side = next.turn;
+        const point = Array.from({ length: 100 }, (_, n) => ({
+          x: n % 10,
+          y: Math.floor(n / 10),
+        })).find((p) => !targetUnavailable(p.x, p.y, next.shots[side]));
+        if (point) next = applyShot(next, side, point.x, point.y);
+      }
+      return next;
     });
   }
   function incoming() {
@@ -153,6 +203,57 @@ function Review() {
         >
           Reset match
         </button>
+        <button disabled={view.phase !== "playing"} onClick={rapidExchange}>
+          Rapid accepted exchange
+        </button>
+        <button
+          onClick={() =>
+            setView((previous) => ({
+              ...initial(),
+              round: previous.round + 1,
+              phase: "setup",
+              turn: null,
+              players: initial().players.map((p) =>
+                p ? { ...p, ready: false } : null,
+              ) as PlanesView["players"],
+            }))
+          }
+        >
+          Show placement
+        </button>
+        <button
+          onClick={() =>
+            setView((previous) => ({
+              ...previous,
+              phase: "finished",
+              winner: 0,
+              reason: "fleet",
+              turn: null,
+              players: previous.players.map((p) =>
+                p ? { ...p, ready: false } : null,
+              ) as PlanesView["players"],
+            }))
+          }
+        >
+          Show winner
+        </button>
+        <button
+          onClick={() => {
+            setLoading(true);
+            setView((previous) => ({
+              ...previous,
+              phase: "finished",
+              winner: 0,
+              reason: "fleet",
+              turn: null,
+              players: previous.players.map((p) =>
+                p ? { ...p, ready: false } : null,
+              ) as PlanesView["players"],
+            }));
+          }}
+        >
+          Load finished history
+        </button>
         <button onClick={() => setOpen(!open)}>
           {open ? "Fold sheet" : "Open sheet"}
         </button>
@@ -165,7 +266,7 @@ function Review() {
         </output>
       </aside>
       <PlanesBoard
-        view={view}
+        view={loading ? null : view}
         open={open}
         connected={connected}
         onClose={() => setOpen(false)}
