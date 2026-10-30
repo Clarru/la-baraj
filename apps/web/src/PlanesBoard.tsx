@@ -25,6 +25,7 @@ import {
   rotateGrab,
   validPlacement,
 } from "./plane-placement";
+import { PlanesShot, usePresentedShot, type PresentedShot } from "./PlanesShot";
 import "./planes.css";
 
 export type PlanesBoardProps = {
@@ -59,7 +60,7 @@ function PaperGrid({
   selected = -1,
   active = false,
   label,
-  small = false,
+  impact,
   dragPreview,
   onPlanePointerDown,
   onPlanePointerMove,
@@ -73,7 +74,7 @@ function PaperGrid({
   selected?: number;
   active?: boolean;
   label: string;
-  small?: boolean;
+  impact?: PresentedShot | null;
   dragPreview?: { plane: Plane; index: number; valid: boolean } | null;
   onPlanePointerDown?: (
     event: PointerEvent<HTMLDivElement>,
@@ -105,7 +106,7 @@ function PaperGrid({
   );
   return (
     <div
-      className={`paper-grid${small ? " paper-grid--small" : ""}${onPlanePointerDown ? " paper-grid--editable" : ""}`}
+      className={`paper-grid${onPlanePointerDown ? " paper-grid--editable" : ""}`}
       role="group"
       aria-label={label}
       data-drop-valid={dragPreview ? String(dragPreview.valid) : undefined}
@@ -156,7 +157,7 @@ function PaperGrid({
                     ? "cockpit"
                     : "plane"
                   : "empty");
-            const classes = [
+            let classes = [
               "paper-cell",
               `paper-cell--${status}`,
               index === selected && plane ? "paper-cell--selected" : "",
@@ -173,6 +174,9 @@ function PaperGrid({
             ]
               .filter(Boolean)
               .join(" ");
+            if (impact?.shot.x === x && impact.shot.y === y) {
+              classes += ` paper-cell--landing paper-cell--landing-${impact.shot.result}`;
+            }
             const description = `${coordinate({ x, y })}${status !== "empty" ? ` · ${status}` : ""}`;
             return onCell ? (
               <button
@@ -191,6 +195,8 @@ function PaperGrid({
                 className={classes}
                 key={x}
                 role="img"
+                data-x={x}
+                data-y={y}
                 aria-label={description}
               />
             );
@@ -236,6 +242,8 @@ export default function PlanesBoard({
   onClose,
   onLeave,
 }: PlanesBoardProps) {
+  const presentation = usePresentedShot(view, connected, open);
+  const playAreaRef = useRef<HTMLDivElement>(null);
   const [draft, setDraft] = useState<Plane[]>(() => randomFleet());
   const [selected, setSelected] = useState(0),
     [pending, setPending] = useState(false),
@@ -272,6 +280,7 @@ export default function PlanesBoard({
     ["lobby", "setup", "finished"].includes(phase) &&
     !own?.ready &&
     !pending &&
+    !presentation &&
     connected;
   useEffect(() => {
     if (!canPlace || !open) {
@@ -299,7 +308,7 @@ export default function PlanesBoard({
     }
   }, [view?.round, you, view?.ownPlanes, phase]);
   const act = async (action: PlanesAction) => {
-    if (!view || pending) return;
+    if (!view || pending || presentation) return;
     setPending(true);
     setError("");
     try {
@@ -454,33 +463,42 @@ export default function PlanesBoard({
         Math.ceil(((deadline ?? now) - now) / 1000),
       ),
     );
-  const status = !connected
-    ? "Reconnecting to the table…"
-    : phase === "finished"
-      ? winner === null
-        ? "Round over"
-        : you === winner
-          ? "You won."
-          : you === null
-            ? `${view?.players[winner]?.name ?? "The other player"} won.`
-            : "Your opponent won."
-      : away
-        ? `${away.name} is reconnecting · ${seconds(away.awayUntil)}s`
-        : phase === "playing"
-          ? you === null
-            ? `${view?.players[view.turn ?? 0]?.name}'s turn`
-            : turn
-              ? "Your turn. Pick a square."
-              : `${opponent?.name ?? "Your opponent"} is thinking…`
-          : !opponent && you !== null
-            ? "Waiting for a friend in the opposite seat."
+  const showBattle = phase === "playing" || Boolean(presentation);
+  const shotResult = (shot: Shot) =>
+    shot.result === "head"
+      ? "Cockpit hit. Plane down."
+      : shot.result === "body"
+        ? "Body hit."
+        : "Air.";
+  const status = presentation
+    ? `${presentation.incoming ? (opponent?.name ?? "Opponent") : "You"} fired at ${coordinate(presentation.shot)} · ${shotResult(presentation.shot)}`
+    : !connected
+      ? "Reconnecting to the table…"
+      : phase === "finished"
+        ? winner === null
+          ? "Round over"
+          : you === winner
+            ? "You won."
             : you === null
-              ? phase === "lobby"
-                ? "Take a seat to play. Or stay and watch."
-                : "The players are placing their planes."
-              : own?.ready
-                ? "You're ready. Waiting for your opponent."
-                : "Arrange your planes, then get ready.";
+              ? `${view?.players[winner]?.name ?? "The other player"} won.`
+              : "Your opponent won."
+        : away
+          ? `${away.name} is reconnecting · ${seconds(away.awayUntil)}s`
+          : phase === "playing"
+            ? you === null
+              ? `${view?.players[view.turn ?? 0]?.name}'s turn`
+              : turn
+                ? "Your turn. Pick a square."
+                : `${opponent?.name ?? "Your opponent"} is thinking…`
+            : !opponent && you !== null
+              ? "Waiting for a friend in the opposite seat."
+              : you === null
+                ? phase === "lobby"
+                  ? "Take a seat to play. Or stay and watch."
+                  : "The players are placing their planes."
+                : own?.ready
+                  ? "You're ready. Waiting for your opponent."
+                  : "Arrange your planes, then get ready.";
   const keyboard = (event: KeyboardEvent) => {
     event.stopPropagation();
     if (event.key === "Escape") {
@@ -523,7 +541,8 @@ export default function PlanesBoard({
   };
   const attackShots = you === null ? [] : (view?.shots[you] ?? []),
     incoming = you === null ? [] : (view?.shots[otherSide(you)] ?? []);
-  const latest = attackShots.at(-1);
+  const latest = attackShots.at(-1),
+    latestIncoming = incoming.at(-1);
   return (
     <section
       ref={paperRef}
@@ -535,6 +554,7 @@ export default function PlanesBoard({
       data-testid="planes-board"
       data-phase={phase}
       data-side={you ?? "spectator"}
+      data-shot-presenting={presentation ? "true" : undefined}
     >
       <header className="planes-heading">
         <h2>Planes</h2>
@@ -617,35 +637,53 @@ export default function PlanesBoard({
         </div>
       ) : (
         <div
-          className={`planes-play-area${phase === "playing" ? " planes-play-area--battle" : ""}`}
+          ref={playAreaRef}
+          className={`planes-play-area${showBattle ? " planes-play-area--battle" : ""}`}
         >
-          {phase === "playing" ? (
+          {showBattle ? (
             <>
-              <div className="planes-main-grid">
-                <h3>{opponent?.name ?? "Opponent"}'s planes</h3>
-                <PaperGrid
-                  shots={attackShots}
-                  onCell={(p) => void act({ kind: "shot", ...p })}
-                  active={Boolean(turn && !away && !pending && connected)}
-                  label="Opponent target grid"
-                />
-                <p className="planes-shot-note">
-                  {latest
-                    ? `${coordinate(latest)} · ${latest.result === "head" ? "Head hit. Plane down." : latest.result === "body" ? "Body hit. Find the cockpit." : "Miss."}`
-                    : turn
-                      ? "Choose a square to fire."
-                      : ""}
-                </p>
-              </div>
-              <div className="planes-fleet-mini">
+              <div className="planes-own-grid">
                 <h3>Your planes</h3>
                 <PaperGrid
                   planes={view?.ownPlanes ?? []}
                   shots={incoming}
-                  small
+                  impact={presentation?.incoming ? presentation : null}
                   label="Your private fleet"
                 />
+                <p className="planes-shot-note">
+                  {latestIncoming
+                    ? `${opponent?.name ?? "Opponent"} fired ${coordinate(latestIncoming)} · ${shotResult(latestIncoming)}`
+                    : "Your planes are visible only to you."}
+                </p>
               </div>
+              <div className="planes-main-grid">
+                <h3>{opponent?.name ?? "Opponent"}'s planes</h3>
+                <PaperGrid
+                  shots={attackShots}
+                  impact={
+                    presentation && !presentation.incoming ? presentation : null
+                  }
+                  onCell={(p) => void act({ kind: "shot", ...p })}
+                  active={Boolean(
+                    turn && !away && !pending && !presentation && connected,
+                  )}
+                  label="Opponent target grid"
+                />
+                <p className="planes-shot-note">
+                  {latest
+                    ? `${coordinate(latest)} · ${shotResult(latest)}`
+                    : turn
+                      ? "Choose a square to fire."
+                      : "Waiting for your turn."}
+                </p>
+              </div>
+              {presentation && (
+                <PlanesShot
+                  key={`${presentation.round}:${presentation.id}`}
+                  presentation={presentation}
+                  area={playAreaRef}
+                />
+              )}
             </>
           ) : (
             <>
@@ -768,7 +806,7 @@ export default function PlanesBoard({
             className="planes-text-button planes-leave"
             onClick={onLeave}
           >
-            {phase === "playing" ? "Leave match · forfeit" : "Stand up"}
+            {showBattle ? "Leave match · forfeit" : "Stand up"}
           </button>
         )}
       </footer>
