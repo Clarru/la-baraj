@@ -32,3 +32,10 @@ The prone exporter accepts source and target rig paths separately. All IK and sk
 The first released greeting used independent local-axis wrist/thumb offsets. Close-up review exposed a claw-shaped hand despite the acceptable distant silhouette. `scripts/bake-social-wave.mjs [source-glb-path]` now authors the arm against the shipped target rig, retains a neutral wrist along its forearm, and uses compatible authored finger articulation from `Idle_TalkingPhone_Loop` plus the relaxed `A_TPose` thumb. Only the greeting's quaternion tracks change; model, clothing, controls, transport and other actions remain intact.
 
 The baked additive clip and target hash live in `apps/web/src/social-wave.json`. Runtime parses that immutable clip through the existing character-clip cache, with no runtime IK, new texture or network request. Identity endpoints restore the base pose. Tests measure wrist alignment and open fingers through the whole motion at multiple idle phases; close-up front, side and transition inspection supplements those checks.
+
+
+## Prone contact correction
+
+The close-up user report after PR38 exposed crossed left/right IK targets, one inverted palm and a crawl that drew the feet inward. The revised bake keeps each arm and leg on its own side, uses open `A_TPose` finger articulation, flattens the thumbs into the palm plane, and constrains elbow/knee height near the ground. The trunk is normalized once and stays planted during crawling; sleeve clearance adjusts the arm instead of lifting the whole character. A slow two-second alternating reach replaces the previous bent-leg paddle. Constant tracks are optimized after baking.
+
+Contact regressions check both limb sides, downward palms, flattened thumbs, supported hands, extended low legs and separate torso/trouser/boot bounds over 33 crawl samples. A separate test prevents vertical trunk bobbing. The horizontal collider, controls, visual-root transport and all non-prone actions remain unchanged.
