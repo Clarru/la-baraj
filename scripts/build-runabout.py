@@ -700,7 +700,7 @@ def build_cockpit(G, q):
     G.grid(rows, 'Floor', None, False, hint=lambda c: Z)
     # Bulkheads: rear (varnish), dark footwell, varnished dashboard
     bulkhead(G, FR, ZF - 0.03, lambda x: zdeck(x, FR) - 0.03, 'Varnish', -1, q)
-    lip = ZF + 0.33
+    lip = ZF + 0.30
     bulkhead(G, FF, ZF - 0.03, lambda x: lip + 0.02, 'Floor', 1, q)
     bulkhead(G, FF - 0.03, lip, lambda x: zdeck(x, FF) - 0.025, 'Varnish', 1, q)
     w = inner(FF, lip) - 0.004
@@ -813,7 +813,7 @@ def build_seats(G, q):
     def width_at(f0, f1, z, cap):
         return min(min(2 * (inner(f, z) - 0.03) for f in np.linspace(f0, f1, 5)), cap)
 
-    for fc, fb, bf, tilt, d_back in ((0.185, 0.47, -0.05, 14, 0.56), (-0.86, 0.44, -1.08, 12, 0.54)):
+    for fc, fb, bf, tilt, d_back in ((FRONT_ROW, 0.47, FRONT_ROW - 0.235, 14, 0.56), (REAR_ROW, 0.44, -1.08, 12, 0.54)):
         f0, f1 = fc - fb / 2, fc + fb / 2
         bw = width_at(f0 + 0.04, f1 - 0.04, ZF, 1.58)
         box(G, P(0, fc - 0.01, (ZF + SEAT) / 2), (bw, fb - 0.07, SEAT - ZF), 'Varnish', chamfer=0.01 if q else 0)
@@ -831,7 +831,10 @@ def build_seats(G, q):
 
 # ---------------------------------------------------------------- helm, windshield, hardware
 TILT, RIM = 0.55, 0.20
-HUB = P(-0.52, 0.80, ZF + 0.64)
+FRONT_ROW, REAR_ROW = 0.305, -0.86            # seat cushion centres
+HIPS_FRONT = FRONT_ROW + 0.235 - 0.165       # seated hips: 0.165 m behind the front cushion edge
+HIPS_REAR = REAR_ROW + 0.22 - 0.165
+HUB = P(-0.52, HIPS_FRONT + 0.32, ZF + 0.54)   # within arm's reach of the seated driver's shoulders
 WHEEL_R = Matrix.Rotation(TILT, 3, 'X')
 
 
@@ -1028,8 +1031,9 @@ def contract_nodes():
     wheel = empty('SteeringWheel', HUB, rot=(TILT, 0, 0))
     spin = empty('WheelSpin', parent=wheel)
     grips = [empty('Grip_L', (RIM, 0, 0), spin), empty('Grip_R', (-RIM, 0, 0), spin)]
-    seats = [empty('DriverSeat', P(-0.52, 0.06, ZF))]
-    for i, (x, f) in enumerate([(-0.52, 0.1), (0, 0.1), (0.52, 0.1), (-0.52, -0.86), (0, -0.86), (0.52, -0.86)]):
+    seats = [empty('DriverSeat', P(-0.52, HIPS_FRONT, ZF))]
+    rows = [(x, HIPS_FRONT) for x in (-0.52, 0, 0.52)] + [(x, HIPS_REAR) for x in (-0.52, 0, 0.52)]
+    for i, (x, f) in enumerate(rows):
         seats.append(empty(f'Seat_{i}', P(x, f, ZF)))
     return wheel, spin, grips, seats
 
