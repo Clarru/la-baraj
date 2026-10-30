@@ -1,9 +1,17 @@
-import { useLayoutEffect, useMemo, useRef } from "react";
-import { useFrame } from "@react-three/fiber";
+import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
+import { createPortal, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { BOAT_DIMENSIONS } from "./boat-geometry";
 import { BOAT_TUNING } from "./boat-motion";
 import { spraySize, sprayIntensity } from "./boat-spray.ts";
+import {
+  WAKE_VERTEX_COUNT,
+  createWakeTrail,
+  layoutWakeRibbon,
+  pruneWakeTrail,
+  pushWakeSample,
+  wakeRibbonIndex,
+} from "./boat-wake-trail";
 import { lastLighting } from "./day-night";
 import { LAKE_LEVEL } from "./swim-motion";
 
@@ -14,7 +22,6 @@ import { LAKE_LEVEL } from "./swim-motion";
 
 /** Foam lies this far above the water so it never z-fights the lake. */
 const FOAM_LIFT = 0.03;
-const WAKE_SEGMENTS = 10;
 const TAIL_PARTICLES = 20;
 /** Rooster-tail reach and peak height as fractions of the wake length. */
 const TAIL_REACH = 0.32;
@@ -25,43 +32,35 @@ const MAX_SPRAY = spraySize(
   BOAT_TUNING.cruise,
 );
 const BOUNDS_MARGIN = 1;
+/** Ribbon's largest lateral reach beyond a sample centre, plus the margin. */
+const WAKE_LATERAL_PAD =
+  BOAT_DIMENSIONS.beam * 0.425 +
+  0.5 * MAX_SPRAY.width +
+  0.3 +
+  0.18 * MAX_SPRAY.width +
+  BOUNDS_MARGIN;
 
 const foam = new THREE.Color("#f6f2e6");
 const time = { value: 0 };
 
 /**
- * Wake: three strips (port arm, centre wash, starboard arm), three vertices
- * across each. `position` packs (along 0..1, across −1..1, arm −1/0/1); the
- * vertex shader lays them out from the per-boat length and spread.
+ * Wake: a world-space ribbon per boat, laid out from the transom trail each
+ * frame (see boat-wake-trail.ts). `aux` carries (along, across, arm) for the
+ * fragment shader; positions are metres.
  */
-const wakeGeometry = (() => {
-  const packed: number[] = [];
-  const index: number[] = [];
-  for (const arm of [-1, 0, 1]) {
-    const base = packed.length / 3;
-    for (let i = 0; i <= WAKE_SEGMENTS; i += 1)
-      for (const across of [-1, 0, 1])
-        packed.push(i / WAKE_SEGMENTS, across, arm);
-    for (let i = 0; i < WAKE_SEGMENTS; i += 1)
-      for (let j = 0; j < 2; j += 1) {
-        const a = base + i * 3 + j,
-          b = a + 3;
-        index.push(a, b, a + 1, a + 1, b, b + 1);
-      }
-  }
+function createWakeGeometry() {
+  const position = new THREE.Float32BufferAttribute(WAKE_VERTEX_COUNT * 3, 3);
+  position.setUsage(THREE.DynamicDrawUsage);
+  const aux = new THREE.Float32BufferAttribute(WAKE_VERTEX_COUNT * 3, 3);
+  aux.setUsage(THREE.DynamicDrawUsage);
   const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute(
-    "position",
-    new THREE.Float32BufferAttribute(packed, 3),
-  );
-  geometry.setIndex(index);
-  // Packed positions are not metres: bound the largest (boosted) wake instead.
-  geometry.boundingSphere = new THREE.Sphere(
-    new THREE.Vector3(0, 0, -MAX_SPRAY.length / 2),
-    MAX_SPRAY.length / 2 + MAX_SPRAY.width / 2 + BOUNDS_MARGIN,
-  );
+  geometry.setAttribute("position", position);
+  geometry.setAttribute("aux", aux);
+  geometry.setIndex(new THREE.BufferAttribute(wakeRibbonIndex(), 1));
+  // Updated in place every frame from the trail bounds.
+  geometry.boundingSphere = new THREE.Sphere();
   return geometry;
-})();
+}
 
 /** Rooster tail: `position` packs (phase 0..1, lateral −1..1, size). */
 const tailGeometry = (() => {
@@ -93,25 +92,15 @@ const instanceUniforms = () => ({
 });
 
 const wakeMaterial = new THREE.ShaderMaterial({
-  uniforms: { ...instanceUniforms(), uBeam: { value: BOAT_DIMENSIONS.beam } },
+  uniforms: instanceUniforms(),
   vertexShader: /* glsl */ `
-    uniform float uLength;
-    uniform float uSpread;
-    uniform float uBeam;
+    attribute vec3 aux;
     varying float vAlong;
     varying float vAcross;
     void main() {
-      float along = position.x, across = position.y, arm = position.z;
-      float halfBeam = uBeam * 0.5;
-      // Arms open from the transom corners; the centre wash keeps near the hull's width.
-      float centre = arm * (halfBeam * 0.85 + 0.5 * uSpread * along);
-      float width = arm == 0.0
-        ? mix(uBeam * 0.55, uBeam * 0.8, along)
-        : 0.3 + 0.18 * uSpread * along;
-      vec3 local = vec3(centre + across * width * 0.5, 0.0, -uLength * along);
-      vAlong = along;
-      vAcross = across;
-      gl_Position = projectionMatrix * modelViewMatrix * vec4(local, 1.0);
+      vAlong = aux.x;
+      vAcross = aux.y;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
     }
   `,
   fragmentShader: /* glsl */ `
@@ -204,9 +193,15 @@ export function BoatSpray({ speed }: { speed: () => number }) {
   const group = useRef<THREE.Group>(null);
   const wake = useRef<THREE.Mesh>(null);
   const tail = useRef<THREE.Points>(null);
+  const scene = useThree((s) => s.scene);
   const world = useMemo(() => new THREE.Vector3(), []);
+  const transom = useMemo(() => new THREE.Vector3(), []);
   const state = useMemo(() => new Float32Array(4), []);
+  const bounds = useMemo(() => new Float32Array(3), []);
+  const trail = useMemo(createWakeTrail, []);
+  const wakeGeometry = useMemo(createWakeGeometry, []);
   const spray = useMemo(() => spraySize(0, BOAT_TUNING.cruise), []);
+  useEffect(() => () => wakeGeometry.dispose(), [wakeGeometry]);
   useLayoutEffect(() => {
     if (wake.current)
       wake.current.onBeforeRender = () => applyState(wakeMaterial, state);
@@ -215,13 +210,51 @@ export function BoatSpray({ speed }: { speed: () => number }) {
   }, [state]);
   useFrame(({ clock, size, viewport }) => {
     const root = group.current;
-    if (!root?.parent) return;
-    time.value = clock.elapsedTime;
+    const parent = root?.parent;
+    const now = clock.elapsedTime;
+    time.value = now;
     tailMaterial.uniforms.uPixels.value = size.height * viewport.dpr * 0.5;
     spraySize(speed(), BOAT_TUNING.cruise, spray);
-    root.visible = spray.opacity > 0;
-    if (!root.visible) return;
-    root.parent.getWorldPosition(world);
+    const sprayOn = spray.opacity > 0;
+    if (root) root.visible = sprayOn;
+    if (Number.isFinite(now)) {
+      if (parent && sprayOn) {
+        transom
+          .set(0, 0, -BOAT_DIMENSIONS.sternExtent)
+          .applyMatrix4(parent.matrixWorld);
+        pushWakeSample(
+          trail,
+          transom.x,
+          transom.z,
+          now,
+          spray.width,
+          spray.opacity,
+        );
+      }
+      pruneWakeTrail(trail, now);
+      const position = wakeGeometry.getAttribute(
+        "position",
+      ) as THREE.BufferAttribute;
+      const aux = wakeGeometry.getAttribute("aux") as THREE.BufferAttribute;
+      layoutWakeRibbon(
+        trail,
+        now,
+        LAKE_LEVEL + FOAM_LIFT,
+        position.array as Float32Array,
+        aux.array as Float32Array,
+        bounds,
+      );
+      position.needsUpdate = true;
+      aux.needsUpdate = true;
+      const sphere = wakeGeometry.boundingSphere;
+      if (sphere) {
+        sphere.center.set(bounds[0], LAKE_LEVEL + FOAM_LIFT, bounds[1]);
+        sphere.radius = bounds[2] + WAKE_LATERAL_PAD;
+      }
+    }
+    if (wake.current) wake.current.visible = trail.count > 1;
+    if (!root || !parent || !sprayOn) return;
+    parent.getWorldPosition(world);
     root.position.set(
       0,
       LAKE_LEVEL + FOAM_LIFT - world.y,
@@ -233,21 +266,27 @@ export function BoatSpray({ speed }: { speed: () => number }) {
     state[INTENSITY] = sprayIntensity(lastLighting());
   });
   return (
-    <group ref={group} visible={false}>
-      <mesh
-        ref={wake}
-        geometry={wakeGeometry}
-        material={wakeMaterial}
-        renderOrder={2}
-        dispose={null}
-      />
-      <points
-        ref={tail}
-        geometry={tailGeometry}
-        material={tailMaterial}
-        renderOrder={3}
-        dispose={null}
-      />
-    </group>
+    <>
+      {createPortal(
+        <mesh
+          ref={wake}
+          geometry={wakeGeometry}
+          material={wakeMaterial}
+          renderOrder={2}
+          visible={false}
+          dispose={null}
+        />,
+        scene,
+      )}
+      <group ref={group} visible={false}>
+        <points
+          ref={tail}
+          geometry={tailGeometry}
+          material={tailMaterial}
+          renderOrder={3}
+          dispose={null}
+        />
+      </group>
+    </>
   );
 }
