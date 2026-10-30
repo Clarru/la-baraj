@@ -834,7 +834,7 @@ TILT, RIM = 0.55, 0.20
 FRONT_ROW, REAR_ROW = 0.305, -0.86            # seat cushion centres
 HIPS_FRONT = FRONT_ROW + 0.235 - 0.165       # seated hips: 0.165 m behind the front cushion edge
 HIPS_REAR = REAR_ROW + 0.22 - 0.165
-HUB = P(-0.52, HIPS_FRONT + 0.32, ZF + 0.54)   # within arm's reach of the seated driver's shoulders
+HUB = P(-0.52, HIPS_FRONT + 0.285, ZF + 0.64)  # within arm's reach of the seated driver's shoulders
 WHEEL_R = Matrix.Rotation(TILT, 3, 'X')
 
 

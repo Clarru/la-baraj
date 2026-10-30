@@ -2,7 +2,7 @@
   "models": [
     {
       "id": "Lake_Runabout",
-      "bytes": 891936,
+      "bytes": 891932,
       "triangles": 34879,
       "bounds": {
         "min": [
@@ -20,7 +20,7 @@
     },
     {
       "id": "Lake_Runabout_LOD",
-      "bytes": 323908,
+      "bytes": 323904,
       "triangles": 4091,
       "bounds": {
         "min": [
