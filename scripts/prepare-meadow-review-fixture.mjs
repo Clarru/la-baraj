@@ -1,7 +1,9 @@
+import { execFileSync } from "node:child_process";
 import { build } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "node:path";
 import fs from "node:fs/promises";
+const before = process.argv.includes("--before");
 const root = process.cwd(),
   folder = path.resolve(".impeccable/review/meadow-review"),
   html = path.join(folder, "fixture.html");
@@ -14,7 +16,26 @@ await build({
   configFile: false,
   root,
   publicDir: false,
-  plugins: [react()],
+  plugins: [
+    react(),
+    {
+      name: "historical-empty-draw-baseline",
+      load(id) {
+        if (!before || id !== path.join(root, "apps/web/src/MeadowLayer.tsx"))
+          return;
+        // Same current Game, shader, terrain, camera and instrumentation; only
+        // the pre-review full-capacity draw layer is restored for comparison.
+        return execFileSync(
+          "git",
+          [
+            "show",
+            "a52409a521433bd242cdcabd13b27ac088a0461f:apps/web/src/MeadowLayer.tsx",
+          ],
+          { encoding: "utf8" },
+        );
+      },
+    },
+  ],
   define: {
     "import.meta.env.VITE_ROOM_SERVER_URL": JSON.stringify(""),
     "import.meta.env.VITE_GAME_DIAGNOSTICS": JSON.stringify("1"),
@@ -36,7 +57,7 @@ await build({
     ],
   },
   build: {
-    outDir: path.join(folder, "build"),
+    outDir: path.join(folder, before ? "build-before-empty-fix" : "build"),
     emptyOutDir: true,
     rolldownOptions: { input: html },
   },
