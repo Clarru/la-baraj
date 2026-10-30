@@ -3,7 +3,7 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { BOAT_DIMENSIONS } from "./boat-geometry";
 import { BOAT_TUNING } from "./boat-motion";
-import { spraySize, sprayIntensity } from "./boat-spray.ts";
+import { spraySize, sprayIntensity, wakeMotion } from "./boat-spray.ts";
 import { lastLighting } from "./day-night";
 import { LAKE_LEVEL } from "./swim-motion";
 
@@ -200,11 +200,21 @@ function applyState(material: THREE.ShaderMaterial, state: Float32Array) {
  * anchors itself at the transom on the waterline. `speed` is read every frame
  * (no React re-render): the local boat's motion speed or a remote pose's.
  */
-export function BoatSpray({ speed }: { speed: () => number }) {
+export function BoatSpray({
+  speed,
+  velocity,
+}: {
+  speed: () => number;
+  velocity?: () => readonly [number, number] | null;
+}) {
   const group = useRef<THREE.Group>(null);
   const wake = useRef<THREE.Mesh>(null);
   const tail = useRef<THREE.Points>(null);
   const world = useMemo(() => new THREE.Vector3(), []);
+  const localVelocity = useMemo(() => new THREE.Vector3(), []),
+    rotation = useMemo(() => new THREE.Quaternion(), []);
+  const trail = useMemo(() => wakeMotion(0, 0), []);
+  const wasVisible = useRef(false);
   const state = useMemo(() => new Float32Array(4), []);
   const spray = useMemo(() => spraySize(0, BOAT_TUNING.cruise), []);
   useLayoutEffect(() => {
@@ -213,14 +223,41 @@ export function BoatSpray({ speed }: { speed: () => number }) {
     if (tail.current)
       tail.current.onBeforeRender = () => applyState(tailMaterial, state);
   }, [state]);
-  useFrame(({ clock, size, viewport }) => {
+  useFrame(({ clock, size, viewport }, delta) => {
     const root = group.current;
     if (!root?.parent) return;
     time.value = clock.elapsedTime;
     tailMaterial.uniforms.uPixels.value = size.height * viewport.dpr * 0.5;
     spraySize(speed(), BOAT_TUNING.cruise, spray);
     root.visible = spray.opacity > 0;
-    if (!root.visible) return;
+    if (!root.visible) {
+      wasVisible.current = false;
+      return;
+    }
+    const v = velocity?.();
+    if (v) {
+      root.parent.getWorldQuaternion(rotation);
+      localVelocity.set(v[0], 0, v[1]).applyQuaternion(rotation.invert());
+    } else localVelocity.set(0, 0, speed());
+    wakeMotion(localVelocity.x, localVelocity.z, trail);
+    if (wake.current) {
+      const z = trail.z + BOAT_DIMENSIONS.sternExtent;
+      if (!wasVisible.current) {
+        wake.current.position.set(trail.x, 0, z);
+        wake.current.rotation.y = trail.yaw;
+      } else {
+        const blend = 1 - Math.exp(-12 * delta);
+        wake.current.position.x += (trail.x - wake.current.position.x) * blend;
+        wake.current.position.z += (z - wake.current.position.z) * blend;
+        const turn = Math.atan2(
+          Math.sin(trail.yaw - wake.current.rotation.y),
+          Math.cos(trail.yaw - wake.current.rotation.y),
+        );
+        wake.current.rotation.y += turn * blend;
+      }
+    }
+    wasVisible.current = true;
+    if (tail.current) tail.current.visible = trail.propeller;
     root.parent.getWorldPosition(world);
     root.position.set(
       0,

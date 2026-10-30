@@ -7,7 +7,7 @@ import {
 } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useGLTF } from "@react-three/drei";
-import { RigidBody, CuboidCollider } from "@react-three/rapier";
+import { RigidBody, ConvexHullCollider } from "@react-three/rapier";
 import * as THREE from "three";
 import {
   getBoatState,
@@ -17,7 +17,6 @@ import {
 import {
   applyBoatLean,
   setBoatWheelAngle,
-  BOAT_DIMENSIONS,
   RUNABOUT_IDS,
   remoteDriverOffset,
   type BoatSide,
@@ -30,6 +29,7 @@ import {
 } from "./boat-environment";
 import { assetUrl } from "./assets";
 import { lastLighting } from "./day-night";
+import { PARKED_BOAT_VERTICES } from "./boat-collision";
 import { LAKE_LEVEL } from "./swim-motion";
 
 export type BoatHandle = {
@@ -109,7 +109,6 @@ export function ParkedBoat() {
   const mounted = state.mounted;
   const [x, , z] = state.parked;
   const position: [number, number, number] = [x, LAKE_LEVEL, z];
-  const { beam, bowExtent, sternExtent } = BOAT_DIMENSIONS;
   return (
     <>
       <group
@@ -126,11 +125,7 @@ export function ParkedBoat() {
           position={position}
           rotation={[0, state.yaw, 0]}
         >
-          <CuboidCollider
-            args={[beam / 2, 0.35, (bowExtent + sternExtent) / 2]}
-            position={[0, 0.25, (bowExtent - sternExtent) / 2]}
-            friction={1.4}
-          />
+          <ConvexHullCollider args={[PARKED_BOAT_VERTICES]} friction={1.4} />
         </RigidBody>
       )}
     </>

@@ -48,10 +48,12 @@ import { terrainHeight, inWater, southShore, cabinSpots } from "./geography";
 import { getActivityPose } from "./activity-state";
 import { Scooter, type ScooterHandle } from "./scooter";
 import { createScooterRiderRig } from "./scooter-rider";
+import { wrapBoatYaw } from "../../../packages/shared/boats";
 import { Boat, type BoatHandle } from "./boat";
 import { BOAT_DRIVER_OFFSET_VECTOR } from "./boat-geometry";
 import {
-  boatHullBlocked,
+  boatHullHit,
+  applyBoatWorldImpact,
   boatTurnBlocked,
   applyBoatBodyImpact,
 } from "./boat-collision";
@@ -61,7 +63,7 @@ import {
   advanceBoat,
   boatVelocity,
   createBoatMotionState,
-  reconcileBoatSpeed,
+  setBoatVelocity,
 } from "./boat-motion";
 import {
   getBoatState,
@@ -126,7 +128,8 @@ import {
 } from "./stance-motion";
 import { resizeStanceCollider, rotateProneCollider } from "./stance-physics";
 /** The local boat's jet stream follows the speed the frame loop publishes. */
-const localBoatSpeed = () => getBoatState().speed;
+const localBoatSpeed = () => Math.hypot(...getBoatState().velocity);
+const localBoatVelocity = () => getBoatState().velocity;
 export type ViewMode = "walk" | "overview" | "study" | "settlement" | "home";
 export const spawn = { x: 45, z: southShore(45) + 12 };
 export const playerPosition = new THREE.Vector3(
@@ -253,6 +256,11 @@ export function Player({
   const rideForward = useMemo(() => new THREE.Vector3(), []);
   // Motorboat: Ecctrl is disabled and the body is driven by boatVelocity.
   const [boating, setBoating] = useState(false);
+  const boatBodyDamping = useRef<number | null>(null);
+  const boatRenderCorrection = useRef(new THREE.Vector3());
+  const boatRenderYawCorrection = useRef(0);
+  const boatRenderParentInverse = useMemo(() => new THREE.Quaternion(), []);
+  const boatRenderLocal = useMemo(() => new THREE.Vector3(), []);
   const boatMotion = useRef(createBoatMotionState(0)),
     boat = useRef<BoatHandle>(null),
     nearBoat = useRef(false);
@@ -489,6 +497,10 @@ export function Player({
           );
           body.setLinvel({ x: 0, y: 0, z: 0 }, true);
           body.setGravityScale(1, true);
+          if (boatBodyDamping.current !== null)
+            body.setLinearDamping(boatBodyDamping.current);
+          boatRenderCorrection.current.set(0, 0, 0);
+          boatRenderYawCorrection.current = 0;
           boatRider.current?.reset();
           object.position.set(0, 0, 0);
           mixer.stopAllAction();
@@ -521,6 +533,10 @@ export function Player({
           e.preventDefault();
           boatMotion.current = createBoatMotionState(parked.yaw);
           mountBoat();
+          boatBodyDamping.current = body.linearDamping();
+          body.setLinearDamping(0);
+          boatRenderCorrection.current.set(0, 0, 0);
+          boatRenderYawCorrection.current = 0;
           body.setTranslation(
             {
               x: parked.parked[0],
@@ -698,6 +714,10 @@ export function Player({
     );
     controller.current?.body?.setLinvel({ x: 0, y: 0, z: 0 }, true);
     controller.current?.body?.setGravityScale(1, true);
+    if (boatBodyDamping.current !== null)
+      controller.current?.body?.setLinearDamping(boatBodyDamping.current);
+    boatRenderCorrection.current.set(0, 0, 0);
+    boatRenderYawCorrection.current = 0;
     swimmingRef.current = false;
     setSwimming(false);
     waterSample.current.elapsed = 1;
@@ -752,7 +772,9 @@ export function Player({
     const c = controller.current;
     if (!c || !c.body) return;
     const boatImpact = currentMultiplayerRoom()?.takeBoatImpact();
-    if (boatImpact && getBoatState().mounted)
+    if (boatImpact && getBoatState().mounted) {
+      const before = c.body.translation();
+      const beforeYaw = boatMotion.current.yaw;
       applyBoatBodyImpact(
         world,
         rapier,
@@ -760,6 +782,19 @@ export function Player({
         boatMotion.current,
         boatImpact.boat,
       );
+      const after = c.body.translation();
+      boatRenderYawCorrection.current = THREE.MathUtils.clamp(
+        wrapBoatYaw(
+          boatRenderYawCorrection.current + beforeYaw - boatMotion.current.yaw,
+        ),
+        -Math.PI / 6,
+        Math.PI / 6,
+      );
+      boatRenderCorrection.current.x += before.x - after.x;
+      boatRenderCorrection.current.z += before.z - after.z;
+      if (boatRenderCorrection.current.length() > 1.5)
+        boatRenderCorrection.current.setLength(1.5);
+    }
     const testMove = takeCruceTestMove();
     if (testMove) {
       c.body.setTranslation(
@@ -1023,11 +1058,7 @@ export function Player({
     if (boatingNow) {
       const motion = boatMotion.current;
       const v = c.body.linvel();
-      motion.speed = reconcileBoatSpeed(
-        motion.speed,
-        (v.x - motion.driftX) * Math.sin(motion.yaw) +
-          (v.z - motion.driftZ) * Math.cos(motion.yaw),
-      );
+      setBoatVelocity(motion, [v.x, v.z]);
       const throttle = active
         ? Number(k.has("KeyW") || k.has("ArrowUp")) -
           Number(k.has("KeyS") || k.has("ArrowDown"))
@@ -1073,29 +1104,34 @@ export function Player({
         driftX: motion.driftX,
         driftZ: motion.driftZ,
       });
-      // Docks, pilings and banks stop the hull; next step reconcileBoatSpeed
-      // drops the commanded speed to the zero it achieved.
-      if (
-        boatHullBlocked(world, rapier, {
-          x: p.x,
-          z: p.z,
-          yaw: motion.yaw,
-          dx: hullVelocity.x * dt,
-          dz: hullVelocity.z * dt,
-          exclude: c.body,
-        })
-      ) {
-        hullVelocity.x = 0;
-        hullVelocity.z = 0;
-        motion.speed = 0;
-        motion.driftX = 0;
-        motion.driftZ = 0;
+      const hit = boatHullHit(world, rapier, {
+        x: p.x,
+        z: p.z,
+        yaw: motion.yaw,
+        dx: hullVelocity.x * dt,
+        dz: hullVelocity.z * dt,
+        exclude: c.body,
+      });
+      if (hit?.normal) {
+        applyBoatWorldImpact(motion, [p.x, p.z], hit.point, hit.normal);
+        hullVelocity.x = Math.sin(motion.yaw) * motion.speed + motion.driftX;
+        hullVelocity.z = Math.cos(motion.yaw) * motion.speed + motion.driftZ;
+      } else if (hit) {
+        hullVelocity.x =
+          hullVelocity.z =
+          motion.speed =
+          motion.driftX =
+          motion.driftZ =
+            0;
       }
       c.body.setLinvel(hullVelocity, true);
-      updateBoatMotion(motion.yaw, motion.speed, [
-        hullVelocity.x,
-        hullVelocity.z,
-      ]);
+      updateBoatMotion(
+        motion.yaw,
+        motion.speed,
+        [hullVelocity.x, hullVelocity.z],
+        motion.turnRate,
+        motion.steer,
+      );
     }
     const walkInput = active && !boatingNow;
     const jumpStarted =
@@ -1243,6 +1279,18 @@ export function Player({
           ? "standing"
           : stanceRef.current;
       const stanceOffset = offset + stanceVisualLift(visualStance);
+      if (boatingNow) {
+        boatRenderCorrection.current.multiplyScalar(Math.exp(-12 * dt));
+        boatRenderYawCorrection.current *= Math.exp(-12 * dt);
+        visual.current.parent?.getWorldQuaternion(facingParent);
+        boatRenderLocal
+          .copy(boatRenderCorrection.current)
+          .applyQuaternion(boatRenderParentInverse.copy(facingParent).invert());
+        visual.current.position.x = boatRenderLocal.x;
+        visual.current.position.z = boatRenderLocal.z;
+      } else {
+        visual.current.position.x = visual.current.position.z = 0;
+      }
       // A single sole offset through flight avoids a 13.5 cm takeoff/landing pop.
       visual.current.position.y =
         holding || boatingNow
@@ -1358,7 +1406,7 @@ export function Player({
       const angle = holding
         ? pose.facing
         : boatingNow
-          ? boatMotion.current.yaw
+          ? boatMotion.current.yaw + boatRenderYawCorrection.current
           : mounted
             ? rideYaw.current
             : speed > 0.3
@@ -1417,6 +1465,7 @@ export function Player({
     if (visual.current?.parent)
       visual.current.parent.getWorldPosition(playerViewPosition);
     else playerViewPosition.copy(playerPosition);
+    if (boatingNow) playerViewPosition.add(boatRenderCorrection.current);
     playerBubbleAnchor.copy(playerViewPosition);
     if (
       stanceRef.current === "prone" &&
@@ -1519,6 +1568,8 @@ export function Player({
             : [getBoatState().parked[0], getBoatState().parked[2]],
           yaw: getBoatState().yaw,
           velocity: getBoatState().velocity,
+          angularVelocity: getBoatState().angularVelocity,
+          rudder: getBoatState().rudder,
         },
         vehicle: boatingNow ? "Motorboat" : mounted ? "QuickVolt 9" : null,
         vehicleSpeed: boatingNow
@@ -1544,6 +1595,21 @@ export function Player({
         ...(import.meta.env.DEV || import.meta.env.VITE_GAME_DIAGNOSTICS === "1"
           ? {
               pressedKeys: [...k],
+              movementActive: active,
+              controllerEnabled: !swimming && !boating,
+              movementMode: mode,
+              paused,
+              holding,
+              stunned,
+              frameDt: dt,
+              boatRenderCorrection: boatingNow
+                ? [
+                    boatRenderCorrection.current.x,
+                    boatRenderCorrection.current.z,
+                    boatRenderYawCorrection.current,
+                  ]
+                : null,
+              bodyLinearDamping: c.body.linearDamping(),
               cameraDirection: camera
                 .getWorldDirection(new THREE.Vector3())
                 .toArray(),
@@ -1610,7 +1676,9 @@ export function Player({
         <Suspense fallback={null}>
           <Boat ref={boat} visible={boating} />
         </Suspense>
-        {boating && <BoatSpray speed={localBoatSpeed} />}
+        {boating && (
+          <BoatSpray speed={localBoatSpeed} velocity={localBoatVelocity} />
+        )}
       </group>
       {swimming && <SwimWake />}
     </Ecctrl>

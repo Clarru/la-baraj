@@ -1,6 +1,9 @@
 import {
   BOAT_MAX_SPEED,
-  sweepBoatImpact,
+  solveBoatContactIsland,
+  integrateBoat,
+  wrapBoatYaw,
+  quantizeBoatPose,
   type BoatBody,
 } from "../../packages/shared/boats";
 import type {
@@ -11,24 +14,29 @@ import type { RoomConnection, SessionState } from "./room-core";
 
 function body(player: PlayerPresence): BoatBody | null {
   if (!player.boat || player.boatImpactRevision === undefined) return null;
-  return { ...player.boat, moored: player.vehicle !== "boat" };
+  return {
+    ...player.boat,
+    moored: player.vehicle !== "boat",
+    rotationLocked: player.boat.angularVelocity === undefined,
+  };
 }
 function apply(connection: RoomConnection, boat: BoatBody, now: number) {
   const state = connection.state!;
   const mounted = state.player.vehicle === "boat";
   const revision = (state.player.boatImpactRevision ?? 0) + (mounted ? 1 : 0);
-  const { moored: _moored, ...pose } = boat;
+  const { moored: _moored, rotationLocked: _locked, ...rawPose } = boat;
+  const pose = quantizeBoatPose(rawPose);
   const player: PlayerPresence = {
     ...state.player,
     boat: pose,
     boatImpactRevision: revision,
   };
   if (mounted) {
-    player.position = [boat.position[0], player.position[1], boat.position[1]];
-    player.yaw = boat.yaw;
+    player.position = [pose.position[0], player.position[1], pose.position[1]];
+    player.yaw = pose.yaw;
     player.speed =
-      boat.velocity[0] * Math.sin(boat.yaw) +
-      boat.velocity[1] * Math.cos(boat.yaw);
+      pose.velocity[0] * Math.sin(pose.yaw) +
+      pose.velocity[1] * Math.cos(pose.yaw);
   }
   connection.setState({ ...state, player, boatPoseAt: now });
   if (mounted) {
@@ -73,10 +81,9 @@ export function resolveRoomBoatCollision(
     distance > BOAT_MAX_SPEED * Math.max(elapsed / 1000, 0.15) + 0.5
   )
     return;
-  let best: {
-    other: RoomConnection;
-    hit: NonNullable<ReturnType<typeof sweepBoatImpact>>;
-  } | null = null;
+  const members = [driver],
+    sources = [fromA],
+    targets = [toA];
   for (const other of connections) {
     const s = other.state;
     if (
@@ -86,59 +93,43 @@ export function resolveRoomBoatCollision(
       (current.home && s.home?.index === current.home.index)
     )
       continue;
-    const fromB = body(s.player);
-    if (!fromB || (toA.moored && fromB.moored)) continue;
+    const old = body(s.player);
+    if (!old) continue;
     const age = now - (s.boatPoseAt ?? now);
-    if (!fromB.moored && Math.hypot(...fromB.velocity) > 0.1 && age > 2000)
-      continue;
-    const predict = fromB.moored ? 0 : Math.min(Math.max(0, age) / 1000, 0.2);
-    const toB: BoatBody = {
-      ...fromB,
-      position: [
-        fromB.position[0] + fromB.velocity[0] * predict,
-        fromB.position[1] + fromB.velocity[1] * predict,
-      ],
-    };
-    // Align both trajectories to the same interval. Using B's last packet
-    // as an interval start can repeatedly rewind two boats moving together.
-    const alignedB: BoatBody = {
-      ...fromB,
-      position: [
-        toB.position[0] - (fromB.moored ? 0 : fromB.velocity[0] * seconds),
-        toB.position[1] - (fromB.moored ? 0 : fromB.velocity[1] * seconds),
-      ],
-    };
     if (
-      Math.hypot(
-        fromA.position[0] - fromB.position[0],
-        fromA.position[1] - fromB.position[1],
-      ) >
-      9 + distance + BOAT_MAX_SPEED * predict
+      !old.moored &&
+      (Math.hypot(...old.velocity) > 0.1 ||
+        Math.abs(old.angularVelocity ?? 0) > 0.01) &&
+      age > 2000
     )
       continue;
-    const hit = sweepBoatImpact(fromA, toA, alignedB, toB);
-    if (hit && (!best || hit.fraction < best.hit.fraction))
-      best = { other, hit };
+    const predict = old.moored ? 0 : Math.min(Math.max(0, age) / 1000, 0.2);
+    const target = integrateBoat(old, predict);
+    const source: BoatBody = {
+      ...target,
+      position: [
+        target.position[0] - (old.moored ? 0 : old.velocity[0] * seconds),
+        target.position[1] - (old.moored ? 0 : old.velocity[1] * seconds),
+      ],
+      yaw: wrapBoatYaw(
+        target.yaw - (old.moored ? 0 : (old.angularVelocity ?? 0) * seconds),
+      ),
+    };
+    members.push(other);
+    sources.push(source);
+    targets.push(target);
   }
-  if (!best) return;
-  const remaining = seconds * (1 - best.hit.fraction);
-  const finish = (boat: BoatBody): BoatBody =>
-    boat.moored
-      ? boat
-      : {
-          ...boat,
-          position: [
-            boat.position[0] + boat.velocity[0] * remaining,
-            boat.position[1] + boat.velocity[1] * remaining,
-          ],
-        };
-  apply(driver, finish(best.hit.a), now);
-  apply(best.other, finish(best.hit.b), now);
-  // The initiating player's final pose is broadcast by RoomCore. Observers
-  // receive the other participant's same authoritative result as well.
-  const message = JSON.stringify({
-    type: "pose",
-    player: best.other.state!.player,
-  } satisfies ServerMessage);
-  for (const c of connections) if (c !== best.other) c.send(message);
+  const result = solveBoatContactIsland(sources, targets, seconds, 0);
+  const changed = [...result.changed].filter((i) => !result.bodies[i].moored);
+  for (const index of changed) apply(members[index], result.bodies[index], now);
+  // One final correction per affected owner; intermediate manifold iterations
+  // never become network packets. The initiating pose is broadcast by RoomCore.
+  for (const index of changed) {
+    if (index === 0) continue;
+    const message = JSON.stringify({
+      type: "pose",
+      player: members[index].state!.player,
+    } satisfies ServerMessage);
+    for (const c of connections) if (c !== members[index]) c.send(message);
+  }
 }

@@ -23,7 +23,7 @@ import {
 } from "../../packages/shared/protocol";
 import { HomeAllocationError, type HomeAssignments } from "./home-assignments";
 import { resolveRoomBoatCollision } from "./boat-collisions";
-import { BOAT_WATERLINE } from "../../packages/shared/boats";
+import { BOAT_WATERLINE, wrapBoatYaw } from "../../packages/shared/boats";
 import { PlanesTable, TableError, type TableActor } from "./planes-table";
 import {
   PLANES_TABLE,
@@ -467,12 +467,20 @@ export class RoomCore {
         player.boat =
           player.vehicle === "boat"
             ? {
+                ...player.boat,
                 position: player.boat.position,
-                yaw: player.yaw,
+                yaw: wrapBoatYaw(player.boat.yaw),
                 velocity: player.boat.velocity,
               }
-            : { ...player.boat, velocity: [0, 0] };
+            : {
+                ...player.boat,
+                velocity: [0, 0],
+                ...(player.boat.angularVelocity === undefined
+                  ? {}
+                  : { angularVelocity: 0, rudder: 0 }),
+              };
       if (player.vehicle === "boat" && player.boat) {
+        player.yaw = player.boat.yaw;
         player.position = [
           player.boat.position[0],
           BOAT_WATERLINE,
@@ -489,7 +497,14 @@ export class RoomCore {
         Object.assign(player, cruceSeatPose(tableSeat));
         player.seatId = CRUCE_SEATS[tableSeat];
         player.vehicle = "none";
-        if (player.boat) player.boat = { ...player.boat, velocity: [0, 0] };
+        if (player.boat)
+          player.boat = {
+            ...player.boat,
+            velocity: [0, 0],
+            ...(player.boat.angularVelocity === undefined
+              ? {}
+              : { angularVelocity: 0, rudder: 0 }),
+          };
         player.speed = 0;
         player.posture = "standing";
         if (!["sit", "sit-down", "stand-up"].includes(player.activity)) {

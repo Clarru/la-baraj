@@ -1,13 +1,13 @@
 import { Suspense, useLayoutEffect, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import {
-  CuboidCollider,
+  ConvexHullCollider,
   RigidBody,
   type RapierRigidBody,
 } from "@react-three/rapier";
 import * as THREE from "three";
 import { Boat } from "./boat";
-import { BOAT_DIMENSIONS } from "./boat-geometry";
+import { PARKED_BOAT_VERTICES, setRemoteBoatCollision } from "./boat-collision";
 import { LAKE_LEVEL } from "./swim-motion";
 import type { MultiplayerRoom } from "./multiplayer";
 
@@ -20,9 +20,15 @@ export function RemoteMooredBoat({
   room: MultiplayerRoom;
 }) {
   const body = useRef<RapierRigidBody>(null),
-    visual = useRef<THREE.Group>(null);
+    visual = useRef<THREE.Group>(null),
+    collisionState = useRef<{
+      body: RapierRigidBody;
+      enabled: boolean;
+      colliders: number;
+    } | null>(null);
   useLayoutEffect(() => {
-    body.current?.setEnabled(false);
+    collisionState.current = null;
+    if (body.current) setRemoteBoatCollision(body.current, false);
   }, []);
   useFrame(({ camera }) => {
     const player = room.remotes.get(id)?.player,
@@ -39,7 +45,19 @@ export function RemoteMooredBoat({
     );
     if (visual.current) visual.current.visible = visible;
     if (!body.current) return;
-    if (body.current.isEnabled() !== visible) body.current.setEnabled(visible);
+    const colliders = body.current.numColliders();
+    if (
+      collisionState.current?.body !== body.current ||
+      collisionState.current?.enabled !== visible ||
+      collisionState.current?.colliders !== colliders
+    ) {
+      setRemoteBoatCollision(body.current, visible);
+      collisionState.current = {
+        body: body.current,
+        enabled: visible,
+        colliders,
+      };
+    }
     if (visible && boat) {
       body.current.setTranslation(
         { x: boat.position[0], y: LAKE_LEVEL, z: boat.position[1] },
@@ -58,14 +76,7 @@ export function RemoteMooredBoat({
       colliders={false}
       userData={{ remoteBoat: true }}
     >
-      <CuboidCollider
-        args={[BOAT_DIMENSIONS.beam / 2, 0.35, BOAT_DIMENSIONS.length / 2]}
-        position={[
-          0,
-          0.25,
-          (BOAT_DIMENSIONS.bowExtent - BOAT_DIMENSIONS.sternExtent) / 2,
-        ]}
-      />
+      <ConvexHullCollider args={[PARKED_BOAT_VERTICES]} />
       <group ref={visual} visible={false}>
         <Suspense fallback={null}>
           <Boat detail="lod" />
