@@ -1,0 +1,10 @@
+{
+  "restoredExactly": true,
+  "baselineFiles": 281,
+  "removedOwnedAdditions": [
+    "__planes-result-e69d2cb-qa.html",
+    "assets/planes-presentation-BVKbx3tF.js",
+    "assets/planes-presentation-7CeUGRlk.css"
+  ],
+  "indexSha256": "931c40968a8956dd30a940ddd4aa21978f159b12cacde47b50754ce7115241da"
+}
