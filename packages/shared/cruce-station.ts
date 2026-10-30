@@ -5,13 +5,19 @@ export const CRUCE_TABLE = {
   x: 5,
   z: 68.37531356447997,
   ground: 0.7630894938951581,
-  halfWidth: 0.95,
+  halfWidth: 0.8,
   surface: 0.82,
-  benchRadius: 1.6,
-  benchWidth: 1.1,
+  /** Frame timber is below the felt and bolt maxima. */
+  woodSurface: 0.817,
+  benchRadius: 1.46,
+  benchWidth: 1.12,
   benchDepth: 0.44,
   seatHeight: 0.47,
+  /** Wooden plank top; bolt heads reach seatHeight. */
+  seatSurface: 0.467,
 };
+/** Retained pants under-hip contact measured from the deformed Activity_Sit mesh. */
+export const CRUCE_CHARACTER_SEAT_HEIGHT = 0.4667;
 export const CRUCE_SEATS = [
   "cruce-south:seat:0",
   "cruce-west:seat:0",
@@ -29,7 +35,9 @@ export function cruceSeatPose(seat: CruceSeat) {
   return {
     position: [
       CRUCE_TABLE.x - Math.sin(angle) * distance,
-      CRUCE_TABLE.ground + 0.07,
+      CRUCE_TABLE.ground +
+        CRUCE_TABLE.seatSurface -
+        CRUCE_CHARACTER_SEAT_HEIGHT,
       CRUCE_TABLE.z + Math.cos(angle) * distance,
     ] as [number, number, number],
     yaw: Math.PI - angle,

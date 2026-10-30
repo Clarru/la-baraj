@@ -15,7 +15,7 @@ describe("physical Cruce square table and usable seats", () => {
         label: "Cruce",
         center: [
           t.x - Math.sin(a) * t.benchRadius,
-          t.ground + t.seatHeight,
+          t.ground + t.seatSurface,
           t.z + Math.cos(a) * t.benchRadius,
         ],
         width: t.benchWidth,
@@ -40,5 +40,14 @@ describe("physical Cruce square table and usable seats", () => {
       ).toBeGreaterThan(t.halfWidth + 0.25);
     }
     expect(t.benchRadius - t.benchDepth / 2 - t.halfWidth).toBeGreaterThan(0.3);
+    // A standing 30cm capsule must also clear the tabletop after releasing a seat.
+    for (const i of [0, 1, 2, 3] as const) {
+      const pose = cruceSeatPose(i);
+      const distance = Math.max(
+        Math.abs(pose.position[0] - t.x),
+        Math.abs(pose.position[2] - t.z),
+      );
+      expect(distance - 0.3 - t.halfWidth).toBeGreaterThan(0.025);
+    }
   });
 });
