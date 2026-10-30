@@ -52,6 +52,18 @@ export function LocalBubbleChat({
     },
     [arm, room],
   );
+  const finishEditing = useCallback(() => {
+    if (!latest.current.trim()) {
+      onClose();
+      return;
+    }
+    // Flush the last edit and renew expiry when sending or clicking away.
+    if (pending.current) clearTimeout(pending.current);
+    pending.current = null;
+    room.publishChat(latest.current);
+    arm();
+    onFinishEditing();
+  }, [arm, room, onClose, onFinishEditing]);
   const focusInput = useCallback((node: HTMLTextAreaElement | null) => {
     input.current = node;
   }, []);
@@ -83,20 +95,11 @@ export function LocalBubbleChat({
         editor.current?.contains(event.target)
       )
         return;
-      if (!latest.current.trim()) {
-        onClose();
-        return;
-      }
-      // Flush the last edit and renew the remote expiry at the time of the click.
-      if (pending.current) clearTimeout(pending.current);
-      pending.current = null;
-      room.publishChat(latest.current);
-      arm();
-      onFinishEditing();
+      finishEditing();
     };
     window.addEventListener("pointerdown", clickAway, true);
     return () => window.removeEventListener("pointerdown", clickAway, true);
-  }, [editing, arm, room, onClose, onFinishEditing]);
+  }, [editing, finishEditing]);
   useEffect(() => {
     if (input.current) input.current.scrollTop = input.current.scrollHeight;
     if (display.current)
@@ -140,19 +143,25 @@ export function LocalBubbleChat({
                 spellCheck={false}
                 onKeyDown={(event) => {
                   if (event.key === "Enter" && !event.nativeEvent.isComposing) {
-                    event.preventDefault();
                     event.stopPropagation();
-                    if (!event.repeat) edit(`${latest.current}\n`);
+                    if (event.repeat) {
+                      event.preventDefault();
+                      return;
+                    }
+                    // Let the textarea insert Shift+Enter at the caret.
+                    if (event.shiftKey) return;
+                    event.preventDefault();
+                    finishEditing();
                   }
                 }}
                 onChange={(event) => edit(event.currentTarget.value)}
               />
             </div>
             <span className="bubble-chat-help" id="bubble-chat-help">
-              Others see your text as you type. Enter adds a line after text.
-              Click outside to walk; press Enter again to start a new message.
-              The bubble disappears after five seconds. Escape closes it
-              immediately.
+              Others see your text as you type. Enter sends; Shift+Enter adds a
+              line. Clicking outside also finishes typing. Press Enter again to
+              start a new message. The bubble disappears after five seconds.
+              Escape closes it immediately.
             </span>
           </div>
         ) : (

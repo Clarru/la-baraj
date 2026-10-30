@@ -1,0 +1,367 @@
+{
+  "head": "bbf9e22a8a16613cf07b13f9b317e1f693588cb1",
+  "environment": {
+    "dpr": 1.5,
+    "height": 960,
+    "reducedMotion": false,
+    "visibility": "visible",
+    "width": 1707
+  },
+  "idle": {
+    "screenUploads": 3,
+    "screenGpuUploads": 3,
+    "atlasUploads": 2,
+    "atlasGpuUploads": 1,
+    "matrixUpdates": 2,
+    "tileRenderCalls": 18194,
+    "tileDrawCalls": 1,
+    "frameMedianMs": 8.300000190734863,
+    "frameP95Ms": 10.199999809265137,
+    "cabinetCpuP95Ms": 0.10000000894069672,
+    "samples": 120
+  },
+  "startedAt": 1793382797863,
+  "moves": [
+    {
+      "key": "Left",
+      "changed": true,
+      "metrics": {
+        "screenUploads": 3,
+        "screenGpuUploads": 3,
+        "atlasUploads": 2,
+        "atlasGpuUploads": 1,
+        "matrixUpdates": 2,
+        "tileRenderCalls": 18194,
+        "tileDrawCalls": 1,
+        "frameMedianMs": 8.300000190734863,
+        "frameP95Ms": 10.199999809265137,
+        "cabinetCpuP95Ms": 0.10000000894069672,
+        "samples": 120
+      }
+    },
+    {
+      "key": "Up",
+      "changed": true,
+      "metrics": {
+        "screenUploads": 5,
+        "screenGpuUploads": 5,
+        "atlasUploads": 2,
+        "atlasGpuUploads": 1,
+        "matrixUpdates": 23,
+        "tileRenderCalls": 18265,
+        "tileDrawCalls": 1,
+        "frameMedianMs": 8.300000190734863,
+        "frameP95Ms": 10.199999809265137,
+        "cabinetCpuP95Ms": 0.10000000894069672,
+        "samples": 120
+      }
+    },
+    {
+      "key": "Right",
+      "changed": true,
+      "metrics": {
+        "screenUploads": 6,
+        "screenGpuUploads": 6,
+        "atlasUploads": 2,
+        "atlasGpuUploads": 1,
+        "matrixUpdates": 57,
+        "tileRenderCalls": 18335,
+        "tileDrawCalls": 1,
+        "frameMedianMs": 8.300000190734863,
+        "frameP95Ms": 10.199999809265137,
+        "cabinetCpuP95Ms": 0.10000000894069672,
+        "samples": 120
+      }
+    },
+    {
+      "key": "Down",
+      "changed": true,
+      "metrics": {
+        "screenUploads": 7,
+        "screenGpuUploads": 7,
+        "atlasUploads": 2,
+        "atlasGpuUploads": 1,
+        "matrixUpdates": 78,
+        "tileRenderCalls": 18405,
+        "tileDrawCalls": 1,
+        "frameMedianMs": 8.300000190734863,
+        "frameP95Ms": 10.199999809265137,
+        "cabinetCpuP95Ms": 0.10000000894069672,
+        "samples": 120
+      }
+    },
+    {
+      "key": "Left",
+      "changed": true,
+      "metrics": {
+        "screenUploads": 8,
+        "screenGpuUploads": 8,
+        "atlasUploads": 2,
+        "atlasGpuUploads": 1,
+        "matrixUpdates": 97,
+        "tileRenderCalls": 18475,
+        "tileDrawCalls": 1,
+        "frameMedianMs": 8.300000190734863,
+        "frameP95Ms": 10.199999809265137,
+        "cabinetCpuP95Ms": 0.10000000894069672,
+        "samples": 120
+      }
+    },
+    {
+      "key": "Up",
+      "changed": true,
+      "metrics": {
+        "screenUploads": 8,
+        "screenGpuUploads": 8,
+        "atlasUploads": 2,
+        "atlasGpuUploads": 1,
+        "matrixUpdates": 97,
+        "tileRenderCalls": 18475,
+        "tileDrawCalls": 1,
+        "frameMedianMs": 8.300000190734863,
+        "frameP95Ms": 10.199999809265137,
+        "cabinetCpuP95Ms": 0.10000000894069672,
+        "samples": 120
+      }
+    },
+    {
+      "key": "Right",
+      "changed": true,
+      "metrics": {
+        "screenUploads": 10,
+        "screenGpuUploads": 10,
+        "atlasUploads": 2,
+        "atlasGpuUploads": 1,
+        "matrixUpdates": 123,
+        "tileRenderCalls": 18545,
+        "tileDrawCalls": 1,
+        "frameMedianMs": 8.300000190734863,
+        "frameP95Ms": 10.100000381469727,
+        "cabinetCpuP95Ms": 0.10000000894069672,
+        "samples": 120
+      }
+    },
+    {
+      "key": "Down",
+      "changed": true,
+      "metrics": {
+        "screenUploads": 11,
+        "screenGpuUploads": 11,
+        "atlasUploads": 2,
+        "atlasGpuUploads": 1,
+        "matrixUpdates": 148,
+        "tileRenderCalls": 18614,
+        "tileDrawCalls": 1,
+        "frameMedianMs": 8.300000190734863,
+        "frameP95Ms": 9.899999618530273,
+        "cabinetCpuP95Ms": 0.10000000894069672,
+        "samples": 120
+      }
+    },
+    {
+      "key": "Left",
+      "changed": true,
+      "metrics": {
+        "screenUploads": 12,
+        "screenGpuUploads": 12,
+        "atlasUploads": 2,
+        "atlasGpuUploads": 1,
+        "matrixUpdates": 173,
+        "tileRenderCalls": 18683,
+        "tileDrawCalls": 1,
+        "frameMedianMs": 8.300000190734863,
+        "frameP95Ms": 10,
+        "cabinetCpuP95Ms": 0.10000000894069672,
+        "samples": 120
+      }
+    },
+    {
+      "key": "Up",
+      "changed": true,
+      "metrics": {
+        "screenUploads": 13,
+        "screenGpuUploads": 13,
+        "atlasUploads": 2,
+        "atlasGpuUploads": 1,
+        "matrixUpdates": 192,
+        "tileRenderCalls": 18753,
+        "tileDrawCalls": 1,
+        "frameMedianMs": 8.300000190734863,
+        "frameP95Ms": 10.300000190734863,
+        "cabinetCpuP95Ms": 0.10000000894069672,
+        "samples": 120
+      }
+    },
+    {
+      "key": "Right",
+      "changed": true,
+      "metrics": {
+        "screenUploads": 13,
+        "screenGpuUploads": 13,
+        "atlasUploads": 2,
+        "atlasGpuUploads": 1,
+        "matrixUpdates": 192,
+        "tileRenderCalls": 18753,
+        "tileDrawCalls": 1,
+        "frameMedianMs": 8.300000190734863,
+        "frameP95Ms": 10.300000190734863,
+        "cabinetCpuP95Ms": 0.10000000894069672,
+        "samples": 120
+      }
+    },
+    {
+      "key": "Down",
+      "changed": true,
+      "metrics": {
+        "screenUploads": 15,
+        "screenGpuUploads": 14,
+        "atlasUploads": 2,
+        "atlasGpuUploads": 1,
+        "matrixUpdates": 212,
+        "tileRenderCalls": 18823,
+        "tileDrawCalls": 1,
+        "frameMedianMs": 8.300000190734863,
+        "frameP95Ms": 10,
+        "cabinetCpuP95Ms": 0.10000000894069672,
+        "samples": 120
+      }
+    },
+    {
+      "key": "Left",
+      "changed": true,
+      "metrics": {
+        "screenUploads": 16,
+        "screenGpuUploads": 16,
+        "atlasUploads": 2,
+        "atlasGpuUploads": 1,
+        "matrixUpdates": 246,
+        "tileRenderCalls": 18894,
+        "tileDrawCalls": 1,
+        "frameMedianMs": 8.300000190734863,
+        "frameP95Ms": 10.100000381469727,
+        "cabinetCpuP95Ms": 0.10000000894069672,
+        "samples": 120
+      }
+    },
+    {
+      "key": "Up",
+      "changed": true,
+      "metrics": {
+        "screenUploads": 17,
+        "screenGpuUploads": 17,
+        "atlasUploads": 2,
+        "atlasGpuUploads": 1,
+        "matrixUpdates": 268,
+        "tileRenderCalls": 18963,
+        "tileDrawCalls": 1,
+        "frameMedianMs": 8.300000190734863,
+        "frameP95Ms": 10.199999809265137,
+        "cabinetCpuP95Ms": 0.10000000894069672,
+        "samples": 120
+      }
+    },
+    {
+      "key": "Left",
+      "changed": true,
+      "metrics": {
+        "screenUploads": 18,
+        "screenGpuUploads": 18,
+        "atlasUploads": 2,
+        "atlasGpuUploads": 1,
+        "matrixUpdates": 287,
+        "tileRenderCalls": 19033,
+        "tileDrawCalls": 1,
+        "frameMedianMs": 8.300000190734863,
+        "frameP95Ms": 9.899999618530273,
+        "cabinetCpuP95Ms": 0.10000000894069672,
+        "samples": 120
+      }
+    },
+    {
+      "key": "Down",
+      "changed": true,
+      "metrics": {
+        "screenUploads": 18,
+        "screenGpuUploads": 18,
+        "atlasUploads": 2,
+        "atlasGpuUploads": 1,
+        "matrixUpdates": 287,
+        "tileRenderCalls": 19033,
+        "tileDrawCalls": 1,
+        "frameMedianMs": 8.300000190734863,
+        "frameP95Ms": 9.899999618530273,
+        "cabinetCpuP95Ms": 0.10000000894069672,
+        "samples": 120
+      }
+    }
+  ],
+  "endedAt": 1793382804239,
+  "moving": {
+    "screenUploads": 18,
+    "screenGpuUploads": 18,
+    "atlasUploads": 2,
+    "atlasGpuUploads": 1,
+    "matrixUpdates": 287,
+    "tileRenderCalls": 19033,
+    "tileDrawCalls": 1,
+    "frameMedianMs": 8.300000190734863,
+    "frameP95Ms": 9.899999618530273,
+    "cabinetCpuP95Ms": 0.10000000894069672,
+    "samples": 120
+  },
+  "settled": {
+    "screenUploads": 19,
+    "screenGpuUploads": 19,
+    "atlasUploads": 2,
+    "atlasGpuUploads": 1,
+    "matrixUpdates": 306,
+    "tileRenderCalls": 32957,
+    "tileDrawCalls": 1,
+    "frameMedianMs": 8.300000190734863,
+    "frameP95Ms": 10.399999618530273,
+    "cabinetCpuP95Ms": 0.09999999403953552,
+    "samples": 120
+  },
+  "consoleErrors": [],
+  "modal": {
+    "screenUploads": 22,
+    "screenGpuUploads": 22,
+    "atlasUploads": 2,
+    "atlasGpuUploads": 1,
+    "matrixUpdates": 344,
+    "tileRenderCalls": 47655,
+    "tileDrawCalls": 1,
+    "frameMedianMs": 8.300000190734863,
+    "frameP95Ms": 9.100000381469727,
+    "cabinetCpuP95Ms": 0.09999999403953552,
+    "samples": 120
+  },
+  "pointerDragChanged": true,
+  "leavePassed": true,
+  "keyboardConfirmPassed": [
+    "Local world",
+    "Score 0. Best 80."
+  ],
+  "finalMetrics": {
+    "screenUploads": 34,
+    "screenGpuUploads": 34,
+    "atlasUploads": 2,
+    "atlasGpuUploads": 1,
+    "matrixUpdates": 369,
+    "tileRenderCalls": 85928,
+    "tileDrawCalls": 1,
+    "frameMedianMs": 8.300000190734863,
+    "frameP95Ms": 9.300000190734863,
+    "cabinetCpuP95Ms": 0.10000000894069672,
+    "samples": 120
+  },
+  "finalConsoleErrors": [],
+  "scope": "Visible IAB render-frame cadence, not universal or presented-frame FPS. Actual tile callbacks include reflected render passes. Reduced-motion media was false; snap behavior and lifecycle are covered by automated tests, not browser emulation.",
+  "hardware": {
+    "cpu": "Apple M4 Pro",
+    "logicalCores": 14,
+    "memoryGiB": 48,
+    "macOS": "26.5.2",
+    "browser": "Codex in-app browser"
+  }
+}
