@@ -121,6 +121,26 @@ describe("Cruce authoritative table", () => {
       6,
     );
   });
+  it("does not persist an automatic deal from an inconsistent legacy cut record", async () => {
+    const { saved } = await table(),
+      legacy = structuredClone(saved());
+    legacy.game = beginCruceRound(legacy.game, () => 0.43);
+    legacy.deadline = null;
+    legacy.game.hands[0].push(legacy.game.stock.shift()!);
+    let saves = 0;
+    const restored = new CruceTable(
+      {
+        save: async () => {
+          saves++;
+        },
+      },
+      legacy,
+    );
+    await expect(restored.expire(2000)).rejects.toThrow(/împărțirea automată/);
+    expect(saves).toBe(0);
+    expect(restored.view(null).phase).toBe("cut");
+    expect(restored.view(actors[0]).hand).toHaveLength(1);
+  });
   it("filters packets and strips additional client fields", () => {
     const packet = (action: unknown) =>
       JSON.stringify({
