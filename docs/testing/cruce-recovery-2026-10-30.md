@@ -1,0 +1,9 @@
+# Cruce setup and stalled-trick recovery
+
+The reported public freeze showed a complete Duel trick with responsive browser controls. The exact old cause remains unproven: a later read-only server snapshot found an empty lobby, while a bounded Cloudflare trace showed successful alarm invocations without exceptions. This patch adds recovery and evidence rather than claiming a missing alarm hook.
+
+A seated client requests an authoritative snapshot after a complete trick stays visible beyond its collection deadline. The existing sync message settles due state, safely repairs a complete online trick with a null clock, and returns sanitized before-state diagnostics. A stale client is refreshed even if the server already advanced. Retries are bounded and timers stop on recovery/disconnect. A normal turn deadline becomes a soft warning: the match/hand stay intact, the expired deadline schedules no alarm spin, and the returning player can act using its unchanged logical-turn revision.
+
+Client JS errors, rejected promises, WebGL context loss, foreground long stalls and Cruce before/after recovery state can be reported through a bounded Vercel function. Reports exclude hands, chat, player names, resume credentials, URL queries/userinfo; schema, origin, size, per-session rate and client dedup limits apply. A manual report yields a correlation code. Production reports are structured with tag la-baraj-client. Source/data are kept in deploy-included folders.
+
+Current regressions cover deliberately missing alarm execution, null complete-trick clocks, server-already-advanced stale snapshots, AFK late actions, client watchdog lifecycle, diagnostics credential redaction/origin/body/rate constraints. Real two-client setup/full-hand/reconnect and deployed endpoint/log proof remain pending before final acceptance.

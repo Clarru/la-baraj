@@ -1,3 +1,4 @@
+import { reportClientDiagnostic } from "./client-diagnostics";
 import { cruceWorldLab } from "./cruce-world-test";
 import { CruceWorldLab } from "./CruceWorldLab";
 import { LocalWorldRoom, localWorldEnabled } from "./LocalWorldRoom";
@@ -80,6 +81,9 @@ class SceneBoundary extends Component<
   state = { error: null as string | null };
   static getDerivedStateFromError(error: Error) {
     return { error: error.message };
+  }
+  componentDidCatch(error: Error) {
+    reportClientDiagnostic("scene_error", {}, error);
   }
   render() {
     return this.state.error ? (

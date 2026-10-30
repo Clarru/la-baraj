@@ -80,6 +80,15 @@ export type ClientMessage =
       action: CruceAction;
     }
   | { type: "sync" };
+export type CruceRecovery = {
+  phase: CruceView["phase"];
+  revision: number;
+  deadline: number | null;
+  trickCount: number;
+  awayCount: number;
+  transitioned: boolean;
+  error?: boolean;
+};
 export type ServerMessage =
   | { type: "boat-impact"; revision: number; boat: BoatPose }
   | {
@@ -96,6 +105,7 @@ export type ServerMessage =
       village?: VillageState;
       planes?: PlanesView;
       cruce?: CruceView;
+      cruceRecovery?: CruceRecovery;
     }
   | { type: "village"; village: VillageState }
   | { type: "joined"; player: PlayerPresence }

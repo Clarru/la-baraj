@@ -277,7 +277,11 @@ export class RoomCore {
       ),
     );
   }
-  snapshot(connection: RoomConnection, now = Date.now()) {
+  snapshot(
+    connection: RoomConnection,
+    now = Date.now(),
+    recovery?: import("../../packages/shared/protocol").CruceRecovery,
+  ) {
     if (!connection.state) return;
     this.send(connection, {
       type: "snapshot",
@@ -304,6 +308,7 @@ export class RoomCore {
       seats: this.seats(),
       planes: this.planes.view(this.tableActor(connection)),
       cruce: this.cruce.view(this.tableActor(connection)),
+      ...(recovery ? { cruceRecovery: recovery } : {}),
       ...(connection.state.home ? { home: connection.state.home } : {}),
     });
   }
@@ -672,7 +677,37 @@ export class RoomCore {
       return;
     }
     if (message.type === "sync") {
-      this.snapshot(connection);
+      const before = this.cruce.view(null);
+      let transitioned = false,
+        failed = false;
+      try {
+        transitioned = await this.cruce.expire(now);
+        if (transitioned) {
+          this.reconcileGameSeats();
+          this.broadcastCruce();
+        }
+      } catch (error) {
+        failed = true;
+        console.error(
+          "cruce_sync_failed",
+          error instanceof Error ? error.message : "unknown",
+        );
+      }
+      const recovery = {
+        phase: before.phase,
+        revision: before.revision,
+        deadline: before.deadline,
+        trickCount: before.trick.length,
+        awayCount: before.players.filter((p) => p && !p.online).length,
+        transitioned,
+        ...(failed ? { error: true } : {}),
+      };
+      if (
+        before.phase === "trick" &&
+        (before.deadline === null || before.deadline < now - 1000)
+      )
+        console.warn("cruce_sync_recovery", JSON.stringify(recovery));
+      this.snapshot(connection, now, recovery);
       return;
     }
     if (message.type === "hello") {
