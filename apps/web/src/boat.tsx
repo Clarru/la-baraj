@@ -23,7 +23,7 @@ import {
   getBoatEnvironment,
 } from "./boat-environment";
 import { assetUrl } from "./assets";
-import { currentLighting } from "./day-night";
+import { lastLighting } from "./day-night";
 import { LAKE_LEVEL } from "./swim-motion";
 
 export type BoatHandle = {
@@ -61,7 +61,7 @@ export const Boat = forwardRef<
     [rig, renderer],
   );
   useFrame(() => {
-    const intensity = boatEnvironmentIntensity(currentLighting());
+    const intensity = boatEnvironmentIntensity(lastLighting());
     for (const material of materials) material.envMapIntensity = intensity;
   });
   useImperativeHandle(

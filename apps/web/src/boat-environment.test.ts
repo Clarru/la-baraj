@@ -4,7 +4,7 @@ import {
   applyBoatEnvironment,
   boatEnvironmentIntensity,
 } from "./boat-environment";
-import { lightingAt } from "./day-night";
+import { currentLighting, lastLighting, lightingAt } from "./day-night";
 import { loadRunabout } from "./runabout-test-model";
 import { extractBoatRig } from "./boat-geometry";
 
@@ -18,6 +18,17 @@ it("chrome does not glow at night", () => {
   expect(noon).toBeLessThanOrEqual(1);
   expect(dusk).toBeGreaterThan(night);
   expect(dusk).toBeLessThan(noon);
+});
+
+it("reflects the lighting sample the world rendered with", () => {
+  const evening = currentLighting(true);
+  expect(lastLighting()).toBe(evening);
+  expect(lastLighting()).toBe(evening);
+  const intensity = boatEnvironmentIntensity(lastLighting());
+  expect(intensity).toBeGreaterThan(boatEnvironmentIntensity(lightingAt(1)));
+  expect(intensity).toBeLessThan(boatEnvironmentIntensity(lightingAt(12)));
+  // Reading it never resamples: the world's next call hits the same cache entry.
+  expect(currentLighting(true)).toBe(evening);
 });
 
 it("applies the map to every boat material", async () => {
