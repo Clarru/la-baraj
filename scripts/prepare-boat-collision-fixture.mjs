@@ -19,7 +19,24 @@ await build({
   configFile: false,
   root,
   publicDir: false,
-  plugins: [react()],
+  plugins: [
+    react(),
+    {
+      name: "isolated-boat-review-authority",
+      transform(source, id) {
+        if (id !== path.join(root, "apps/web/src/LocalWorldRoom.ts")) return;
+        const match = '{ type: "module" }';
+        if (!source.includes(match))
+          throw new Error(
+            "Local room worker constructor changed; review QA isolation",
+          );
+        return source.replace(
+          match,
+          '{ type: "module", name: "la-baraj-boat-review-qa" }',
+        );
+      },
+    },
+  ],
   define: {
     "import.meta.env.VITE_ROOM_SERVER_URL": JSON.stringify(""),
     "import.meta.env.VITE_GAME_DIAGNOSTICS": JSON.stringify("1"),
