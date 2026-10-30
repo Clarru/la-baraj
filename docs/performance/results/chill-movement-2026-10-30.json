@@ -1,0 +1,127 @@
+{
+  "date": "2026-10-30",
+  "baseline": "190d7bd",
+  "candidate": "3031387",
+  "hardware": "Apple M4 Pro, 48 GiB",
+  "viewport": [
+    1707,
+    960
+  ],
+  "dpr": 1.5,
+  "camera": [
+    50.4192479998657,
+    8.403607426127289,
+    56.762402419907936
+  ],
+  "method": "600 steady-state visible frames after 3-second warmup, fixed arrival camera and noon lighting; actual Game/PerformanceLab; per-version animation data pinned with Three FileLoader cache; no outbound room connection; baseline uses same offline-transport isolation guard",
+  "results": {
+    "baseline": {
+      "solo": {
+        "fps": 120,
+        "p95Ms": 8.5,
+        "calls": 335.66,
+        "triangles": 2095416.52,
+        "gpuGeometries": 166,
+        "gpuTextures": 48,
+        "materials": 184,
+        "sceneObjects": 1220,
+        "meshes": 523,
+        "frames": 600,
+        "over33Ms": 0
+      },
+      "crowd": {
+        "fps": 78.313646,
+        "p95Ms": 15,
+        "calls": 1435.055,
+        "triangles": 4249957.477,
+        "gpuGeometries": 280,
+        "gpuTextures": 100,
+        "materials": 918,
+        "sceneObjects": 7357,
+        "meshes": 2642,
+        "frames": 600,
+        "over33Ms": 0
+      },
+      "riders": {
+        "fps": 67.405885,
+        "p95Ms": 17.2,
+        "calls": 1495.008333,
+        "triangles": 6692637.825,
+        "gpuGeometries": 280,
+        "gpuTextures": 100,
+        "materials": 918,
+        "sceneObjects": 7455,
+        "meshes": 2642,
+        "frames": 600,
+        "over33Ms": 0
+      }
+    },
+    "candidate": {
+      "solo": {
+        "fps": 120,
+        "p95Ms": 10,
+        "calls": 335.555,
+        "triangles": 2093719.21,
+        "gpuGeometries": 166,
+        "gpuTextures": 48,
+        "materials": 184,
+        "sceneObjects": 1220,
+        "meshes": 523,
+        "frames": 600,
+        "over33Ms": 0
+      },
+      "crowd": {
+        "fps": 74.411221,
+        "p95Ms": 16.2,
+        "calls": 1558.55,
+        "triangles": 4499969.93,
+        "gpuGeometries": 280,
+        "gpuTextures": 100,
+        "materials": 918,
+        "sceneObjects": 7406,
+        "meshes": 2642,
+        "frames": 600,
+        "over33Ms": 0
+      },
+      "riders": {
+        "fps": 65.537242,
+        "p95Ms": 17.9,
+        "calls": 1614.25,
+        "triangles": 6921415.925,
+        "gpuGeometries": 280,
+        "gpuTextures": 100,
+        "materials": 918,
+        "sceneObjects": 7504,
+        "meshes": 2642,
+        "frames": 600,
+        "over33Ms": 0
+      },
+      "postures": {
+        "fps": 74.365108,
+        "p95Ms": 16,
+        "calls": 1559.92,
+        "triangles": 4500072.997,
+        "gpuGeometries": 280,
+        "gpuTextures": 100,
+        "materials": 918,
+        "sceneObjects": 7406,
+        "meshes": 2642,
+        "frames": 600,
+        "over33Ms": 0
+      },
+      "distant": {
+        "fps": 115.42457,
+        "p95Ms": 10.6,
+        "calls": 703.403333,
+        "triangles": 2731716.453,
+        "gpuGeometries": 280,
+        "gpuTextures": 51,
+        "materials": 477,
+        "sceneObjects": 2800,
+        "meshes": 1711,
+        "frames": 600,
+        "over33Ms": 0
+      }
+    }
+  }
+}

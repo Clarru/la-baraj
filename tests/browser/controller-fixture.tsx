@@ -16,7 +16,7 @@ import { LocalPlanesRoom } from "../../apps/web/src/PlanesLab";
 import actions from "../../apps/web/public/assets/animations/character-actions.json";
 THREE.Cache.enabled = true;
 THREE.Cache.add(
-  "/assets/animations/character-actions.json",
+  "file:/assets/animations/character-actions.json",
   JSON.stringify(actions),
 );
 const room = new LocalPlanesRoom("Controller QA");
