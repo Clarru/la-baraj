@@ -1,0 +1,5 @@
+{
+  "prompt": "Use case: stylized-concept. Asset type: seamless base color wood material texture for real-time 3D lakeside game furniture, applied with UVs to square card table framing, plank benches and legs. Generate a square 1024x1024 texture swatch, completely flat orthographic front-on, edge-to-edge wood only. Warm honey chestnut timber, medium warm brown with golden ochre grain; clearly visible long flowing horizontal wood fibers, a few natural oval knots and subtle dark pores, worn satin grain, restrained hand-painted stylized game finish compatible with detailed rustic outdoor furniture. Visible grain at medium camera distance, larger broader organic flowing grain rather than fine photographic noise. One continuous timber surface, NOT an image of a table. Seamlessly tile left/right and top/bottom. Even neutral diffuse albedo lighting, no highlights, no perspective, no cast shadows, no seams between planks, no bevels, no borders, no text, no watermark. Avoid orange plastic, flat uniform brown, excessive scratches, deep cracks, dark burnt patches, directional lighting.",
+  "createdAt": "2026-10-30",
+  "generator": "Built-in image_gen"
+}

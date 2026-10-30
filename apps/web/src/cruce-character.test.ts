@@ -1,6 +1,15 @@
 import { describe, it, expect } from "vitest";
 import * as T from "three";
 import { readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
+import handPoses from "./cruce-hand-poses.json";
+import contactProbes from "./cruce-contact-probes.json";
+import { activitySeatLift } from "./character-actions";
+import {
+  CRUCE_TABLE,
+  CRUCE_CHARACTER_SEAT_HEIGHT,
+  cruceSeatPose,
+} from "../../../packages/shared/cruce-station";
 import {
   createCruceCharacterRig,
   createCruceCharacterController,
@@ -61,6 +70,15 @@ async function rig() {
   };
 }
 describe("character-held Cruce cards", () => {
+  it("uses the exact retained rig for authored finger contact poses", () => {
+    const file = new URL(
+      "../public/assets/optimized/Lakeside_Man.glb",
+      import.meta.url,
+    );
+    expect(handPoses.targetSha256).toBe(
+      createHash("sha256").update(readFileSync(file)).digest("hex"),
+    );
+  });
   it("raises real retained hands to chest level without changing limb lengths or accumulating pose", async () => {
     const { scene, mixer, grip } = await rig();
     const reference = await rig();
@@ -79,7 +97,8 @@ describe("character-held Cruce cards", () => {
       cards.update(view(), 0, 1000 + i * 16);
     }
     expect(cards.fan.visible).toBe(true);
-    expect(finger.quaternion.angleTo(originalFinger)).toBeGreaterThan(0.2);
+    // A card grip must not turn the authored relaxed finger into a fist.
+    expect(finger.quaternion.angleTo(originalFinger)).toBeLessThan(0.4);
     expect(cards.fan.children.filter((c) => c.visible)).toHaveLength(6);
     expect(h.getWorldPosition(new T.Vector3()).y).toBeGreaterThan(0.82);
     for (const [n, i] of ["lowerarm_l", "hand_l", "lowerarm_r", "hand_r"].map(
@@ -107,6 +126,150 @@ describe("character-held Cruce cards", () => {
     cards.dispose();
     expect(scene.getObjectByName("Cruce hand fan")).toBeUndefined();
   });
+  it("keeps wrists aligned, free fingers relaxed and the thumb on the card plane throughout play", async () => {
+    for (const yaw of [0, Math.PI / 2, Math.PI, -Math.PI / 2]) {
+      const { scene, mixer } = await rig();
+      scene.rotation.y = yaw;
+      const cards = createCruceCharacterRig(scene),
+        v = view();
+      cards.update(v, 0, 1000);
+      v.trick = [{ seat: 0, card: 5, announcement: 0 }];
+      v.hand = v.hand.slice(0, 5);
+      v.handCounts[0] = 5;
+      const position = (n: string) =>
+        scene.getObjectByName(n)!.getWorldPosition(new T.Vector3());
+      for (let frame = 0; frame <= 60; frame++) {
+        cards.beginFrame();
+        mixer.update(1 / 60);
+        cards.update(v, 0, 2000 + (frame * 1000) / 60);
+        scene.updateWorldMatrix(true, true);
+        for (const side of ["l", "r"]) {
+          const wrist = position(`hand_${side}`),
+            forearm = wrist.clone().sub(position(`lowerarm_${side}`));
+          const palm = position(`middle_01_${side}`).sub(wrist);
+          expect(
+            forearm.angleTo(palm),
+            `${side} wrist at frame ${frame}`,
+          ).toBeLessThan(0.2);
+          for (const f of ["index", "middle", "ring", "pinky"]) {
+            const knuckle = position(`${f}_01_${side}`);
+            const finger = position(`${f}_04_leaf_${side}`)
+              .sub(knuckle)
+              .normalize();
+            const palmDirection = knuckle.clone().sub(wrist).normalize();
+            expect(
+              finger.dot(palmDirection),
+              `${side} ${f} at frame ${frame}`,
+            ).toBeGreaterThan(side === "r" && frame > 24 ? 0.85 : 0.6);
+          }
+        }
+        const thumbInFan = cards.fan.worldToLocal(position("thumb_04_leaf_l"));
+        expect(
+          Math.abs(thumbInFan.z),
+          "thumb must contact the fan, not float beside it",
+        ).toBeLessThan(0.012);
+        expect(thumbInFan.y).toBeGreaterThan(-0.01);
+        expect(thumbInFan.y).toBeLessThan(0.035);
+      }
+      cards.dispose();
+    }
+  });
+  it("supports actual skinned hip and finger-pad patches on the furniture through rest and play", async () => {
+    for (const seat of [0, 1, 2, 3] as const) {
+      const { scene, mixer } = await rig();
+      const rendered = cruceSeatPose(seat);
+      const floor = CRUCE_TABLE.ground;
+      const pose = {
+        kind: "sit" as const,
+        startedAt: 0,
+        anchor: [rendered.position[0], floor, rendered.position[2]] as [
+          number,
+          number,
+          number,
+        ],
+        seatHeight: floor + CRUCE_TABLE.seatSurface,
+      };
+      scene.position.set(
+        rendered.position[0],
+        floor +
+          0.95 -
+          0.95 +
+          activitySeatLift(pose, 1, CRUCE_CHARACTER_SEAT_HEIGHT),
+        rendered.position[2],
+      );
+      scene.rotation.y = rendered.yaw;
+      const cards = createCruceCharacterRig(scene),
+        v = view();
+      v.you = seat;
+      const pants = scene.getObjectByName(
+          contactProbes.hip.mesh,
+        ) as T.SkinnedMesh,
+        hand = scene.getObjectByName(
+          contactProbes.tableHand.mesh,
+        ) as T.SkinnedMesh;
+      const point = (mesh: T.SkinnedMesh, index: number) =>
+        mesh
+          .getVertexPosition(index, new T.Vector3())
+          .applyMatrix4(mesh.matrixWorld);
+      const check = (rest: boolean) => {
+        scene.updateMatrixWorld(true);
+        pants.skeleton.update();
+        hand.skeleton.update();
+        for (const side of ["left", "right"] as const) {
+          const gap =
+            Math.min(
+              ...contactProbes.hip[side].map((p) => point(pants, p.index).y),
+            ) -
+            (floor + CRUCE_TABLE.seatSurface);
+          expect(Math.abs(gap), `seat${seat} ${side} hip`).toBeLessThan(0.003);
+        }
+        const thumbGap = Math.min(
+          ...contactProbes.gripThumb.points.map((p) =>
+            Math.abs(cards.fan.worldToLocal(point(hand, p.index)).z),
+          ),
+        );
+        expect(thumbGap, "actual thumb pad must meet card stock").toBeLessThan(
+          0.003,
+        );
+        for (const [digit, probes] of Object.entries(
+          contactProbes.tableHand.digits,
+        )) {
+          const points = probes.map((p) => point(hand, p.index));
+          const gap =
+            Math.min(...points.map((p) => p.y)) -
+            (floor + CRUCE_TABLE.woodSurface);
+          expect(gap, `seat${seat} ${digit} through tabletop`).toBeGreaterThan(
+            -0.004,
+          );
+          if (rest) {
+            expect(gap, `seat${seat} ${digit} floating`).toBeLessThan(0.006);
+            for (const p of points) {
+              expect(Math.abs(p.x - CRUCE_TABLE.x)).toBeLessThan(
+                CRUCE_TABLE.halfWidth,
+              );
+              expect(Math.abs(p.z - CRUCE_TABLE.z)).toBeLessThan(
+                CRUCE_TABLE.halfWidth,
+              );
+            }
+          }
+        }
+      };
+      cards.update(v, seat, 1000);
+      check(true);
+      v.trick = [{ seat, card: 5, announcement: 0 }];
+      v.handCounts[seat] = 5;
+      v.hand = v.hand.slice(0, 5);
+      for (const time of [
+        0, 0.02, 0.04, 0.06, 0.08, 0.15, 0.22, 0.4, 0.6, 0.9, 1,
+      ]) {
+        cards.beginFrame();
+        mixer.setTime(0.4 + time);
+        cards.update(v, seat, 2000 + time * 1000);
+        check(time === 0 || time >= 0.9);
+      }
+      cards.dispose();
+    }
+  });
   it("shows only backs for a remote hand and animates each accepted play once", async () => {
     const { scene } = await rig(),
       back = new T.Texture(),
@@ -123,6 +286,9 @@ describe("character-held Cruce cards", () => {
     cards.beginFrame();
     cards.update(v, 1, 2000);
     expect(cards.held.visible).toBe(true);
+    expect(
+      cards.held.children[0].getWorldDirection(new T.Vector3()).y,
+    ).toBeGreaterThan(0.8);
     cards.beginFrame();
     cards.update(v, 1, 2400);
     expect(cards.flight.visible).toBe(true);

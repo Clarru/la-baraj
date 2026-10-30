@@ -19,3 +19,5 @@ Additional original designs Lake_Cabin_GableBlue, Lake_Cabin_AFrameCopper and La
 The Phase 1 Motorboat_Stylized placeholder was built in code and has been replaced by Lake_Runabout, below.
 
 The Lake_Runabout and Lake_Runabout_LOD models are original project geometry built in Blender with scripts/build-runabout.py, an original classic runabout after the concept renders in docs/art-direction/runabout/; the mahogany grain, deck planking, leather and gauge-face textures are generated procedurally by the same script, and scripts/optimize-runabout.mjs records the optimized files in runabout-library.json. No third-party mesh is used.
+
+Cruce_Table_Wood and Cruce_Bench_Wood are original beveled timber geometry built by scripts/build-cruce-furniture.mjs, with longitudinal UVs per timber and a built-in ImageGen chestnut material. The existing Quaternius world furniture is the style reference; its meshes are not included in these new assets. The existing generated green felt is retained. Exact texture prompt/provenance is in docs/art-direction/cruce/wood-prompt.json; dimensions, texture hashes, triangle counts and sizes are in furniture.json.

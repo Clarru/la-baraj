@@ -1,7 +1,11 @@
 import { afterEach, beforeAll, describe, expect, it } from "vitest";
 import RAPIER from "@dimforge/rapier3d-compat";
 import { BOAT_DIMENSIONS } from "./boat-geometry";
-import { boatHullBlocked, boatTurnBlocked } from "./boat-collision";
+import {
+  boatHullBlocked,
+  boatTurnBlocked,
+  applyBoatBodyImpact,
+} from "./boat-collision";
 import { advanceBoat, createBoatMotionState } from "./boat-motion";
 import { LAKE_LEVEL } from "./swim-motion";
 
@@ -37,6 +41,37 @@ function scene(piling?: { x: number; y: number; z: number }) {
 }
 
 describe("boat hull collision", () => {
+  it("applies a horizontal boat impact without a jump or gravity change", () => {
+    const { world, capsule } = scene();
+    capsule.setTranslation({ x: 0, y: 0.8, z: 0 }, true);
+    capsule.setGravityScale(0, true);
+    capsule.setLinvel({ x: 0, y: 0.1, z: 0 }, true);
+    const motion = createBoatMotionState(0);
+    expect(
+      applyBoatBodyImpact(world, RAPIER, capsule, motion, {
+        position: [1, 0],
+        yaw: 0,
+        velocity: [3, 2],
+      }),
+    ).toBe(true);
+    expect(capsule.translation().y).toBeCloseTo(0.8);
+    expect(capsule.linvel().y).toBeCloseTo(0.1);
+    expect(capsule.gravityScale()).toBe(0);
+    expect(capsule.linvel().x).toBeCloseTo(3);
+  });
+  it("does not separate through a world obstacle", () => {
+    const { world, capsule } = scene({ x: 0, y: 0.4, z: bowExtent + 0.2 });
+    const motion = createBoatMotionState(0);
+    expect(
+      applyBoatBodyImpact(world, RAPIER, capsule, motion, {
+        position: [0, 1],
+        yaw: 0,
+        velocity: [0, -1],
+      }),
+    ).toBe(false);
+    expect(capsule.translation().z).toBe(0);
+    expect(capsule.linvel().z).toBe(-1);
+  });
   it("stops before a piling dead ahead", () => {
     const { world, capsule } = scene({ x: 0, y: 0.4, z: bowExtent + 0.2 });
     expect(

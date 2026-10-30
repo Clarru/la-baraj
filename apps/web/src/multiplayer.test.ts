@@ -106,6 +106,59 @@ afterEach(() => {
 });
 
 describe("friends room client", () => {
+  it("applies each numbered boat correction once and acknowledges the latest result", () => {
+    const room = new MultiplayerRoom(),
+      stop = room.connect(),
+      socket = sockets[0];
+    socket.open();
+    snapshot(socket);
+    const boat = { position: [45, 27], yaw: 0, velocity: [0, 6] };
+    room.publishMotion({
+      ...sample,
+      vehicle: "Motorboat",
+      vehicleSpeed: 6,
+      boat,
+    });
+    socket.receive({
+      type: "boat-impact",
+      revision: 2,
+      boat: { ...boat, velocity: [2, 1] },
+    });
+    socket.receive({ type: "boat-impact", revision: 1, boat });
+    expect(room.takeBoatImpact()?.revision).toBe(2);
+    expect(room.takeBoatImpact()).toBeNull();
+    socket.receive({ type: "boat-impact", revision: 2, boat });
+    expect(room.takeBoatImpact()).toBeNull();
+    vi.spyOn(performance, "now").mockReturnValue(1400);
+    room.publishMotion({
+      ...sample,
+      vehicle: "Motorboat",
+      vehicleSpeed: 1,
+      boat: { ...boat, velocity: [2, 1] },
+    });
+    const packet = socket.sent.filter((m) => m.type === "pose").at(-1)!;
+    expect(packet.pose).toMatchObject({
+      boatImpactRevision: 2,
+      boat: { velocity: [2, 1] },
+    });
+    expect(parseClientMessage(JSON.stringify(packet))).toEqual(packet);
+    stop();
+  });
+  it("retains moored boat presence during an ordinary on-foot pose update", () => {
+    const room = new MultiplayerRoom(),
+      stop = room.connect(),
+      socket = sockets[0];
+    socket.open();
+    snapshot(socket);
+    const boat = { position: [3.7, 40], yaw: Math.PI, velocity: [0, 0] };
+    room.publishMotion({ ...sample, boat });
+    vi.spyOn(performance, "now").mockReturnValue(1400);
+    room.publishMotion({ ...sample, feet: [46, 2, 27] });
+    expect(
+      socket.sent.filter((m) => m.type === "pose").at(-1)!.pose,
+    ).toMatchObject({ vehicle: "none", boat, boatImpactRevision: 0 });
+    stop();
+  });
   it.each(["Swim_Forward", "Swim_Idle"])(
     "publishes %s through the existing pose contract",
     (animation) => {
