@@ -20,6 +20,8 @@ export const BOAT_TUNING = {
   boostAccel: 2,
   /** Max turn rate at full boost, as a fraction of maxTurnRate. */
   boostTurnFactor: 0.75,
+  /** m/s² back down to cruise after the boost is released with W held (~3 s). */
+  boostDecay: 1.6,
 } as const;
 
 /** `speed` is signed forward m/s; +Z is forward at yaw 0, positive yaw turns left. */
@@ -87,7 +89,7 @@ export function advanceBoat(
   const boost = input.boost === true && input.throttle > 0;
   if (input.throttle > 0) {
     // Above cruise: boost climbs toward its top speed; without boost the hull
-    // eases back down to cruise at the coast rate, never instantly.
+    // eases back down to cruise in a few seconds, never instantly.
     if (boost && state.speed >= t.cruise)
       state.speed = moveToward(
         state.speed,
@@ -95,7 +97,7 @@ export function advanceBoat(
         t.boostAccel * dt,
       );
     else if (!boost && state.speed > t.cruise)
-      state.speed = moveToward(state.speed, t.cruise, t.coastRate * dt);
+      state.speed = moveToward(state.speed, t.cruise, t.boostDecay * dt);
     else state.speed = moveToward(state.speed, t.cruise, t.accel * dt);
   } else if (input.throttle < 0) {
     state.speed =

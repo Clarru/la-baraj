@@ -164,20 +164,25 @@ describe("boat motion", () => {
 
   it("boost raises the top speed to boostMultiplier × cruise", () => {
     expect(BOAT_TUNING.boostMultiplier).toBe(1.6);
+    const top = BOAT_TUNING.cruise * BOAT_TUNING.boostMultiplier;
+    expect(top).toBeCloseTo(12.8, 9);
     const state = createBoatMotionState(0);
     for (let i = 0; i < 600; i += 1) {
       advanceBoat(state, { throttle: 1, steer: 0, dt: DT, boost: true });
-      expect(state.speed).toBeLessThanOrEqual(12.8 + 1e-9);
+      expect(state.speed).toBeLessThanOrEqual(top + 1e-9);
     }
-    expect(Math.abs(state.speed - 12.8)).toBeLessThan(0.05);
+    expect(Math.abs(state.speed - top)).toBeLessThan(0.05);
   });
 
   it("releasing boost settles back to cruise smoothly", () => {
     const state = createBoatMotionState(0);
     state.speed = BOAT_TUNING.cruise * BOAT_TUNING.boostMultiplier;
     let previous = state.speed;
+    let settledAt = -1;
     for (let i = 0; i < 60 * 30; i += 1) {
       advanceBoat(state, { throttle: 1, steer: 0, dt: DT, boost: false });
+      if (settledAt < 0 && state.speed - BOAT_TUNING.cruise <= 0.1)
+        settledAt = (i + 1) * DT;
       expect(previous - state.speed).toBeLessThanOrEqual(
         BOAT_TUNING.brakeDecel * DT + 1e-9,
       );
@@ -186,6 +191,9 @@ describe("boat motion", () => {
       previous = state.speed;
     }
     expect(state.speed).toBeCloseTo(BOAT_TUNING.cruise, 6);
+    // With W held the boost settles in a few seconds, not a long coast.
+    expect(settledAt).toBeGreaterThanOrEqual(2);
+    expect(settledAt).toBeLessThanOrEqual(5);
   });
 
   it("boost only works with the throttle forward", () => {
