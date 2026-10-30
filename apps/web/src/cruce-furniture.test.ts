@@ -47,6 +47,17 @@ describe("Cruce timber furniture exports", () => {
         ),
       );
       expect(bounds.min[1]).toBeCloseTo(0, 4);
+      const top = doc
+        .getRoot()
+        .listMeshes()[0]
+        .listPrimitives()
+        .find((p) => p.getMaterial()?.getName() === "Oiled chestnut timber")!;
+      expect(top.getAttribute("POSITION")!.getMax([])[1]).toBeCloseTo(
+        id.includes("Table")
+          ? CRUCE_TABLE.woodSurface
+          : CRUCE_TABLE.seatSurface,
+        5,
+      );
       expect(Buffer.from(doc.getRoot().listTextures()[0].getImage()!)).toEqual(
         wood,
       );

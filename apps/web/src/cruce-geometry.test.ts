@@ -15,7 +15,7 @@ describe("physical Cruce square table and usable seats", () => {
         label: "Cruce",
         center: [
           t.x - Math.sin(a) * t.benchRadius,
-          t.ground + t.seatHeight,
+          t.ground + t.seatSurface,
           t.z + Math.cos(a) * t.benchRadius,
         ],
         width: t.benchWidth,

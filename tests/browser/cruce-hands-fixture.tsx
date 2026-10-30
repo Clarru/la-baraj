@@ -31,15 +31,17 @@ const cameras = {
   grip: [0.65, 1.12, 0.65],
   free: [-0.65, 1.05, 0.65],
   side: [0.9, 1.1, 0.05],
+  contact: [2.5, 0.9, 0.1],
 };
 function Camera({ view }: { view: keyof typeof cameras }) {
   const { camera } = useThree();
+  const target = view === "contact" ? world([0, 0.68, 0.12]) : focus;
   useEffect(() => {
     camera.position.copy(world(cameras[view]));
-    camera.lookAt(focus);
+    camera.lookAt(target);
     camera.updateProjectionMatrix();
   }, [camera, view]);
-  return <OrbitControls target={focus.toArray()} />;
+  return <OrbitControls target={target.toArray()} />;
 }
 function Character({ play, count }: { play: boolean; count: number }) {
   const { scene } = useGLTF("/assets/optimized/Lakeside_Man.glb");

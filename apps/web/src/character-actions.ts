@@ -48,10 +48,11 @@ const smooth = (value: number) => {
 export function activitySeatLift(
   pose: Readonly<ActivityPose>,
   elapsed: number,
+  seatedContactHeight = 0.45,
 ) {
   if (!pose.anchor || pose.seatHeight === undefined) return 0;
   const lift = THREE.MathUtils.clamp(
-    pose.seatHeight - pose.anchor[1] - 0.45,
+    pose.seatHeight - pose.anchor[1] - seatedContactHeight,
     -0.15,
     0.25,
   );

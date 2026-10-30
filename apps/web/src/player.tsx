@@ -1,3 +1,4 @@
+import { cruceContactForPose, type CruceSeatContact } from "./cruce-seating";
 import {
   requestSocialWave,
   socialWaveFinished,
@@ -281,6 +282,8 @@ export function Player({
   );
   const { actions, mixer } = useAnimations(allAnimations, object);
   const tableReaction = useMemo(() => createTableReactionRig(object), [object]);
+  // Preserve this seat's calibration if authority clears the ID during stand-up.
+  const cruceSeatContact = useRef<CruceSeatContact | null>(null);
   const cruceCharacter = useCruceCharacter(
     object,
     allAnimations.find((c) => c.name === "Activity_HoldRod"),
@@ -882,6 +885,11 @@ export function Player({
       anchored.current = false;
       keys.current.clear();
     }
+    cruceSeatContact.current = cruceContactForPose(
+      cruceSeatContact.current,
+      pose,
+      cruceSeatSide(currentMultiplayerRoom()?.ownSeatId()),
+    );
     const room = currentMultiplayerRoom();
     const selfId = room?.getSnapshot().selfId ?? "";
     const stunned = Boolean(room?.stunned(selfId));
@@ -1203,7 +1211,8 @@ export function Player({
         : nowSwimming
           ? SWIM_OFFSET
           : holding
-            ? -0.95 + activitySeatLift(pose, elapsed)
+            ? -0.95 +
+              activitySeatLift(pose, elapsed, cruceSeatContact.current?.height)
             : c.isOnGround && groundY !== null && c.currLinVel.y < 0.8
               ? groundY - playerViewPosition.y + 0.015
               : -0.935;

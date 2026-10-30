@@ -29,7 +29,7 @@ for (const mode of ["rest", "pinch"]) {
     for (const f of ["index", "middle", "ring", "pinky"]) {
       const curls =
         mode === "rest"
-          ? [0.045, 0.12, 0.06]
+          ? [0.045, f === "ring" ? 0.18 : f === "middle" ? 0.145 : 0.12, 0.06]
           : {
               index: [0.15, 0.28, 0.12],
               middle: [0.14, 0.25, 0.12],

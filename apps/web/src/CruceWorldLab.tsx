@@ -1,7 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { openLocalWorldPort } from "./LocalWorldRoom";
 import type { MultiplayerRoom } from "./multiplayer";
-import { cruceWorldLab, requestCruceTestMove } from "./cruce-world-test";
+import {
+  cruceWorldLab,
+  requestCruceTestMove,
+  cruceContactSnapshot,
+} from "./cruce-world-test";
 import {
   CRUCE_TABLE,
   CRUCE_SEATS,
@@ -26,6 +30,14 @@ type Peer = {
 };
 export function CruceWorldLab({ room }: { room: MultiplayerRoom }) {
   const [toolsVisible, setToolsVisible] = useState(true);
+  const [contacts, setContacts] = useState("[]");
+  useEffect(() => {
+    const timer = setInterval(
+      () => setContacts(JSON.stringify(cruceContactSnapshot())),
+      200,
+    );
+    return () => clearInterval(timer);
+  }, []);
   const peers = useRef<Peer[]>([]),
     sequence = useRef(0),
     [status, setStatus] = useState("");
@@ -57,13 +69,17 @@ export function CruceWorldLab({ room }: { room: MultiplayerRoom }) {
     peers.current = [];
     setStatus("Jucătorii de test au plecat.");
   };
-  useEffect(
-    () => () => {
+  useEffect(() => {
+    const release = () => {
       peers.current.forEach(releasePeer);
       peers.current = [];
-    },
-    [],
-  );
+    };
+    window.addEventListener("pagehide", release);
+    return () => {
+      window.removeEventListener("pagehide", release);
+      release();
+    };
+  }, []);
   useEffect(() => {
     const timer = setInterval(() => {
       for (const p of peers.current) {
@@ -178,6 +194,18 @@ export function CruceWorldLab({ room }: { room: MultiplayerRoom }) {
       <strong>Test local Cruce</strong>
       <button onClick={() => setToolsVisible(false)}>Ascunde testele</button>
       <p>{status}</p>
+      <output
+        aria-label="Contacte 3D Cruce"
+        style={{
+          display: "block",
+          fontSize: 10,
+          overflowWrap: "anywhere",
+          maxHeight: 160,
+          overflow: "auto",
+        }}
+      >
+        {contacts}
+      </output>
       <button
         onClick={() =>
           requestCruceTestMove([
@@ -191,6 +219,9 @@ export function CruceWorldLab({ room }: { room: MultiplayerRoom }) {
       </button>
       <button onClick={add}>Așază colegii de test</button>
       <button onClick={stop}>Eliberează colegii de test</button>
+      <button onClick={() => room.releaseSeat()}>
+        Forțează eliberarea locului (test)
+      </button>
     </aside>
   );
 }

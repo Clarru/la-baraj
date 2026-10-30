@@ -37,7 +37,7 @@ export function CruceBench({
         capacity: 1,
         endMargin: 0.12,
         facingOffset: 0,
-        seatSurfaceHeight: TABLE.seatHeight,
+        seatSurfaceHeight: TABLE.seatSurface,
       }}
     />
   );

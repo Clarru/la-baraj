@@ -1,6 +1,7 @@
 import * as T from "three";
 import handPoses from "./cruce-hand-poses.json";
 import { setWorldRotation, solveTwoBoneIK } from "./limb-ik";
+import { cruceWorldLab, recordCruceContact } from "./cruce-world-test";
 import { crucePlayTarget } from "../../../packages/shared/cruce-station";
 import type { CruceSeat, CruceView } from "../../../packages/shared/cruce";
 const faceTextures = new Map<number, T.Texture>();
@@ -175,7 +176,7 @@ export function createCruceCharacterRig(
         bones[6].quaternion.multiply(q.setFromEuler(new T.Euler(0.12, 0, 0)));
       const releaseGrip =
         t >= 0 && t < 0.22
-          ? 1
+          ? T.MathUtils.smoothstep(t, 0, 0.08)
           : t >= 0.22 && t < 0.38
             ? 1 - (t - 0.22) / 0.16
             : 0;
@@ -192,11 +193,11 @@ export function createCruceCharacterRig(
         if (!upper || !lower || !hand) continue;
         target.set(
           side === 0 ? 0.18 : -0.18,
-          side === 0 ? 0.95 : 0.83 + 0.035 * reach,
-          side === 0 ? 0.08 : 0.12 + 0.08 * reach,
+          side === 0 ? 0.89 : 0.8735 + 0.08 * reach,
+          side === 0 ? 0.08 : 0.182 + 0.08 * reach,
         );
         object.localToWorld(target);
-        pole.set(side === 0 ? 0.44 : -0.44, side === 0 ? 0.72 : 0.79, -0.09);
+        pole.set(side === 0 ? 0.44 : -0.44, side === 0 ? 0.72 : 0.84, -0.09);
         object.localToWorld(pole);
         solveTwoBoneIK(upper, lower, hand, target, pole);
         // Pronation belongs to the forearm, not a bent/twisted wrist. Local +Y
@@ -281,10 +282,13 @@ export function createCruceCharacterController(
           (rig && view.trick.some((p) => p.seat === seat)));
       if (!needed) {
         dispose();
+        if (cruceWorldLab && seat !== null) recordCruceContact(object, seat);
         return;
       }
       rig ??= createCruceCharacterRig(object, back(), grip);
       rig.update(view, seat, now);
+      if (cruceWorldLab && seat !== null)
+        recordCruceContact(object, seat, rig.fan);
     },
     dispose,
   };
