@@ -225,6 +225,63 @@ describe("shot animation and the firing lock", () => {
       "Rematch",
     );
   });
+  it("lands on the actual incoming square relative to the paper, including its page offset", () => {
+    const bounds = vi
+      .spyOn(HTMLElement.prototype, "getBoundingClientRect")
+      .mockImplementation(function (this: HTMLElement) {
+        const rect = this.matches(".planes-play-area--battle")
+          ? { left: 120, top: 200, width: 760, height: 420 }
+          : this.matches(".planes-main-grid h3")
+            ? { left: 530, top: 200, width: 300, height: 20 }
+            : { left: 250, top: 360, width: 32, height: 32 };
+        return {
+          ...rect,
+          x: rect.left,
+          y: rect.top,
+          right: rect.left + rect.width,
+          bottom: rect.top + rect.height,
+          toJSON() {},
+        };
+      });
+    render();
+    incoming();
+    expect(
+      container.querySelector(".planes-shot")?.getAttribute("viewBox"),
+    ).toBe("0 0 760 420");
+    expect(
+      container.querySelector(".planes-shot > g")?.getAttribute("transform"),
+    ).toBe("translate(146 176)");
+    expect(
+      container.querySelector(".planes-shot-core")?.getAttribute("d"),
+    ).toBe("M560,25 C560,-11 146,106 146,176");
+    bounds.mockRestore();
+  });
+  it("replaces an outgoing animation with the next accepted incoming shot without unlocking early", () => {
+    current = { ...current, turn: 0 };
+    render();
+    current = {
+      ...current,
+      revision: 2,
+      turn: 1,
+      shots: [[{ x: 0, y: 0, result: "miss" }], []],
+      event: {
+        id: 2,
+        at: Date.now(),
+        actor: "a",
+        target: "b",
+        result: "miss",
+        winner: null,
+      },
+    };
+    render();
+    advance(400);
+    incoming();
+    advance(SHOT_DURATION - 400);
+    expect(targets()[0].disabled).toBe(true);
+    advance(400);
+    expect(targets()[0].disabled).toBe(true);
+    expect(targets()[1].disabled).toBe(false);
+  });
   it("keeps your sheet first and equally detailed, and retains the incoming coordinate", () => {
     render();
     incoming();

@@ -9,7 +9,7 @@ Reduced motion replaces travel/sparks with a static target ring and a 180 ms ack
 ## Verification
 
 - Node 24 frontend TypeScript check and production build passed.
-- 361 frontend tests passed, including eight DOM lifecycle tests covering actual disabled targets for air/body/cockpit hits, release at the deadline, sending the next shot, unrelated snapshots, historical mount, fold/reopen, reconnect, new round, callback cleanup, reduced motion and the winning shot.
+- 363 frontend tests passed, including ten DOM lifecycle tests covering actual disabled targets for air/body/cockpit hits, release at the deadline, sending the next shot, unrelated snapshots, historical mount, fold/reopen, reconnect, new round, callback cleanup, reduced motion, measured landing coordinates, quick return-shot replacement and the winning shot.
 - Existing spectator privacy and unavailable-target tests remain passing.
 - `tests/browser/planes-presentation.html` is an isolated visual fixture using the actual board component and shot rules. It has no socket, persistent state or production entry point. Build it separately; normal production builds do not include its controls.
 - Shared-port browser QA is coordinated with the release owner. No per-worktree listeners, main/Worker changes or deployment are part of this branch.
