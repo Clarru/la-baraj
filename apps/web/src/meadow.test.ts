@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import * as THREE from "three";
-import { meadowTier, TIERS, canMeadow, chunkWindow, sampleChunk, densityAt, tuftGeometry, flowerGeometry, meadowMaterial, FLOWER_COLOURS, planChunkUpdates, windAmplitude } from "./meadow";
+import { meadowTier, TIERS, canMeadow, chunkWindow, sampleChunk, densityAt, tuftGeometry, flowerGeometry, meadowMaterial, FLOWER_COLOURS, planChunkUpdates, windAmplitude, beginChunk, stepChunk, finishChunk } from "./meadow";
 import { FISHING_CLEARANCE, SHARED_GROUND_CLEARANCE } from "./geography";
 import { southShore, cabinSpots, fishingSpots, terrainHeight } from "./geography";
 
@@ -105,4 +105,13 @@ describe("planChunkUpdates", () => {
 it("silences wind under reduced motion", () => {
   expect(windAmplitude(true)).toBe(0);
   expect(windAmplitude(false)).toBeGreaterThan(0);
+});
+it("resumable chunk builds match sampleChunk", () => {
+  const s = TIERS.high, key = "-3,5";
+  const b = beginChunk(key, s);
+  let steps = 0;
+  while (!stepChunk(b, performance.now() - 1)) steps++; // expired deadline: one 9-sample slice per call
+  expect(steps).toBeGreaterThan(1);
+  const a = finishChunk(b), c = sampleChunk(key, s);
+  expect(a.grassCount).toBe(c.grassCount); expect(Array.from(a.grass)).toEqual(Array.from(c.grass));
 });

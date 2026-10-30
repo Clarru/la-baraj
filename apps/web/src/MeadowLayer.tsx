@@ -6,7 +6,11 @@ import {
   FLOWER_COLOURS,
   meadowTier,
   chunkWindow,
-  sampleChunk,
+  beginChunk,
+  stepChunk,
+  finishChunk,
+  type ChunkBuild,
+  type ChunkSample,
   planChunkUpdates,
   windAmplitude,
   tuftGeometry,
@@ -37,8 +41,8 @@ function sharedAssets() {
 
 const transform = new THREE.Object3D();
 const colour = new THREE.Color();
-const grassLow = new THREE.Color("#5f7c44");
-const grassHigh = new THREE.Color("#89a357");
+const grassLow = new THREE.Color("#4a6636");
+const grassHigh = new THREE.Color("#6b8545");
 const flowerColours = FLOWER_COLOURS.map((c) => new THREE.Color(c));
 
 const FRAME_BUDGET_MS = 3;
@@ -97,6 +101,7 @@ function MeadowMeshes({ tier }: { tier: ActiveTier }) {
     slots: new Map<ChunkKey, number>(),
     queue: [] as Build[],
     head: 0,
+    current: null as { build: ChunkBuild; slot: number } | null,
   });
 
   useFrame(({ camera }) => {
@@ -116,11 +121,26 @@ function MeadowMeshes({ tier }: { tier: ActiveTier }) {
       for (const [key, slot] of s.slots) if (plan.clear.includes(slot)) s.slots.delete(key);
       s.queue = plan.build;
       s.head = 0;
+      if (s.current) {
+        // Keep the in-progress builder if its chunk is still wanted; it may have been given a new slot.
+        const idx = s.queue.findIndex((b) => b.key === s.current!.build.key);
+        if (idx >= 0) {
+          s.current.slot = s.queue[idx].slot;
+          s.queue.splice(idx, 1);
+        } else s.current = null;
+      }
     }
-    while (s.head < s.queue.length && performance.now() - frameStart < FRAME_BUDGET_MS) {
-      const { key, slot } = s.queue[s.head++];
-      writeSlot(grass, flowers, settings, slot, key);
-      s.slots.set(key, slot);
+    const deadline = frameStart + FRAME_BUDGET_MS;
+    while (performance.now() < deadline) {
+      if (!s.current) {
+        if (s.head >= s.queue.length) break;
+        const next = s.queue[s.head++];
+        s.current = { build: beginChunk(next.key, settings), slot: next.slot };
+      }
+      if (!stepChunk(s.current.build, deadline)) break;
+      writeSlot(grass, flowers, settings, s.current.slot, finishChunk(s.current.build));
+      s.slots.set(s.current.build.key, s.current.slot);
+      s.current = null;
     }
   });
 
@@ -160,9 +180,8 @@ function writeSlot(
   flowers: THREE.InstancedMesh,
   t: (typeof TIERS)[ActiveTier],
   slot: number,
-  key: ChunkKey,
+  sample: ChunkSample,
 ) {
-  const sample = sampleChunk(key, t);
   const gStart = slot * t.grassPerChunk;
   const gRandom = grass.geometry.getAttribute("meadowRandom").array as Float32Array;
   const gColour = grass.instanceColor!.array as Float32Array;
@@ -231,6 +250,8 @@ export function Meadow({ forceHigh = false }: { forceHigh?: boolean }) {
     meadowUniforms.uTime.value += Math.min(dt, 0.1);
     if (forceHigh || active !== "high") return;
     const g = guard.current;
+    if (dt > 0.25) return; // tab resume / long stall: not a sign of a slow machine
+    dt = Math.min(dt, 0.1);
     g.deltas[g.n++ % GUARD_WINDOW] = dt * 1000;
     g.elapsed += dt;
     if (g.elapsed < GUARD_WARMUP_S || g.n < GUARD_WINDOW) return;

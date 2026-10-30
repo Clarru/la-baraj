@@ -25,8 +25,8 @@ export type TierSettings = {
   flowersPerChunk: number;
 };
 export const TIERS: Record<Exclude<MeadowTier, "off">, TierSettings> = {
-  high: { chunk: 16, ring: 7, fullRadius: 22, fadeRadius: 48, grassPerChunk: 400, flowersPerChunk: 56 },
-  low: { chunk: 16, ring: 5, fullRadius: 14, fadeRadius: 30, grassPerChunk: 190, flowersPerChunk: 28 },
+  high: { chunk: 16, ring: 7, fullRadius: 26, fadeRadius: 48, grassPerChunk: 400, flowersPerChunk: 96 },
+  low: { chunk: 16, ring: 5, fullRadius: 14, fadeRadius: 30, grassPerChunk: 190, flowersPerChunk: 48 },
 };
 
 export function meadowTier(input: {
@@ -63,7 +63,7 @@ export function drawnRoadDistance(x: number, z: number): number {
 function plantable(x: number, z: number, shore: number, wet: boolean, margin: number): boolean {
   if (wet || shore <= 4 + margin) return false;
   if (Math.hypot(x - 4, z - (southShore(0) + 12)) <= 16 + margin) return false;
-  for (const c of cabinSpots) if (Math.hypot(x - c.x, z - c.z) < 9.5 + margin) return false;
+  for (const c of cabinSpots) if (Math.hypot(x - c.x, z - c.z) < 7.5 + margin) return false;
   for (const p of fishingSpots) if (Math.hypot(x - p.x, z - p.z) < FISHING_CLEARANCE + margin) return false;
   for (const p of sharedGrounds) if (Math.hypot(x - p.x, z - p.z) < SHARED_GROUND_CLEARANCE + margin) return false;
   return drawnRoadDistance(x, z) > 3.2 + margin;
@@ -118,25 +118,55 @@ const lowNoise = (x: number, z: number) => valueNoise(x / 9, z / 9);
 /** Patches roughly 15-25 m across. */
 const flowerPatch = (x: number, z: number) => valueNoise(x / 20 + 11.3, z / 20 - 4.7);
 
+type Grid = { height: Float32Array; ok: Uint8Array };
+export type ChunkBuild = { key: ChunkKey; settings: TierSettings; grid: Grid; cursor: number; total: number };
+const gridCache = new Map<ChunkKey, Grid>();
+const GRID_CACHE_CAP = 512;
+
+/** Starts a resumable chunk build; a cached grid makes the build complete immediately. */
+export function beginChunk(key: ChunkKey, settings: TierSettings): ChunkBuild {
+  const n = settings.chunk / 2 + 1;
+  const cached = gridCache.get(key);
+  if (cached) return { key, settings, grid: cached, cursor: n * n, total: n * n };
+  return { key, settings, grid: { height: new Float32Array(n * n), ok: new Uint8Array(n * n) }, cursor: 0, total: n * n };
+}
+/** Evaluates grid samples until the deadline (clock checked every 9 samples); true when the grid is complete. */
+export function stepChunk(build: ChunkBuild, deadlineMs: number): boolean {
+  if (build.cursor >= build.total) return true;
+  const { key, settings, grid } = build;
+  const [kx, kz] = key.split(",").map(Number);
+  const size = settings.chunk, step = 2, n = size / step + 1;
+  const x0 = kx * size, z0 = kz * size;
+  while (build.cursor < build.total) {
+    const k = build.cursor, i = k % n, j = (k - i) / n;
+    const x = x0 + i * step, z = z0 + j * step;
+    const wet = inWater(x, z), shore = shoreDistance(x, z);
+    grid.height[k] = terrainHeight(x, z, shore, wet);
+    grid.ok[k] = plantable(x, z, shore, wet, GRID_MARGIN) ? 1 : 0;
+    build.cursor++;
+    if (build.cursor % 9 === 0 && build.cursor < build.total && performance.now() >= deadlineMs) return false;
+  }
+  if (gridCache.size >= GRID_CACHE_CAP) gridCache.delete(gridCache.keys().next().value as ChunkKey);
+  gridCache.set(key, grid);
+  return true;
+}
 export function sampleChunk(key: ChunkKey, settings: TierSettings): ChunkSample {
+  const b = beginChunk(key, settings);
+  stepChunk(b, Infinity);
+  return finishChunk(b);
+}
+export function finishChunk(build: ChunkBuild): ChunkSample {
+  const { key, settings } = build;
+  const { height, ok } = build.grid;
   const [kx, kz] = key.split(",").map(Number);
   const size = settings.chunk, step = 2, cells = size / step, n = cells + 1;
   const x0 = kx * size, z0 = kz * size;
   const random = rng(hashString(key));
-  const height = new Float32Array(n * n);
-  const ok = new Uint8Array(n * n);
-  for (let j = 0; j < n; j++)
-    for (let i = 0; i < n; i++) {
-      const x = x0 + i * step, z = z0 + j * step, k = j * n + i;
-      const wet = inWater(x, z), shore = shoreDistance(x, z);
-      height[k] = terrainHeight(x, z, shore, wet);
-      ok[k] = plantable(x, z, shore, wet, GRID_MARGIN) ? 1 : 0;
-    }
   const grass = new Float32Array(settings.grassPerChunk * 6);
   const flowers = new Float32Array(settings.flowersPerChunk * 7);
   let grassCount = 0, flowerCount = 0;
   const grassPerCell = settings.grassPerChunk / (cells * cells);
-  const flowersPerCell = (settings.flowersPerChunk / (cells * cells)) * 1.6;
+  const flowersPerCell = (settings.flowersPerChunk / (cells * cells)) * 2.2;
   for (let j = 0; j < cells; j++)
     for (let i = 0; i < cells; i++) {
       const k = j * n + i;
@@ -155,7 +185,7 @@ export function sampleChunk(key: ChunkKey, settings: TierSettings): ChunkSample 
         grass[o + 1] = heightAt(u, v);
         grass[o + 2] = cz + v * step;
         grass[o + 3] = random() * Math.PI * 2;
-        grass[o + 4] = (0.75 + 0.5 * random()) * (0.85 + 0.3 * noise);
+        grass[o + 4] = (0.8 + 0.6 * random()) * (0.85 + 0.3 * noise);
         grass[o + 5] = random();
       }
       const fn = Math.floor(flowersPerCell + random());
@@ -163,7 +193,7 @@ export function sampleChunk(key: ChunkKey, settings: TierSettings): ChunkSample 
         const u = random(), v = random();
         const x = cx + u * step, z = cz + v * step;
         const yaw = random() * Math.PI * 2, scale = 0.8 + 0.4 * random(), rnd = random(), other = random();
-        if (flowerPatch(x, z) <= 0.45) continue;
+        if (flowerPatch(x, z) <= 0.5) continue;
         const dominant = Math.floor(hash2(Math.floor(x / 12), Math.floor(z / 12)) * FLOWER_COLOURS.length) % FLOWER_COLOURS.length;
         const o = flowerCount++ * 7;
         flowers[o] = x;
@@ -209,21 +239,21 @@ const softNormal = (fx: number, fz: number): [number, number, number] => {
 
 export function tuftGeometry(): THREE.BufferGeometry {
   const tris: Parameters<typeof build>[0] = [];
-  const blades = 6, height = 0.5;
+  const blades = 6, height = 0.42;
   for (let b = 0; b < blades; b++) {
     const yaw = (b / blades) * Math.PI * 2 + (b % 2) * 0.35;
     const dx = Math.cos(yaw), dz = Math.sin(yaw); // lean direction
     const rx = -dz, rz = dx; // blade width axis
     const baseR = 0.04 + (b % 3) * 0.015;
     const h = height * (0.7 + 0.3 * ((b * 5) % 6) / 5);
-    const w = 0.045;
-    const lean = (f: number) => baseR + h * 0.28 * f * f;
+    const w = 0.07;
+    const lean = (f: number) => baseR + h * 0.38 * f * f;
     const at = (f: number, side: number, wd: number): Vert => ({
       p: [dx * lean(f) + rx * side * wd, h * f, dz * lean(f) + rz * side * wd],
       uv: [side > 0 ? 1 : side < 0 ? 0 : 0.5, f],
     });
     const n = softNormal(-dz, dx);
-    const bl = at(0, -1, w), br = at(0, 1, w), ml = at(0.5, -1, w * 0.75), mr = at(0.5, 1, w * 0.75), tip = at(1, 0, 0);
+    const bl = at(0, -1, w), br = at(0, 1, w), ml = at(0.5, -1, w * 0.6), mr = at(0.5, 1, w * 0.75), tip = at(1, 0, 0);
     tris.push({ v: [bl, br, ml], n }, { v: [br, mr, ml], n }, { v: [ml, mr, tip], n });
   }
   return build(tris);
@@ -231,7 +261,7 @@ export function tuftGeometry(): THREE.BufferGeometry {
 
 export function flowerGeometry(): THREE.BufferGeometry {
   const tris: Parameters<typeof build>[0] = [];
-  const top = 0.34, stem = 0.32, sw = 0.012;
+  const top = 0.46, stem = 0.44, sw = 0.016;
   const sv = (x: number, y: number, z: number): Vert => ({ p: [x, y, z], uv: [0, y / top] });
   for (const [ax, az] of [[1, 0], [0, 1]]) {
     const n = softNormal(-az, ax);
@@ -241,7 +271,7 @@ export function flowerGeometry(): THREE.BufferGeometry {
   const centre: Vert = { p: [0, top, 0], uv: [1, 1] };
   const ring = (k: number): Vert => {
     const a = (k / 6) * Math.PI * 2;
-    return { p: [Math.cos(a) * 0.08, stem + 0.01, Math.sin(a) * 0.08], uv: [1, (stem + 0.01) / top] };
+    return { p: [Math.cos(a) * 0.13, stem + 0.01, Math.sin(a) * 0.13], uv: [1, (stem + 0.01) / top] };
   };
   for (let k = 0; k < 6; k++) tris.push({ v: [centre, ring(k), ring(k + 1)], n: [0, 1, 0] });
   return build(tris);
@@ -302,7 +332,7 @@ nonPerturbedNormal = normal;`,
         "#include <color_fragment>",
         `#include <color_fragment>\n${
           kind === "grass"
-            ? "diffuseColor.rgb *= mix(0.58, 1.06, vMeadow.x);"
+            ? "diffuseColor.rgb *= mix(0.55, 0.98, vMeadow.x);"
             : "diffuseColor.rgb = mix(vec3(0.30, 0.42, 0.22), diffuseColor.rgb, vMeadow.x);"
         }`,
       );
