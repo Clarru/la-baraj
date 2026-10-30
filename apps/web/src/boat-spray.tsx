@@ -16,9 +16,10 @@ import { lastLighting } from "./day-night";
 import { LAKE_LEVEL } from "./swim-motion";
 
 // Jet stream off the transom: a V wake on the water and a rooster tail of foam.
-// Geometry and materials are shared by every boat; each instance only owns its
-// transforms and a 4-float state that onBeforeRender copies into the shared
-// uniforms (uniformsNeedUpdate), so 30 boats stay 2 small draws each.
+// Materials and the rooster-tail geometry are shared by every boat; the wake
+// ribbon geometry is per boat. Each instance owns its transforms and a 4-float
+// state that onBeforeRender copies into the shared uniforms
+// (uniformsNeedUpdate), so every boat is still 2 small draws.
 
 /** Foam lies this far above the water so it never z-fights the lake. */
 const FOAM_LIFT = 0.03;
@@ -204,7 +205,13 @@ export function BoatSpray({ speed }: { speed: () => number }) {
   useEffect(() => () => wakeGeometry.dispose(), [wakeGeometry]);
   useLayoutEffect(() => {
     if (wake.current)
-      wake.current.onBeforeRender = () => applyState(wakeMaterial, state);
+      // Per-sample strength is baked into the ribbon, so opacity is constant 1.
+      wake.current.onBeforeRender = () => {
+        const u = wakeMaterial.uniforms;
+        u.uOpacity.value = 1;
+        u.uIntensity.value = state[INTENSITY];
+        wakeMaterial.uniformsNeedUpdate = true;
+      };
     if (tail.current)
       tail.current.onBeforeRender = () => applyState(tailMaterial, state);
   }, [state]);
@@ -216,6 +223,7 @@ export function BoatSpray({ speed }: { speed: () => number }) {
     tailMaterial.uniforms.uPixels.value = size.height * viewport.dpr * 0.5;
     spraySize(speed(), BOAT_TUNING.cruise, spray);
     const sprayOn = spray.opacity > 0;
+    state[INTENSITY] = sprayIntensity(lastLighting());
     if (root) root.visible = sprayOn;
     if (Number.isFinite(now)) {
       if (parent && sprayOn) {
@@ -263,7 +271,6 @@ export function BoatSpray({ speed }: { speed: () => number }) {
     state[LENGTH] = spray.length;
     state[SPREAD] = spray.width;
     state[OPACITY] = spray.opacity;
-    state[INTENSITY] = sprayIntensity(lastLighting());
   });
   return (
     <>
