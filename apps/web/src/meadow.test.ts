@@ -106,10 +106,13 @@ describe("density and geometry", () => {
   it("builds solid blades and flowers with height uv and upward normals", () => {
     const g = tuftGeometry(), f = flowerGeometry();
     const tris = (geo: THREE.BufferGeometry) => (geo.index ? geo.index.count : geo.attributes.position.count) / 3;
-    expect(tris(g)).toBe(18); expect(tris(f)).toBeGreaterThanOrEqual(10);
+    expect(tris(g)).toBe(18); expect(tris(f)).toBeGreaterThanOrEqual(20); expect(tris(f)).toBeLessThanOrEqual(30);
     const uv = g.attributes.uv; let maxY = 0; for (let i = 0; i < uv.count; i++) maxY = Math.max(maxY, uv.getY(i));
     expect(maxY).toBe(1);
     const n = g.attributes.normal; for (let i = 0; i < n.count; i++) expect(n.getY(i)).toBeGreaterThan(0.7);
+    const fuv = f.attributes.uv, fx = new Set<number>(); let fMaxY = 0;
+    for (let i = 0; i < fuv.count; i++) { fx.add(fuv.getX(i)); fMaxY = Math.max(fMaxY, fuv.getY(i)); }
+    expect([...fx].sort()).toEqual([0, 0.5, 1]); expect(fMaxY).toBe(1);
   });
   it("gives each material kind its own program key and shared uniforms", () => {
     const a = meadowMaterial("grass"), b = meadowMaterial("flower");
