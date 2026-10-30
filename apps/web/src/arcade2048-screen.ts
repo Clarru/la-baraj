@@ -38,11 +38,13 @@ const buttons = {
   continue: [94, 375, 324, 44],
 } as const;
 const demo = [2, 4, 0, 0, 16, 0, 2, 4, 64, 32, 8, 0, 128, 2, 0, 0];
+const emptyBoard = Array<number>(16).fill(0);
 export const ARCADE_CONTROLS_HINT = "Use WASD or mouse to move them";
 export const arcadeDisplayBoard = (s: ArcadeScreenState) =>
-  s.view?.game?.board ?? demo;
+  s.view?.game?.board ?? (s.active ? emptyBoard : demo);
 export const arcadeGpuTilesVisible = (s: ArcadeScreenState) =>
   s.page === "board" &&
+  (!s.active || !!s.view?.game) &&
   !s.error &&
   !(
     s.view?.game &&
@@ -405,7 +407,8 @@ export function drawArcadeScreen(
       } else line = next;
     }
     text(c, line, 60, y, 21, PAPER);
-  }
+  } else if (s.active && !s.view?.game)
+    text(c, "Opening your game…", 256, 360, 27, INK, "center", true);
   if (s.focused) {
     c.strokeStyle = FOREST;
     c.lineWidth = 3;
