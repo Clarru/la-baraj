@@ -175,7 +175,7 @@ describe("local authority on the existing 4173 origin", () => {
     }
     await a.act({ kind: "ready" });
     await b.act({ kind: "ready" });
-    await a.act({ kind: "cut", cut: false });
+    expect(a.view.phase).toBe("bidding");
     const hand = [...a.view.hand];
     await a.disconnect();
     expect(b.view.deadline).toBeNull();

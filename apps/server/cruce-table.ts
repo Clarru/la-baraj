@@ -252,6 +252,22 @@ export class CruceTable {
     const online = active.every(
       (s) => r.members[s] && r.members[s]!.awayUntil === null,
     );
+    if (online && r.game.phase === "cut") {
+      if (
+        r.game.turn === null ||
+        r.game.stock.length !== 24 ||
+        r.game.hands.some((h) => h.length)
+      )
+        throw new CruceError(
+          "Starea pachetului nu permite împărțirea automată.",
+        );
+      r.game = moveCruce(
+        r.game,
+        r.game.turn!,
+        { kind: "cut", cut: false },
+        this.runtime.random,
+      );
+    }
     r.deadline =
       online && r.game.phase === "trick"
         ? now + 1800
@@ -452,6 +468,14 @@ export class CruceTable {
         return true;
       }
       const active = activeCruceSeats(r.game.settings.mode);
+      if (
+        r.game.phase === "cut" &&
+        active.every((s) => r.members[s]?.awayUntil === null)
+      ) {
+        this.clock(r, now);
+        await this.commit(r);
+        return true;
+      }
       if (
         r.deadline === null &&
         r.game.phase === "trick" &&

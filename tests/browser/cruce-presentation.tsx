@@ -12,17 +12,18 @@ import "../../apps/web/src/style.css";
 import "../../apps/web/src/game-art.css";
 function App() {
   const [mode, setMode] = useState<CruceMode>("duel"),
-    [scenario, setScenario] = useState("playing");
+    [scenario, setScenario] = useState("playing"),
+    [you, setYou] = useState<CruceSeat>(0);
   const names = ["Claudiu", "Ioana", "Amalia", "Alexandru cu nume lung"],
     active = activeCruceSeats(mode);
   const v = {
     ...freshCruce({ mode, target: 11, iber: false, cheating: false }),
     version: 1,
     revision: 10,
-    you: 0,
+    you,
     host: 0,
     phase: "playing",
-    turn: 0,
+    turn: you,
     dealer: 2,
     round: 1,
     bid: 3,
@@ -46,6 +47,7 @@ function App() {
   if (scenario === "bidding") {
     v.phase = "bidding";
     v.trump = null;
+    v.bids[you] = null;
   }
   if (scenario.startsWith("announcement")) {
     const forty = scenario === "announcement40";
@@ -63,6 +65,22 @@ function App() {
       { seat: 0, card: 11, announcement: 0 },
       { seat: 2, card: 7, announcement: 40 },
     ];
+  }
+  if (scenario === "all-trick") {
+    const count = mode.startsWith("four-") ? 6 : 8;
+    v.phase = "trick";
+    v.turn = null;
+    v.deadline = Date.now() + 60000;
+    v.trickWinner = 0;
+    v.trick = active.map((seat) => ({
+      seat,
+      card: [7, 13, 19, 23][seat],
+      announcement: seat === 2 ? 20 : 0,
+    }));
+    v.hand = v.hand.slice(0, count - 1);
+    v.handCounts = [0, 1, 2, 3].map((s) =>
+      active.includes(s as CruceSeat) ? count - 1 : 0,
+    );
   }
   if (scenario === "overdue") {
     v.deadline = Date.now() - 5000;
@@ -128,7 +146,10 @@ function App() {
           Variantă QA
           <select
             value={mode}
-            onChange={(e) => setMode(e.target.value as CruceMode)}
+            onChange={(e) => {
+              setMode(e.target.value as CruceMode);
+              setYou(0);
+            }}
           >
             {[
               "duel",
@@ -139,6 +160,19 @@ function App() {
               "four-standard",
             ].map((m) => (
               <option key={m}>{m}</option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Loc QA
+          <select
+            value={you}
+            onChange={(e) => setYou(Number(e.target.value) as CruceSeat)}
+          >
+            {active.map((seat) => (
+              <option key={seat} value={seat}>
+                {seat}
+              </option>
             ))}
           </select>
         </label>
@@ -154,6 +188,7 @@ function App() {
               "announcement20",
               "announcement40",
               "trick",
+              "all-trick",
               "overdue",
               "away",
               "disconnected",

@@ -1,0 +1,33 @@
+{
+  "runtime": "65dfa97edfc77113d1ab06177acbf9c11aeb67e7",
+  "repair": "Auction line-height only",
+  "backup": "/var/folders/t0/48hh334d78l9_bv62l091cm00000gn/T/la-baraj-before-cruce-flow-pk0jv75b/dist",
+  "before": 244,
+  "after": 244,
+  "allBytesEqual": true,
+  "index": "ac19dcc222c397f042821032f2df18ddff296b817cdc2c0ff54819800879a003",
+  "removedOwnedPaths": [
+    "assets/CruceBoard-BkboIcGp.js",
+    "assets/Game-CyyxjiQJ.js",
+    "assets/PlanesBoard-8dyLalIa.js",
+    "assets/cruce-CV1O_z0z.css",
+    "assets/cruce-Oa7cH3Ja.js",
+    "assets/game-art-B_6d281o.css",
+    "assets/game-art-DiczmMhn.js",
+    "assets/local-world.worker-Ddmsd336.js",
+    "assets/main-BhP4HXT9.css",
+    "assets/main-QLymI8-F.js",
+    "assets/presentation-CeD5x4hJ.js",
+    "assets/rapier-UtoOKErd.js",
+    "__cruce-flow-game.html",
+    "__cruce-flow-ui.html",
+    "assets/presentation-srjiP-zQ.js",
+    "assets/rapier-CVr5Iztu.js",
+    "assets/Game-CQBXFzp6.js",
+    "assets/CruceBoard-9nL-uzOW.js",
+    "assets/cruce-9qIrKWpb.css",
+    "assets/main-CcKDr3cf.js",
+    "assets/cruce-DqPBgYDM.js",
+    "assets/PlanesBoard-TDHNGCtQ.js"
+  ]
+}

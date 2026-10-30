@@ -18,6 +18,7 @@ import { type TableActor } from "../apps/server/planes-table";
 import { parseClientMessage } from "../packages/shared/protocol";
 import { nextWorldDeadline } from "../apps/server/world-alarm";
 import {
+  beginCruceRound,
   suitOf,
   type CruceAction,
   type CruceSeat,
@@ -63,11 +64,83 @@ async function act(
 }
 async function start(t: CruceTable) {
   for (let s = 0; s < 4; s++) await act(t, s, { kind: "ready" });
-  await act(t, t.view(null).turn!, { kind: "cut", cut: false });
+  expect(t.view(null).phase).toBe("bidding");
   for (let s = 0; s < 4; s++)
     await act(t, t.view(null).turn!, { kind: "bid", value: s ? 0 : 1 });
 }
 describe("Cruce authoritative table", () => {
+  it("deals once after readiness, rejects legacy cut packets and immediately redeals after all pass", async () => {
+    const { t } = await table();
+    for (let seat = 0; seat < 4; seat++) await act(t, seat, { kind: "ready" });
+    const before = t.view(null),
+      hands = actors.map((a) => t.view(a).hand);
+    expect(before.phase).toBe("bidding");
+    expect(hands.flat()).toHaveLength(24);
+    await expect(
+      act(t, before.turn!, { kind: "cut", cut: false }),
+    ).rejects.toThrow(/împărțite/);
+    expect(actors.map((a) => t.view(a).hand)).toEqual(hands);
+    expect(t.view(null).revision).toBe(before.revision);
+    for (let i = 0; i < 4; i++)
+      await act(t, t.view(null).turn!, { kind: "bid", value: 0 });
+    expect(t.view(null)).toMatchObject({
+      phase: "bidding",
+      round: before.round + 1,
+    });
+    expect(new Set(actors.flatMap((a) => t.view(a).hand)).size).toBe(24);
+  });
+  it("settles a restored online cut once, waits for absent members and preserves state on failed save", async () => {
+    const { saved } = await table();
+    const legacy = structuredClone(saved());
+    legacy.game = beginCruceRound(legacy.game, () => 0.43);
+    legacy.deadline = null;
+    let fail = true;
+    const restored = new CruceTable(
+      {
+        save: async () => {
+          if (fail) throw Error("storage down");
+        },
+      },
+      legacy,
+    );
+    await expect(restored.expire(2000)).rejects.toThrow("storage down");
+    expect(restored.view(null).phase).toBe("cut");
+    fail = false;
+    expect(await restored.expire(2001)).toBe(true);
+    const dealt = actors.map((a) => restored.view(a).hand);
+    expect(dealt.flat()).toHaveLength(24);
+    expect(await restored.expire(2002)).toBe(false);
+    expect(actors.map((a) => restored.view(a).hand)).toEqual(dealt);
+    legacy.members[0]!.awayUntil = 10000;
+    const paused = new CruceTable({ save: async () => {} }, legacy);
+    expect(await paused.expire(2000)).toBe(false);
+    expect(paused.view(null).phase).toBe("cut");
+    await paused.resume({ ...actors[0], socket: "returned" }, 2001);
+    expect(paused.view(null).phase).toBe("bidding");
+    expect(paused.view({ ...actors[0], socket: "returned" }).hand).toHaveLength(
+      6,
+    );
+  });
+  it("does not persist an automatic deal from an inconsistent legacy cut record", async () => {
+    const { saved } = await table(),
+      legacy = structuredClone(saved());
+    legacy.game = beginCruceRound(legacy.game, () => 0.43);
+    legacy.deadline = null;
+    legacy.game.hands[0].push(legacy.game.stock.shift()!);
+    let saves = 0;
+    const restored = new CruceTable(
+      {
+        save: async () => {
+          saves++;
+        },
+      },
+      legacy,
+    );
+    await expect(restored.expire(2000)).rejects.toThrow(/împărțirea automată/);
+    expect(saves).toBe(0);
+    expect(restored.view(null).phase).toBe("cut");
+    expect(restored.view(actors[0]).hand).toHaveLength(1);
+  });
   it("filters packets and strips additional client fields", () => {
     const packet = (action: unknown) =>
       JSON.stringify({
@@ -271,7 +344,7 @@ describe("Cruce authoritative table", () => {
         t.act(a, { kind: "ready" }, `parallel:${i}`, revision, 1100),
       ),
     );
-    expect(t.view(null).phase).toBe("cut");
+    expect(t.view(null).phase).toBe("bidding");
     const other = await table();
     const oldRevision = other.t.view(null).revision;
     await act(other.t, 0, {
@@ -346,7 +419,7 @@ describe("Cruce authoritative table", () => {
             t.act(actor, { kind: "ready" }, `ready${index}`, applied, 1200),
           ),
         );
-        expect(t.view(null).phase).toBe("cut");
+        expect(t.view(null).phase).toBe("bidding");
       }
   });
   it("handles three-player capacity, reservations and failed persistence without ejecting anybody", async () => {
@@ -484,6 +557,23 @@ describe("Cruce authoritative table", () => {
     expect(result.roundPoints.reduce((a, b) => a + b, 0)).toBe(
       120 + result.announcements.reduce((a, b) => a + b, 0),
     );
+    await Promise.all(
+      people.map((actor, i) =>
+        t.act(
+          actor,
+          { kind: "continue" },
+          `continue${i}`,
+          result.revision,
+          ++now,
+        ),
+      ),
+    );
+    expect(t.view(null)).toMatchObject({
+      phase: "bidding",
+      round: result.round + 1,
+      scores: result.scores,
+    });
+    expect(people.map((a) => t.view(a).hand.length)).toEqual([8, 8]);
   });
   it("rejects corrupt saved decks rather than duplicating cards", async () => {
     const { t, saved } = await table();
@@ -584,7 +674,7 @@ describe("Cruce room integration", () => {
         }),
       ),
     );
-    expect(cruce.view(null).phase).toBe("cut");
+    expect(cruce.view(null).phase).toBe("bidding");
     expect(cruce.view(null).players.filter(Boolean)).toHaveLength(2);
   });
 
