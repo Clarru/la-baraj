@@ -13,6 +13,7 @@ import { RigidBody, CuboidCollider } from "@react-three/rapier";
 import * as THREE from "three";
 import {
   ARCADE_STATIONS,
+  arcadeStationYaw,
   LEGACY_ARCADE_STATION,
   type ArcadeStation,
 } from "../../../packages/shared/arcade2048-station";
@@ -166,6 +167,7 @@ function StationMachine({
   return (
     <group
       position={[station.x, arcadeGround(station), station.z]}
+      rotation={[0, arcadeStationYaw(station.id), 0]}
       name={`2048 cabinet ${station.id + 1}`}
     >
       <RigidBody type="fixed" colliders={false}>

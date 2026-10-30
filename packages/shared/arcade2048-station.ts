@@ -18,3 +18,8 @@ export const LEGACY_ARCADE_STATION = { ...ARCADE_STATION, id: -1 } as const;
 export function arcadeStation(id: number) {
   return ARCADE_STATIONS.find((s) => s.id === id);
 }
+
+/** Turn 45° toward the diagonal lakeside approach; legacy machines keep +Z. */
+export function arcadeStationYaw(id: number) {
+  return arcadeStation(id) ? Math.PI / 4 : 0;
+}
