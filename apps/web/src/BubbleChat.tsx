@@ -1,11 +1,15 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { useFrame } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import * as THREE from "three";
-import {
-  BUBBLE_CHAT_IDLE_MS,
-  normalizeBubbleText,
-} from "../../../packages/shared/bubble-chat";
+import { BUBBLE_CHAT_IDLE_MS } from "../../../packages/shared/bubble-chat";
+import { normalizeChatDraft } from "./bubble-chat-input";
 import type { MultiplayerRoom } from "./multiplayer";
 import { playerBubbleAnchor } from "./player";
 
@@ -36,7 +40,7 @@ export function LocalBubbleChat({
   }, [onClose]);
   const edit = useCallback(
     (value: string) => {
-      const next = normalizeBubbleText(value);
+      const next = normalizeChatDraft(value);
       latest.current = next;
       setText(next);
       arm();
@@ -59,11 +63,16 @@ export function LocalBubbleChat({
       room.publishChat("");
     };
   }, [arm, room]);
-  useEffect(() => {
+  useLayoutEffect(() => {
     focused.current = false;
     if (editing) {
+      // Enter starts a new thought after the previous bubble was left behind.
+      if (pending.current) clearTimeout(pending.current);
+      pending.current = null;
+      latest.current = "";
+      setText("");
+      room.publishChat("");
       arm();
-      if (latest.current.trim()) room.publishChat(latest.current);
     }
   }, [editing, arm, room]);
   useEffect(() => {
@@ -127,7 +136,7 @@ export function LocalBubbleChat({
                 aria-describedby="bubble-chat-help"
                 placeholder="Say something…"
                 value={text}
-                rows={2}
+                rows={1}
                 spellCheck={false}
                 onKeyDown={(event) => {
                   if (event.key === "Enter" && !event.nativeEvent.isComposing) {
@@ -140,9 +149,10 @@ export function LocalBubbleChat({
               />
             </div>
             <span className="bubble-chat-help" id="bubble-chat-help">
-              Others see your text as you type. Enter adds a line. Click outside
-              to walk; the bubble disappears after five seconds. Escape closes
-              it immediately.
+              Others see your text as you type. Enter adds a line after text.
+              Click outside to walk; press Enter again to start a new message.
+              The bubble disappears after five seconds. Escape closes it
+              immediately.
             </span>
           </div>
         ) : (
