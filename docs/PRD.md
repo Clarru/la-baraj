@@ -138,7 +138,7 @@ Boating is a leisure activity. Boarding drops any contested cargo as entering wa
 
 Release phases:
 
-1. **Personal boat.** Each player uses their own boat, shown to others through their existing pose as `vehicle: "boat"`. No new messages or server storage. A boat left away from the docks is visible only to its player, as with the scooter.
+1. **Personal boat.** Each player uses their own boat, shown to others through their existing pose as `vehicle: "boat"`. Boat presence includes its moored position, and the room sends numbered horizontal impact corrections. Occupied boats exchange damped momentum; unoccupied boats remain anchored. There is no new durable boat storage. See `docs/boats/collisions.md`.
 2. **Shared dock boats.** The driver's seat becomes an exclusive seat claimed through the existing seat protocol. A released boat returns to its dock.
 3. **Passengers.** Additional seats ride at fixed offsets from the driver. Boarding and leaving happen at docks.
 4. **Fishing trips and mooring.** Fishing from a boat, mooring at docks and optionally saving where a boat was left, written only on release.

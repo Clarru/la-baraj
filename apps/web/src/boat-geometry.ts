@@ -8,14 +8,6 @@ export const RUNABOUT_IDS = {
 } as const;
 
 /**
- * Metres, from the detailed runabout's bounds in runabout-library.json. The
- * origin is on the waterline at the hull pivot; bow +Z, +Y up.
- * deckHeight is the foredeck crown above the waterline, measured on the
- * Varnish/DeckPlanks centreline of Lake_Runabout.glb: it rises from 0.76 m at
- * the windshield to 0.83 m at the bow, 0.80 m at mid-foredeck (z ≈ 2.5).
- */
-
-/**
  * Character root relative to the `DriverSeat` empty while driving. The empty is
  * on the cockpit floor directly under the seated hips.
  * - Forward 0.33 m: Activity_Sit (character-actions.json) poses the `pelvis`
