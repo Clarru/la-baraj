@@ -39,6 +39,12 @@ describe("bounded browser diagnostics", () => {
     for (const text of [
       '{"resumeToken":"DUMMY_SECRET"}',
       "Authorization: Bearer DUMMY_SECRET",
+      "Authorization: Basic DUMMY_SECRET",
+      JSON.stringify({
+        url: "https://example.invalid/a.js",
+        resumeToken: "DUMMY_SECRET",
+      }),
+      "wss://DUMMY_USER:DUMMY_SECRET@example.test/room?token=DUMMY_QUERY",
       "https://DUMMY_USER:DUMMY_SECRET@example.test/a.js?token=DUMMY_QUERY",
     ]) {
       const redacted = redactDiagnostic(text);

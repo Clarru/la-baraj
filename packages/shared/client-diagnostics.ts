@@ -50,7 +50,11 @@ const keys = new Set([
 export function redactDiagnostic(value: string, max = 2000) {
   return value
     .slice(0, max * 4)
-    .replace(/https?:\/\/[^\s)]+/g, (raw) => {
+    .replace(
+      /\b(?:authorization|resumeToken|access_token|token)\b["']?\s*[:=]\s*["']?(?:(?:Bearer|Basic)\s+)?[^\s"',;}]+/gi,
+      "[redacted]",
+    )
+    .replace(/(?:https?|wss?):\/\/[^\s)"'<>,;}\]]+/g, (raw) => {
       try {
         const url = new URL(raw);
         url.username = "";
@@ -61,13 +65,9 @@ export function redactDiagnostic(value: string, max = 2000) {
       } catch {
         return raw
           .split(/[?#]/)[0]
-          .replace(/(https?:\/\/)[^/\s@]+@/g, "$1[redacted]@");
+          .replace(/((?:https?|wss?):\/\/)[^/\s@]+@/g, "$1[redacted]@");
       }
     })
-    .replace(
-      /\b(?:authorization|resumeToken|access_token|token)\b["']?\s*[:=]\s*["']?(?:Bearer\s+)?[^\s"',;}]+/gi,
-      "[redacted]",
-    )
     .slice(0, max);
 }
 export function diagnosticContext(value: unknown): DiagnosticContext {
