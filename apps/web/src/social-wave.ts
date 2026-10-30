@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import baked from "../../../assets/character-source/social-wave.json";
+import baked from "./social-wave.json";
 
 /** The dedicated one-shot layer, distinct from the source rig's conversational `Wave` clip. */
 export const SOCIAL_WAVE_CLIP_NAME = "Social_Wave";

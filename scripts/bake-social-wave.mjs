@@ -163,7 +163,7 @@ clip.blendMode = T.AdditiveAnimationBlendMode;
 const data = T.AnimationClip.toJSON(clip);
 data.uuid = "d6143bdd-2b5f-48b8-b372-71980450cbbe";
 fs.writeFileSync(
-  "assets/character-source/social-wave.json",
+  "apps/web/src/social-wave.json",
   JSON.stringify({
     targetSha256: crypto
       .createHash("sha256")
@@ -176,6 +176,6 @@ fs.writeFileSync(
 );
 console.log(
   "Wrote target-rig Social_Wave",
-  fs.statSync("assets/character-source/social-wave.json").size,
+  fs.statSync("apps/web/src/social-wave.json").size,
   "bytes",
 );
