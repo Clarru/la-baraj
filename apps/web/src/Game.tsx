@@ -5,7 +5,8 @@ import {
   nearArcade,
   availableArcadeStations,
 } from "./Arcade2048";
-import { useArcade2048, arcadeConnectionMessage } from "./use-arcade2048";
+import { useArcade2048 } from "./use-arcade2048";
+import { useArcadeEntry } from "./use-arcade-entry";
 import { captureArcadeKey } from "./arcade2048-input";
 import { reportClientDiagnostic } from "./client-diagnostics";
 import { cruceWorldLab } from "./cruce-world-test";
@@ -182,44 +183,6 @@ export default function Game({ initialName }: { initialName: string }) {
   const chatOpen = chatMode === "editing";
   const closeChat = useCallback(() => setChatMode("closed"), []);
   const finishChat = useCallback(() => setChatMode("display"), []);
-  const [arcadeStationId, setArcadeStationId] = useState<number | null>(null);
-  const arcadeOpen = arcadeStationId !== null,
-    arcadeStationRef = useRef<number | null>(null);
-  arcadeStationRef.current = arcadeStationId;
-  const [arcadeOpening, setArcadeOpening] = useState(false),
-    [arcadeEntryError, setArcadeEntryError] = useState("");
-  const openingArcade = useRef(false),
-    arcadeGeneration = useRef(0),
-    arcadeEnabledRef = useRef(false);
-  const closeArcade = useCallback(() => {
-    arcadeGeneration.current++;
-    const id = arcadeStationRef.current;
-    arcadeStationRef.current = null;
-    if (id !== null) room.leaveArcade(id);
-    setArcadeStationId(null);
-  }, [room]);
-  useEffect(
-    () => () => {
-      arcadeGeneration.current++;
-      const id = arcadeStationRef.current;
-      if (id !== null) room.leaveArcade(id);
-    },
-    [room],
-  );
-  const arcade = useArcade2048(
-    room,
-    arcadeOpen,
-    closeArcade,
-    arcadeStationId ?? undefined,
-  );
-  useEffect(() => {
-    if (arcadeOpen && roomView.arcadeBlocked) {
-      setArcadeEntryError(
-        "This cabinet is occupied or no longer available. Choose a free cabinet.",
-      );
-      closeArcade();
-    }
-  }, [arcadeOpen, roomView.arcadeBlocked, closeArcade]);
   const [planesOpen, setPlanesOpen] = useState(false);
   const ownGameSide = planesSeatSide(room.ownSeatId());
   const ownCruceSeat = cruceSeatSide(room.ownSeatId());
@@ -303,86 +266,34 @@ export default function Game({ initialName }: { initialName: string }) {
     interiorIndex === null &&
     ownGameSide === null &&
     ownCruceSeat === null;
-  arcadeEnabledRef.current = arcadeEnabled;
-  useEffect(() => {
-    if (!arcadeEnabled) closeArcade();
-  }, [arcadeEnabled, closeArcade]);
-  const openArcade = useCallback(
-    async (id: number) => {
+  const canApproachArcade = useCallback(
+    (id: number) => {
       const station = availableArcadeStations(
         room.getSnapshot().arcadeStationsAvailable,
       ).find((s) => s.id === id);
-      if (
-        !arcadeEnabled ||
-        !station ||
-        !nearArcade(navigation, station) ||
-        openingArcade.current ||
-        arcadeStationRef.current !== null
-      )
-        return;
-      const unavailable = arcadeConnectionMessage(room.getSnapshot());
-      if (unavailable) {
-        setArcadeEntryError(unavailable);
-        return;
-      }
-      const occupant = room
-        .getSnapshot()
-        .arcadeStations.find((s) => s.id === id);
-      if (
-        occupant?.playerId &&
-        occupant.playerId !== room.getSnapshot().selfId
-      ) {
-        setArcadeEntryError("Occupied. Choose another cabinet.");
-        return;
-      }
-      const generation = ++arcadeGeneration.current;
-      openingArcade.current = true;
-      setArcadeOpening(true);
-      setArcadeEntryError("");
-      try {
-        const error = await room.arcadeAction(
-          { kind: "resume" },
-          room.getSnapshot().arcade2048?.game?.revision ?? 0,
-          id,
-        );
-        if (generation !== arcadeGeneration.current) {
-          room.leaveArcade(id);
-          return;
-        }
-        if (error) {
-          setArcadeEntryError(error);
-          room.leaveArcade(id);
-          return;
-        }
-        const own =
-          id < 0 ||
-          room
-            .getSnapshot()
-            .arcadeStations.some(
-              (s) => s.id === id && s.playerId === room.getSnapshot().selfId,
-            );
-        if (
-          !own ||
-          !nearArcade(navigation, station) ||
-          !arcadeEnabledRef.current ||
-          room.getSnapshot().status !== "online"
-        ) {
-          room.leaveArcade(id);
-          return;
-        }
-        closeChat();
-        arcadeStationRef.current = id;
-        setArcadeStationId(id);
-      } catch {
-        if (generation === arcadeGeneration.current)
-          setArcadeEntryError("Could not open the cabinet. Try again.");
-        room.leaveArcade(id);
-      } finally {
-        openingArcade.current = false;
-        setArcadeOpening(false);
-      }
+      return !!station && nearArcade(navigation, station);
     },
-    [arcadeEnabled, navigation, room, closeChat],
+    [room, navigation],
+  );
+  const {
+    stationId: arcadeStationId,
+    opening: arcadeOpening,
+    error: arcadeEntryError,
+    open: openArcade,
+    close: closeArcade,
+  } = useArcadeEntry(
+    room,
+    arcadeEnabled,
+    roomView.arcadeBlocked,
+    canApproachArcade,
+    closeChat,
+  );
+  const arcadeOpen = arcadeStationId !== null;
+  const arcade = useArcade2048(
+    room,
+    arcadeOpen,
+    closeArcade,
+    arcadeStationId ?? undefined,
   );
 
   const [waveAvailable, setWaveAvailable] = useState(false);

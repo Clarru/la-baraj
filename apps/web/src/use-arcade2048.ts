@@ -139,8 +139,9 @@ export function useArcade2048(
   );
   const move = useCallback(
     (d: ArcadeDirection) => {
+      // Eight accepted inputs/second matches the authority; tile visuals settle in 120ms.
       const now = performance.now();
-      if (now - lastMoveAt.current < 125) return;
+      if (now - lastMoveAt.current < 1000 / 8) return;
       if (
         open &&
         page === "board" &&
