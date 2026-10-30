@@ -4,11 +4,11 @@ import { isBubbleText } from "../../../packages/shared/bubble-chat";
 
 describe("chat drafts without empty leading lines", () => {
   it.each(["\n", "\n\n", " \n", "\r\n\r\n"])(
-    "keeps Enter on an empty draft on the first line: %j",
+    "keeps Shift+Enter on an empty draft on the first line: %j",
     (value) => expect(normalizeChatDraft(value)).toBe(""),
   );
 
-  it("ignores repeated Enter on the empty second line without losing text", () => {
+  it("ignores repeated Shift+Enter on the empty second line without losing text", () => {
     expect(normalizeChatDraft("hello\n")).toBe("hello\n");
     expect(normalizeChatDraft("hello\n\n\n")).toBe("hello\n");
     expect(normalizeChatDraft("hello\n \n")).toBe("hello\n");
