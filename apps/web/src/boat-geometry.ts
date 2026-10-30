@@ -24,11 +24,14 @@ export const BOAT_DIMENSIONS = {
 
 /**
  * Character root relative to the `DriverSeat` empty while driving. The empty is
- * on the cockpit floor directly under the seated hips. Activity_Sit puts the
- * pelvis 0.33 m behind the character root, on a seat 0.45 m above it. The
- * driver cushion top is 0.41 m above the floor (0.47 m above the waterline).
- * So the root moves 0.33 m forward, putting the hips over the empty, and
- * 0.04 m down, putting them on the cushion.
+ * on the cockpit floor directly under the seated hips.
+ * - Forward 0.33 m: Activity_Sit (character-actions.json) poses the `pelvis`
+ *   bone 0.331 m behind the root, so this puts the hips over the empty.
+ * - Down 0.04 m: the clip seats the hips on a 0.45 m chair (activitySeatLift),
+ *   and the driver cushion top, raycast in Lake_Runabout.glb, is 0.41 m above
+ *   the 0.06 m cockpit floor.
+ * boat-rider.test.ts "seats the driver's hips over DriverSeat, on the cushion"
+ * checks both numbers against the clip and the GLB.
  */
 export const BOAT_DRIVER_OFFSET = [0, -0.04, 0.33] as const;
 

@@ -14,12 +14,8 @@ export type BoatRiderFrame = {
 
 /** Wrist joint sits this far behind the rim contact, toward the driver. */
 export const BOAT_RIDER_WRIST_OFFSET = 0.04;
-/**
- * A wrist target counts as reachable up to this far beyond the stretched arm:
- * the hand then stops at most 0.05 m from the grip (with the wrist offset),
- * still on the rim.
- */
-export const BOAT_RIDER_REACH_SLACK = 0.01;
+/** A wrist target counts as reachable within the stretched arm minus this. */
+export const BOAT_RIDER_REACH_MARGIN = 0.02;
 /** Rim search step when a grip is out of reach: 2° each way, up to half a turn. */
 const RIM_STEP = Math.PI / 90;
 
@@ -84,8 +80,8 @@ export function createBoatRiderRig(object: THREE.Object3D) {
         .distanceTo(lowerArm.getWorldPosition(new THREE.Vector3())) +
       lowerArm
         .getWorldPosition(new THREE.Vector3())
-        .distanceTo(hand.getWorldPosition(new THREE.Vector3())) +
-      BOAT_RIDER_REACH_SLACK;
+        .distanceTo(hand.getWorldPosition(new THREE.Vector3())) -
+      BOAT_RIDER_REACH_MARGIN;
     return { upperArm, lowerArm, hand, sign, handRotation, saved, reach };
   });
   const found = arms.filter((arm) => arm !== null);

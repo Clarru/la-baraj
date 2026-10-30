@@ -10,7 +10,7 @@ import {
 } from "./boat-geometry";
 import { cloneBoatRig } from "./boat-resources";
 import {
-  BOAT_RIDER_REACH_SLACK,
+  BOAT_RIDER_REACH_MARGIN,
   BOAT_RIDER_WRIST_OFFSET,
   createBoatRiderRig,
   type BoatRiderFrame,
@@ -105,8 +105,8 @@ function gripReachable(
     wrist = bonePosition(scene, `hand_${suffix}`);
   const reach =
     shoulder.distanceTo(elbow) +
-    elbow.distanceTo(wrist) +
-    BOAT_RIDER_REACH_SLACK;
+    elbow.distanceTo(wrist) -
+    BOAT_RIDER_REACH_MARGIN;
   return (
     grip
       .clone()
@@ -160,20 +160,44 @@ describe("boat driver", () => {
       mixer.update(1 / 60);
       const frame = wheelFrame(boat, angle);
       rig.update(frame);
-      for (const suffix of ["l", "r"] as const)
+      for (const suffix of ["l", "r"] as const) {
+        const label = JSON.stringify({ angle, suffix });
+        // Straight ahead, both hands hold their own grips, whatever the reach model says.
+        if (angle === 0)
+          expect(
+            bonePosition(scene, `hand_${suffix}`).distanceTo(
+              frame[sides[suffix]],
+            ),
+            label,
+          ).toBeLessThan(0.05);
         held.push(
-          expectOnWheel(
-            scene,
-            suffix,
-            frame[sides[suffix]],
-            frame,
-            JSON.stringify({ angle, suffix }),
-          ),
+          expectOnWheel(scene, suffix, frame[sides[suffix]], frame, label),
         );
+      }
     }
-    // Straight ahead, both grips are within reach and held exactly.
     expect(held.slice(0, 2)).toEqual(["grip", "grip"]);
     rig.dispose();
+  });
+
+  it("seats the driver's hips over DriverSeat, on the cushion", async () => {
+    const { scene, boat } = await seated({ atOrigin: true });
+    const seat = boat.driverSeat.getWorldPosition(new THREE.Vector3());
+    const pelvis = bonePosition(scene, "pelvis");
+    expect(Math.hypot(pelvis.x - seat.x, pelvis.z - seat.z)).toBeLessThan(0.05);
+    // Cushion top under the hips, read from the GLB's own meshes (not the rider's).
+    const isRider = (node: THREE.Object3D | null): boolean =>
+      node !== null && (node === scene || isRider(node.parent));
+    const cushion = new THREE.Raycaster(
+      new THREE.Vector3(seat.x, 2, seat.z),
+      new THREE.Vector3(0, -1, 0),
+    )
+      .intersectObject(boat.group, true)
+      .find((hit) => !isRider(hit.object))!.point.y;
+    expect(cushion - seat.y).toBeGreaterThan(0.3);
+    // Activity_Sit seats the hips on a chair 0.45 m above the character root
+    // (activitySeatLift); the pelvis must clear the cushion by the same height.
+    const clipClearance = scene.worldToLocal(pelvis.clone()).y - 0.45;
+    expect(Math.abs(pelvis.y - cushion - clipClearance)).toBeLessThan(0.05);
   });
 
   it("keeps both hands on the wheel grips as it turns", async () => {

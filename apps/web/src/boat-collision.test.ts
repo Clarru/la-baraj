@@ -57,22 +57,44 @@ describe("boat hull collision", () => {
   });
 
   it("stops on a diagonal approach", () => {
-    const { world, capsule } = scene({
-      x: beam / 2 - 0.1,
-      y: 0.4,
-      z: bowExtent - 0.5,
-    });
+    // Heading 0.3 rad, a piling 0.25 m ahead of the left bow corner (hull-local
+    // side beam/2 − 0.05, forward bowExtent + 0.25): clear of the hull at the
+    // start, so only the sweep carries the corner into it.
     const yaw = 0.3;
+    const piling = (side: number, forward: number) => ({
+      x: side * Math.cos(yaw) + forward * Math.sin(yaw),
+      y: 0.4,
+      z: -side * Math.sin(yaw) + forward * Math.cos(yaw),
+    });
+    const move = (speed: number) => ({
+      x: 0,
+      z: 0,
+      yaw,
+      dx: Math.sin(yaw) * speed,
+      dz: Math.cos(yaw) * speed,
+    });
+    const ahead = scene(piling(beam / 2 - 0.05, bowExtent + 0.25));
     expect(
-      boatHullBlocked(world, RAPIER, {
-        x: 0,
-        z: 0,
-        yaw,
-        dx: Math.sin(yaw) * 0.1,
-        dz: Math.cos(yaw) * 0.1,
-        exclude: capsule,
+      boatHullBlocked(ahead.world, RAPIER, {
+        ...move(0.1),
+        exclude: ahead.capsule,
       }),
     ).toBe(true);
+    // The same piling does not block when backing away from it.
+    expect(
+      boatHullBlocked(ahead.world, RAPIER, {
+        ...move(-0.1),
+        exclude: ahead.capsule,
+      }),
+    ).toBe(false);
+    // A piling just outside the corner's path is passed, not hit.
+    const beside = scene(piling(beam / 2 + 0.2, bowExtent + 0.25));
+    expect(
+      boatHullBlocked(beside.world, RAPIER, {
+        ...move(0.1),
+        exclude: beside.capsule,
+      }),
+    ).toBe(false);
   });
 
   it("open water is clear", () => {
