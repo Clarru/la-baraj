@@ -1,5 +1,6 @@
 /** Water is the same horizontal surface used by the lake shader. */
-export const LAKE_LEVEL = 0.05;
+import { BOAT_WATERLINE } from "../../../packages/shared/boats";
+export const LAKE_LEVEL = BOAT_WATERLINE;
 export const SWIM_OFFSET = -0.45;
 const ENTER_DEPTH = 0.62;
 const EXIT_DEPTH = 0.42;

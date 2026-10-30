@@ -15,6 +15,8 @@ import { BOAT_DIMENSIONS } from "./boat-geometry";
 import { getBoatState, parkBoat, resetBoatToDock } from "./boat-state";
 import { inWater, southShore, terrainHeight } from "./geography";
 import { LAKE_LEVEL } from "./swim-motion";
+import { cabinSpots } from "./geography";
+import { boatContact, type BoatPose } from "../../../packages/shared/boats";
 
 const { beam, bowExtent, sternExtent } = BOAT_DIMENSIONS;
 /** Hull footprint corners, then the bow tip, in world x/z. */
@@ -35,6 +37,26 @@ function hullPoints(x: number, z: number, yaw: number): [number, number][] {
 }
 
 describe("boat placement", () => {
+  it("gives all homes separate, floating berths", () => {
+    const berths: BoatPose[] = [];
+    for (const home of cabinSpots) {
+      const {
+        position: [x, , z],
+        yaw,
+      } = nearestDockSpawn(home.x, home.i);
+      for (const [px, pz] of hullPoints(x, z, yaw)) {
+        expect(inWater(px, pz), `home ${home.i} hull is in water`).toBe(true);
+        expect(
+          LAKE_LEVEL - terrainHeight(px, pz, undefined, true),
+          `home ${home.i} depth`,
+        ).toBeGreaterThanOrEqual(0.5);
+      }
+      const berth: BoatPose = { position: [x, z], yaw, velocity: [0, 0] };
+      for (const other of berths) expect(boatContact(berth, other)).toBeNull();
+      berths.push(berth);
+    }
+    expect(berths).toHaveLength(50);
+  });
   it("spawns each dock boat in open water clear of the dock", () => {
     for (const dockX of BOAT_DOCK_XS) {
       const {

@@ -605,7 +605,7 @@ export default function Game({ initialName }: { initialName: string }) {
                 {hasHome && <ParkedScooter mounted={vehicleMounted} />}
                 {hasHome && (
                   <Suspense fallback={null}>
-                    <ParkedBoat mounted={boatMounted} />
+                    <ParkedBoat />
                   </Suspense>
                 )}
                 <WorldActivities

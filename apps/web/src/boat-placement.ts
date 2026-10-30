@@ -1,5 +1,5 @@
 import { BOAT_DIMENSIONS } from "./boat-geometry";
-import { inWater, southShore, terrainHeight } from "./geography";
+import { cabinSpots, inWater, southShore, terrainHeight } from "./geography";
 import { LAKE_LEVEL } from "./swim-motion";
 
 const { beam, bowExtent, sternExtent } = BOAT_DIMENSIONS;
@@ -33,25 +33,68 @@ const EXIT_CLEARANCES = [0.7, 1.7] as const;
 const EXIT_FAR_CLEARANCE = 3;
 
 type Spawn = { position: [number, number, number]; yaw: number };
+const dockDepths = new Map<number, number>();
+function firstBerthZ(dockX: number) {
+  const cached = dockDepths.get(dockX);
+  if (cached !== undefined) return cached;
+  const columns = [3.7, -3.7, 6.8, -6.8, 9.9, -9.9];
+  for (let extra = 0; extra <= 40; extra++) {
+    const z = southShore(dockX) - BOAT_DOCK_LAKE_OFFSET - extra;
+    const clear = columns.every((offset) =>
+      [-beam / 2, beam / 2].every((side) =>
+        [-bowExtent, sternExtent].every((end) => {
+          const x = dockX + offset + side,
+            pz = z + end;
+          return (
+            inWater(x, pz) &&
+            LAKE_LEVEL - terrainHeight(x, pz, undefined, true) >= 0.65
+          );
+        }),
+      ),
+    );
+    if (clear) {
+      dockDepths.set(dockX, z);
+      return z;
+    }
+  }
+  throw new Error("No deep-water berths beside the dock");
+}
 
 /** Boat resting spot beside a dock, in open water, bow toward the lake (-Z). */
-export function boatDockSpawn(dockX: number): Spawn {
+export function boatDockSpawn(dockX: number, berth = 0): Spawn {
+  const column = berth % 6;
+  const side = column % 2 === 0 ? 1 : -1;
+  const offset = side * (BOAT_DOCK_SIDE_OFFSET + Math.floor(column / 2) * 3.1);
   return {
     position: [
-      dockX + BOAT_DOCK_SIDE_OFFSET,
+      dockX + offset,
       LAKE_LEVEL,
-      southShore(dockX) - BOAT_DOCK_LAKE_OFFSET,
+      firstBerthZ(dockX) - Math.floor(berth / 6) * 7.5,
     ],
     yaw: Math.PI,
   };
 }
 
 /** Dock spawn nearest the given x, so the boat waits on the player's side of the lake. */
-export function nearestDockSpawn(x: number): Spawn {
+export function nearestDockSpawn(x: number, homeIndex?: number): Spawn {
+  const homeX = homeIndex === undefined ? x : (cabinSpots[homeIndex]?.x ?? x);
   const dockX = BOAT_DOCK_XS.reduce((best, d) =>
-    Math.abs(d - x) < Math.abs(best - x) ? d : best,
+    Math.abs(d - homeX) < Math.abs(best - homeX) ? d : best,
   );
-  return boatDockSpawn(dockX);
+  const homes = cabinSpots.filter(
+    (p) =>
+      BOAT_DOCK_XS.reduce((best, d) =>
+        Math.abs(d - p.x) < Math.abs(best - p.x) ? d : best,
+      ) === dockX,
+  );
+  const berth =
+    homeIndex === undefined
+      ? 0
+      : Math.max(
+          0,
+          homes.findIndex((p) => p.i === homeIndex),
+        );
+  return boatDockSpawn(dockX, berth);
 }
 
 /** Ground distance from (px, pz) to the hull's footprint rectangle; 0 inside. */
