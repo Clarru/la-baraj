@@ -5,10 +5,10 @@ export const CRUCE_TABLE = {
   x: 5,
   z: 68.37531356447997,
   ground: 0.7630894938951581,
-  halfWidth: 0.95,
+  halfWidth: 0.8,
   surface: 0.82,
-  benchRadius: 1.6,
-  benchWidth: 1.1,
+  benchRadius: 1.46,
+  benchWidth: 1.12,
   benchDepth: 0.44,
   seatHeight: 0.47,
 };

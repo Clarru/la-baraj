@@ -214,6 +214,15 @@ export default function CruceBoard({
     else onLeave();
   };
   const name = (seat: number) => v?.players[seat]?.name ?? "Loc liber";
+  // Keep the same compass order for public plays and the seats around the square.
+  const tablePosition = (seat: CruceSeat) => {
+    const index = active.indexOf(seat);
+    const position =
+      you === null
+        ? index
+        : (index - active.indexOf(you) + active.length) % active.length;
+    return active.length === 2 ? position * 2 : position;
+  };
   const act = async (action: CruceAction) => {
     if (!v || busy.current) return;
     busy.current = true;
@@ -424,14 +433,8 @@ export default function CruceBoard({
               </div>
             )}
             <div className={`cruce-felt${lobby ? " cruce-felt--lobby" : ""}`}>
-              {active.map((seat, index) => {
-                const position =
-                  you === null
-                    ? index
-                    : (index - active.indexOf(you) + active.length) %
-                      active.length;
-                const labelPosition =
-                  active.length === 2 ? position * 2 : position;
+              {active.map((seat) => {
+                const labelPosition = tablePosition(seat);
                 const p = v.players[seat];
                 return (
                   <div
@@ -502,7 +505,13 @@ export default function CruceBoard({
                 )}
                 <div className="cruce-trick">
                   {v.trick.map((p) => (
-                    <div className="cruce-played" key={p.seat}>
+                    <div
+                      className={`cruce-played cruce-played--${tablePosition(p.seat)}`}
+                      key={p.seat}
+                      title={name(p.seat)}
+                      role="group"
+                      aria-label={`Carte jucată de ${name(p.seat)}`}
+                    >
                       <span>{name(p.seat)}</span>
                       <CruceCard card={p.card} />
                       {p.announcement > 0 && <strong>+{p.announcement}</strong>}

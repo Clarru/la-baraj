@@ -1,0 +1,31 @@
+{
+  "source": "scripts/build-cruce-furniture.mjs",
+  "reference": "Existing Table_Large and Bench beside Cruce; user screenshot 2026-10-30.",
+  "license": "Same as source furniture; see apps/web/public/assets/CREDITS.md and source-manifest.json.",
+  "models": [
+    {
+      "source": "Table_Large",
+      "id": "Cruce_Table",
+      "size": [
+        1.6,
+        0.82,
+        1.6
+      ],
+      "sourceSha256": "94155f03f208e90e867ad48d48315da5dd46be446a771fe7f40be1c950085698",
+      "bytes": 145964,
+      "texturePolicy": "Original source textures and UVs retained byte for byte."
+    },
+    {
+      "source": "Bench",
+      "id": "Cruce_Bench",
+      "size": [
+        1.12,
+        0.47,
+        0.44
+      ],
+      "sourceSha256": "acc7821bfac9e2fc059891a1cdae8f8e9ce8544a341ed97ebc82e480d52856e4",
+      "bytes": 131716,
+      "texturePolicy": "Original source textures and UVs retained byte for byte."
+    }
+  ]
+}
