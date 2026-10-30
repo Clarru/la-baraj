@@ -38,6 +38,17 @@ const buttons = {
   continue: [94, 375, 324, 44],
 } as const;
 const demo = [2, 4, 0, 0, 16, 0, 2, 4, 64, 32, 8, 0, 128, 2, 0, 0];
+export const ARCADE_CONTROLS_HINT = "Use WASD or mouse to move them";
+export const arcadeDisplayBoard = (s: ArcadeScreenState) =>
+  s.view?.game?.board ?? demo;
+export const arcadeGpuTilesVisible = (s: ArcadeScreenState) =>
+  s.page === "board" &&
+  !s.error &&
+  !(
+    s.view?.game &&
+    ((arcadeWon(s.view.game) && !s.view.game.continued) ||
+      arcadeOver(s.view.game))
+  );
 const round = (
   c: CanvasRenderingContext2D,
   x: number,
@@ -139,6 +150,10 @@ function tile(
   );
   c.restore();
 }
+/** One cached face; the runtime atlas reuses exactly the Canvas renderer's art. */
+export function drawArcadeTileFace(c: CanvasRenderingContext2D, value: number) {
+  tile(c, value, 0, 1, 0, 0);
+}
 export function makeTileAnimation(
   before: ArcadeView | null,
   after: ArcadeView | null,
@@ -153,15 +168,26 @@ export function makeTileAnimation(
   )
     return null;
   const result = slideArcade(before.game.board, direction);
+  // A stale-tab/error response may advance the board without accepting our direction.
+  if (!result.changed || after.game.score !== before.game.score + result.gain)
+    return null;
+  const spawned: number[] = [];
+  for (let i = 0; i < 16; i++) {
+    if (result.board[i]) {
+      if (after.game.board[i] !== result.board[i]) return null;
+    } else if (after.game.board[i]) {
+      if (after.game.board[i] !== 2 && after.game.board[i] !== 4) return null;
+      spawned.push(i);
+    }
+  }
+  if (spawned.length !== 1) return null;
   return {
     started: now,
     motions: result.motions,
     merged: [
       ...new Set(result.motions.filter((m) => m.merge).map((m) => m.to)),
     ],
-    spawned: after.game.board.flatMap((v, i) =>
-      v && result.board[i] === 0 ? [i] : [],
-    ),
+    spawned,
     gain: result.gain,
   };
 }
@@ -196,6 +222,7 @@ export function drawArcadeScreen(
   s: ArcadeScreenState,
   animation: TileAnimation | null = null,
   now = 0,
+  options: { omitTiles?: boolean } = {},
 ) {
   c.save();
   c.clearRect(0, 0, 512, 640);
@@ -222,10 +249,10 @@ export function drawArcadeScreen(
       "#aba38a",
       4,
     );
-  const board = s.view?.game?.board ?? demo;
+  const board = arcadeDisplayBoard(s);
   const elapsed = animation ? now - animation.started : Infinity,
     t = Math.min(1, Math.max(0, elapsed / 150));
-  if (animation && t < 0.72) {
+  if (!options.omitTiles && animation && t < 0.72) {
     const move = t / 0.72,
       eased = 1 - (1 - move) ** 3;
     for (const m of animation.motions) {
@@ -237,7 +264,7 @@ export function drawArcadeScreen(
             106;
       tile(c, m.value, m.to, 1, x, y);
     }
-  } else
+  } else if (!options.omitTiles)
     for (let i = 0; i < 16; i++)
       tile(
         c,
@@ -251,27 +278,10 @@ export function drawArcadeScreen(
               : 1
           : 1,
       );
-  const footer = s.pending
-    ? "Saving…"
-    : !s.active
-      ? "E or click to play"
-      : s.local
-        ? "Local practice · Arrows / WASD · Esc to leave"
-        : "Saved per player · Arrows / WASD · Esc to leave";
   if (s.active) {
-    text(
-      c,
-      s.pending
-        ? "Saving…"
-        : s.page === "leaders"
-          ? "Enter / Esc · Back to game"
-          : (s.local ? "Practice · " : "") + "Arrows / WASD · N new · L scores",
-      40,
-      616,
-      16,
-    );
+    text(c, ARCADE_CONTROLS_HINT, 40, 616, 16);
     button(c, [382, 600, 90, 32], "Leave");
-  } else text(c, footer, 256, 616, 17, INK, "center");
+  } else text(c, "E or click to play", 256, 616, 17, INK, "center");
   if (s.page === "leaders") {
     fill(c, [24, 145, 464, 449], PAPER);
     text(

@@ -57,4 +57,23 @@ it("maps the game-over action to a new game and only animates accepted moves", (
   expect(animation?.spawned).toEqual([1]);
   expect(animation?.gain).toBe(4);
   expect(makeTileAnimation(after, after, "left", 200)).toBeNull();
+  expect(
+    makeTileAnimation(
+      state.view,
+      {
+        ...after,
+        game: { ...after.game, board: [2, 0, 0, 4, ...Array(12).fill(0)] },
+      },
+      "left",
+      200,
+    ),
+  ).toBeNull();
+  expect(
+    makeTileAnimation(
+      state.view,
+      { ...after, game: { ...after.game, score: 100 } },
+      "left",
+      200,
+    ),
+  ).toBeNull();
 });

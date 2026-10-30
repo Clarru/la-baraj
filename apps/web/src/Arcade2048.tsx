@@ -1,5 +1,12 @@
 import "./arcade2048.css";
-import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import {
+  Suspense,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useGLTF } from "@react-three/drei";
 import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import { RigidBody, CuboidCollider } from "@react-three/rapier";
@@ -17,6 +24,7 @@ import {
   drawArcadeScreen,
   hitArcadeScreen,
   makeTileAnimation,
+  arcadeGpuTilesVisible,
   type TileAnimation,
 } from "./arcade2048-screen";
 import {
@@ -25,6 +33,8 @@ import {
   boatEnvironmentIntensity,
 } from "./boat-environment";
 import { lastLighting } from "./day-night";
+import { createArcadeTiles } from "./arcade2048-tiles";
+import { createArcadeResourceLifetime } from "./arcade2048-resources";
 type Controls = ReturnType<typeof useArcade2048>;
 export const arcadeGround = () => terrainHeight(STATION.x, STATION.z);
 export function nearArcade(navigation: NavigationFeed) {
@@ -106,6 +116,10 @@ function CabinetModel({
     texture.flipY = false;
     texture.generateMipmaps = false;
     texture.minFilter = THREE.LinearFilter;
+    const screenGpuStats = { uploads: 0 };
+    texture.onUpdate = () => {
+      screenGpuStats.uploads++;
+    };
     const original = screen.material;
     for (const material of [original].flat()) material.dispose();
     screen.material = new THREE.MeshBasicMaterial({
@@ -121,12 +135,24 @@ function CabinetModel({
         for (const m of [o.material].flat())
           if (m instanceof THREE.MeshStandardMaterial) materials.add(m);
     });
+    const tiles = createArcadeTiles(screen);
+    const retain = createArcadeResourceLifetime(() => {
+      tiles.dispose();
+      texture.dispose();
+      root.traverse((o) => {
+        if (o instanceof THREE.Mesh)
+          for (const m of [o.material].flat()) m.dispose();
+      });
+    });
     return {
       materials: [...materials],
       root,
       screen,
       texture,
       context,
+      screenGpuStats,
+      tiles,
+      retain,
       joystick: root.getObjectByName("Joystick"),
       buttonNew: root.getObjectByName("ButtonNew"),
       buttonScores: root.getObjectByName("ButtonScores"),
@@ -137,8 +163,15 @@ function CabinetModel({
   const previous = useRef(controls.state.view),
     animation = useRef<TileAnimation | null>(null),
     dirty = useRef(true),
-    lastDraw = useRef(0),
     reduced = useRef(false);
+  const renderStats = useRef({
+    screenUploads: 0,
+    frames: new Float32Array(120),
+    cpu: new Float32Array(120),
+    cursor: 0,
+    samples: 0,
+    lastReport: 0,
+  });
   const press = useRef<{
     x: number;
     y: number;
@@ -147,10 +180,18 @@ function CabinetModel({
     screen: boolean;
     id: number;
   } | null>(null);
-  useEffect(() => {
+  useLayoutEffect(() => {
     dirty.current = true;
-  }, [controls.state]);
-  useEffect(() => {
+  }, [
+    controls.state.active,
+    controls.state.page,
+    controls.state.error,
+    controls.state.focused,
+    controls.state.local,
+    controls.state.view?.best,
+    controls.state.page === "leaders" ? controls.state.view : null,
+  ]);
+  useLayoutEffect(() => {
     animation.current = reduced.current
       ? null
       : makeTileAnimation(
@@ -165,6 +206,7 @@ function CabinetModel({
   const baseNew = useMemo(() => owned.buttonNew?.position.y ?? 0, [owned]),
     baseScores = useMemo(() => owned.buttonScores?.position.y ?? 0, [owned]);
   useEffect(() => {
+    const release = owned.retain();
     const media = matchMedia("(prefers-reduced-motion: reduce)");
     const update = () => {
       reduced.current = media.matches;
@@ -178,38 +220,31 @@ function CabinetModel({
       document.fonts.load('400 36px "Bree Serif"'),
       document.fonts.load('700 24px "Alegreya Sans"'),
     ]).then(() => {
-      if (live) dirty.current = true;
+      if (live) {
+        dirty.current = true;
+        owned.tiles.redrawAtlas();
+      }
     });
     return () => {
       live = false;
       media.removeEventListener("change", update);
-      owned.texture.dispose();
-      owned.root.traverse((o) => {
-        if (o instanceof THREE.Mesh)
-          for (const m of [o.material].flat()) m.dispose();
-      });
+      release();
     };
   }, [owned]);
-  useFrame(() => {
+  useFrame((_, dt) => {
     const now = performance.now();
     if (animation.current && now - animation.current.started > 150) {
       animation.current = null;
-      dirty.current = true;
     }
-    if (
-      (dirty.current || animation.current) &&
-      now - lastDraw.current > 1000 / 30
-    ) {
-      drawArcadeScreen(
-        owned.context,
-        current.current.state,
-        animation.current,
-        now,
-      );
+    if (dirty.current) {
+      drawArcadeScreen(owned.context, current.current.state, null, now, {
+        omitTiles: arcadeGpuTilesVisible(current.current.state),
+      });
       owned.texture.needsUpdate = true;
       dirty.current = false;
-      lastDraw.current = now;
+      renderStats.current.screenUploads++;
     }
+    owned.tiles.update(current.current.state, animation.current, now);
     const intensity = boatEnvironmentIntensity(lastLighting());
     for (const m of owned.materials) m.envMapIntensity = intensity;
     const lean =
@@ -244,6 +279,36 @@ function CabinetModel({
     if (owned.buttonScores)
       owned.buttonScores.position.y =
         baseScores - (hardware.kind === "scores" ? pulse : 0);
+    if (current.current.state.active) {
+      const stats = renderStats.current,
+        i = stats.cursor;
+      stats.frames[i] = dt * 1000;
+      stats.cpu[i] = performance.now() - now;
+      stats.cursor = (i + 1) % 120;
+      stats.samples = Math.min(120, stats.samples + 1);
+      if (now - stats.lastReport > 500) {
+        const frames = Array.from(stats.frames.subarray(0, stats.samples)).sort(
+            (a, b) => a - b,
+          ),
+          cpu = Array.from(stats.cpu.subarray(0, stats.samples)).sort(
+            (a, b) => a - b,
+          );
+        document.querySelector("[data-arcade-render-metrics]")?.setAttribute(
+          "data-sample",
+          JSON.stringify({
+            screenUploads: stats.screenUploads,
+            screenGpuUploads: owned.screenGpuStats.uploads,
+            ...owned.tiles.metrics(),
+            tileDrawCalls: 1,
+            frameMedianMs: frames[Math.floor(frames.length / 2)],
+            frameP95Ms: frames[Math.floor(frames.length * 0.95)],
+            cabinetCpuP95Ms: cpu[Math.floor(cpu.length * 0.95)],
+            samples: stats.samples,
+          }),
+        );
+        stats.lastReport = now;
+      }
+    }
   });
   const down = (e: ThreeEvent<PointerEvent>) => {
     e.stopPropagation();
@@ -375,6 +440,7 @@ export function ArcadeAccessibility({
       className="arcade-assistive"
       aria-label="2048 arcade"
     >
+      <output hidden data-arcade-render-metrics />
       <p>
         Arrow keys or WASD move tiles. N starts a new game. L shows records.
         Enter or Space confirms a new game, continues a win, or returns from
