@@ -1,9 +1,36 @@
 import { beforeAll, expect, it } from "vitest";
 import * as THREE from "three";
 import RAPIER from "@dimforge/rapier3d-compat";
-import { collisionMesh, surfaceGrip } from "./static-collision";
+import { collisionMesh, releaseSolidBody, surfaceGrip } from "./static-collision";
 const { loadRig } = await import(/* @vite-ignore */ new URL("../../../scripts/extract-activity-clips.mjs", import.meta.url).href);
 beforeAll(async () => { await RAPIER.init(); });
+
+it("releases a live solid body and tolerates repeated cleanup", () => {
+  const world = new RAPIER.World({ x: 0, y: -9.81, z: 0 });
+  const body = world.createRigidBody(RAPIER.RigidBodyDesc.fixed());
+  try {
+    releaseSolidBody(world, body);
+    expect(world.getRigidBody(body.handle)).toBeNull();
+    expect(() => releaseSolidBody(world, body)).not.toThrow();
+  } finally {
+    world.free();
+  }
+});
+
+it("does not access a lazy world proxy after its solid body was freed", () => {
+  const world = new RAPIER.World({ x: 0, y: -9.81, z: 0 });
+  const body = world.createRigidBody(RAPIER.RigidBodyDesc.fixed());
+  world.free();
+  let accesses = 0;
+  const disposedWorld = new Proxy({} as RAPIER.World, {
+    get() {
+      accesses++;
+      throw new Error("Disposed world was accessed");
+    },
+  });
+  expect(() => releaseSolidBody(disposedWorld, body)).not.toThrow();
+  expect(accesses).toBe(0);
+});
 
 it("keeps the Sage cabin porch clear in front of the door", async () => {
   for (const id of ["Sage", "SagePergola"]) {

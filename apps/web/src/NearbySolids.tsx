@@ -9,7 +9,7 @@ import type {
 import * as THREE from "three";
 import { playerPosition } from "./player";
 import { assetUrl, type Placement } from "./assets";
-import { collisionMesh, surfaceGrip } from "./static-collision";
+import { collisionMesh, releaseSolidBody, surfaceGrip } from "./static-collision";
 
 export type NaturalSolid = Placement & {
   id: string;
@@ -50,7 +50,7 @@ export function NearbySolids({ items }: { items: NaturalSolid[] }) {
   useEffect(() => {
     body.current = world.createRigidBody(rapier.RigidBodyDesc.fixed());
     return () => {
-      if (body.current?.isValid()) world.removeRigidBody(body.current);
+      releaseSolidBody(world, body.current);
       body.current = null;
       active.current.clear();
     };
