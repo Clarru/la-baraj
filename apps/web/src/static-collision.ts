@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import type { RigidBody, World } from "@dimforge/rapier3d-compat";
 
 export type CollisionMesh = { vertices: Float32Array; indices: Uint32Array };
 const cache = new WeakMap<THREE.Object3D, CollisionMesh>();
@@ -30,3 +31,15 @@ export function collisionMesh(source: THREE.Object3D): CollisionMesh {
 }
 
 export const surfaceGrip = 1.4;
+
+/** The Physics provider may free its world before a child's effect cleanup. */
+export function releaseSolidBody(world: World, body: RigidBody | null) {
+  if (!body) return;
+  try {
+    if (!body.isValid()) return;
+  } catch {
+    // Checking a freed body's validity throws. Do not wake the lazy world proxy.
+    return;
+  }
+  world.removeRigidBody(body);
+}
