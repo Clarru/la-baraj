@@ -127,7 +127,8 @@ import {
 } from "./stance-motion";
 import { resizeStanceCollider, rotateProneCollider } from "./stance-physics";
 /** The local boat's jet stream follows the speed the frame loop publishes. */
-const localBoatSpeed = () => getBoatState().speed;
+const localBoatSpeed = () => Math.hypot(...getBoatState().velocity);
+const localBoatVelocity = () => getBoatState().velocity;
 export type ViewMode = "walk" | "overview" | "study" | "settlement" | "home";
 export const spawn = { x: 45, z: southShore(45) + 12 };
 export const playerPosition = new THREE.Vector3(
@@ -1667,7 +1668,9 @@ export function Player({
         <Suspense fallback={null}>
           <Boat ref={boat} visible={boating} />
         </Suspense>
-        {boating && <BoatSpray speed={localBoatSpeed} />}
+        {boating && (
+          <BoatSpray speed={localBoatSpeed} velocity={localBoatVelocity} />
+        )}
       </group>
       {swimming && <SwimWake />}
     </Ecctrl>

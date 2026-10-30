@@ -143,7 +143,7 @@ export function advanceBoat(
     !input.canTurn(state.yaw, nextYaw)
   )
     state.turnRate = 0;
-  else state.yaw = wrapBoatYaw(nextYaw);
+  else if (nextYaw !== state.yaw) state.yaw = wrapBoatYaw(nextYaw);
   // Rotating the hull cannot rotate its momentum for free. Water gradually
   // removes lateral slip; the motor has already accelerated along the old keel.
   state.speed = worldX * Math.sin(state.yaw) + worldZ * Math.cos(state.yaw);
