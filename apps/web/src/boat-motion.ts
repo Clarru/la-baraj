@@ -78,7 +78,14 @@ export function boostTurnScale(speed: number): number {
 /** Advance throttle, damped steering and yaw by one step (mutates). */
 export function advanceBoat(
   state: BoatMotionState,
-  input: { throttle: -1 | 0 | 1; steer: number; dt: number; boost?: boolean },
+  input: {
+    throttle: -1 | 0 | 1;
+    steer: number;
+    dt: number;
+    boost?: boolean;
+    /** Accept the swept heading before publishing it or animating the wheel. */
+    canTurn?: (fromYaw: number, toYaw: number) => boolean;
+  },
 ): void {
   const dt = Number.isFinite(input.dt) ? clamp(input.dt, 0, 0.05) : 0;
   const steerInput = Number.isFinite(input.steer)
@@ -115,7 +122,14 @@ export function advanceBoat(
     Math.min(Math.abs(state.speed) / t.fullTurnSpeed, 1) *
     boostTurnScale(state.speed) *
     Math.sign(state.speed);
-  state.yaw += state.turnRate * dt;
+  const nextYaw = state.yaw + state.turnRate * dt;
+  if (
+    nextYaw !== state.yaw &&
+    input.canTurn &&
+    !input.canTurn(state.yaw, nextYaw)
+  )
+    state.turnRate = 0;
+  else state.yaw = nextYaw;
   state.wheelAngle = damp(
     state.wheelAngle,
     boatWheelTarget(state.turnRate),

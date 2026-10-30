@@ -12,6 +12,17 @@ Phase 1 gives every player a personal motorboat on Lake Cinciș. The boat is a 6
 
 ## Controls
 
+Steering checks the swept hull before committing its heading, including thin
+pilings between the starting and ending orientations. A blocked turn keeps the
+previous heading and eases the wheel back toward centre; forward and reverse
+travel still use the hull sweep. The Rapier regression suite covers the original
+steering penetration, bow and stern in both directions, thin obstacles, sensor
+exclusion, open-water steering and reversing away from a piling.
+
+The boat integration includes the released posture controls: boarding requires
+standing, and crouch, prone, punching and greeting are unavailable while driving.
+Both boat and posture fields are retained in multiplayer poses.
+
 - **V** near the parked boat: board. While driving: step out. Onto land if a bank or dock is within the exit candidates (the far ring, `EXIT_FAR_CLEARANCE` = 3 m beyond the hull edge, reaches about 4.1 m to the sides and 6.7 m ahead of the pivot; Phase 1: 4.5 m, superseded), otherwise into the water beside the boat.
 - **W** throttle, **S** brake then reverse, **A / D** steer. The boat turns only while it is moving.
 - **Shift** (left or right, the same key the character runs with) held while throttling boosts the boat to 12.8 m/s. Shift without W does nothing. Releasing Shift lets the boat ease back to cruise.

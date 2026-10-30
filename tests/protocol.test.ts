@@ -106,6 +106,29 @@ describe("bounded friend-room protocol", () => {
     const message = { type: "pose", pose: { ...pose, vehicle: "boat" } };
     expect(parseClientMessage(JSON.stringify(message))).toEqual(message);
   });
+  it("relays boarding, boost, reverse, dismount and reset between two clients", async () => {
+    const f = fixture();
+    const driver = f.connect("driver"),
+      observer = f.connect("observer");
+    await f.send(driver, { type: "hello", nickname: "Driver" });
+    await f.send(observer, { type: "hello", nickname: "Observer" });
+    const states: Partial<PlayerPose>[] = [
+      { vehicle: "boat", speed: 0, animation: "Activity_Sit" },
+      { vehicle: "boat", speed: 12.8, animation: "Activity_Sit" },
+      { vehicle: "boat", speed: -2, animation: "Activity_Sit" },
+      { vehicle: "none", speed: 0, animation: "Swim_Idle" },
+      { vehicle: "none", speed: 0, animation: "Idle_Neutral" },
+    ];
+    for (const [i, state] of states.entries()) {
+      const next: PlayerPose = { ...pose, posture: "standing", ...state };
+      await f.send(driver, { type: "pose", pose: next }, 200 * (i + 1));
+      expect(observer.messages.at(-1)).toMatchObject({
+        type: "pose",
+        player: { id: "driver", ...next },
+      });
+      expect(driver.closed).toBeNull();
+    }
+  });
   it("rejects malformed, oversized, nonfinite and out-of-bounds data", () => {
     for (const raw of [
       "{",
@@ -121,6 +144,10 @@ describe("bounded friend-room protocol", () => {
         pose: { ...pose, position: [5001, 0, 0] },
       }),
       JSON.stringify({ type: "pose", pose: { ...pose, vehicle: "yacht" } }),
+      JSON.stringify({
+        type: "pose",
+        pose: { ...pose, posture: "hovering" },
+      }),
       JSON.stringify({ type: "hello", nickname: "<script>" }),
       JSON.stringify({ type: "seat", seatId: "__proto__", requestId: "a" }),
     ])
@@ -819,6 +846,9 @@ describe("playful punches", () => {
       [[0, 1.5, 1], {}],
       [[0, 0, 1], { activity: "sit" }],
       [[0, 0, 1], { animation: "Swim_Idle" }],
+      [[0, 0, 1], { posture: "crouching" }],
+      [[0, 0, 1], { posture: "prone" }],
+      [[0, 0, 1], { animation: "Prone_Idle" }],
       [[0, 0, 1], { vehicle: "scooter" }],
       [[0, 0, 1], { vehicle: "boat" }],
     ] as [PlayerPose["position"], Partial<PlayerPose>][]) {

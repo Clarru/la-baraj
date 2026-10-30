@@ -127,6 +127,7 @@ export class RoomCore {
         seatId: CRUCE_SEATS[seat],
         activity: "sit",
         animation: "Activity_Sit",
+        posture: "standing",
       },
     });
     this.broadcast({ type: "seats", seats: this.seats() });
@@ -172,6 +173,7 @@ export class RoomCore {
         seatId: PLANES_SEATS[side],
         activity: "sit",
         animation: "Activity_Sit",
+        posture: "standing",
       },
     });
     this.broadcast({ type: "seats", seats: this.seats() });
@@ -218,7 +220,12 @@ export class RoomCore {
         const { seatId: _seat, ...player } = c.state!.player;
         c.setState({
           ...c.state!,
-          player: { ...player, activity: "none", animation: "Idle_Neutral" },
+          player: {
+            ...player,
+            activity: "none",
+            animation: "Idle_Neutral",
+            posture: "standing",
+          },
         });
         changed = true;
         this.broadcast({ type: "pose", player: c.state!.player }, c);
@@ -399,7 +406,20 @@ export class RoomCore {
       // Dropping excess poses absorbs ordinary network batching without an error storm.
       if (!pose) return;
       const { seatId: _ignored, ...clientPose } = message.pose;
-      const player = { ...current.player, ...clientPose };
+      const player = {
+        ...current.player,
+        ...clientPose,
+        // Activities, seats, and vehicles own the full-body pose. Do not let
+        // a forged lowered posture leak through those mutually exclusive modes.
+        posture:
+          current.player.seatId ||
+          current.player.activity !== "none" ||
+          current.player.vehicle !== "none" ||
+          clientPose.activity !== "none" ||
+          clientPose.vehicle !== "none"
+            ? "standing"
+            : (clientPose.posture ?? current.player.posture),
+      };
       connection.setState({ ...current, pose, player });
       this.broadcast({ type: "pose", player }, connection);
       return;
@@ -450,6 +470,10 @@ export class RoomCore {
       const eligible = (player: PlayerPresence) =>
         player.animation !== "idle" &&
         !player.animation.startsWith("Swim_") &&
+        !player.animation.startsWith("Prone_") &&
+        !player.animation.startsWith("Crouch_") &&
+        player.posture !== "crouching" &&
+        player.posture !== "prone" &&
         player.activity === "none" &&
         player.vehicle === "none" &&
         !player.seatId;
@@ -874,8 +898,8 @@ export class RoomCore {
     const { seatId: _oldSeat, ...standing } = connection.state!.player;
     const nextPlayer =
       message.seatId === null
-        ? standing
-        : { ...standing, seatId: message.seatId };
+        ? { ...standing, posture: "standing" as const }
+        : { ...standing, seatId: message.seatId, posture: "standing" as const };
     connection.setState({ ...connection.state!, player: nextPlayer });
     this.send(connection, {
       type: "seat-result",

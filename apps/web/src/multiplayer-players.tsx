@@ -1,3 +1,4 @@
+import { SOCIAL_WAVE_CLIP_NAME } from "./social-wave";
 import { remoteCruceView, type RemoteCardRoom } from "./remote-cruce";
 import { useCruceCharacter } from "./use-cruce-character";
 import { cruceSeatSide } from "../../../packages/shared/cruce-station";
@@ -37,6 +38,7 @@ import { createBoatRiderRig } from "./boat-rider";
 import { BOAT_DRIVER_OFFSET_VECTOR } from "./boat-geometry";
 import { BOAT_TUNING, boatWheelTarget, inferBoatTurnRate } from "./boat-motion";
 import { AFK_AFTER_MS } from "../../../packages/shared/protocol";
+import { postureFromAnimation, stanceBaseAnimation } from "./stance-motion";
 
 // Only the isolated local browser lab may shorten the visual timeout for QA.
 const displayAfkAfter =
@@ -137,11 +139,13 @@ function RemoteAvatarRig({ id, room }: { id: string; room: RemoteCardRoom }) {
   const wheelHub = useMemo(() => new THREE.Vector3(), []);
   const scooterMounted = useRef(false);
   const target = useMemo(() => new THREE.Vector3(), []);
+  const wasWaving = useRef(false);
   const previousAnimation = useRef(""),
     previousActivityAt = useRef(-1),
     previousGesture = useRef<string | null>(null),
     wasRiding = useRef(false),
     initialized = useRef(false);
+  const badgeAnchor = useRef<THREE.Group>(null);
   const badge = useRef<HTMLSpanElement>(null);
   const stars = useRef<HTMLSpanElement>(null);
   const afk = useRef<HTMLSpanElement>(null);
@@ -196,6 +200,17 @@ function RemoteAvatarRig({ id, room }: { id: string; room: RemoteCardRoom }) {
     const player = remote.player,
       dt = Math.min(delta, 0.1),
       riding = player.vehicle === "scooter";
+    const stance = postureFromAnimation(player.posture, player.animation);
+    if (badgeAnchor.current) {
+      const height =
+        stance === "prone" ? 0.7 : stance === "crouching" ? 1.55 : 2.15;
+      badgeAnchor.current.position.y = THREE.MathUtils.damp(
+        badgeAnchor.current.position.y,
+        height,
+        12,
+        dt,
+      );
+    }
     const nowSwimming =
       player.animation === "Swim_Forward" || player.animation === "Swim_Idle";
     if (swimmingRef.current !== nowSwimming) {
@@ -252,16 +267,42 @@ function RemoteAvatarRig({ id, room }: { id: string; room: RemoteCardRoom }) {
         player.jumpPhase as JumpPhase,
         player.animation.startsWith("Jump_Run") ? "run" : "walk",
       );
+    const proneAnimation = stanceBaseAnimation(
+      stance,
+      (player.speed ?? 0) > 0.3,
+    );
     const config = activity ?? jump;
     const combatRoom = "stunned" in room ? (room as MultiplayerRoom) : null;
     const stunned = combatRoom?.stunned(id) ?? false;
     const punching = combatRoom?.punching(id) ?? false;
     if (stars.current) stars.current.style.display = stunned ? "" : "none";
+    const waving =
+      player.animation === SOCIAL_WAVE_CLIP_NAME &&
+      !stunned &&
+      !punching &&
+      stance === "standing" &&
+      player.activity === "none" &&
+      !riding &&
+      !nowSwimming;
+    const waveAction = rig.actions.get(SOCIAL_WAVE_CLIP_NAME);
+    if (waving && !wasWaving.current && waveAction) {
+      waveAction.reset().setLoop(THREE.LoopOnce, 1);
+      waveAction.clampWhenFinished = true;
+      waveAction.setEffectiveWeight(1).fadeIn(0.12).play();
+    } else if (!waving && wasWaving.current) waveAction?.fadeOut(0.12);
+    wasWaving.current = waving;
     const chosen = stunned
       ? "Punch_Hit"
       : punching
         ? "Punch_Jab"
-        : player.animation;
+        : proneAnimation &&
+            player.activity === "none" &&
+            !riding &&
+            !nowSwimming
+          ? proneAnimation
+          : waving
+            ? "Idle_Neutral"
+            : player.animation;
     const next = rig.actions.has(chosen) ? chosen : "Idle_Neutral";
     if (
       next !== previousAnimation.current ||
@@ -390,46 +431,47 @@ function RemoteAvatarRig({ id, room }: { id: string; room: RemoteCardRoom }) {
           <RemoteScooter ref={scooter} />
         </group>
       )}
-      <Html
-        center
-        position={[0, 2.15, 0]}
-        distanceFactor={
-          planesSeatSide(player?.seatId) !== null ||
-          cruceSeatSide(player?.seatId) !== null
-            ? 5
-            : 12
-        }
-        zIndexRange={[5, 0]}
-        style={{ pointerEvents: "none" }}
-      >
-        <span
-          ref={chatBubble}
-          className="bubble-chat bubble-chat-remote"
-          style={{ display: "none" }}
-          aria-label="Player chat"
+      <group ref={badgeAnchor} position={[0, 2.15, 0]}>
+        <Html
+          center
+          distanceFactor={
+            planesSeatSide(player?.seatId) !== null ||
+            cruceSeatSide(player?.seatId) !== null
+              ? 5
+              : 12
+          }
+          zIndexRange={[5, 0]}
+          style={{ pointerEvents: "none" }}
         >
-          <span ref={chatMessage} className="bubble-chat-message" />
-        </span>
-        <span
-          ref={afk}
-          className="multiplayer-afk"
-          style={{ display: "none" }}
-          aria-label="Away from keyboard"
-        >
-          AFK
-        </span>
-        <span
-          ref={stars}
-          className="stun-stars"
-          style={{ display: "none" }}
-          aria-label="Stunned"
-        >
-          ✦ ★ ✦
-        </span>
-        <span ref={badge} className="multiplayer-name" data-player-id={id}>
-          {player?.nickname ?? "Friend"}
-        </span>
-      </Html>
+          <span
+            ref={chatBubble}
+            className="bubble-chat bubble-chat-remote"
+            style={{ display: "none" }}
+            aria-label="Player chat"
+          >
+            <span ref={chatMessage} className="bubble-chat-message" />
+          </span>
+          <span
+            ref={afk}
+            className="multiplayer-afk"
+            style={{ display: "none" }}
+            aria-label="Away from keyboard"
+          >
+            AFK
+          </span>
+          <span
+            ref={stars}
+            className="stun-stars"
+            style={{ display: "none" }}
+            aria-label="Stunned"
+          >
+            ✦ ★ ✦
+          </span>
+          <span ref={badge} className="multiplayer-name" data-player-id={id}>
+            {player?.nickname ?? "Friend"}
+          </span>
+        </Html>
+      </group>
     </group>
   );
 }

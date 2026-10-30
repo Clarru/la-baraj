@@ -150,6 +150,27 @@ describe("friends room client", () => {
     expect(parseClientMessage(JSON.stringify(packet))).toEqual(packet);
     disconnect();
   });
+  it("publishes and validates an explicit lowered posture", () => {
+    const room = new MultiplayerRoom();
+    const disconnect = room.connect(),
+      socket = sockets[0];
+    socket.open();
+    snapshot(socket);
+    room.publishMotion({ ...sample, posture: "crouching" });
+    const packet = socket.sent.find((message) => message.type === "pose")!;
+    const pose = packet.pose as Record<string, unknown>;
+    expect(pose.posture).toBe("crouching");
+    expect(parseClientMessage(JSON.stringify(packet))).toEqual(packet);
+    expect(
+      parseClientMessage(
+        JSON.stringify({
+          type: "pose",
+          pose: { ...pose, posture: "hovering" },
+        }),
+      ),
+    ).toBeNull();
+    disconnect();
+  });
   it("keeps an explicit offline preview disconnected even with a configured live host", () => {
     const room = new MultiplayerRoom();
     const disconnect = room.connect(true);

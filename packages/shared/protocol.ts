@@ -29,6 +29,8 @@ export type PlayerPose = {
   animation: string;
   activity: string;
   vehicle: "none" | "scooter" | "boat";
+  /** Explicit posture keeps lowered players synchronized and punch-ineligible. */
+  posture?: "standing" | "crouching" | "prone";
   speed?: number;
   jumpPhase?: string;
   seatId?: string;
@@ -269,6 +271,10 @@ export function parseClientMessage(raw: string): ClientMessage | null {
         !label(pose.animation) ||
         !label(pose.activity) ||
         !["none", "scooter", "boat"].includes(pose.vehicle as string) ||
+        (pose.posture !== undefined &&
+          !["standing", "crouching", "prone"].includes(
+            pose.posture as string,
+          )) ||
         (pose.seatId !== undefined && !isSeatId(pose.seatId)) ||
         (pose.speed !== undefined &&
           (typeof pose.speed !== "number" ||
@@ -285,6 +291,9 @@ export function parseClientMessage(raw: string): ClientMessage | null {
           animation: pose.animation,
           activity: pose.activity,
           vehicle: pose.vehicle as PlayerPose["vehicle"],
+          ...(pose.posture === undefined
+            ? {}
+            : { posture: pose.posture as PlayerPose["posture"] }),
           ...(pose.seatId === undefined ? {} : { seatId: pose.seatId }),
           ...(pose.speed === undefined ? {} : { speed: pose.speed as number }),
           ...(pose.jumpPhase === undefined

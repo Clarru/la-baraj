@@ -110,7 +110,7 @@ export default function Game({ initialName }: { initialName: string }) {
   const [room] = useState<MultiplayerRoom>(() =>
     planesLab
       ? new LocalPlanesRoom(initialName)
-      : localWorldEnabled()
+      : !performanceLab && localWorldEnabled()
         ? new LocalWorldRoom(initialName)
         : new MultiplayerRoom(initialName),
   );
@@ -161,6 +161,7 @@ export default function Game({ initialName }: { initialName: string }) {
   const [resetKey, setResetKey] = useState(0),
     [ready, setReady] = useState(false);
   const [panel, setPanel] = useState<GamePanel>(null);
+  const [waveRequest, setWaveRequest] = useState(0);
   const [chatMode, setChatMode] = useState<"closed" | "editing" | "display">(
     "closed",
   );
@@ -236,6 +237,8 @@ export default function Game({ initialName }: { initialName: string }) {
   const [navigation] = useState(() =>
     createNavigationFeed({ x: 45, z: 27, heading: 0 }),
   );
+  const [waveAvailable, setWaveAvailable] = useState(false);
+  const waveAvailability = useRef(false);
   const fireOutput = useRef<HTMLOutputElement>(null),
     motionOutput = useRef<HTMLOutputElement>(null);
   const updateFireMetrics = useCallback((sample: unknown) => {
@@ -243,6 +246,11 @@ export default function Game({ initialName }: { initialName: string }) {
   }, []);
   const updateMotion = useCallback(
     (sample: Record<string, unknown>) => {
+      const available = sample.canWave === true;
+      if (available !== waveAvailability.current) {
+        waveAvailability.current = available;
+        setWaveAvailable(available);
+      }
       room.publishMotion(sample);
       motionOutput.current?.setAttribute("data-motion", JSON.stringify(sample));
       if (Array.isArray(sample.position) && Array.isArray(sample.facing)) {
@@ -569,6 +577,7 @@ export default function Game({ initialName }: { initialName: string }) {
                     planesOpen ||
                     chatOpen
                   }
+                  waveRequest={waveRequest}
                   onMove={ignoreMovement}
                   onMotion={updateMotion}
                   onVehicleChange={setVehicleMounted}
@@ -779,6 +788,19 @@ export default function Game({ initialName }: { initialName: string }) {
               onRename={(name) => room.rename(name)}
               onControls={() => setPanel("controls")}
               onHome={lookHome}
+              canWave={
+                !activityBusy &&
+                !vehicleMounted &&
+                !doorTransition &&
+                !planesOpen &&
+                !cruceOpen &&
+                waveAvailable
+              }
+              onWave={() => {
+                setMode("walk");
+                setPanel(null);
+                setWaveRequest((n) => n + 1);
+              }}
               onReset={resetHome}
               onClose={() => setPanel(null)}
             />

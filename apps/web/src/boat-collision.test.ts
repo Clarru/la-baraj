@@ -1,17 +1,24 @@
-import { beforeAll, describe, expect, it } from "vitest";
+import { afterEach, beforeAll, describe, expect, it } from "vitest";
 import RAPIER from "@dimforge/rapier3d-compat";
 import { BOAT_DIMENSIONS } from "./boat-geometry";
-import { boatHullBlocked } from "./boat-collision";
+import { boatHullBlocked, boatTurnBlocked } from "./boat-collision";
+import { advanceBoat, createBoatMotionState } from "./boat-motion";
+import { LAKE_LEVEL } from "./swim-motion";
 
 const { beam, bowExtent } = BOAT_DIMENSIONS;
 
 beforeAll(async () => {
   await RAPIER.init();
 });
+const worlds: RAPIER.World[] = [];
+afterEach(() => {
+  for (const world of worlds.splice(0)) world.free();
+});
 
 /** A world holding an optional 0.16 × 1.3 × 0.16 m piling, plus the driver's capsule at the pivot. */
 function scene(piling?: { x: number; y: number; z: number }) {
   const world = new RAPIER.World({ x: 0, y: 0, z: 0 });
+  worlds.push(world);
   if (piling)
     world.createCollider(
       RAPIER.ColliderDesc.cuboid(0.08, 0.65, 0.08).setTranslation(
@@ -128,5 +135,167 @@ describe("boat hull collision", () => {
           exclude: capsule,
         }),
       ).toBe(false);
+  });
+});
+
+describe("boat steering clearance", () => {
+  const orientation = (yaw: number) => ({
+    x: 0,
+    y: Math.sin(yaw / 2),
+    z: 0,
+    w: Math.cos(yaw / 2),
+  });
+  function overlaps(world: RAPIER.World, body: RAPIER.RigidBody, yaw: number) {
+    const centre =
+      (BOAT_DIMENSIONS.bowExtent - BOAT_DIMENSIONS.sternExtent) / 2;
+    return Boolean(
+      world.intersectionWithShape(
+        {
+          x: Math.sin(yaw) * centre,
+          y: LAKE_LEVEL + 0.4,
+          z: Math.cos(yaw) * centre,
+        },
+        orientation(yaw),
+        new RAPIER.Cuboid(
+          beam / 2,
+          0.35,
+          (BOAT_DIMENSIONS.bowExtent + BOAT_DIMENSIONS.sternExtent) / 2,
+        ),
+        RAPIER.QueryFilterFlags.EXCLUDE_SENSORS,
+        undefined,
+        undefined,
+        body,
+      ),
+    );
+  }
+
+  it("rejects the reproduced clear-to-penetrating steering step before committing yaw", () => {
+    const { world, capsule } = scene({ x: beam / 2 + 0.12, y: 0.4, z: 3.1 });
+    const motion = createBoatMotionState(0);
+    motion.speed = 8;
+    motion.steer = 1;
+    expect(overlaps(world, capsule, 0)).toBe(false);
+    // The old translation-only query misses the already-rotated intersection.
+    expect(overlaps(world, capsule, 0.015)).toBe(true);
+    expect(
+      boatHullBlocked(world, RAPIER, {
+        x: 0,
+        z: 0,
+        yaw: 0.015,
+        dx: (Math.sin(0.015) * 8) / 60,
+        dz: (Math.cos(0.015) * 8) / 60,
+        exclude: capsule,
+      }),
+    ).toBe(false);
+    advanceBoat(motion, {
+      throttle: 1,
+      steer: 1,
+      dt: 1 / 60,
+      canTurn: (fromYaw, toYaw) =>
+        !boatTurnBlocked(world, RAPIER, {
+          x: 0,
+          z: 0,
+          fromYaw,
+          toYaw,
+          exclude: capsule,
+        }),
+    });
+    expect(motion.yaw).toBe(0);
+    expect(motion.turnRate).toBe(0);
+    expect(motion.wheelAngle).toBe(0);
+    expect(overlaps(world, capsule, motion.yaw)).toBe(false);
+  });
+
+  it("covers thin obstacles swept by a corner even when both endpoint hulls are clear", () => {
+    const { world, capsule } = scene();
+    world.createCollider(
+      RAPIER.ColliderDesc.cuboid(0.001, 0.2, 0.001).setTranslation(
+        beam / 2 - 0.001,
+        0.4,
+        bowExtent - 0.001,
+      ),
+    );
+    world.step();
+    expect(overlaps(world, capsule, -0.02)).toBe(false);
+    expect(overlaps(world, capsule, 0.02)).toBe(false);
+    expect(
+      boatTurnBlocked(world, RAPIER, {
+        x: 0,
+        z: 0,
+        fromYaw: -0.02,
+        toYaw: 0.02,
+        exclude: capsule,
+      }),
+    ).toBe(true);
+  });
+
+  it.each([1, -1])(
+    "protects bow and stern during turns in direction %s",
+    (sign) => {
+      for (const z of [3.1, -BOAT_DIMENSIONS.sternExtent + 0.2]) {
+        const { world, capsule } = scene({
+          x: Math.sign(z) * sign * (beam / 2 + 0.1),
+          y: 0.4,
+          z,
+        });
+        expect(overlaps(world, capsule, 0)).toBe(false);
+        expect(
+          boatTurnBlocked(world, RAPIER, {
+            x: 0,
+            z: 0,
+            fromYaw: 0,
+            toYaw: sign * 0.05,
+            exclude: capsule,
+          }),
+        ).toBe(true);
+      }
+    },
+  );
+
+  it("preserves free steering, ignores sensors and its driver, and wraps the yaw seam", () => {
+    const { world, capsule } = scene();
+    world.createCollider(RAPIER.ColliderDesc.cuboid(2, 1, 4).setSensor(true));
+    world.step();
+    const motion = createBoatMotionState(0);
+    motion.speed = 8;
+    motion.steer = 1;
+    advanceBoat(motion, {
+      throttle: 1,
+      steer: 1,
+      dt: 1 / 60,
+      canTurn: (fromYaw, toYaw) =>
+        !boatTurnBlocked(world, RAPIER, {
+          x: 0,
+          z: 0,
+          fromYaw,
+          toYaw,
+          exclude: capsule,
+        }),
+    });
+    expect(motion.yaw).toBeCloseTo(0.015);
+    expect(motion.turnRate).toBeCloseTo(0.9);
+    expect(
+      boatTurnBlocked(world, RAPIER, {
+        x: 0,
+        z: 0,
+        fromYaw: Math.PI - 0.01,
+        toYaw: -Math.PI + 0.01,
+        exclude: capsule,
+      }),
+    ).toBe(false);
+  });
+
+  it("still permits straight reverse travel away from a nearby piling", () => {
+    const { world, capsule } = scene({ x: 0, y: 0.4, z: bowExtent + 0.2 });
+    expect(
+      boatHullBlocked(world, RAPIER, {
+        x: 0,
+        z: 0,
+        yaw: 0,
+        dx: 0,
+        dz: -0.1,
+        exclude: capsule,
+      }),
+    ).toBe(false);
   });
 });
