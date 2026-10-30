@@ -8,6 +8,8 @@ import {
   boatPrism,
   boatHullHit,
   applyBoatWorldImpact,
+  setRemoteBoatCollision,
+  PARKED_BOAT_VERTICES,
 } from "./boat-collision";
 import { advanceBoat, createBoatMotionState } from "./boat-motion";
 import { LAKE_LEVEL } from "./swim-motion";
@@ -361,5 +363,69 @@ describe("boat steering clearance", () => {
         exclude: capsule,
       }),
     ).toBe(false);
+  });
+});
+
+// The disabled flag alone is insufficient in the shipped Rapier contact pipeline.
+// Hold ride height here so a ghost hull cannot be escaped by climbing over it.
+describe("remote boat physical presence", () => {
+  function setup() {
+    const world = new RAPIER.World({ x: 0, y: 0, z: 0 });
+    worlds.push(world);
+    const driver = world.createRigidBody(
+      RAPIER.RigidBodyDesc.dynamic()
+        .setTranslation(0.893, 0.785, -60)
+        .enabledTranslations(true, false, true)
+        .setCcdEnabled(true),
+    );
+    world.createCollider(RAPIER.ColliderDesc.capsule(0.5, 0.3), driver);
+    const remote = world.createRigidBody(
+      RAPIER.RigidBodyDesc.kinematicPositionBased().setTranslation(
+        0,
+        0.05,
+        -48,
+      ),
+    );
+    world.createCollider(
+      RAPIER.ColliderDesc.convexHull(PARKED_BOAT_VERTICES)!,
+      remote,
+    );
+    world.step();
+    const drive = (frames: number) => {
+      for (let i = 0; i < frames; i++) {
+        driver.setLinvel({ x: 0, y: 0, z: 4 }, true);
+        world.step();
+      }
+    };
+    return { world, driver, remote, drive };
+  }
+  it("an occupied remote hull cannot leave a ghost stern blocking the driver", () => {
+    const { driver, remote, drive } = setup();
+    setRemoteBoatCollision(remote, false);
+    drive(480);
+    expect(driver.translation().z).toBeCloseTo(-28, 2);
+    expect(driver.translation().y).toBeCloseTo(0.785, 5);
+    expect(driver.linvel().z).toBeCloseTo(4, 5);
+    expect(remote.collider(0).collisionGroups()).toBe(0);
+  });
+  it("a moored hull becomes solid again after its driver leaves", () => {
+    const { driver, remote, drive } = setup();
+    setRemoteBoatCollision(remote, false);
+    drive(60);
+    setRemoteBoatCollision(remote, true);
+    drive(420);
+    expect(driver.translation().z).toBeLessThan(-50.5);
+    expect(remote.collider(0).collisionGroups()).toBe(0xffffffff);
+  });
+  it("boarding a moored boat releases an already contacting local driver", () => {
+    const { driver, remote, drive } = setup();
+    setRemoteBoatCollision(remote, true);
+    drive(240);
+    const stopped = driver.translation().z;
+    expect(stopped).toBeLessThan(-50.5);
+    setRemoteBoatCollision(remote, false);
+    drive(120);
+    expect(driver.translation().z - stopped).toBeGreaterThan(7.9);
+    expect(driver.translation().y).toBeCloseTo(0.785, 5);
   });
 });

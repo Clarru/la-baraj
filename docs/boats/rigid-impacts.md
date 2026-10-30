@@ -53,6 +53,13 @@ contacts use restitution 0.05; slow contact uses zero. World pilings/docks use t
 same contact-point impulse response and tapered convex prism. Cached padded
 hulls cover angular sweeps without rebuilding a convex hull each frame.
 
+Occupied/invisible remote hulls also clear their client collision-group mask.
+The current Rapier runtime can retain physical contact response after only the
+body/collider disabled flag is set. The mask is restored for moored pedestrian
+collisions; changes run only on body/visibility/collider-count transitions. Real
+Rapier regressions cover clearing a ghost stern, restoring solidity and releasing
+an existing contact when a driver boards.
+
 The pose interval remains 120 ms minimum. A correction is sent once per affected
 owner, after solving, rather than for each manifold iteration. Contact processing
 is capped at 4,096 work units, 32 continuous contact events and 12 affected

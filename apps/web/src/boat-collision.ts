@@ -35,6 +35,16 @@ export function boatPrism(padding = 0, centreY = 0) {
   return { vertices, indices: new Uint32Array(indices) };
 }
 export const PARKED_BOAT_VERTICES = boatPrism(0, 0.4).vertices;
+/** Disabled remote bodies can retain Rapier contact candidates. Mask the hull
+ * explicitly so occupied boats receive only the server's boat response. */
+export function setRemoteBoatCollision(
+  body: RAPIER.RigidBody,
+  enabled: boolean,
+) {
+  for (let i = 0; i < body.numColliders(); i++)
+    body.collider(i).setCollisionGroups(enabled ? 0xffffffff : 0);
+  body.setEnabled(enabled);
+}
 const base = boatPrism();
 const shapes = new WeakMap<object, Map<number, RAPIER.ConvexPolyhedron>>();
 function hull(rapier: typeof RAPIER, padding = 0) {
