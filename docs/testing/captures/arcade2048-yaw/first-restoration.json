@@ -1,0 +1,20 @@
+{
+  "candidate": "6f3b981",
+  "restoredFiles": 288,
+  "exactManifestEqual": true,
+  "index": {
+    "sha256": "42308bc0b3eb534984c19b2d42a9a506cb1b1fc1cc6c39b0aa7dddc205505f3b",
+    "bytes": 1027
+  },
+  "removed": [
+    "assets/arcade2048-world--ReWBrIx.js",
+    "assets/CruceBoard-D3lPzMVE.js",
+    "assets/arcade2048-world-CmrJCJDO.css",
+    "assets/PlanesBoard-bOVSWoRr.js",
+    "assets/arcade-yaw-local-world.worker-D2W8Fgol.js",
+    "__2048-yaw-6f3b981-qa.html"
+  ],
+  "closedOwnedTab": "14",
+  "viewportOverrideApplied": false,
+  "at": "2026-10-30T20:48:56.146900+00:00"
+}
