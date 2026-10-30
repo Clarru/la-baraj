@@ -28,6 +28,10 @@ await build({
   resolve: {
     alias: [
       {
+        find: /^\.\/boat-spray\.tsx$/,
+        replacement: path.join(root, "tests/browser/boat-wake-qa.tsx"),
+      },
+      {
         find: /^\.\/boat-collision$/,
         replacement: path.join(root, "tests/browser/boat-qa-collision.ts"),
       },

@@ -269,6 +269,25 @@ function App() {
         <output id="boat-control-status" data-state="released">
           Controls released
         </output>
+        <button
+          onClick={() =>
+            window.dispatchEvent(
+              new CustomEvent("boat-qa-hide-remote-wake", { detail: true }),
+            )
+          }
+        >
+          Hide remote wake source
+        </button>
+        <button
+          onClick={() =>
+            window.dispatchEvent(
+              new CustomEvent("boat-qa-hide-remote-wake", { detail: false }),
+            )
+          }
+        >
+          Show remote wake source
+        </button>
+        <output id="boat-wake-state" data-wakes="{}" hidden />
         <output id="boat-world-contacts" data-contacts="[]" hidden />
         <button
           onClick={() => {
