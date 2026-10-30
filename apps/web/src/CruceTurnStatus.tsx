@@ -14,8 +14,7 @@ function turnTitle(v: CruceView) {
         : `${v.players[v.winner]?.name} a câștigat`;
   if (v.phase === "trick")
     return `${v.players[v.trickWinner ?? 0]?.name ?? "Jucătorul"} ia mâna`;
-  if (v.phase === "cut")
-    return v.turn === v.you ? "Tu tai sau bați" : `${who} taie sau bate`;
+  if (v.phase === "cut") return "Se împart cărțile…";
   if (v.phase === "bidding")
     return v.turn === v.you ? "Tu licitezi" : `${who} licitează`;
   if (v.phase === "trump")
@@ -47,7 +46,12 @@ export function CruceTurnStatus({
       ? `${away.name} se reconectează`
       : turnTitle(v);
   const timed =
-    connected && !away && active && v.phase !== "trick" && v.deadline !== null;
+    connected &&
+    !away &&
+    active &&
+    v.phase !== "trick" &&
+    v.phase !== "cut" &&
+    v.deadline !== null;
   const seconds = timed
     ? v.turnOverdue
       ? 0
