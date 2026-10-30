@@ -6,6 +6,7 @@ import { Model, assetUrl } from "./assets";
 import { StaticCollider } from "./StaticCollider";
 import { Bench, CabinBenchSeats } from "./Bench";
 import { CampfireLogs } from "./campfire";
+import { CruceStation } from "./CruceStation";
 import { PlanesStation } from "./PlanesStation";
 import { cabinCutawayBase } from "./cabin-cutaway";
 import type { PublicCabin } from "../../../packages/shared/protocol";
@@ -239,8 +240,6 @@ export function Settlement({
   cabins: readonly PublicCabin[];
   arrivalIndex?: number;
 }) {
-  const z = southShore(0) + 9,
-    y = terrainHeight(0, z);
   return (
     <>
       {cabins.map((home) => {
@@ -268,31 +267,9 @@ export function Settlement({
       })}
       <Dock x={0} flat={flat} />
       <Dock x={-235} flat={flat} />
-      <group position={[0, y, z]}>
-        <Model
-          id="Table_Large"
-          height={0.85}
-          position={[5, 0, 0]}
-          rotation={0.2}
-          flat={flat}
-        />
-        <Bench
-          benchId="picnic-east-north"
-          facing={0}
-          height={0.52}
-          position={[5, 0, -1.05]}
-          rotation={0.2}
-          flat={flat}
-        />
-        <Bench
-          benchId="picnic-east-south"
-          facing={0}
-          height={0.52}
-          position={[5, 0, 1.1]}
-          rotation={Math.PI + 0.2}
-          flat={flat}
-        />
-      </group>
+      <Suspense fallback={null}>
+        <CruceStation flat={flat} />
+      </Suspense>
       <Suspense fallback={null}>
         <PlanesStation flat={flat} />
       </Suspense>

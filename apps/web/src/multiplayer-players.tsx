@@ -1,3 +1,6 @@
+import { remoteCruceView, type RemoteCardRoom } from "./remote-cruce";
+import { useCruceCharacter } from "./use-cruce-character";
+import { cruceSeatSide } from "../../../packages/shared/cruce-station";
 import {
   Suspense,
   useEffect,
@@ -60,7 +63,7 @@ export function RemoteAvatar({
   room,
 }: {
   id: string;
-  room: Pick<MultiplayerRoom, "remotes">;
+  room: RemoteCardRoom;
 }) {
   const [near, setNear] = useState(false);
   const mounted = useRef(false);
@@ -82,13 +85,7 @@ export function RemoteAvatar({
   }, -5);
   return near ? <RemoteAvatarRig id={id} room={room} /> : null;
 }
-function RemoteAvatarRig({
-  id,
-  room,
-}: {
-  id: string;
-  room: Pick<MultiplayerRoom, "remotes">;
-}) {
+function RemoteAvatarRig({ id, room }: { id: string; room: RemoteCardRoom }) {
   const { scene, animations } = useGLTF(assetUrl("Lakeside_Man"));
   const supplemental = useLoader(
     THREE.FileLoader,
@@ -100,6 +97,10 @@ function RemoteAvatarRig({
   const clips = useMemo(() => {
     return characterClips(animations, String(supplemental));
   }, [animations, supplemental]);
+  const cruceCharacter = useCruceCharacter(
+    object,
+    clips.find((c) => c.name === "Activity_HoldRod"),
+  );
   const rig = useMemo(() => {
     const mixer = new THREE.AnimationMixer(object);
     return {
@@ -348,6 +349,13 @@ function RemoteAvatarRig({
       { kind: player.activity as ActivityKind, startedAt: remote.activityAt },
       (performance.now() - remote.activityAt) / 1000,
     );
+    cruceCharacter.update(
+      remoteCruceView(room),
+      player.activity === "sit" || player.activity === "sit-down"
+        ? cruceSeatSide(player.seatId)
+        : null,
+      performance.now(),
+    );
     if (scooterGroup.current) scooterGroup.current.visible = riding;
     if (riding) {
       scooter.current?.update({ speed: player.speed ?? 0, steer: 0, dt });
@@ -385,7 +393,12 @@ function RemoteAvatarRig({
       <Html
         center
         position={[0, 2.15, 0]}
-        distanceFactor={planesSeatSide(player?.seatId) !== null ? 5 : 12}
+        distanceFactor={
+          planesSeatSide(player?.seatId) !== null ||
+          cruceSeatSide(player?.seatId) !== null
+            ? 5
+            : 12
+        }
         zIndexRange={[5, 0]}
         style={{ pointerEvents: "none" }}
       >

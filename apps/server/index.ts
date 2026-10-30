@@ -1,3 +1,4 @@
+import { CruceTable, type CruceRecord } from "./cruce-table";
 import { Server, routePartykitRequest, type Connection } from "partyserver";
 import {
   CANONICAL_WORLD_ID,
@@ -26,12 +27,16 @@ export class WorldRoom extends Server<Env> {
   static options = { hibernate: true };
   private room!: RoomCore;
   private planes!: PlanesTable;
+  private cruce!: CruceTable;
   private lakeWeather!: LakeWeatherService;
   private scheduleWeather() {
     this.ctx.waitUntil(this.lakeWeather.refresh());
   }
   /** Both systems share one durable alarm; writes inspect both latest records. */
-  private async persist(key: string, value: HomeLedger | PlanesRecord) {
+  private async persist(
+    key: string,
+    value: HomeLedger | PlanesRecord | CruceRecord,
+  ) {
     await this.ctx.storage.transaction(async (transaction) => {
       await transaction.put(key, value);
       const homes = await transaction.get<HomeLedger>(
@@ -41,9 +46,11 @@ export class WorldRoom extends Server<Env> {
       const due = nextWorldDeadline(
         homes,
         planes,
-        key !== "planes-table-v1" && this.planes?.needsFlush
+        (key !== "planes-table-v1" && this.planes?.needsFlush) ||
+          (key !== "cruce-table-v1" && this.cruce?.needsFlush)
           ? Date.now() + 1000
           : undefined,
+        await transaction.get<CruceRecord>("cruce-table-v1"),
       );
       if (due !== null)
         await transaction.setAlarm(Math.max(Date.now() + 1, due));
@@ -81,6 +88,11 @@ export class WorldRoom extends Server<Env> {
       await this.ctx.storage.get("planes-table-v1"),
     );
     this.planes = planes;
+    const cruce = new CruceTable(
+      { save: (r) => this.persist("cruce-table-v1", r) },
+      await this.ctx.storage.get("cruce-table-v1"),
+    );
+    this.cruce = cruce;
     this.room = new RoomCore(
       {
         connections: () =>
@@ -88,6 +100,7 @@ export class WorldRoom extends Server<Env> {
         saveFire: (next) => this.ctx.storage.put("fire", next),
         homes,
         planes,
+        cruce,
         retryPlaneCleanup: () => this.retryPlaneCleanup(),
         requestWeather: () => this.scheduleWeather(),
       },
@@ -111,6 +124,13 @@ export class WorldRoom extends Server<Env> {
         ),
       ),
     );
+    await cruce.reconcileConnections(
+      new Set(
+        [...this.getConnections<SessionState>()].flatMap((c) =>
+          c.state ? [c.state.player.id] : [],
+        ),
+      ),
+    );
     await this.room.commitNames();
   }
   async onAlarm() {
@@ -121,6 +141,8 @@ export class WorldRoom extends Server<Env> {
         const due = nextWorldDeadline(
           await transaction.get<HomeLedger>(`home-owners-v${HOUSING_EPOCH}`),
           await transaction.get<PlanesRecord>("planes-table-v1"),
+          undefined,
+          await transaction.get<CruceRecord>("cruce-table-v1"),
         );
         if (due !== null)
           await transaction.setAlarm(Math.max(Date.now() + 1, due));

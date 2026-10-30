@@ -1,3 +1,4 @@
+import { cruceSeatSide } from "../../../packages/shared/cruce-station";
 import {
   useCallback,
   useEffect,
@@ -89,8 +90,11 @@ export function WorldActivities({
   const ground = terrainHeight(fireCircleSpot.x, fireCircleSpot.z);
   const previousReset = useRef(resetKey);
   const tableExitPending = useRef(false),
-    pendingTableSeat = useRef(false);
-  const isTableSeat = () => planesSeatSide(state.current.seatId) !== null;
+    pendingTableSeat = useRef(false),
+    pendingCruceSeat = useRef(false);
+  const isTableSeat = () =>
+    planesSeatSide(state.current.seatId) !== null ||
+    cruceSeatSide(state.current.seatId) !== null;
 
   const commit = useCallback(
     (next: ActivityInteraction) => {
@@ -98,11 +102,13 @@ export function WorldActivities({
       if (next.kind === "none") {
         if (
           planesSeatSide(state.current.seatId) !== null ||
+          cruceSeatSide(state.current.seatId) !== null ||
           pendingTableSeat.current
         )
           tableExitPending.current = true;
         if (state.current.seatId || seatPending.current) room.releaseSeat();
         seatPending.current = false;
+        pendingCruceSeat.current = false;
         releaseSeat(localSeatedActorId);
       }
       const previous = state.current;
@@ -127,7 +133,9 @@ export function WorldActivities({
 
   const requestSeat = useCallback(
     (seatId: string, accepted: () => void, rejected: () => void) => {
-      pendingTableSeat.current = planesSeatSide(seatId) !== null;
+      pendingTableSeat.current =
+        planesSeatSide(seatId) !== null || cruceSeatSide(seatId) !== null;
+      pendingCruceSeat.current = cruceSeatSide(seatId) !== null;
       if (pendingTableSeat.current) tableExitPending.current = false;
       const attempt = ++seatAttempt.current;
       seatPending.current = true;
@@ -140,6 +148,7 @@ export function WorldActivities({
         }
         seatPending.current = false;
         pendingTableSeat.current = false;
+        pendingCruceSeat.current = false;
         if (ok) accepted();
         else rejected();
         callbacks.current.onBusy(state.current.kind !== "none");
@@ -211,7 +220,10 @@ export function WorldActivities({
         !tableExitPending.current
       ) {
         const own = room.ownSeatId();
-        if (planesSeatSide(own) !== null && own) {
+        if (
+          (planesSeatSide(own) !== null || cruceSeatSide(own) !== null) &&
+          own
+        ) {
           const seat = getSeat(own);
           if (seat) {
             const claimed = claimSeat(own, localSeatedActorId);
@@ -349,12 +361,21 @@ export function WorldActivities({
             }
           };
           const blocked = () => {
-            message.current = `${bench.label} · Seat unavailable`;
+            message.current = bench.id.startsWith("cruce-")
+              ? room.getSnapshot().status === "online"
+                ? "Masa de Cruce · Loc indisponibil"
+                : "Masa de Cruce · Reconectează-te ca să poți ocupa un loc"
+              : `${bench.label} · Seat unavailable`;
             messageUntil.current = performance.now() + 2500;
           };
           if (available && room.getSnapshot().status === "online")
             requestSeat(available.id, sit, blocked);
-          else if (available && room.getSnapshot().status === "offline") sit();
+          else if (
+            available &&
+            room.getSnapshot().status === "offline" &&
+            !bench.id.startsWith("cruce-")
+          )
+            sit();
           else blocked();
         }
         return;
@@ -436,7 +457,10 @@ export function WorldActivities({
       room.getSnapshot().status === "online"
     ) {
       const own = room.ownSeatId();
-      if (own && planesSeatSide(own) !== null) {
+      if (
+        own &&
+        (planesSeatSide(own) !== null || cruceSeatSide(own) !== null)
+      ) {
         const seat = getSeat(own);
         if (seat) {
           const claimed = claimSeat(own, localSeatedActorId);
@@ -530,7 +554,11 @@ export function WorldActivities({
       bench.seats.filter(
         (candidate) => candidate.occupantId === null && !candidate.reservedBy,
       ).length;
-    const seatDescription = occupiedBench?.label ?? "Bench";
+    const atCruce =
+      cruceSeatSide(current.seatId) !== null || pendingCruceSeat.current;
+    const seatDescription = atCruce
+      ? "Masa de Cruce"
+      : (occupiedBench?.label ?? "Bench");
     const secondaryAction = nearFishing
       ? "E to cast a line"
       : nearFire
@@ -539,8 +567,10 @@ export function WorldActivities({
     if (!paused) {
       if (seatPending.current)
         prompt = {
-          main: "Reserving a seat…",
-          detail: "Waiting for the room · F or Escape to cancel",
+          main: atCruce ? "Se rezervă locul…" : "Reserving a seat…",
+          detail: atCruce
+            ? "Așteptăm confirmarea · F sau Esc pentru anulare"
+            : "Waiting for the room · F or Escape to cancel",
           key: "F",
         };
       else if (current.kind === "fire-approach")
@@ -550,26 +580,37 @@ export function WorldActivities({
       else if (current.kind === "sit-down")
         prompt = {
           main: seatDescription,
-          detail: "Taking a seat… · F or Escape to stand",
+          detail: atCruce
+            ? "Te așezi la masă… · F ca să te ridici"
+            : "Taking a seat… · F or Escape to stand",
           key: "F",
         };
       else if (current.kind === "sit")
         prompt = {
           main: seatDescription,
-          detail: isTableSeat()
-            ? "Open the paper to play · F leaves the table"
-            : `${now < seatFeedback.current.until ? seatFeedback.current.message : "A/D to shift"} · F or Escape to stand${nearFire ? ` · E to ${lit ? "put out" : "light"} the fire` : ""}`,
+          detail: atCruce
+            ? "Deschide Cruce ca să joci · F ca să te ridici de la masă"
+            : isTableSeat()
+              ? "Open the paper to play · F leaves the table"
+              : `${now < seatFeedback.current.until ? seatFeedback.current.message : "A/D to shift"} · F or Escape to stand${nearFire ? ` · E to ${lit ? "put out" : "light"} the fire` : ""}`,
           key: "F",
         };
       else if (current.kind === "scoot-left" || current.kind === "scoot-right")
         prompt = {
           main: seatDescription,
           detail: current.standAfterMove
-            ? "Shifting over, then standing…"
-            : "Shifting over…",
+            ? atCruce
+              ? "Schimbi locul, apoi te ridici…"
+              : "Shifting over, then standing…"
+            : atCruce
+              ? "Schimbi locul…"
+              : "Shifting over…",
         };
       else if (current.kind === "stand-up")
-        prompt = { main: seatDescription, detail: "Standing up…" };
+        prompt = {
+          main: seatDescription,
+          detail: atCruce ? "Te ridici de la masă…" : "Standing up…",
+        };
       else if (current.kind === "cast")
         prompt = { main: "Casting…", detail: "Escape to cancel" };
       else if (current.kind === "fish-wait")
@@ -595,16 +636,27 @@ export function WorldActivities({
           free > 0
             ? {
                 main: `Sit · ${nearbyBench.label}`,
+                ...(nearbyBench.id.startsWith("cruce-")
+                  ? { main: "Joacă Cruce" }
+                  : {}),
                 ...(nearbyBench.id.startsWith("planes-")
                   ? { main: "Play Planes" }
                   : {}),
-                detail: secondaryAction || "Take a seat.",
+                detail: nearbyBench.id.startsWith("cruce-")
+                  ? "Așază-te ca să joci sau deschide masa ca spectator."
+                  : secondaryAction || "Take a seat.",
                 key: "F",
               }
             : {
-                main: `${nearbyBench.label} · Full`,
-                detail: secondaryAction || "All seats are taken.",
-                ...(secondaryAction ? { key: "E" } : {}),
+                main: nearbyBench.id.startsWith("cruce-")
+                  ? "Masa de Cruce · Loc ocupat"
+                  : `${nearbyBench.label} · Full`,
+                detail: nearbyBench.id.startsWith("cruce-")
+                  ? "Alege alt loc liber sau urmărește partida ca spectator."
+                  : secondaryAction || "All seats are taken.",
+                ...(secondaryAction && !nearbyBench.id.startsWith("cruce-")
+                  ? { key: "E" }
+                  : {}),
               };
       } else if (message.current && now < messageUntil.current)
         prompt = {

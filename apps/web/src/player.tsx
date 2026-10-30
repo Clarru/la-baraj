@@ -1,3 +1,8 @@
+import { takeCruceTestMove } from "./cruce-world-test";
+import { useCruceCharacter } from "./use-cruce-character";
+import { cruceSeatSide } from "../../../packages/shared/cruce-station";
+import { CRUCE_TABLE } from "../../../packages/shared/cruce-station";
+import type { CruceSeat } from "../../../packages/shared/cruce";
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useFrame, useLoader, useThree } from "@react-three/fiber";
 import { useGLTF, useAnimations, OrbitControls } from "@react-three/drei";
@@ -234,6 +239,10 @@ export function Player({
   );
   const { actions, mixer } = useAnimations(allAnimations, object);
   const tableReaction = useMemo(() => createTableReactionRig(object), [object]);
+  const cruceCharacter = useCruceCharacter(
+    object,
+    allAnimations.find((c) => c.name === "Activity_HoldRod"),
+  );
   useFrame(() => tableReaction.beginFrame(), -2);
   useEffect(() => () => tableReaction.dispose(), [tableReaction]);
   useEffect(() => () => disposeCharacterSkeletons(object), [object]);
@@ -593,6 +602,16 @@ export function Player({
   useFrame((_, dt) => {
     const c = controller.current;
     if (!c || !c.body) return;
+    const testMove = takeCruceTestMove();
+    if (testMove) {
+      c.body.setTranslation(
+        { x: testMove[0], y: testMove[1] + 0.95, z: testMove[2] },
+        true,
+      );
+      c.body.setLinvel({ x: 0, y: 0, z: 0 }, true);
+      c.body.setAngvel({ x: 0, y: 0, z: 0 }, true);
+      keys.current.clear();
+    }
     const requestedTransfer = takeCabinTransfer();
     if (requestedTransfer) {
       doorArrival.current = requestedTransfer;
@@ -1102,6 +1121,14 @@ export function Player({
       visual.current.parent.getWorldPosition(playerViewPosition);
     else playerViewPosition.copy(playerPosition);
     activityRig.current?.update(pose, elapsed);
+    const cardRoom = currentMultiplayerRoom();
+    cruceCharacter.update(
+      cardRoom?.getSnapshot().cruce ?? null,
+      (pose.kind === "sit" || pose.kind === "sit-down") && cardRoom
+        ? cruceSeatSide(cardRoom.ownSeatId())
+        : null,
+      performance.now(),
+    );
     if (pose.kind === "sit" || pose.kind === "sit-down") {
       const room = currentMultiplayerRoom();
       if (room && planesSeatSide(room.ownSeatId()) !== null)
@@ -1264,6 +1291,7 @@ export function CameraRig({
   onFocusCabin,
   transitioning = false,
   tableSeat = null,
+  cardTableSeat = null,
 }: {
   mode: ViewMode;
   resetKey: number;
@@ -1272,6 +1300,7 @@ export function CameraRig({
   onFocusCabin?: (index: number) => void;
   transitioning?: boolean;
   tableSeat?: 0 | 1 | null;
+  cardTableSeat?: CruceSeat | null;
 }) {
   const controls = useRef<React.ComponentRef<typeof OrbitControls>>(null);
   const [cabinVariant, setCabinVariant] = useState(0);
@@ -1300,7 +1329,7 @@ export function CameraRig({
   }, [gl, events.connected]);
   const last = useRef(new THREE.Vector3());
   const priorInterior = useRef<number | null>(null);
-  const priorTable = useRef<number | null>(null);
+  const priorTable = useRef<string | null>(null);
   const blend = useRef<{
     from: THREE.Vector3;
     to: THREE.Vector3;
@@ -1316,10 +1345,28 @@ export function CameraRig({
     const leaving = priorInterior.current !== null && interiorIndex === null;
     const changingRoom = priorInterior.current !== interiorIndex;
     const exitedIndex = priorInterior.current;
-    const changingTable = priorTable.current !== tableSeat;
-    priorTable.current = tableSeat;
+    const tableKey =
+      cardTableSeat !== null
+        ? `cruce:${cardTableSeat}`
+        : tableSeat !== null
+          ? `planes:${tableSeat}`
+          : null;
+    const changingTable = priorTable.current !== tableKey;
+    priorTable.current = tableKey;
     priorInterior.current = interiorIndex;
-    if (tableSeat !== null) {
+    if (cardTableSeat !== null) {
+      const angle = (cardTableSeat * Math.PI) / 2;
+      camera.position.set(
+        CRUCE_TABLE.x - Math.sin(angle) * 4.3 + Math.cos(angle) * 0.75,
+        CRUCE_TABLE.ground + 2.6,
+        CRUCE_TABLE.z + Math.cos(angle) * 4.3 + Math.sin(angle) * 0.75,
+      );
+      c.target.set(
+        CRUCE_TABLE.x + Math.cos(angle) * 0.75,
+        CRUCE_TABLE.ground + 0.9,
+        CRUCE_TABLE.z + Math.sin(angle) * 0.75,
+      );
+    } else if (tableSeat !== null) {
       // Keep the seated pair in the clear space to the left of the paper.
       const panZ = tableSeat === 0 ? 0.82 : -0.82;
       camera.position.set(
@@ -1406,6 +1453,7 @@ export function CameraRig({
     interiorIndex,
     onFocusCabin,
     tableSeat,
+    cardTableSeat,
   ]);
   useFrame((_, dt) => {
     const c = controls.current;
@@ -1424,6 +1472,7 @@ export function CameraRig({
     }
     if (
       tableSeat === null &&
+      cardTableSeat === null &&
       interiorIndex === null &&
       (mode === "walk" || mode === "study")
     ) {
@@ -1442,11 +1491,12 @@ export function CameraRig({
       enabled={!transitioning}
       enablePan={
         tableSeat === null &&
+        cardTableSeat === null &&
         interiorIndex === null &&
         (mode === "overview" || mode === "settlement" || mode === "home")
       }
       minDistance={
-        tableSeat !== null
+        tableSeat !== null || cardTableSeat !== null
           ? 2
           : interiorIndex !== null
             ? 9
@@ -1455,7 +1505,7 @@ export function CameraRig({
               : 2.5
       }
       maxDistance={
-        tableSeat !== null
+        tableSeat !== null || cardTableSeat !== null
           ? 6
           : interiorIndex !== null
             ? 18

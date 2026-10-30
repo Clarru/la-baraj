@@ -1,0 +1,14 @@
+[
+  {
+    "id": "felt",
+    "source": "generated/felt.png",
+    "prompt": "Use case: stylized-concept. Asset type: seamless PBR-style base-color texture for the top of the one physical Cruce card table in a stylized 3D Romanian lakeside game. Primary request: an orthographic flat scan of deep traditional forest-green wool card-table felt. Uniform softly mottled green, extremely fine visible woven fibers, very subtle natural wear in center and tiny cloth irregularities, high-quality game material rather than photoreal dirt. Edge-to-edge square tile, seamless on all four sides. Even flat ambient illumination, no directional light, no baked highlights, no shadow. No objects, no cards, no text, no logos, no numbers, no border, no wood, no wrinkles. Restrained texture contrast so small playing cards and UI text remain legible.",
+    "tool": "image_gen (built-in)"
+  },
+  {
+    "id": "table-surround",
+    "source": "generated/table-surround.png",
+    "prompt": "Use case: stylized-concept. Asset type: panoramic overhead illustrated background for the ONE Cruce table interface in the stylized 3D game La Baraj at Lake Cincis. Primary request: a lovingly crafted stylized game-art overhead view of a large oval woodland picnic card table with a dark forest-green felt playing surface and thick warm chestnut wooden rim. Composition: very wide panoramic 3.2:1 canvas, table fills almost all the width and height, felt is a completely clear calm oval covering the central 88 percent width and 76 percent height. Outer narrow perimeter reveals aged timber planks, four simple short wooden bench seats at the cardinal directions, a tiny glimpse of green lakeside grass, pebbles, reeds and turquoise lake water along the top edge. No players and no other tables. Clean hand-painted 3D game asset aesthetic, soft natural daylight, warm wood grain, subtle craftsmanship and rich material detail, coherent with a playful low-poly lakeside world. Central felt must stay plain uninterrupted dark green, no bright hotspots. Absolutely no playing cards, deck, pencils, dice, score marks, letters, labels, logos or UI. No props occupying the felt. Maintain true top-down orthographic view, no horizon, no perspective tilt, no photo mockup. Background remains useful when center area is overlaid with four player nameplates and played cards.",
+    "tool": "image_gen (built-in)"
+  }
+]

@@ -1,0 +1,44 @@
+[
+  {
+    "id": "acorn-unter",
+    "source": "generated/acorn-unter.png",
+    "prompt": "Use case: stylized-concept. Asset: ONE individual Hungarian Tell-pattern card, portrait 363:585. Attached real card is a structural reference. Faithfully retain its suit pip positions, double-ended geometry and figure pose. Clean traditional hand-colored woodcut with black outlines, saturated primary printing colors, PURE WHITE untextured stock. Thin rounded black inset border. Exactly ONE card filling frame, no outside background, no shadows, no perspective, no vintage yellow paper. Upper half duplicates into lower half by exactly 180-degree rotation, NOT reflection, joined at horizontal center. Suit ACORNS / GHINDA, not spades or clubs. UNTER / DOIAR: waist-up man with light cap and yellow band, purple sleeves, light blue tunic, yellow sash. ONE acorn pip on LEFT beside his WAIST, well below shoulder. Rotated duplicate bottom right. Only TWO pips total. NO pip near his head.",
+    "reference": "https://github.com/tomasdrus/hungarian-playing-cards/blob/master/cards-large/acorn-unter.png",
+    "tool": "image_gen (built-in)"
+  },
+  {
+    "id": "acorn-ober",
+    "source": "generated/acorn-ober.png",
+    "prompt": "Use case: stylized-concept. Asset: ONE individual Hungarian Tell-pattern card, portrait 363:585. Attached real card is a structural reference. Faithfully retain its suit pip positions, double-ended geometry and figure pose. Clean traditional hand-colored woodcut with black outlines, saturated primary printing colors, PURE WHITE untextured stock. Thin rounded black inset border. Exactly ONE card filling frame, no outside background, no shadows, no perspective, no vintage yellow paper. Upper half duplicates into lower half by exactly 180-degree rotation, NOT reflection, joined at horizontal center. Suit ACORNS / GHINDA, not spades or clubs. OBER / TREIAR: waist-up bearded hunter, orange/red tunic, yellow breeches, blue and red feathered cap, holding a crossbow. ONE acorn pip upper LEFT beside his HEAD, rotated duplicate lower right. Only TWO pips full card.",
+    "reference": "https://github.com/tomasdrus/hungarian-playing-cards/blob/master/cards-large/acorn-ober.png",
+    "tool": "image_gen (built-in)"
+  },
+  {
+    "id": "acorn-king",
+    "source": "generated/acorn-king.png",
+    "prompt": "Use case: stylized-concept. Asset: ONE individual Hungarian Tell-pattern card, portrait 363:585. Attached real card is a structural reference. Faithfully retain its suit pip positions, double-ended geometry and figure pose. Clean traditional hand-colored woodcut with black outlines, saturated primary printing colors, PURE WHITE untextured stock. Thin rounded black inset border. Exactly ONE card filling frame, no outside background, no shadows, no perspective, no vintage yellow paper. Upper half duplicates into lower half by exactly 180-degree rotation, NOT reflection, joined at horizontal center. Suit ACORNS / GHINDA, not spades or clubs. KING / PATRAR: gold-crowned king with blue-green robe and red cloak, riding a decorated chestnut horse, golden scepter. ONE acorn pip top LEFT plus rotated duplicate bottom RIGHT, TWO pips total.",
+    "reference": "https://github.com/tomasdrus/hungarian-playing-cards/blob/master/cards-large/acorn-king.png",
+    "tool": "image_gen (built-in)"
+  },
+  {
+    "id": "acorn-nine",
+    "source": "generated/acorn-nine.png",
+    "prompt": "Use case: stylized-concept. Asset: ONE Hungarian Tell-pattern card, vertical portrait 363:585. Attached real card is the exact structural guide. Reproduce its pip arrangement and directions faithfully; improve only line crispness and print clarity. Pure WHITE card stock, thin rounded double black border. Vibrant original traditional woodcut linework. NO castle, NO landscape, NO people, NO decorative scenery on this card. Exact rotationally symmetric double-ended layout joined at horizontal middle. Do not transfer the Hearts or Bells arrangement to this suit. Exactly ONE card fills frame, no margin outside card, no shadows, no perspective. NINE / IX: TOP HALF exactly FOUR horizontal overlapping acorn pips down LEFT, FOUR horizontal overlapping acorn pips down RIGHT, plus ONE upright acorn at TOP CENTER above a thin bare red branching stem. 4+1+4 = NINE pips top. Each acorn is a yellow/red elongated nut, green scalloped cup as in reference; side nuts point outward horizontally. No oak leaf bouquets attached. Thin central red stem with faint gray branches goes to waist. Bottom half exact 180-degree rotation, nine more. Eighteen total. Roman IX upper-left, rotated lower-right.",
+    "reference": "https://github.com/tomasdrus/hungarian-playing-cards/blob/master/cards-large/acorn-nine.png",
+    "tool": "image_gen (built-in)"
+  },
+  {
+    "id": "acorn-ten",
+    "source": "generated/acorn-ten.png",
+    "prompt": "Use case: stylized-concept. Asset: ONE Hungarian Tell-pattern card, vertical portrait 363:585. Attached real card is the exact structural guide. Reproduce its pip arrangement and directions faithfully; improve only line crispness and print clarity. Pure WHITE card stock, thin rounded double black border. Vibrant original traditional woodcut linework. NO castle, NO landscape, NO people, NO decorative scenery on this card. Exact rotationally symmetric double-ended layout joined at horizontal middle. Do not transfer the Hearts or Bells arrangement to this suit. Exactly ONE card fills frame, no margin outside card, no shadows, no perspective. TEN / X: TOP HALF exactly FIVE horizontal overlapping acorn pips down LEFT and FIVE down RIGHT. Center contains ONLY a thin bare red branching stem and faint gray twigs, absolutely NO large acorn in center. 5+0+5 = TEN pips per half. Each acorn a yellow/red elongated nut with green scalloped cup as in reference; side nuts point outwards horizontally. No oak leaf bouquets attached. Bottom half exact 180-degree rotation, ten more. Twenty total. Roman X top center, rotated bottom center.",
+    "reference": "https://github.com/tomasdrus/hungarian-playing-cards/blob/master/cards-large/acorn-ten.png",
+    "tool": "image_gen (built-in)"
+  },
+  {
+    "id": "acorn-ace",
+    "source": "generated/acorn-ace.png",
+    "prompt": "Use case: stylized-concept. Asset: ONE individual Hungarian Tell-pattern card, portrait 363:585. Attached real card is a structural reference. Faithfully retain its suit pip positions, double-ended geometry and figure pose. Clean traditional hand-colored woodcut with black outlines, saturated primary printing colors, PURE WHITE untextured stock. Thin rounded black inset border. Exactly ONE card filling frame, no outside background, no shadows, no perspective, no vintage yellow paper. Upper half duplicates into lower half by exactly 180-degree rotation, NOT reflection, joined at horizontal center. Suit ACORNS / GHINDA, not spades or clubs. ACE / AS: WINTER seasonal scene from reference, bundled woman in red coat and pale blue head covering, yellow skirt and red stockings, standing by wooden fence with bundle of sticks amid snow and bare trees. TWO large tilted acorn pips top left and right and their rotated duplicates bottom corners, FOUR total. No A or numeral.",
+    "reference": "https://github.com/tomasdrus/hungarian-playing-cards/blob/master/cards-large/acorn-ace.png",
+    "tool": "image_gen (built-in)"
+  }
+]

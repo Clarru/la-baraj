@@ -1,0 +1,261 @@
+{
+  "generatedWith": "image_gen (built-in)",
+  "cards": [
+    {
+      "id": "heart-unter",
+      "file": "heart-unter.webp",
+      "width": 363,
+      "height": 585,
+      "bytes": 44136,
+      "sha256": "db9d0c7124a556b0db8719b9bca624f5091fb19ee2cab5b4e56472497e2230c5",
+      "prompt": "docs/art-direction/cruce/heart-prompts.json",
+      "reference": "https://github.com/tomasdrus/hungarian-playing-cards/blob/master/cards-large/heart-unter.png"
+    },
+    {
+      "id": "heart-ober",
+      "file": "heart-ober.webp",
+      "width": 363,
+      "height": 585,
+      "bytes": 54788,
+      "sha256": "2fa2ada7770d2f7f2831821b486da729ad4aa48a7ddee7b95e8f09cafb99ef3f",
+      "prompt": "docs/art-direction/cruce/heart-prompts.json",
+      "reference": "https://github.com/tomasdrus/hungarian-playing-cards/blob/master/cards-large/heart-ober.png"
+    },
+    {
+      "id": "heart-king",
+      "file": "heart-king.webp",
+      "width": 363,
+      "height": 585,
+      "bytes": 67116,
+      "sha256": "3e03938f72acae2386a32b8e77eb2ac7b7163b2b4aabf9044a37287b04f1522b",
+      "prompt": "docs/art-direction/cruce/heart-prompts.json",
+      "reference": "https://github.com/tomasdrus/hungarian-playing-cards/blob/master/cards-large/heart-king.png"
+    },
+    {
+      "id": "heart-nine",
+      "file": "heart-nine.webp",
+      "width": 363,
+      "height": 585,
+      "bytes": 50386,
+      "sha256": "2359bb03ff49e2d86cb0682ffb1c814125710a8ef1326368b7a317dc42370b77",
+      "prompt": "docs/art-direction/cruce/heart-prompts.json",
+      "reference": "https://github.com/tomasdrus/hungarian-playing-cards/blob/master/cards-large/heart-nine.png"
+    },
+    {
+      "id": "heart-ten",
+      "file": "heart-ten.webp",
+      "width": 363,
+      "height": 585,
+      "bytes": 51024,
+      "sha256": "628f504de569cd7dc3cf5d63a80801d14e714acc85383aad51d2c876993afdd0",
+      "prompt": "docs/art-direction/cruce/heart-prompts.json",
+      "reference": "https://github.com/tomasdrus/hungarian-playing-cards/blob/master/cards-large/heart-ten.png"
+    },
+    {
+      "id": "heart-ace",
+      "file": "heart-ace.webp",
+      "width": 363,
+      "height": 585,
+      "bytes": 75030,
+      "sha256": "4b8efa767286e663f1ac95a138401361d618846d3aa1887eb144a51f346496fa",
+      "prompt": "docs/art-direction/cruce/heart-prompts.json",
+      "reference": "https://github.com/tomasdrus/hungarian-playing-cards/blob/master/cards-large/heart-ace.png"
+    },
+    {
+      "id": "bell-unter",
+      "file": "bell-unter.webp",
+      "width": 363,
+      "height": 585,
+      "bytes": 52358,
+      "sha256": "60b08c4cfa9012c30a88922a2b6e9ae3bd6bea8d7b69c00a965b54cf68ad9064",
+      "prompt": "docs/art-direction/cruce/bell-prompts.json",
+      "reference": "https://github.com/tomasdrus/hungarian-playing-cards/blob/master/cards-large/bell-unter.png"
+    },
+    {
+      "id": "bell-ober",
+      "file": "bell-ober.webp",
+      "width": 363,
+      "height": 585,
+      "bytes": 54360,
+      "sha256": "75864580cf789c67c6c394d01621a3e0e3de2d462c6b9e713fbb82c6c667412b",
+      "prompt": "docs/art-direction/cruce/bell-prompts.json",
+      "reference": "https://github.com/tomasdrus/hungarian-playing-cards/blob/master/cards-large/bell-ober.png"
+    },
+    {
+      "id": "bell-king",
+      "file": "bell-king.webp",
+      "width": 363,
+      "height": 585,
+      "bytes": 67366,
+      "sha256": "1538dc3c6adebd6d346301e7455c2cb93dd5dd344a03556a0a95065c9a8fed91",
+      "prompt": "docs/art-direction/cruce/bell-prompts.json",
+      "reference": "https://github.com/tomasdrus/hungarian-playing-cards/blob/master/cards-large/bell-king.png"
+    },
+    {
+      "id": "bell-nine",
+      "file": "bell-nine.webp",
+      "width": 363,
+      "height": 585,
+      "bytes": 54436,
+      "sha256": "e8afdcfc8d2bae5d3457326410e0d3cd26db28cc04c7d1ef85be00867dc0c53d",
+      "prompt": "docs/art-direction/cruce/bell-prompts.json",
+      "reference": "https://github.com/tomasdrus/hungarian-playing-cards/blob/master/cards-large/bell-nine.png"
+    },
+    {
+      "id": "bell-ten",
+      "file": "bell-ten.webp",
+      "width": 363,
+      "height": 585,
+      "bytes": 62000,
+      "sha256": "f077a9437af0a4b1609c08678671b64cee07b22b30b69aa2e17db1d3ac1948fe",
+      "prompt": "docs/art-direction/cruce/bell-prompts.json",
+      "reference": "https://github.com/tomasdrus/hungarian-playing-cards/blob/master/cards-large/bell-ten.png"
+    },
+    {
+      "id": "bell-ace",
+      "file": "bell-ace.webp",
+      "width": 363,
+      "height": 585,
+      "bytes": 89144,
+      "sha256": "fa153f121b6015cc65696ab06a0e8b2c760d48ab102600d4811c3d2d117fc4c8",
+      "prompt": "docs/art-direction/cruce/bell-prompts.json",
+      "reference": "https://github.com/tomasdrus/hungarian-playing-cards/blob/master/cards-large/bell-ace.png"
+    },
+    {
+      "id": "leaf-unter",
+      "file": "leaf-unter.webp",
+      "width": 363,
+      "height": 585,
+      "bytes": 49052,
+      "sha256": "5b31bce6093d7825efff02596dd83ed803bee8c1b544f87f8d91e8a2794641e2",
+      "prompt": "docs/art-direction/cruce/leaf-prompts.json",
+      "reference": "https://github.com/tomasdrus/hungarian-playing-cards/blob/master/cards-large/leaf-unter.png"
+    },
+    {
+      "id": "leaf-ober",
+      "file": "leaf-ober.webp",
+      "width": 363,
+      "height": 585,
+      "bytes": 56252,
+      "sha256": "b931c34266d7391739590fe2c5f0734b86b765c9b70e81d2e1bda57ccd39f1d0",
+      "prompt": "docs/art-direction/cruce/leaf-prompts.json",
+      "reference": "https://github.com/tomasdrus/hungarian-playing-cards/blob/master/cards-large/leaf-ober.png"
+    },
+    {
+      "id": "leaf-king",
+      "file": "leaf-king.webp",
+      "width": 363,
+      "height": 585,
+      "bytes": 66152,
+      "sha256": "6eeb7d0e0ccfaff2168f1a09dcf4b9db9877ccc9b5765822abf3258ec15e6a07",
+      "prompt": "docs/art-direction/cruce/leaf-prompts.json",
+      "reference": "https://github.com/tomasdrus/hungarian-playing-cards/blob/master/cards-large/leaf-king.png"
+    },
+    {
+      "id": "leaf-nine",
+      "file": "leaf-nine.webp",
+      "width": 363,
+      "height": 585,
+      "bytes": 44966,
+      "sha256": "3ae71345b43f9d1eac8bb3333cdc7b5931018d0de728029a4f50a54e8b7d3702",
+      "prompt": "docs/art-direction/cruce/leaf-prompts.json",
+      "reference": "https://github.com/tomasdrus/hungarian-playing-cards/blob/master/cards-large/leaf-nine.png"
+    },
+    {
+      "id": "leaf-ten",
+      "file": "leaf-ten.webp",
+      "width": 363,
+      "height": 585,
+      "bytes": 46624,
+      "sha256": "c858482aa6a9696e44a85777dd92b7e5f01286a813243fdde6016f40f4ea34d5",
+      "prompt": "docs/art-direction/cruce/leaf-prompts.json",
+      "reference": "https://github.com/tomasdrus/hungarian-playing-cards/blob/master/cards-large/leaf-ten.png"
+    },
+    {
+      "id": "leaf-ace",
+      "file": "leaf-ace.webp",
+      "width": 363,
+      "height": 585,
+      "bytes": 82312,
+      "sha256": "a5a35483b1f8387db1a9d7866f13b062d582af98acfc62e49250814ba891f61d",
+      "prompt": "docs/art-direction/cruce/leaf-prompts.json",
+      "reference": "https://github.com/tomasdrus/hungarian-playing-cards/blob/master/cards-large/leaf-ace.png"
+    },
+    {
+      "id": "acorn-unter",
+      "file": "acorn-unter.webp",
+      "width": 363,
+      "height": 585,
+      "bytes": 48060,
+      "sha256": "c70f452cf6deb182db8941ebafc53e661860fb1844dc62e8ea29620e62c37f40",
+      "prompt": "docs/art-direction/cruce/acorn-prompts.json",
+      "reference": "https://github.com/tomasdrus/hungarian-playing-cards/blob/master/cards-large/acorn-unter.png"
+    },
+    {
+      "id": "acorn-ober",
+      "file": "acorn-ober.webp",
+      "width": 363,
+      "height": 585,
+      "bytes": 54378,
+      "sha256": "037e167a69f27db342ac572c41d9084d8c3d1b41cfb770b4c3d50934b9b171ed",
+      "prompt": "docs/art-direction/cruce/acorn-prompts.json",
+      "reference": "https://github.com/tomasdrus/hungarian-playing-cards/blob/master/cards-large/acorn-ober.png"
+    },
+    {
+      "id": "acorn-king",
+      "file": "acorn-king.webp",
+      "width": 363,
+      "height": 585,
+      "bytes": 66530,
+      "sha256": "9aa0824bb9d15739a5edc09097215bbe5ce249bf371f0a09c5e64a299af189cb",
+      "prompt": "docs/art-direction/cruce/acorn-prompts.json",
+      "reference": "https://github.com/tomasdrus/hungarian-playing-cards/blob/master/cards-large/acorn-king.png"
+    },
+    {
+      "id": "acorn-nine",
+      "file": "acorn-nine.webp",
+      "width": 363,
+      "height": 585,
+      "bytes": 45782,
+      "sha256": "71164a5510de61a1faec47151060cfa1a09bfd1131a204af4926da1d838c2931",
+      "prompt": "docs/art-direction/cruce/acorn-prompts.json",
+      "reference": "https://github.com/tomasdrus/hungarian-playing-cards/blob/master/cards-large/acorn-nine.png"
+    },
+    {
+      "id": "acorn-ten",
+      "file": "acorn-ten.webp",
+      "width": 363,
+      "height": 585,
+      "bytes": 51964,
+      "sha256": "667058d24d29b7282f354841c6ae07e75f5d6fe5807690b4261fba4d145dd5af",
+      "prompt": "docs/art-direction/cruce/acorn-prompts.json",
+      "reference": "https://github.com/tomasdrus/hungarian-playing-cards/blob/master/cards-large/acorn-ten.png"
+    },
+    {
+      "id": "acorn-ace",
+      "file": "acorn-ace.webp",
+      "width": 363,
+      "height": 585,
+      "bytes": 66098,
+      "sha256": "8090d889318a259b7aa8d2d6ab3b0e0f5c7a5b2cd68692a8d81b4dbab4a897c0",
+      "prompt": "docs/art-direction/cruce/acorn-prompts.json",
+      "reference": "https://github.com/tomasdrus/hungarian-playing-cards/blob/master/cards-large/acorn-ace.png"
+    }
+  ],
+  "materials": [
+    {
+      "id": "felt",
+      "file": "felt.webp",
+      "bytes": 196168,
+      "sha256": "d55aa553e3e5601b527213b0d4c80088c552f8b7369b8271dd3a3736914f4f7a",
+      "prompt": "docs/art-direction/cruce/table-prompts.json"
+    },
+    {
+      "id": "table-surround",
+      "file": "table-surround.webp",
+      "bytes": 143470,
+      "sha256": "a587374b08b5e03bc2d3c37c3679c958d0fa1600a987d137a6fc734643e6f99b",
+      "prompt": "docs/art-direction/cruce/table-prompts.json"
+    }
+  ]
+}

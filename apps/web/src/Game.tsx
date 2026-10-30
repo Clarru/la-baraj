@@ -1,3 +1,11 @@
+import { cruceWorldLab } from "./cruce-world-test";
+import { CruceWorldLab } from "./CruceWorldLab";
+import { LocalWorldRoom, localWorldEnabled } from "./LocalWorldRoom";
+import {
+  cruceSeatSide,
+  CRUCE_SEATS,
+} from "../../../packages/shared/cruce-station";
+import { CruceEntry } from "./CruceEntry";
 import {
   Component,
   lazy,
@@ -86,6 +94,7 @@ class SceneBoundary extends Component<
   }
 }
 const ignoreMovement = () => {};
+const CruceBoard = lazy(() => import("./CruceBoard"));
 const PlanesBoard = lazy(() => import("./PlanesBoard"));
 function SceneReady({ onReady }: { onReady: () => void }) {
   const reported = useRef(false);
@@ -101,7 +110,9 @@ export default function Game({ initialName }: { initialName: string }) {
   const [room] = useState<MultiplayerRoom>(() =>
     planesLab
       ? new LocalPlanesRoom(initialName)
-      : new MultiplayerRoom(initialName),
+      : localWorldEnabled()
+        ? new LocalWorldRoom(initialName)
+        : new MultiplayerRoom(initialName),
   );
   const [performanceScenario, setPerformanceScenario] =
     useState<PerformanceScenario>("solo");
@@ -158,11 +169,27 @@ export default function Game({ initialName }: { initialName: string }) {
   const finishChat = useCallback(() => setChatMode("display"), []);
   const [planesOpen, setPlanesOpen] = useState(false);
   const ownGameSide = planesSeatSide(room.ownSeatId());
+  const ownCruceSeat = cruceSeatSide(room.ownSeatId());
+  const [cruceOpen, setCruceOpen] = useState(false);
+  const [cruceLeaveRequest, setCruceLeaveRequest] = useState(0);
+  const lastCruceSeat = useRef<number | null>(null);
+  const openCruce = useCallback(() => {
+    setPanel(null);
+    setMode("walk");
+    setPlanesOpen(false);
+    setCruceOpen(true);
+  }, []);
+  useEffect(() => {
+    if (ownCruceSeat !== null && lastCruceSeat.current !== ownCruceSeat)
+      openCruce();
+    lastCruceSeat.current = ownCruceSeat;
+  }, [ownCruceSeat, openCruce]);
   const lastGameSeat = useRef<number | null>(null);
   const openPlanes = useCallback(() => {
     setPanel(null);
     setMode("walk");
     setPlanesOpen(true);
+    setCruceOpen(false);
   }, []);
   useEffect(() => {
     if (ownGameSide !== null && lastGameSeat.current !== ownGameSide)
@@ -235,6 +262,7 @@ export default function Game({ initialName }: { initialName: string }) {
   const onSceneReady = useCallback(() => setReady(true), []);
   const resetHome = useCallback(() => {
     setPlanesOpen(false);
+    setCruceOpen(false);
     setPanel(null);
     setMode("walk");
     setResetKey((key) => key + 1);
@@ -246,9 +274,58 @@ export default function Game({ initialName }: { initialName: string }) {
   useEffect(() => {
     const capture = (event: KeyboardEvent) => {
       if (
+        (cruceOpen || ownCruceSeat !== null) &&
+        event.repeat &&
+        ["Escape", "KeyF"].includes(event.code)
+      ) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        return;
+      }
+      if (
+        panel === null &&
+        (cruceOpen || ownCruceSeat !== null) &&
+        event.code === "Escape" &&
+        !(
+          event.target instanceof HTMLElement &&
+          event.target.closest(".cruce-exit")
+        )
+      ) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        setCruceOpen((o) => !o);
+        return;
+      }
+      if (
+        panel === null &&
+        ownCruceSeat !== null &&
+        event.code === "KeyF" &&
+        !(
+          event.target instanceof HTMLElement &&
+          event.target.closest("input, select, textarea")
+        )
+      ) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        setCruceOpen(true);
+        setCruceLeaveRequest((n) => n + 1);
+        return;
+      }
+      if (panel === null && cruceOpen) {
+        if (
+          event.target instanceof HTMLElement &&
+          event.target.closest(".cruce-board")
+        )
+          return;
+        if (!event.ctrlKey && !event.metaKey && !event.altKey) {
+          event.stopImmediatePropagation();
+          return;
+        }
+      }
+      if (
         chatMode !== "closed" &&
         event.code === "Escape" &&
-        (chatOpen || (panel === null && !planesOpen))
+        (chatOpen || (panel === null && !planesOpen && !cruceOpen))
       ) {
         event.preventDefault();
         event.stopImmediatePropagation();
@@ -275,6 +352,7 @@ export default function Game({ initialName }: { initialName: string }) {
         !isTypingTarget &&
         panel === null &&
         !planesOpen &&
+        !cruceOpen &&
         mode === "walk" &&
         !doorTransition &&
         hasHome
@@ -352,6 +430,8 @@ export default function Game({ initialName }: { initialName: string }) {
     lookHome,
     resetHome,
     planesOpen,
+    cruceOpen,
+    ownCruceSeat,
     ownGameSide,
     openPlanes,
     chatOpen,
@@ -363,14 +443,24 @@ export default function Game({ initialName }: { initialName: string }) {
   useEffect(() => {
     if (
       chatOpen &&
-      (panel !== null || planesOpen || doorTransition || !hasHome)
+      (panel !== null || planesOpen || cruceOpen || doorTransition || !hasHome)
     )
       closeChat();
-  }, [chatOpen, closeChat, panel, planesOpen, doorTransition, hasHome]);
+  }, [
+    chatOpen,
+    closeChat,
+    panel,
+    planesOpen,
+    cruceOpen,
+    doorTransition,
+    hasHome,
+  ]);
   const displayedPrompt: ActivityPrompt =
     interiorIndex !== null ||
     panel !== null ||
     planesOpen ||
+    cruceOpen ||
+    ownCruceSeat !== null ||
     ownGameSide !== null
       ? null
       : vehicleMounted
@@ -475,6 +565,7 @@ export default function Game({ initialName }: { initialName: string }) {
                     panel !== null ||
                     activityBusy ||
                     doorTransition ||
+                    cruceOpen ||
                     planesOpen ||
                     chatOpen
                   }
@@ -537,6 +628,7 @@ export default function Game({ initialName }: { initialName: string }) {
             />
             <CameraRig
               tableSeat={planesOpen ? ownGameSide : null}
+              cardTableSeat={cruceOpen ? ownCruceSeat : null}
               mode={mode}
               resetKey={resetKey}
               homeIndex={homeIndex}
@@ -566,6 +658,7 @@ export default function Game({ initialName }: { initialName: string }) {
             cabins={cabins}
           />
           {!planesOpen &&
+            !cruceOpen &&
             panel === null &&
             interiorIndex === null &&
             !vehicleMounted && (
@@ -576,6 +669,37 @@ export default function Game({ initialName }: { initialName: string }) {
                 onOpen={openPlanes}
               />
             )}
+          {!cruceOpen &&
+            !planesOpen &&
+            panel === null &&
+            interiorIndex === null &&
+            !vehicleMounted && (
+              <CruceEntry
+                navigation={navigation}
+                view={roomView.cruce}
+                seated={ownCruceSeat !== null}
+                onOpen={openCruce}
+              />
+            )}
+          {(cruceOpen || ownCruceSeat !== null) && (
+            <Suspense
+              fallback={<div className="cruce-entry">Se deschide Cruce…</div>}
+            >
+              <CruceBoard
+                open={cruceOpen && panel === null}
+                view={roomView.cruce}
+                leaveRequest={cruceLeaveRequest}
+                connected={roomView.status === "online"}
+                onAction={(a, revision) => room.cruceAction(a, revision)}
+                onClose={() => setCruceOpen(false)}
+                onLeave={() => {
+                  setCruceOpen(false);
+                  requestTableStand();
+                }}
+                onSit={(seat) => room.claimSeat(CRUCE_SEATS[seat])}
+              />
+            </Suspense>
+          )}
           {(planesOpen || ownGameSide !== null) && (
             <Suspense
               fallback={<div className="planes-entry">Opening the paper…</div>}
@@ -596,6 +720,7 @@ export default function Game({ initialName }: { initialName: string }) {
             </Suspense>
           )}
           {planesLab && <PlanesLabControls room={room} />}
+          {cruceWorldLab && <CruceWorldLab room={room} />}
           {performanceLab && (
             <PerformancePanel
               scenario={performanceScenario}
@@ -611,6 +736,7 @@ export default function Game({ initialName }: { initialName: string }) {
             resetKey={homeResetKey}
             paused={
               panel !== null ||
+              cruceOpen ||
               planesOpen ||
               chatOpen ||
               (!import.meta.env.DEV && mode !== "walk")
