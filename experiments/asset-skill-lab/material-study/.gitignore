@@ -1,0 +1,11 @@
+*.log
+**/*.log
+**/*.blend1
+ablation/*/lantern.glb
+failed-uv-bake/*.blend
+# Redundant temporary extraction from the initial inspection; canonical copies are in lantern/.
+lantern-baseColor.webp
+lantern-normal.webp
+lantern-metallicRoughness.webp
+
+*-original-materials.json

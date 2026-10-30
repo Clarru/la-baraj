@@ -1,0 +1,80 @@
+{
+  "model": "crate-original.glb",
+  "glb_bytes": 161276,
+  "mesh_objects": 1,
+  "triangles": 1576,
+  "materials": [
+    "MI_Trim_Furniture",
+    "MI_Trim_Metal"
+  ],
+  "mesh_material_slots": 2,
+  "images": [
+    {
+      "name": "T_Trim_Furniture_BaseColor",
+      "width": 512,
+      "height": 512,
+      "channels": 4
+    },
+    {
+      "name": "T_Trim_Furniture_Normal",
+      "width": 512,
+      "height": 512,
+      "channels": 4
+    },
+    {
+      "name": "T_Trim_Furniture_ORM",
+      "width": 512,
+      "height": 512,
+      "channels": 4
+    },
+    {
+      "name": "T_Trim_Metal_BaseColor",
+      "width": 512,
+      "height": 512,
+      "channels": 4
+    },
+    {
+      "name": "T_Trim_Metal_Normal",
+      "width": 512,
+      "height": 512,
+      "channels": 4
+    },
+    {
+      "name": "T_Trim_Metal_ORM",
+      "width": 512,
+      "height": 512,
+      "channels": 4
+    }
+  ],
+  "blender_bounds": {
+    "min": [
+      -0.42584478855133057,
+      -0.4541466534137726,
+      -0.05243159085512161
+    ],
+    "max": [
+      0.4164137542247772,
+      0.4541466534137726,
+      0.8784963488578796
+    ]
+  },
+  "blender_dimensions": [
+    0.8422585725784302,
+    0.9082933068275452,
+    0.9309279322624207
+  ],
+  "framing": {
+    "center": [
+      -0.004715517163276672,
+      0.0,
+      0.4130323827266693
+    ],
+    "span": 1.4150104570388795,
+    "floor": -0.05243159085512161,
+    "resolution": 640
+  },
+  "lighting": {
+    "key_azimuth_degrees": 0
+  },
+  "renderer": "Blender Cycles 24 samples AgX; imported exported GLB"
+}

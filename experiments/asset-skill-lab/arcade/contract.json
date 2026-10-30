@@ -1,0 +1,20 @@
+{
+  "height": 1.92,
+  "width": 0.76,
+  "depth": 0.72,
+  "trianglesMax": 10000,
+  "bytesMax": 400000,
+  "screenUvOrigin": "top-left",
+  "runtimeNodes": [
+    "ButtonNew",
+    "ButtonScores",
+    "Joystick",
+    "Screen"
+  ],
+  "joystickPivotGltf": [
+    -0.27,
+    0.967,
+    0.3
+  ],
+  "materialProfile": "accepted timber/iron trim + green enamel"
+}

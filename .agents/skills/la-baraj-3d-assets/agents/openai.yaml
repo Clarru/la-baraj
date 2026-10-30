@@ -1,0 +1,4 @@
+interface:
+  display_name: "La Baraj 3D Assets"
+  short_description: "Build consistent, measured and optimized game props"
+  default_prompt: "Use $la-baraj-3d-assets to build or reconstruct a consistent game prop, retain its functional nodes when interactive, and compare the exported GLB against its visual and resource budgets."

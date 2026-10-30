@@ -1,0 +1,47 @@
+{
+  "model": "Lab_Crate.glb",
+  "glb_bytes": 86064,
+  "mesh_objects": 1,
+  "triangles": 1552,
+  "materials": [
+    "LaBaraj timber",
+    "LaBaraj iron"
+  ],
+  "mesh_material_slots": 2,
+  "images": [
+    {
+      "name": "material-atlas-512",
+      "width": 512,
+      "height": 512,
+      "channels": 4
+    }
+  ],
+  "blender_bounds": {
+    "min": [
+      -0.4258290231227875,
+      -0.4543970227241516,
+      -0.05320000648498535
+    ],
+    "max": [
+      0.4164290130138397,
+      0.4543970227241516,
+      0.8792999982833862
+    ]
+  },
+  "blender_dimensions": [
+    0.8422580361366272,
+    0.9087940454483032,
+    0.9325000047683716
+  ],
+  "framing": {
+    "center": [
+      -0.004715517163276672,
+      0.0,
+      0.4130323827266693
+    ],
+    "span": 1.4150104570388795,
+    "floor": -0.05243159085512161,
+    "resolution": 640
+  },
+  "renderer": "Blender Cycles 24 samples AgX; imported exported GLB"
+}

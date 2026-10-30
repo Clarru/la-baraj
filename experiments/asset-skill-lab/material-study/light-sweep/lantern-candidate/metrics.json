@@ -1,0 +1,61 @@
+{
+  "model": "Lab_Lantern.glb",
+  "glb_bytes": 141256,
+  "mesh_objects": 1,
+  "triangles": 2490,
+  "materials": [
+    "LaBaraj iron"
+  ],
+  "mesh_material_slots": 1,
+  "images": [
+    {
+      "name": "trim-base-color",
+      "width": 512,
+      "height": 512,
+      "channels": 4
+    },
+    {
+      "name": "trim-metallic-roughness",
+      "width": 512,
+      "height": 512,
+      "channels": 4
+    },
+    {
+      "name": "trim-normal",
+      "width": 512,
+      "height": 512,
+      "channels": 4
+    }
+  ],
+  "blender_bounds": {
+    "min": [
+      -0.17866098880767822,
+      -1.2513009309768677,
+      0.08179998397827148
+    ],
+    "max": [
+      0.17866098880767822,
+      0.05350089073181152,
+      1.4170000553131104
+    ]
+  },
+  "blender_dimensions": [
+    0.35732197761535645,
+    1.3048018217086792,
+    1.3352000713348389
+  ],
+  "framing": {
+    "center": [
+      7.450580596923828e-09,
+      -0.6001799702644348,
+      0.7503413558006287
+    ],
+    "span": 2.032251615524292,
+    "floor": 0.08183755725622177,
+    "resolution": 640
+  },
+  "lighting": {
+    "key_azimuth_degrees": 90.0
+  },
+  "renderer": "Blender Cycles 24 samples AgX; imported exported GLB"
+}

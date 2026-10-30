@@ -1,0 +1,46 @@
+{
+  "model": "Lab_Lantern.glb",
+  "glb_bytes": 192724,
+  "mesh_objects": 1,
+  "triangles": 2726,
+  "materials": [
+    "LaBaraj shared iron and timber"
+  ],
+  "mesh_material_slots": 1,
+  "images": [
+    {
+      "name": "material-atlas-512",
+      "width": 512,
+      "height": 512,
+      "channels": 4
+    }
+  ],
+  "blender_bounds": {
+    "min": [
+      -0.1786700040102005,
+      -1.2510000467300415,
+      0.08199995756149292
+    ],
+    "max": [
+      0.1786700040102005,
+      0.05000000074505806,
+      1.4175000190734863
+    ]
+  },
+  "blender_dimensions": [
+    0.357340008020401,
+    1.3009999990463257,
+    1.3355000019073486
+  ],
+  "framing": {
+    "center": [
+      7.450580596923828e-09,
+      -0.6001799702644348,
+      0.7503413558006287
+    ],
+    "span": 2.032251615524292,
+    "floor": 0.08183755725622177,
+    "resolution": 640
+  },
+  "renderer": "Blender Cycles 24 samples AgX; imported exported GLB"
+}

@@ -1,0 +1,10 @@
+{
+  "space": "glTF scene coordinates in metres, +Y up; untested interaction proposals",
+  "sockets": {
+    "WallMount": [
+      0,
+      0.8,
+      -0.05
+    ]
+  }
+}

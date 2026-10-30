@@ -1,0 +1,19 @@
+{
+  "scope": "Blender projection study. Actual browser/input/rendering still requires shared preview QA.",
+  "studies": [
+    {
+      "name": "desktop",
+      "width": 1440,
+      "height": 900,
+      "distance": 1.12,
+      "verticalFov": 50
+    },
+    {
+      "name": "mobile",
+      "width": 390,
+      "height": 844,
+      "distance": 1.4811488059820517,
+      "verticalFov": 50
+    }
+  ]
+}

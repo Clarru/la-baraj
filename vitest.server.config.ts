@@ -4,6 +4,9 @@ export default defineConfig({
   test: {
     include: [
       "tests/protocol.test.ts",
+      "tests/arcade2048.test.ts",
+      "tests/arcade2048-budget.test.ts",
+      "tests/arcade2048-worker.test.ts",
       "tests/boat-collisions.test.ts",
       "tests/load.test.ts",
       "tests/planes.test.ts",
