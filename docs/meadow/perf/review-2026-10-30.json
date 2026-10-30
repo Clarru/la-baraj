@@ -1,0 +1,1288 @@
+{
+  "head": "1764f0cbb29f0ae004003da90aedfaf16da3f8f2",
+  "hardware": "Apple M4 Pro, in-app WebKit,1707x960 CSS viewport,DPR1.5,vsync~120Hz; no uncapped GPU timer or real weak device.",
+  "authority": "Offline PerformanceLab. No room socket, backend listener or production mutation.",
+  "before": "same accepted49 Game/shader/terrain/camera; only pre-emptyfix MeadowLayer a52409a521433bd242cdcabd13b27ac088a0461f loaded by QA build hook.",
+  "counters": "PerformanceMeasurement sets gl.info.autoReset=false and reads complete previous frame before resetting: main plus any reflection/shadow passes actually executed. Pass frequency/culling can vary. Per-mesh submittedTriangles are per pass.",
+  "warmup": "3seconds then600-frame rollingwindows. Timed crowd A/B/A captures near scene15s control moving-avatar phase.",
+  "cases": [
+    {
+      "case": "old high empty offshore",
+      "head": "1764f0cbb29f0ae004003da90aedfaf16da3f8f2",
+      "at": "2026-10-30T19:06:18.953Z",
+      "url": "http://127.0.0.1:4173/__meadow-before-qa.html?meadow=high&offshore=1",
+      "metrics": {
+        "frames": 600,
+        "fps": 119.99999999999999,
+        "meanMs": 8.333333333333334,
+        "p95Ms": 10,
+        "over33Ms": 0,
+        "calls": 274.44166666666666,
+        "triangles": 1118130.205,
+        "gpuGeometries": 174,
+        "gpuTextures": 50,
+        "programs": 48,
+        "sceneObjects": 1286,
+        "meshes": 555,
+        "materials": 190,
+        "geometries": 239,
+        "heapMiB": 96.51773357391357,
+        "dpr": 1.5,
+        "viewport": [
+          1707,
+          960
+        ],
+        "camera": [
+          1.2246467991473533e-15,
+          4.999999999999999,
+          -200
+        ],
+        "firstSceneFrameMs": 2240.2999999970198,
+        "bodies": 34,
+        "colliders": 237,
+        "physicsMeanMs": 0.0649999998509884,
+        "physicsMaxMs": 0.20000000298023224,
+        "longTasks": [
+          {
+            "start": 84.3999999910593,
+            "duration": 336
+          },
+          {
+            "start": 481.69999998807907,
+            "duration": 67
+          },
+          {
+            "start": 566.1999999880791,
+            "duration": 1216
+          },
+          {
+            "start": 1804.8999999910593,
+            "duration": 217
+          },
+          {
+            "start": 2240.2999999970198,
+            "duration": 796
+          },
+          {
+            "start": 3036.7999999970198,
+            "duration": 94
+          }
+        ]
+      },
+      "meadow": {
+        "at": 48.965199999988926,
+        "meshes": [
+          {
+            "capacity": 19600,
+            "submittedInstances": 19600,
+            "activeInstances": 0,
+            "visible": true,
+            "trianglesPerInstance": 18,
+            "submittedTriangles": 352800
+          },
+          {
+            "capacity": 4704,
+            "submittedInstances": 4704,
+            "activeInstances": 0,
+            "visible": true,
+            "trianglesPerInstance": 26,
+            "submittedTriangles": 122304
+          }
+        ]
+      },
+      "errors": [],
+      "use": "accepted window"
+    },
+    {
+      "case": "fixed high empty offshore",
+      "head": "1764f0cbb29f0ae004003da90aedfaf16da3f8f2",
+      "at": "2026-10-30T19:07:03.190Z",
+      "url": "http://127.0.0.1:4173/__meadow-review-qa.html?meadow=high&offshore=1",
+      "metrics": {
+        "frames": 600,
+        "fps": 119.99520019192079,
+        "meanMs": 8.333666666671634,
+        "p95Ms": 10.100000008940697,
+        "over33Ms": 0,
+        "calls": 272.515,
+        "triangles": 572367.595,
+        "gpuGeometries": 172,
+        "gpuTextures": 50,
+        "programs": 44,
+        "sceneObjects": 1286,
+        "meshes": 555,
+        "materials": 190,
+        "geometries": 239,
+        "heapMiB": 158.12518310546875,
+        "dpr": 1.5,
+        "viewport": [
+          1707,
+          960
+        ],
+        "camera": [
+          1.2246467991473533e-15,
+          4.999999999999999,
+          -200
+        ],
+        "firstSceneFrameMs": 2236.9000000059605,
+        "bodies": 34,
+        "colliders": 237,
+        "physicsMeanMs": 0.06316666660209497,
+        "physicsMaxMs": 0.20000000298023224,
+        "longTasks": [
+          {
+            "start": 90.79999999701977,
+            "duration": 341
+          },
+          {
+            "start": 494.5,
+            "duration": 58
+          },
+          {
+            "start": 566.0999999940395,
+            "duration": 1219
+          },
+          {
+            "start": 1806.4000000059605,
+            "duration": 216
+          },
+          {
+            "start": 2236.5999999940395,
+            "duration": 239
+          },
+          {
+            "start": 2476.5,
+            "duration": 85
+          }
+        ]
+      },
+      "meadow": {
+        "at": 42.95620000000363,
+        "meshes": [
+          {
+            "capacity": 19600,
+            "submittedInstances": 0,
+            "activeInstances": 0,
+            "visible": false,
+            "trianglesPerInstance": 18,
+            "submittedTriangles": 0
+          },
+          {
+            "capacity": 4704,
+            "submittedInstances": 0,
+            "activeInstances": 0,
+            "visible": false,
+            "trianglesPerInstance": 26,
+            "submittedTriangles": 0
+          }
+        ]
+      },
+      "errors": [],
+      "use": "accepted window"
+    },
+    {
+      "case": "arrival off",
+      "head": "1764f0cbb29f0ae004003da90aedfaf16da3f8f2",
+      "at": "2026-10-30T19:08:16.498Z",
+      "url": "http://127.0.0.1:4173/__meadow-review-qa.html?meadow=off",
+      "metrics": {
+        "frames": 600,
+        "fps": 119.99760004778447,
+        "meanMs": 8.3335000000149,
+        "p95Ms": 10.299999997019768,
+        "over33Ms": 0,
+        "calls": 349.66,
+        "triangles": 2138949.52,
+        "gpuGeometries": 171,
+        "gpuTextures": 50,
+        "programs": 49,
+        "sceneObjects": 1284,
+        "meshes": 553,
+        "materials": 188,
+        "geometries": 237,
+        "heapMiB": 105.71241664886475,
+        "dpr": 1.5,
+        "viewport": [
+          1707,
+          960
+        ],
+        "camera": [
+          50.4192479998657,
+          8.403607426127289,
+          56.762402419907936
+        ],
+        "firstSceneFrameMs": 2143.699999988079,
+        "bodies": 34,
+        "colliders": 237,
+        "physicsMeanMs": 0.05316666692495346,
+        "physicsMaxMs": 0.20000000298023224,
+        "longTasks": [
+          {
+            "start": 49.69999998807907,
+            "duration": 308
+          },
+          {
+            "start": 470.19999998807907,
+            "duration": 1258
+          },
+          {
+            "start": 1746.8999999910593,
+            "duration": 217
+          },
+          {
+            "start": 2143.5999999940395,
+            "duration": 261
+          },
+          {
+            "start": 2405,
+            "duration": 85
+          }
+        ]
+      },
+      "meadow": {
+        "at": 71.99989999999165,
+        "meshes": []
+      },
+      "errors": [],
+      "use": "accepted window"
+    },
+    {
+      "case": "arrival high",
+      "head": "1764f0cbb29f0ae004003da90aedfaf16da3f8f2",
+      "at": "2026-10-30T19:08:37.146Z",
+      "url": "http://127.0.0.1:4173/__meadow-review-qa.html?meadow=high",
+      "metrics": {
+        "frames": 600,
+        "fps": 119.99760004778447,
+        "meanMs": 8.3335000000149,
+        "p95Ms": 9.900000005960464,
+        "over33Ms": 0,
+        "calls": 351.85833333333335,
+        "triangles": 2677515.1666666665,
+        "gpuGeometries": 173,
+        "gpuTextures": 50,
+        "programs": 53,
+        "sceneObjects": 1286,
+        "meshes": 555,
+        "materials": 190,
+        "geometries": 239,
+        "heapMiB": 131.06834411621094,
+        "dpr": 1.5,
+        "viewport": [
+          1707,
+          960
+        ],
+        "camera": [
+          50.4192479998657,
+          8.403607426127289,
+          56.762402419907936
+        ],
+        "firstSceneFrameMs": 2173.2000000029802,
+        "bodies": 34,
+        "colliders": 237,
+        "physicsMeanMs": 0.05049999982118607,
+        "physicsMaxMs": 0.20000000298023224,
+        "longTasks": [
+          {
+            "start": 49.3999999910593,
+            "duration": 319
+          },
+          {
+            "start": 463,
+            "duration": 1268
+          },
+          {
+            "start": 1744,
+            "duration": 229
+          },
+          {
+            "start": 2173.0999999940395,
+            "duration": 276
+          },
+          {
+            "start": 2450.3999999910593,
+            "duration": 80
+          }
+        ]
+      },
+      "meadow": {
+        "at": 19.817599999993984,
+        "meshes": [
+          {
+            "capacity": 19600,
+            "submittedInstances": 19533,
+            "activeInstances": 5755,
+            "visible": true,
+            "trianglesPerInstance": 18,
+            "submittedTriangles": 351594
+          },
+          {
+            "capacity": 4704,
+            "submittedInstances": 4520,
+            "activeInstances": 1220,
+            "visible": true,
+            "trianglesPerInstance": 26,
+            "submittedTriangles": 117520
+          }
+        ]
+      },
+      "errors": [],
+      "use": "accepted window"
+    },
+    {
+      "case": "north high",
+      "head": "1764f0cbb29f0ae004003da90aedfaf16da3f8f2",
+      "at": "2026-10-30T19:09:33.462Z",
+      "url": "http://127.0.0.1:4173/__meadow-review-qa.html?meadow=high",
+      "metrics": {
+        "frames": 600,
+        "fps": 120.0096007682045,
+        "meanMs": 8.332666666656733,
+        "p95Ms": 9.900000005960464,
+        "over33Ms": 0,
+        "calls": 561,
+        "triangles": 2485004.0733333332,
+        "gpuGeometries": 194,
+        "gpuTextures": 80,
+        "programs": 91,
+        "sceneObjects": 1286,
+        "meshes": 555,
+        "materials": 190,
+        "geometries": 239,
+        "heapMiB": 164.83827304840088,
+        "dpr": 1.5,
+        "viewport": [
+          1707,
+          960
+        ],
+        "camera": [
+          0,
+          24.011483562327633,
+          220
+        ],
+        "firstSceneFrameMs": 2173.2000000029802,
+        "bodies": 34,
+        "colliders": 237,
+        "physicsMeanMs": 0.04683333314955235,
+        "physicsMaxMs": 0.20000000298023224,
+        "longTasks": [
+          {
+            "start": 49.3999999910593,
+            "duration": 319
+          },
+          {
+            "start": 463,
+            "duration": 1268
+          },
+          {
+            "start": 1744,
+            "duration": 229
+          },
+          {
+            "start": 2173.0999999940395,
+            "duration": 276
+          },
+          {
+            "start": 2450.3999999910593,
+            "duration": 80
+          },
+          {
+            "start": 20683.70000000298,
+            "duration": 255
+          }
+        ]
+      },
+      "meadow": {
+        "at": 76.08770000000423,
+        "meshes": [
+          {
+            "capacity": 19600,
+            "submittedInstances": 19531,
+            "activeInstances": 15503,
+            "visible": true,
+            "trianglesPerInstance": 18,
+            "submittedTriangles": 351558
+          },
+          {
+            "capacity": 4704,
+            "submittedInstances": 4526,
+            "activeInstances": 2929,
+            "visible": true,
+            "trianglesPerInstance": 26,
+            "submittedTriangles": 117676
+          }
+        ]
+      },
+      "errors": [],
+      "use": "accepted window"
+    },
+    {
+      "case": "north off",
+      "head": "1764f0cbb29f0ae004003da90aedfaf16da3f8f2",
+      "at": "2026-10-30T19:10:22.454Z",
+      "url": "http://127.0.0.1:4173/__meadow-review-qa.html?meadow=off",
+      "metrics": {
+        "frames": 600,
+        "fps": 119.9928004320456,
+        "meanMs": 8.333833333328366,
+        "p95Ms": 9.899999991059303,
+        "over33Ms": 0,
+        "calls": 558.1966666666667,
+        "triangles": 1942003.655,
+        "gpuGeometries": 192,
+        "gpuTextures": 80,
+        "programs": 87,
+        "sceneObjects": 1284,
+        "meshes": 553,
+        "materials": 188,
+        "geometries": 237,
+        "heapMiB": 135.62810611724854,
+        "dpr": 1.5,
+        "viewport": [
+          1707,
+          960
+        ],
+        "camera": [
+          0,
+          24.011483562327633,
+          220
+        ],
+        "firstSceneFrameMs": 2132,
+        "bodies": 34,
+        "colliders": 237,
+        "physicsMeanMs": 0.04900000005960464,
+        "physicsMaxMs": 0.20000000298023224,
+        "longTasks": [
+          {
+            "start": 51.400000005960464,
+            "duration": 312
+          },
+          {
+            "start": 458.79999999701977,
+            "duration": 1252
+          },
+          {
+            "start": 1732.2999999970198,
+            "duration": 213
+          },
+          {
+            "start": 2131.9000000059605,
+            "duration": 267
+          },
+          {
+            "start": 2399.4000000059605,
+            "duration": 83
+          },
+          {
+            "start": 2596.7999999970198,
+            "duration": 252
+          }
+        ]
+      },
+      "meadow": {
+        "at": 47.93120000000382,
+        "meshes": []
+      },
+      "errors": [],
+      "use": "accepted window"
+    },
+    {
+      "case": "49 walkers off",
+      "head": "1764f0cbb29f0ae004003da90aedfaf16da3f8f2",
+      "at": "2026-10-30T19:11:43.095Z",
+      "url": "http://127.0.0.1:4173/__meadow-review-qa.html?meadow=off",
+      "metrics": {
+        "frames": 600,
+        "fps": 117.90135586559245,
+        "meanMs": 8.481666666666667,
+        "p95Ms": 11.699999988079071,
+        "over33Ms": 0,
+        "calls": 1542.19,
+        "triangles": 4409625.395,
+        "gpuGeometries": 306,
+        "gpuTextures": 132,
+        "programs": 87,
+        "sceneObjects": 7470,
+        "meshes": 2672,
+        "materials": 922,
+        "geometries": 971,
+        "heapMiB": 217.77148723602295,
+        "dpr": 1.5,
+        "viewport": [
+          1707,
+          960
+        ],
+        "camera": [
+          50.4192479998657,
+          8.403607426127289,
+          56.762402419907936
+        ],
+        "firstSceneFrameMs": 2132,
+        "bodies": 83,
+        "colliders": 286,
+        "physicsMeanMs": 0.0421666669100523,
+        "physicsMaxMs": 0.20000000298023224,
+        "longTasks": [
+          {
+            "start": 51.400000005960464,
+            "duration": 312
+          },
+          {
+            "start": 458.79999999701977,
+            "duration": 1252
+          },
+          {
+            "start": 1732.2999999970198,
+            "duration": 213
+          },
+          {
+            "start": 2131.9000000059605,
+            "duration": 267
+          },
+          {
+            "start": 2399.4000000059605,
+            "duration": 83
+          },
+          {
+            "start": 2596.7999999970198,
+            "duration": 252
+          },
+          {
+            "start": 48958,
+            "duration": 78
+          },
+          {
+            "start": 49310.20000000298,
+            "duration": 344
+          }
+        ]
+      },
+      "meadow": {
+        "at": 128.57940000000423,
+        "meshes": []
+      },
+      "errors": [],
+      "use": "exploratory; moving-avatar phase not matched"
+    },
+    {
+      "case": "49 walkers high",
+      "head": "1764f0cbb29f0ae004003da90aedfaf16da3f8f2",
+      "at": "2026-10-30T19:13:15.752Z",
+      "url": "http://127.0.0.1:4173/__meadow-review-qa.html?meadow=high",
+      "metrics": {
+        "frames": 600,
+        "fps": 98.10814788163376,
+        "meanMs": 10.192833333338301,
+        "p95Ms": 12.600000008940697,
+        "over33Ms": 0,
+        "calls": 1554.5133333333333,
+        "triangles": 5022331.048333333,
+        "gpuGeometries": 287,
+        "gpuTextures": 102,
+        "programs": 61,
+        "sceneObjects": 7472,
+        "meshes": 2674,
+        "materials": 924,
+        "geometries": 973,
+        "heapMiB": 219.85195446014404,
+        "dpr": 1.5,
+        "viewport": [
+          1707,
+          960
+        ],
+        "camera": [
+          50.4192479998657,
+          8.403607426127289,
+          56.762402419907936
+        ],
+        "firstSceneFrameMs": 2315.5999999940395,
+        "bodies": 83,
+        "colliders": 286,
+        "physicsMeanMs": 0.040833333233992256,
+        "physicsMaxMs": 0.20000000298023224,
+        "longTasks": [
+          {
+            "start": 65.8999999910593,
+            "duration": 337
+          },
+          {
+            "start": 500.69999998807907,
+            "duration": 1366
+          },
+          {
+            "start": 1888.5,
+            "duration": 238
+          },
+          {
+            "start": 2315.5,
+            "duration": 268
+          },
+          {
+            "start": 2584.199999988079,
+            "duration": 82
+          },
+          {
+            "start": 2832,
+            "duration": 68
+          },
+          {
+            "start": 3349.8999999910593,
+            "duration": 347
+          },
+          {
+            "start": 3698.2999999970198,
+            "duration": 50
+          }
+        ]
+      },
+      "meadow": {
+        "at": 91.35249999999974,
+        "meshes": [
+          {
+            "capacity": 19600,
+            "submittedInstances": 19533,
+            "activeInstances": 5755,
+            "visible": true,
+            "trianglesPerInstance": 18,
+            "submittedTriangles": 351594
+          },
+          {
+            "capacity": 4704,
+            "submittedInstances": 4520,
+            "activeInstances": 1220,
+            "visible": true,
+            "trianglesPerInstance": 26,
+            "submittedTriangles": 117520
+          }
+        ]
+      },
+      "errors": [],
+      "use": "exploratory; moving-avatar phase not matched"
+    },
+    {
+      "case": "eye meadow high",
+      "head": "1764f0cbb29f0ae004003da90aedfaf16da3f8f2",
+      "at": "2026-10-30T19:14:31.935Z",
+      "url": "http://127.0.0.1:4173/__meadow-review-qa.html?meadow=high",
+      "metrics": {
+        "frames": 600,
+        "fps": 120.01920307242004,
+        "meanMs": 8.332000000004967,
+        "p95Ms": 9.200000002980232,
+        "over33Ms": 0,
+        "calls": 559.46,
+        "triangles": 2097882.6066666665,
+        "gpuGeometries": 291,
+        "gpuTextures": 83,
+        "programs": 91,
+        "sceneObjects": 1286,
+        "meshes": 555,
+        "materials": 190,
+        "geometries": 239,
+        "heapMiB": 145.2576141357422,
+        "dpr": 1.5,
+        "viewport": [
+          1707,
+          960
+        ],
+        "camera": [
+          -150,
+          6.544378912210786,
+          177.34576792509284
+        ],
+        "firstSceneFrameMs": 2315.5999999940395,
+        "bodies": 34,
+        "colliders": 237,
+        "physicsMeanMs": 0.04183333312471708,
+        "physicsMaxMs": 0.20000000298023224,
+        "longTasks": [
+          {
+            "start": 65.8999999910593,
+            "duration": 337
+          },
+          {
+            "start": 500.69999998807907,
+            "duration": 1366
+          },
+          {
+            "start": 1888.5,
+            "duration": 238
+          },
+          {
+            "start": 2315.5,
+            "duration": 268
+          },
+          {
+            "start": 2584.199999988079,
+            "duration": 82
+          },
+          {
+            "start": 2832,
+            "duration": 68
+          },
+          {
+            "start": 3349.8999999910593,
+            "duration": 347
+          },
+          {
+            "start": 3698.2999999970198,
+            "duration": 50
+          },
+          {
+            "start": 92732.09999999404,
+            "duration": 237
+          }
+        ]
+      },
+      "meadow": {
+        "at": 167.95869999999033,
+        "meshes": [
+          {
+            "capacity": 19600,
+            "submittedInstances": 19551,
+            "activeInstances": 13112,
+            "visible": true,
+            "trianglesPerInstance": 18,
+            "submittedTriangles": 351918
+          },
+          {
+            "capacity": 4704,
+            "submittedInstances": 4704,
+            "activeInstances": 2678,
+            "visible": true,
+            "trianglesPerInstance": 26,
+            "submittedTriangles": 122304
+          }
+        ]
+      },
+      "errors": [],
+      "use": "accepted window"
+    },
+    {
+      "case": "eye meadow low",
+      "head": "1764f0cbb29f0ae004003da90aedfaf16da3f8f2",
+      "at": "2026-10-30T19:15:33.221Z",
+      "url": "http://127.0.0.1:4173/__meadow-review-qa.html?meadow=low",
+      "metrics": {
+        "frames": 600,
+        "fps": 120.00240004821555,
+        "meanMs": 8.333166666651765,
+        "p95Ms": 9.299999997019768,
+        "over33Ms": 0,
+        "calls": 559.46,
+        "triangles": 1685042.3266666667,
+        "gpuGeometries": 194,
+        "gpuTextures": 80,
+        "programs": 91,
+        "sceneObjects": 1286,
+        "meshes": 555,
+        "materials": 190,
+        "geometries": 239,
+        "heapMiB": 270.2567300796509,
+        "dpr": 1.5,
+        "viewport": [
+          1707,
+          960
+        ],
+        "camera": [
+          -150,
+          6.544378912210786,
+          177.34576792509284
+        ],
+        "firstSceneFrameMs": 2161.5,
+        "bodies": 34,
+        "colliders": 237,
+        "physicsMeanMs": 0.04550000011920929,
+        "physicsMaxMs": 0.20000000298023224,
+        "longTasks": [
+          {
+            "start": 55.1000000089407,
+            "duration": 326
+          },
+          {
+            "start": 477.79999999701977,
+            "duration": 1263
+          },
+          {
+            "start": 1764,
+            "duration": 220
+          },
+          {
+            "start": 2161.5,
+            "duration": 274
+          },
+          {
+            "start": 2435.9000000059605,
+            "duration": 85
+          },
+          {
+            "start": 2655.4000000059605,
+            "duration": 266
+          }
+        ]
+      },
+      "meadow": {
+        "at": 59.9571000000105,
+        "meshes": [
+          {
+            "capacity": 4750,
+            "submittedInstances": 4726,
+            "activeInstances": 3199,
+            "visible": true,
+            "trianglesPerInstance": 18,
+            "submittedTriangles": 85068
+          },
+          {
+            "capacity": 1200,
+            "submittedInstances": 1200,
+            "activeInstances": 561,
+            "visible": true,
+            "trianglesPerInstance": 26,
+            "submittedTriangles": 31200
+          }
+        ]
+      },
+      "errors": [],
+      "use": "accepted window"
+    },
+    {
+      "case": "crowd off repeat A",
+      "head": "1764f0cbb29f0ae004003da90aedfaf16da3f8f2",
+      "at": "2026-10-30T19:16:04.912Z",
+      "url": "http://127.0.0.1:4173/__meadow-review-qa.html?meadow=off",
+      "metrics": {
+        "frames": 600,
+        "fps": 113.63205939162556,
+        "meanMs": 8.800333333338301,
+        "p95Ms": 12.199999988079071,
+        "over33Ms": 0,
+        "calls": 1538.235,
+        "triangles": 4408457.205,
+        "gpuGeometries": 285,
+        "gpuTextures": 102,
+        "programs": 57,
+        "sceneObjects": 7470,
+        "meshes": 2672,
+        "materials": 922,
+        "geometries": 971,
+        "heapMiB": 265.59979248046875,
+        "dpr": 1.5,
+        "viewport": [
+          1707,
+          960
+        ],
+        "camera": [
+          50.4192479998657,
+          8.403607426127289,
+          56.762402419907936
+        ],
+        "firstSceneFrameMs": 2122.2000000029802,
+        "bodies": 83,
+        "colliders": 286,
+        "physicsMeanMs": 0.04783333323895931,
+        "physicsMaxMs": 0.20000000298023224,
+        "longTasks": [
+          {
+            "start": 25.80000001192093,
+            "duration": 316
+          },
+          {
+            "start": 432.20000000298023,
+            "duration": 1275
+          },
+          {
+            "start": 1729.300000011921,
+            "duration": 218
+          },
+          {
+            "start": 2122.1000000089407,
+            "duration": 266
+          },
+          {
+            "start": 2388.7000000029802,
+            "duration": 83
+          },
+          {
+            "start": 2595.9000000059605,
+            "duration": 70
+          },
+          {
+            "start": 2981.300000011921,
+            "duration": 344
+          },
+          {
+            "start": 3325.7000000029802,
+            "duration": 55
+          }
+        ]
+      },
+      "meadow": {
+        "at": 31.05739999999153,
+        "meshes": []
+      },
+      "errors": [],
+      "use": "exploratory; moving-avatar phase not matched"
+    },
+    {
+      "case": "crowd timed off A",
+      "head": "1764f0cbb29f0ae004003da90aedfaf16da3f8f2",
+      "at": "2026-10-30T19:17:21.101Z",
+      "url": "http://127.0.0.1:4173/__meadow-review-qa.html?meadow=off",
+      "metrics": {
+        "frames": 600,
+        "fps": 112.77771512342842,
+        "meanMs": 8.867000000004968,
+        "p95Ms": 11.799999997019768,
+        "over33Ms": 0,
+        "calls": 1539.3333333333333,
+        "triangles": 4411951.116666666,
+        "gpuGeometries": 285,
+        "gpuTextures": 102,
+        "programs": 57,
+        "sceneObjects": 7470,
+        "meshes": 2672,
+        "materials": 922,
+        "geometries": 971,
+        "heapMiB": 438.7002811431885,
+        "dpr": 1.5,
+        "viewport": [
+          1707,
+          960
+        ],
+        "camera": [
+          50.4192479998657,
+          8.403607426127289,
+          56.762402419907936
+        ],
+        "firstSceneFrameMs": 2169.2999999970198,
+        "bodies": 83,
+        "colliders": 286,
+        "physicsMeanMs": 0.043833333452542624,
+        "physicsMaxMs": 0.20000000298023224,
+        "longTasks": [
+          {
+            "start": 50,
+            "duration": 315
+          },
+          {
+            "start": 470.09999999403954,
+            "duration": 1263
+          },
+          {
+            "start": 1745.9000000059605,
+            "duration": 219
+          },
+          {
+            "start": 2169.2999999970198,
+            "duration": 265
+          },
+          {
+            "start": 2434.5999999940395,
+            "duration": 83
+          },
+          {
+            "start": 2623.5,
+            "duration": 74
+          },
+          {
+            "start": 3038.2000000029802,
+            "duration": 335
+          },
+          {
+            "start": 3373.9000000059605,
+            "duration": 52
+          }
+        ]
+      },
+      "meadow": {
+        "at": 14.996999999999906,
+        "meshes": []
+      },
+      "errors": [],
+      "use": "accepted window"
+    },
+    {
+      "case": "crowd timed high B",
+      "head": "1764f0cbb29f0ae004003da90aedfaf16da3f8f2",
+      "at": "2026-10-30T19:17:36.778Z",
+      "url": "http://127.0.0.1:4173/__meadow-review-qa.html?meadow=high",
+      "metrics": {
+        "frames": 600,
+        "fps": 98.25112988804166,
+        "meanMs": 10.177999999995032,
+        "p95Ms": 12.5,
+        "over33Ms": 0,
+        "calls": 1554.145,
+        "triangles": 5019513.22,
+        "gpuGeometries": 287,
+        "gpuTextures": 102,
+        "programs": 61,
+        "sceneObjects": 7472,
+        "meshes": 2674,
+        "materials": 924,
+        "geometries": 973,
+        "heapMiB": 600.404149055481,
+        "dpr": 1.5,
+        "viewport": [
+          1707,
+          960
+        ],
+        "camera": [
+          50.4192479998657,
+          8.403607426127289,
+          56.762402419907936
+        ],
+        "firstSceneFrameMs": 2136.5999999940395,
+        "bodies": 83,
+        "colliders": 286,
+        "physicsMeanMs": 0.046666666691501935,
+        "physicsMaxMs": 0.20000000298023224,
+        "longTasks": [
+          {
+            "start": 60.599999994039536,
+            "duration": 312
+          },
+          {
+            "start": 470.09999999403954,
+            "duration": 1260
+          },
+          {
+            "start": 1757.5999999940395,
+            "duration": 212
+          },
+          {
+            "start": 2136.5999999940395,
+            "duration": 271
+          },
+          {
+            "start": 2407.7999999970198,
+            "duration": 83
+          },
+          {
+            "start": 2662.2000000029802,
+            "duration": 70
+          },
+          {
+            "start": 3186,
+            "duration": 338
+          }
+        ]
+      },
+      "meadow": {
+        "at": 14.765799999996887,
+        "meshes": [
+          {
+            "capacity": 19600,
+            "submittedInstances": 19533,
+            "activeInstances": 5755,
+            "visible": true,
+            "trianglesPerInstance": 18,
+            "submittedTriangles": 351594
+          },
+          {
+            "capacity": 4704,
+            "submittedInstances": 4520,
+            "activeInstances": 1220,
+            "visible": true,
+            "trianglesPerInstance": 26,
+            "submittedTriangles": 117520
+          }
+        ]
+      },
+      "errors": [],
+      "use": "accepted window"
+    },
+    {
+      "case": "crowd timed off C",
+      "head": "1764f0cbb29f0ae004003da90aedfaf16da3f8f2",
+      "at": "2026-10-30T19:17:52.508Z",
+      "url": "http://127.0.0.1:4173/__meadow-review-qa.html?meadow=off",
+      "metrics": {
+        "frames": 600,
+        "fps": 108.45594880873372,
+        "meanMs": 9.220333333338301,
+        "p95Ms": 12.299999997019768,
+        "over33Ms": 0,
+        "calls": 1539.4333333333334,
+        "triangles": 4412149.926666667,
+        "gpuGeometries": 285,
+        "gpuTextures": 102,
+        "programs": 57,
+        "sceneObjects": 7470,
+        "meshes": 2672,
+        "materials": 922,
+        "geometries": 971,
+        "heapMiB": 586.8964490890503,
+        "dpr": 1.5,
+        "viewport": [
+          1707,
+          960
+        ],
+        "camera": [
+          50.4192479998657,
+          8.403607426127289,
+          56.762402419907936
+        ],
+        "firstSceneFrameMs": 2169.1000000089407,
+        "bodies": 83,
+        "colliders": 286,
+        "physicsMeanMs": 0.04800000024338563,
+        "physicsMaxMs": 0.20000000298023224,
+        "longTasks": [
+          {
+            "start": 77.1000000089407,
+            "duration": 312
+          },
+          {
+            "start": 480.40000000596046,
+            "duration": 1296
+          },
+          {
+            "start": 1803.7000000029802,
+            "duration": 217
+          },
+          {
+            "start": 2168.9000000059605,
+            "duration": 266
+          },
+          {
+            "start": 2435.4000000059605,
+            "duration": 85
+          },
+          {
+            "start": 2674.7999999970198,
+            "duration": 69
+          },
+          {
+            "start": 3152.7000000029802,
+            "duration": 336
+          },
+          {
+            "start": 3488.9000000059605,
+            "duration": 54
+          }
+        ]
+      },
+      "meadow": {
+        "at": 15.097799999996905,
+        "meshes": []
+      },
+      "errors": [],
+      "use": "accepted window"
+    },
+    {
+      "case": "visual road clearance",
+      "head": "1764f0cbb29f0ae004003da90aedfaf16da3f8f2",
+      "at": "2026-10-30T19:19:04.818Z",
+      "url": "http://127.0.0.1:4173/__meadow-review-qa.html?meadow=high",
+      "metrics": {
+        "frames": 121,
+        "fps": 119.87319199453685,
+        "meanMs": 8.342148760379839,
+        "p95Ms": 8.899999991059303,
+        "over33Ms": 0,
+        "calls": 469.8181818181818,
+        "triangles": 2989432.1487603304,
+        "gpuGeometries": 185,
+        "gpuTextures": 65,
+        "programs": 69,
+        "sceneObjects": 1286,
+        "meshes": 555,
+        "materials": 190,
+        "geometries": 239,
+        "heapMiB": 308.33086109161377,
+        "dpr": 1.5,
+        "viewport": [
+          1707,
+          960
+        ],
+        "camera": [
+          5,
+          6.19588511077669,
+          96.82036478900002
+        ],
+        "firstSceneFrameMs": 2155.1000000089407,
+        "bodies": 34,
+        "colliders": 237,
+        "physicsMeanMs": 0.07563025210084033,
+        "physicsMaxMs": 6,
+        "longTasks": [
+          {
+            "start": 58.900000005960464,
+            "duration": 324
+          },
+          {
+            "start": 478.90000000596046,
+            "duration": 1246
+          },
+          {
+            "start": 1744.800000011921,
+            "duration": 211
+          },
+          {
+            "start": 2155.1000000089407,
+            "duration": 265
+          },
+          {
+            "start": 2421.1000000089407,
+            "duration": 83
+          },
+          {
+            "start": 2656.9000000059605,
+            "duration": 63
+          }
+        ]
+      },
+      "meadow": {
+        "at": 5.716200000002972,
+        "meshes": [
+          {
+            "capacity": 19600,
+            "submittedInstances": 19524,
+            "activeInstances": 7173,
+            "visible": true,
+            "trianglesPerInstance": 18,
+            "submittedTriangles": 351432
+          },
+          {
+            "capacity": 4704,
+            "submittedInstances": 4592,
+            "activeInstances": 1729,
+            "visible": true,
+            "trianglesPerInstance": 26,
+            "submittedTriangles": 119392
+          }
+        ]
+      },
+      "errors": [],
+      "use": "visual only; not a600-frame timing window"
+    }
+  ],
+  "cleanup": {
+    "head": "1764f0cbb29f0ae004003da90aedfaf16da3f8f2",
+    "at": "2026-10-30T19:20:15.497Z",
+    "errors": [],
+    "viewportChanged": false,
+    "offlineLab": true
+  },
+  "restoration": {
+    "files": 276,
+    "fullSHAEquality": true,
+    "index": "ca8c32c4c6b28d1cde426d5c1dc2ebba8a8b0966e539a190b3bd6e32aaafe908",
+    "removedPaths": [
+      "assets/PlanesBoard--asmc0u5.js",
+      "assets/fixture-CmrJCJDO.css",
+      "assets/fixture-DIzp1T_F.js",
+      "assets/CruceBoard-C6zXUa6N.js",
+      "__meadow-before-qa.html",
+      "assets/CruceBoard-DnRHFyVS.js",
+      "assets/PlanesBoard-BxomQGHN.js",
+      "assets/fixture-IZ1dfkej.js",
+      "__meadow-review-qa.html"
+    ],
+    "listenerPid": 12514,
+    "viewportChanged": false,
+    "returnedAt": "2026-10-30T19:20:20Z",
+    "boundary": "2026-10-30T19:22:56Z"
+  }
+}

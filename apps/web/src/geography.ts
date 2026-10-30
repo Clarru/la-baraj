@@ -122,10 +122,14 @@ export const fishingSpots = [55, 0, -235].map((x) => ({
   x,
   z: southShore(x) + 3,
 }));
+export const FISHING_CLEARANCE = 7;
+export const SHARED_GROUND_CLEARANCE = 11;
 export function activityClearance(x: number, z: number): boolean {
   return (
-    !fishingSpots.some((p) => Math.hypot(x - p.x, z - p.z) < 7) &&
-    !sharedGrounds.some((p) => Math.hypot(x - p.x, z - p.z) < 11)
+    !fishingSpots.some((p) => Math.hypot(x - p.x, z - p.z) < FISHING_CLEARANCE) &&
+    !sharedGrounds.some(
+      (p) => Math.hypot(x - p.x, z - p.z) < SHARED_GROUND_CLEARANCE,
+    )
   );
 }
 export const sharedGrounds = [
@@ -205,6 +209,9 @@ export function rng(seed: number) {
     return seed / 4294967296;
   };
 }
+export const DOCK_CENTRE_X = 4;
+export const DOCK_CLEARANCE = 16;
+export const dockCentreZ = () => southShore(0) + 12;
 export function canPlant(x: number, z: number): boolean {
   return (
     !inWater(x, z) &&
@@ -212,6 +219,6 @@ export function canPlant(x: number, z: number): boolean {
     shoreDistance(x, z) > 4 &&
     roadDistance(x, z) > 2.2 &&
     !cabinSpots.some((c) => Math.hypot(x - c.x, z - c.z) < 18) &&
-    Math.hypot(x - 4, z - (southShore(0) + 12)) > 16
+    Math.hypot(x - DOCK_CENTRE_X, z - dockCentreZ()) > DOCK_CLEARANCE
   );
 }

@@ -1,0 +1,63 @@
+{
+  "url": "http://127.0.0.1:4173/?time=12",
+  "scenario": "solo",
+  "view": "arrival",
+  "when": "2026-10-30T16:19:03.168Z",
+  "fps": 216.76300578034682,
+  "meanMs": 4.613333333333333,
+  "p95Ms": 7.399999976158142,
+  "over33Ms": 0,
+  "calls": 347.6333333333333,
+  "triangles": 2523764.16,
+  "frames": 600,
+  "gpuGeometries": 173,
+  "gpuTextures": 50,
+  "programs": 53,
+  "meshes": 554,
+  "materials": 189,
+  "dpr": 1.5,
+  "viewport": [
+    1707,
+    960
+  ],
+  "camera": [
+    50.4192479998657,
+    8.403607426127289,
+    56.762402419907936
+  ],
+  "physicsMeanMs": 0.1406844097398533,
+  "longTasks": [
+    {
+      "start": 500,
+      "duration": 554
+    },
+    {
+      "start": 1122.800000011921,
+      "duration": 65
+    },
+    {
+      "start": 1213,
+      "duration": 2223
+    },
+    {
+      "start": 3453.300000011921,
+      "duration": 372
+    },
+    {
+      "start": 3880.199999988079,
+      "duration": 69
+    },
+    {
+      "start": 4302.800000011921,
+      "duration": 519
+    },
+    {
+      "start": 4822.5,
+      "duration": 196
+    },
+    {
+      "start": 5018.800000011921,
+      "duration": 69
+    }
+  ]
+}
