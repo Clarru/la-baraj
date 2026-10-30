@@ -60,6 +60,10 @@ export function BoatSpray(props: React.ComponentProps<typeof Actual>) {
         visible: shown(o),
         activeVertices: active,
         vertices: positions.count,
+        centreline: [0, 4, 8, 12, 16, 20, 24, 32, 40, 47].map((slot) => {
+          const v = (48 + slot) * 3 + 1;
+          return [positions.getX(v), positions.getZ(v)];
+        }),
         head: [
           positions.getX(head),
           positions.getY(head),
