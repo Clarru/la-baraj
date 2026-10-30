@@ -1,0 +1,58 @@
+{
+  "candidate": "5cbf38bdedb5deb3b5411877ac3ccccd149247b0",
+  "viewport": {
+    "width": 1707,
+    "height": 960,
+    "dpr": 1.5
+  },
+  "occupied": {
+    "blockedButtonDisabled": true,
+    "eDidNotFocus": true,
+    "publicBoardMatches": true,
+    "privateGameUnaffected": true
+  },
+  "stationsOpened": [
+    0,
+    2,
+    1
+  ],
+  "personalResumeAcrossMachines": true,
+  "pointerDragAccepted": true,
+  "cameraExit": {
+    "physicalLeave": true,
+    "escape": true,
+    "walkDuringBlend": true,
+    "headingVisuallyRetained": true,
+    "numericalLiveCameraTrace": false
+  },
+  "pendingRace": {
+    "elapsedMs": 1327,
+    "openingSeen": true,
+    "cancelledFree": true,
+    "retryControls": 1
+  },
+  "lateRace": {
+    "elapsedMs": 21753,
+    "active": true,
+    "ownClaim": true
+  },
+  "walkAway": {
+    "releasedBeforeDelayedCompletion": true,
+    "elapsedMs": 2360,
+    "noFocusAfterward": true
+  },
+  "reload": {
+    "newSocket": true,
+    "exactPersonalBoard": true
+  },
+  "localRecordsScore": 60,
+  "unrun": [
+    "production multiplayer gameplay",
+    "genuine mobile/touch",
+    "reduced-motion browser media",
+    "three simultaneous players",
+    "storage-failure injection in browser",
+    "numerical live camera trace",
+    "video/presented-frame FPS"
+  ]
+}

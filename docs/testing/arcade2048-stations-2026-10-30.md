@@ -1,8 +1,8 @@
 # 2048 arcade stations — scoped source review
 
-Status: **automated source evidence current; browser/GPU/server acceptance and publication pending**.
+Status: **bounded actual-Game browser evidence recorded; final review/ship report and production publication pending**.
 
-This record covers the ordinary three-station extension relative to baseline `cf01d5a`. It preserves the incumbent 2048 cabinet visuals and rules while adding a row of three cabinets, server-authoritative station occupancy, public spectator state, and a compatibility path for clients or Workers that do not advertise numbered stations. No production frontend publication or Worker deployment is claimed. The measurement window has finished and full checks are now allowed, but no actual Game/browser QA has been published; the next browser gate requires an exclusive 4173 grant after CI is green.
+This record covers the ordinary three-station extension relative to baseline `cf01d5a`. It preserves the incumbent 2048 cabinet visuals and rules while adding a row of three cabinets, server-authoritative station occupancy, public spectator state, and a compatibility path for clients or Workers that do not advertise numbered stations. The frozen runtime candidate is `5cbf38bdedb5deb3b5411877ac3ccccd149247b0`; green GitHub CI is recorded as run `41116338799`. The bounded browser pass used the actual Game, GLB, physics and local SharedWorker with two owned identities. The independent frontend recapture review returned **SHIP** for the bounded source + actual-Game capture scope, with no new regressions. No production frontend `55` publication or Worker deployment is claimed.
 
 ## Incumbent cabinet retained
 
@@ -74,10 +74,27 @@ The focused source coverage includes:
 - atomic claims, occupied-station rejection, public DTO redaction, three independent games, hibernation, leave/disconnect/walk/seat release, same-owner duplicate occupancy rejection, storage-failure cleanup and stale-claim generation protection;
 - persisted per-player boards and global leaderboard behavior retained through the existing Worker service.
 
-Policy 54 is merged, feature push `6d471c4` is already present, and a new freeze commit is pending. GitHub CI has not been claimed here. Full automated checks now pass as listed above, but actual Game on `http://127.0.0.1:4173/`, browser input, GPU/resource capture, and server lifecycle execution remain pending and must not be inferred from automated tests. Production frontend publication is additionally blocked by the Vercel daily quota in the root integration context.
+Policy 54 is merged, feature push `6d471c4` is already present, and a new freeze commit is pending. Green GitHub CI is recorded as run `41116338799`; the later root merge of `main` `755c7f7` and combined checks are not yet part of this evidence record. The earlier Vercel quota note is historical: `main` was reported as accepted READY publicly at `50`, which does not publish `55` or prove a future quota. Publication of `55` remains pending release-owner coordination; no blanket current quota block is claimed.
+
+## Bounded actual-Game browser evidence
+
+The candidate was loaded through the real Game/GLB/physics/local SharedWorker path at CSS 1707×960 with DPR 1.5 on the recorded M4 Pro / 48 GiB / macOS 26.5.2 setup. All three nearest stations opened in sequence (IDs 0, 2 and 1). The occupied-station check disabled the entry button, kept E from focusing, confirmed that the public board matched player A while player B's private game stayed unchanged, and captured the blocked state in [`occupied-blocked.jpg`](captures/arcade2048-stations/occupied-blocked.jpg). The row and incumbent cabinet appearance are visible in [`three-cabinets-final.jpg`](captures/arcade2048-stations/three-cabinets-final.jpg) and [`three-cabinets-spectator.jpg`](captures/arcade2048-stations/three-cabinets-spectator.jpg); the focused screen/footer is visible in [`cabinet-one.jpg`](captures/arcade2048-stations/cabinet-one.jpg) and [`live-board.jpg`](captures/arcade2048-stations/live-board.jpg).
+
+The acceptance record [`acceptance.json`](captures/arcade2048-stations/acceptance.json) and supporting records [`pending-cancel-race.json`](captures/arcade2048-stations/pending-cancel-race.json), [`walk-away.json`](captures/arcade2048-stations/walk-away.json), and [`reconnect-resume.json`](captures/arcade2048-stations/reconnect-resume.json) establish:
+
+- mouse drag on the real mesh was accepted; local records reached score 60;
+- physical Leave, Escape, and W during the exit blend retained the lake/world heading; this is visual evidence only, not a numerical camera trace;
+- delayed entry cancellation freed the middle cabinet at 1,327 ms, allowed one retry, and the old completion at 21.7 s left the newer attempt active;
+- walking away released the claim at 2,360 ms before the delayed completion, with no focus afterward;
+- a reload created a new socket and restored the exact personal board (score 60, 13 moves, revision 14); local records were preserved;
+- both browser clients reported no console errors.
+
+The focused metrics in [`metrics.json`](captures/arcade2048-stations/metrics.json) record 8 accepted moves, 8 base-screen uploads, no atlas upload attributed to movement, and 128 matrix updates. R3F frame timing was median 8.3 ms / p95 10.1 ms, with focused-cabinet CPU p95 0.1 ms. These are frame and resource counters, not a presented FPS number; no numerical live-camera trace or presented-frame FPS is claimed. [`exit-heading-and-row.jpg`](captures/arcade2048-stations/exit-heading-and-row.jpg) is the visual framing evidence for the exit/row state.
+
+The browser pass did not exercise production multiplayer, genuine mobile/touch, reduced-motion media, three simultaneous players, or storage-failure injection in the browser. Menu/close, walk-away and reload are actual browser paths; the exact unmount and eligibility-change cleanup remains jsdom-only coverage from the four entry lifecycle tests and was not a browser fault-injection run. No production `55` deployment occurred. The independent frontend recapture review returned **SHIP** for this bounded scope, with no new regressions.
 
 ## Evidence boundary
 
-This is a source-and-automated-test documentation record. It makes no claim that the three cabinets have been viewed in the real Game, that a spectator board has been checked through the browser, that camera exit has been measured live, or that reconnect/stale-restore behavior has been exercised against a running server. It also makes no claim of GitHub CI, production deployment, global ranking publication, FPS certification, or GPU memory behavior.
+This is a source, automated-test and bounded actual-Game browser documentation record. It does not claim production multiplayer, mobile/touch, reduced-motion media, three-player concurrency, browser storage-fault injection, presented FPS, numerical live-camera tracing, production `55` publication or Worker deployment. Root `main` 50 integration and combined checks remain pending outside this record.
 
 The extension remains an ordinary visual and interaction extension of the incumbent cabinet. Existing global `DESIGN.md`, `.impeccable/design.json`, `PRODUCT.md`, HUD, world materials and other games remain outside this documentation scope; pre-existing design-document drift is reported elsewhere and is not repaired here.
