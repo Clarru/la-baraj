@@ -475,7 +475,7 @@ export default function Game({ initialName }: { initialName: string }) {
         ? vehicleHintUntil > 0
           ? {
               main: "QuickVolt 9",
-              detail: "W accelerate · S brake · A/D steer · V park",
+              detail: "W accelerate · S brake / reverse · A/D steer · V park",
               key: "V",
             }
           : null

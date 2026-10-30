@@ -85,6 +85,7 @@ import {
   jumpAnimation,
 } from "./locomotion-animation";
 import {
+  scooterDriveInput,
   scooterHeading,
   scooterSpeed,
   scooterSteeringInput,
@@ -213,6 +214,7 @@ export function Player({
   const [stance, setStance] = useState<Stance>("standing");
   const moving = useRef(false);
   const [riding, setRiding] = useState(false);
+  const [scooterReversing, setScooterReversing] = useState(false);
   const [jumping, setJumping] = useState(false);
   const [swimming, setSwimming] = useState(false);
   const swimmingRef = useRef(false);
@@ -964,16 +966,31 @@ export function Player({
             k.has("KeyD") || k.has("ArrowRight"),
           )
         : 0;
+    const signedScooterSpeed = mounted
+      ? c.currLinVel.x * Math.sin(rideYaw.current) +
+        c.currLinVel.z * Math.cos(rideYaw.current)
+      : 0;
+    const scooterDrive = mounted
+      ? scooterDriveInput(
+          signedScooterSpeed,
+          active && (k.has("KeyW") || k.has("ArrowUp")),
+          active && (k.has("KeyS") || k.has("ArrowDown")),
+        )
+      : null;
+    const reverseGear = scooterDrive?.reversing ?? false;
+    if (reverseGear !== scooterReversing) setScooterReversing(reverseGear);
+    // Wait for the controller's speed limit to change before applying the new direction.
+    const scooterGearReady = reverseGear === scooterReversing;
     if (mounted) {
       rideYaw.current = scooterHeading(
         rideYaw.current,
         steer,
-        Math.hypot(c.currLinVel.x, c.currLinVel.z),
+        signedScooterSpeed,
         dt,
       );
       rideForward.set(Math.sin(rideYaw.current), 0, Math.cos(rideYaw.current));
       c.setForwardDir(rideForward);
-      if (active && (k.has("KeyS") || k.has("ArrowDown"))) {
+      if (scooterDrive?.braking) {
         const v = c.body.linvel(),
           brake = Math.exp(-scooterSpeed.brakeRate * dt);
         c.body.setLinvel({ x: v.x * brake, y: v.y, z: v.z * brake }, true);
@@ -1050,7 +1067,6 @@ export function Player({
       c.body.setLinvel(hullVelocity, true);
       updateBoatMotion(motion.yaw, motion.speed);
     }
-    const braking = mounted && (k.has("KeyS") || k.has("ArrowDown"));
     const walkInput = active && !boatingNow;
     const jumpStarted =
       walkInput &&
@@ -1081,13 +1097,15 @@ export function Player({
       forward:
         walkInput &&
         !nowSwimming &&
-        !braking &&
-        (k.has("KeyW") || k.has("ArrowUp")),
+        (mounted
+          ? scooterGearReady && scooterDrive?.throttle === 1
+          : k.has("KeyW") || k.has("ArrowUp")),
       backward:
         walkInput &&
         !nowSwimming &&
-        !mounted &&
-        (k.has("KeyS") || k.has("ArrowDown")),
+        (mounted
+          ? scooterGearReady && scooterDrive?.throttle === -1
+          : k.has("KeyS") || k.has("ArrowDown")),
       leftward:
         walkInput &&
         !nowSwimming &&
@@ -1100,6 +1118,7 @@ export function Player({
         (k.has("KeyD") || k.has("ArrowRight")),
       run:
         walkInput &&
+        (!mounted || !scooterReversing) &&
         stanceRef.current === "standing" &&
         !nowSwimming &&
         (k.has("ShiftLeft") || k.has("ShiftRight")),
@@ -1520,10 +1539,21 @@ export function Player({
       capsuleRadius={STANCE_METRICS.standing.capsuleRadius}
       ccd
       useCustomForward={riding}
+      lockForward={riding}
       maxWalkVel={
-        riding ? scooterSpeed.cruise : STANCE_METRICS[stance].walkSpeed
+        riding
+          ? scooterReversing
+            ? scooterSpeed.reverse
+            : scooterSpeed.cruise
+          : STANCE_METRICS[stance].walkSpeed
       }
-      maxRunVel={riding ? scooterSpeed.boost : STANCE_METRICS[stance].runSpeed}
+      maxRunVel={
+        riding
+          ? scooterReversing
+            ? scooterSpeed.reverse
+            : scooterSpeed.boost
+          : STANCE_METRICS[stance].runSpeed
+      }
       jumpVel={7.4}
       friction={1.2}
       restitution={0}
