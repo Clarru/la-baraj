@@ -122,7 +122,7 @@
 }
 .cruce-felt {
   position: relative;
-  width: min(600px, 100cqh, calc(100cqw - 120px));
+  width: min(600px, 100cqh, calc(100cqw - 260px));
   aspect-ratio: 1;
   background: #245b45 url("/assets/cruce/felt.webp") center / 300px 300px;
   color: #fcf3d9;
