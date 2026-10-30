@@ -6,21 +6,34 @@ import bpy
 from mathutils import Vector
 
 
-def atlas_material(path):
+def atlas_material(path, normal_path=None, metallic_roughness_path=None):
     material = bpy.data.materials.new("LaBaraj iron")
     material.use_nodes = True
     shader = material.node_tree.nodes.get("Principled BSDF")
-    shader.inputs["Roughness"].default_value = .78
-    shader.inputs["Metallic"].default_value = .05
+    shader.inputs["Roughness"].default_value = 1 if metallic_roughness_path else .78
+    shader.inputs["Metallic"].default_value = 1 if metallic_roughness_path else .05
     image = bpy.data.images.load(str(path))
     image.pack()
     texture = material.node_tree.nodes.new("ShaderNodeTexImage")
     texture.image = image
     material.node_tree.links.new(texture.outputs["Color"], shader.inputs["Base Color"])
+    if normal_path:
+        image=bpy.data.images.load(str(normal_path));image.colorspace_settings.name='Non-Color';image.pack()
+        texture=material.node_tree.nodes.new('ShaderNodeTexImage');texture.image=image
+        normal=material.node_tree.nodes.new('ShaderNodeNormalMap');normal.space='TANGENT'
+        material.node_tree.links.new(texture.outputs['Color'],normal.inputs['Color'])
+        material.node_tree.links.new(normal.outputs['Normal'],shader.inputs['Normal'])
+    if metallic_roughness_path:
+        image=bpy.data.images.load(str(metallic_roughness_path));image.colorspace_settings.name='Non-Color';image.pack()
+        texture=material.node_tree.nodes.new('ShaderNodeTexImage');texture.image=image
+        separate=material.node_tree.nodes.new('ShaderNodeSeparateColor');separate.mode='RGB'
+        material.node_tree.links.new(texture.outputs['Color'],separate.inputs['Color'])
+        material.node_tree.links.new(separate.outputs['Green'],shader.inputs['Roughness'])
+        material.node_tree.links.new(separate.outputs['Blue'],shader.inputs['Metallic'])
     return material
 
 
-def uv_map(obj, strip=0, grain_axis=2, highlight=False):
+def uv_map(obj, strip=0, grain_axis=2, highlight=False, compact=False):
     """Box projection per part, with grain aligned to an explicit local axis."""
     mesh = obj.data
     layer = mesh.uv_layers.active or mesh.uv_layers.new(name="UVMap")
@@ -34,7 +47,8 @@ def uv_map(obj, strip=0, grain_axis=2, highlight=False):
         axes = [i for i in range(3) if i != normal_axis]
         v_axis = max(axes, key=lambda i: spans[i]) if grain_axis == -1 else (grain_axis if grain_axis in axes else axes[1])
         u_axis = next(i for i in axes if i != v_axis)
-        selected = 1 if highlight and max(abs(v) for v in face.normal) < .999 else strip
+        bevel_face=highlight and max(abs(v) for v in face.normal) < .999
+        selected = 1 if bevel_face else strip
         for loop_index in face.loop_indices:
             vertex = mesh.vertices[mesh.loops[loop_index].vertex_index].co
             u = (vertex[u_axis] - low[u_axis]) / spans[u_axis]
@@ -42,7 +56,12 @@ def uv_map(obj, strip=0, grain_axis=2, highlight=False):
             if strip >= 2:
                 layer.data[loop_index].uv = (selected*.25+.012+phase_u+.13*u,.015+phase_v+.69*v)
             else:
-                layer.data[loop_index].uv = (selected * .25 + .012 + .226 * u, .015 + .97 * v)
+                # Broad faces span their trim's baked edge profile. Real bevel faces
+                # and small fittings sample the flat lighter center instead.
+                if bevel_face or compact:
+                    layer.data[loop_index].uv=(.25+.075+.10*u,.25+.50*v)
+                else:
+                    layer.data[loop_index].uv=(selected*.25+.002+.246*u,.002+.996*v)
 
 
 def finish(obj, name, material, strip=0, grain_axis=2, bevel=0):
@@ -185,6 +204,7 @@ def bolt(name, center, normal, material, radius=.016, segments=8):
         obj = bpy.context.object
         finish(obj,name,material,strip=1)
     obj.rotation_euler = Vector(normal).to_track_quat("Z", "Y").to_euler()
+    uv_map(obj,1,compact=True)
     return obj
 
 

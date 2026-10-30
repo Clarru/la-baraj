@@ -73,5 +73,8 @@
     "floor": -0.05243159085512161,
     "resolution": 640
   },
+  "lighting": {
+    "key_azimuth_degrees": 0
+  },
   "renderer": "Blender Cycles 24 samples AgX; imported exported GLB"
 }

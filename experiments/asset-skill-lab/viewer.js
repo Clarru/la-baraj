@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { MeshoptDecoder } from "three/addons/libs/meshopt_decoder.module.js";
+import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 
 const data = __MODEL_DATA__;
 const canvas = document.querySelector("canvas");
@@ -9,12 +10,18 @@ const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1;
+const room = new RoomEnvironment();
+const pmrem = new THREE.PMREMGenerator(renderer);
+const reflection = pmrem.fromScene(room, 0.04).texture;
+room.dispose();
+pmrem.dispose();
 const camera = new THREE.PerspectiveCamera(38, 1, 0.01, 100);
 const controls = new OrbitControls(camera, canvas);
 controls.enableDamping = true;
 const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
 const scenes = [0, 1].map(() => {
   const scene = new THREE.Scene();
+  scene.environment = reflection;
   scene.background = new THREE.Color("#d4d6d7");
   scene.add(new THREE.HemisphereLight(0xffffff, 0x59595b, 2));
   const light = new THREE.DirectionalLight(0xffffff, 2.4);

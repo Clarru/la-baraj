@@ -26,6 +26,12 @@ These observations apply to this static-prop experiment. They are not evidence a
 
 Both final GLBs embed the same atlas bytes, verified by SHA256. This demonstrates reused artwork; a browser may still allocate separate texture objects for separate embedded GLBs. Runtime shared-material caching has not been implemented or measured here.
 
+## Second pass: reflective edge finish
+
+The user identified an important remaining defect: the original has pale, shiny edge treatment. Material inspection showed a normal atlas with rounded borders and a varying reflection map. The color-only reconstruction had removed this behavior. The follow-up in [surfaces.md](surfaces.md) adds an original baked PBR trim set, UV alignment, surface-channel acceptance, pixel-preserving data compression and a light-direction check.
+
+The first own-trim bake returned success but sampled the cube's default UV map instead of the newly added map, turning every strip into timber. This is why a successful bake must be followed by image inspection. Fixing the active render UV solved it. Adding the PBR data then exceeded the raw byte budgets; verified Meshopt compression recovered those bytes without changing decoded attributes or texture payloads.
+
 The final visual comparisons still show differences in edge wear, fine surface finish and chain/cage contours. The crate's high silhouette overlap is not a claim that its material appearance is identical. Treat these as close reconstruction prototypes, not certified replacements.
 
 The first ImageGen sheet preserved the bracket, two chains, open cage and broad textured finish. It did not establish exact part placement. The Blender revisions, rather than additional concept variations, resolved the largest errors.

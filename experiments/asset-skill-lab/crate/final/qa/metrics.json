@@ -1,6 +1,6 @@
 {
   "model": "Lab_Crate.glb",
-  "glb_bytes": 86064,
+  "glb_bytes": 126976,
   "mesh_objects": 1,
   "triangles": 1552,
   "materials": [
@@ -10,7 +10,19 @@
   "mesh_material_slots": 2,
   "images": [
     {
-      "name": "material-atlas-512",
+      "name": "trim-base-color",
+      "width": 512,
+      "height": 512,
+      "channels": 4
+    },
+    {
+      "name": "trim-metallic-roughness",
+      "width": 512,
+      "height": 512,
+      "channels": 4
+    },
+    {
+      "name": "trim-normal",
       "width": 512,
       "height": 512,
       "channels": 4
@@ -42,6 +54,9 @@
     "span": 1.4150104570388795,
     "floor": -0.05243159085512161,
     "resolution": 640
+  },
+  "lighting": {
+    "key_azimuth_degrees": 0
   },
   "renderer": "Blender Cycles 24 samples AgX; imported exported GLB"
 }

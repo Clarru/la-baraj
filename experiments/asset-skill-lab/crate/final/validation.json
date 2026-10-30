@@ -3,20 +3,62 @@
   "errors": [],
   "triangles": 1552,
   "reference_triangles": 1576,
-  "glb_bytes": 86064,
+  "glb_bytes": 126976,
   "reference_glb_bytes": 161276,
   "primitives": 2,
   "material_count": 2,
+  "surfaceRequirements": {
+    "normal": true,
+    "metallicRoughness": true
+  },
+  "materials": [
+    {
+      "name": "LaBaraj timber",
+      "metallicFactor": 1,
+      "roughnessFactor": 1,
+      "normalScale": 1,
+      "normalMap": true,
+      "metallicRoughnessMap": true
+    },
+    {
+      "name": "LaBaraj iron",
+      "metallicFactor": 1,
+      "roughnessFactor": 1,
+      "normalScale": 1,
+      "normalMap": true,
+      "metallicRoughnessMap": true
+    }
+  ],
   "textures": [
     {
-      "name": "material-atlas-512",
+      "name": "trim-normal",
       "size": [
         512,
         512
       ],
       "mime": "image/webp",
-      "bytes": 12766,
-      "sha256": "615ba90bb70aa913ee2bd6f83ea6b050da0bb59bfe275d66575c887dd4f1817d"
+      "bytes": 55468,
+      "sha256": "acf251b016592e376c74a488cb221ade7b23688b7933859614c6a363d2e4f82a"
+    },
+    {
+      "name": "trim-base-color",
+      "size": [
+        512,
+        512
+      ],
+      "mime": "image/webp",
+      "bytes": 19612,
+      "sha256": "c84b1005afe4c9d736bd961ecaddc513f07dec9a903ac870497e36fb0163c673"
+    },
+    {
+      "name": "trim-metallic-roughness",
+      "size": [
+        512,
+        512
+      ],
+      "mime": "image/webp",
+      "bytes": 15436,
+      "sha256": "18fe90c43eb6444f5ebd8d3fa9c9fd56937c267e500c0de26958a14b48341409"
     }
   ],
   "dimension_error_fraction": [

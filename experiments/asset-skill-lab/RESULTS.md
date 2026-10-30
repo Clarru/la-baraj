@@ -13,14 +13,14 @@ The reference files are the project's retained CC0 Quaternius Fantasy Props Mega
 | Metric                          | Lantern reference | Lantern reconstruction | Crate reference | Crate reconstruction |
 | ------------------------------- | ----------------: | ---------------------: | --------------: | -------------------: |
 | Triangles                       |             2,822 |                  2,490 |           1,576 |                1,552 |
-| GLB bytes                       |           176,332 |                116,624 |         161,276 |               86,064 |
+| GLB bytes                       |           176,332 |                141,256 |         161,276 |              126,976 |
 | Primitive/material groups       |                 1 |                      1 |               2 |                    2 |
-| Embedded textures               |          3 × 512² |               1 × 512² |        6 × 512² |             1 × 512² |
+| Embedded textures               |          3 × 512² |               3 × 512² |        6 × 512² |             3 × 512² |
 | Maximum overall dimension error |                 — |                 0.191% |               — |               0.169% |
 
-The two final models use identical atlas image bytes, verified by SHA256. Each GLB embeds its own copy. This is artwork reuse; a browser's shared texture/material allocation has not been implemented or measured.
+The two final models use the same coordinated color/normal/metallic-roughness trim set, verified by SHA256. Each GLB embeds its own copies. This is artwork reuse; a browser's shared texture/material allocation has not been implemented or measured. The earlier color-only pass was smaller (116,624 and 86,064 bytes), but omitted the reference's normal/reflection behavior.
 
-Final exports use WebP texture encoding plus optional 16-bit position, normal and UV quantization. The actual exports were re-imported into Blender before measurement/rendering. Quantization is not described as lossless. Lower GLB bytes are a file-size result, not a cold-network loading benchmark or a claim about frame rate.
+Final exports use quality-90 WebP for color, lossless WebP for normal/packed data with decoded-pixel verification, 16-bit position/normal/UV quantization, and Meshopt encoding. Decoded attributes, winding and image payloads are verified unchanged by Meshopt after quantization. The actual exports were re-imported into Blender before measurement/rendering. Quantization is not described as lossless. Lower GLB bytes are a file-size result, not a cold-network loading benchmark or a claim about frame rate.
 
 ![Lantern: actual reference and exported reconstruction](lantern/final/comparison.webp)
 
@@ -45,6 +45,10 @@ Supplying actual orthographic source views and a component inventory produced cl
 
 The atlas needed a targeted second prompt because timber grain was too broad/pale. Material tint factors were then calibrated on the real GLB render. The generated atlas is unlit base color; it is not a ready-made normal or roughness map and is not assumed perfectly tileable.
 
+## Follow-up: metal edge shine
+
+The user identified missing shiny edge treatment. Source-material ablations confirmed that rounded-border normal detail, varying reflection data and pale painted wear all contribute. The revised workflow bakes our own PBR trim set from rounded canonical slabs and the retained generated artwork, with no additional ImageGen calls or copied Quaternius maps in the final props. Geometry counts are unchanged. See the [material study](material-study/RESULTS.md) for before/after renders, light-direction checks, failed bakes and runtime integration findings.
+
 ## Demonstrated failed passes
 
 | Pass                       | Actual failure                                                                                       | Recorded correction                                                                                               |
@@ -64,9 +68,9 @@ Use the repository's installed dependencies, Python with Pillow, Node 24, and Bl
 ASSET_LAB_BLENDER="/absolute/path/to/Blender" bash experiments/asset-skill-lab/reproduce.sh
 ```
 
-The script renders and measures references, rebuilds both source `.blend` files and GLBs, optimizes them, re-imports the final files, checks budgets/attribute integrity and writes comparison sheets. It uses the retained generated atlas and does not make new ImageGen calls.
+The script bakes the own PBR trim set, renders and measures references, inspects source materials, rebuilds both source `.blend` files and GLBs, optimizes them, re-imports the final files, checks budgets/attributes/surface channels and writes comparison sheets. It uses the retained generated atlas and does not make new ImageGen calls.
 
-Individual exporter arguments are `input.glb output.glb [iron-factor=1] [quantize|off] [wood-factor=1]`. Factors 0.58 and 0.8 are experiment calibrations, not universal style settings.
+Individual exporter arguments are `input.glb output.glb [iron-factor=1] [quantize|off] [wood-factor=1] [meshopt|off]`. Current factors 1 and 0.8 are experiment calibrations, not universal style settings; the earlier color-only iron factor was 0.58.
 
 The local `asset-comparison.html` is a self-contained Three.js viewer with both reference/reconstruction pairs embedded and no multiplayer connection. Rebuild it with `npx --yes --package=node@24 node experiments/asset-skill-lab/build_viewer.mjs`. The app's browser security policy blocked opening local file URLs, so browser behavior of that viewer remains unverified. The compiled HTML is ignored; its source is committed.
 
@@ -75,5 +79,7 @@ The local `asset-comparison.html` is a self-contained Three.js viewer with both 
 - The complete `reproduce.sh` workflow passed for both props using Node 24.22.1 and Blender 5.2.3.
 - The GLB checker validated finite attributes, matching attribute counts, valid indices, actual triangle counts, primitive budgets, dimensions, texture sizes and GLB bytes.
 - The checker rejected the retained first lantern export for bytes and the first crate export for both bytes and triangles, as expected.
+- The surface-channel gate rejects the previous color-only material; both current candidates pass. Normal/packed data pixels and Meshopt-decoded attributes/winding/image payloads are verified during export.
+- Source material ablations and a 90-degree key-light comparison were inspected. No runtime game material code changed.
 - Skill frontmatter validation passed; Python scripts parsed successfully.
 - Matched four-view and small-scale renders were inspected. No game deployment, full frontend test run or gameplay/FPS claim is part of this experiment.

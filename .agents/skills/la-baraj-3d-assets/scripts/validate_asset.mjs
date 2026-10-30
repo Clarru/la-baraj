@@ -4,20 +4,50 @@ import fs from "node:fs/promises";
 import { createHash } from "node:crypto";
 import { NodeIO } from "@gltf-transform/core";
 import { ALL_EXTENSIONS } from "@gltf-transform/extensions";
+import { MeshoptDecoder } from "meshoptimizer";
 
-const [referencePath, candidatePath, modelPath, reportPath] =
-  process.argv.slice(2);
+const [
+  referencePath,
+  candidatePath,
+  modelPath,
+  reportPath,
+  surfaceReferencePath,
+] = process.argv.slice(2);
 if (!referencePath || !candidatePath || !modelPath)
   throw new Error(
     "Usage: validate_asset.mjs reference-metrics.json candidate-metrics.json candidate.glb [report.json]",
   );
 const reference = JSON.parse(await fs.readFile(referencePath, "utf8"));
 const candidate = JSON.parse(await fs.readFile(candidatePath, "utf8"));
+await MeshoptDecoder.ready;
 const document = await new NodeIO()
   .registerExtensions(ALL_EXTENSIONS)
+  .registerDependencies({ "meshopt.decoder": MeshoptDecoder })
   .read(modelPath);
 const root = document.getRoot();
 const errors = [];
+let surfaceRequirements = null;
+if (surfaceReferencePath) {
+  const originalMaterials = JSON.parse(
+    await fs.readFile(surfaceReferencePath, "utf8"),
+  );
+  surfaceRequirements = {
+    normal: originalMaterials.every((m) => !!m.textures.normal),
+    metallicRoughness: originalMaterials.every(
+      (m) => !!m.textures.metallicRoughness,
+    ),
+  };
+  if (
+    surfaceRequirements.normal &&
+    !root.listMaterials().every((m) => !!m.getNormalTexture())
+  )
+    errors.push("Reference normal-map layer missing");
+  if (
+    surfaceRequirements.metallicRoughness &&
+    !root.listMaterials().every((m) => !!m.getMetallicRoughnessTexture())
+  )
+    errors.push("Reference metallic/roughness layer missing");
+}
 let primitives = 0,
   triangles = 0;
 for (const mesh of root.listMeshes())
@@ -88,6 +118,17 @@ const report = {
   reference_glb_bytes: reference.glb_bytes,
   primitives,
   material_count: root.listMaterials().length,
+  surfaceRequirements,
+  materials: root
+    .listMaterials()
+    .map((material) => ({
+      name: material.getName(),
+      metallicFactor: material.getMetallicFactor(),
+      roughnessFactor: material.getRoughnessFactor(),
+      normalScale: material.getNormalScale(),
+      normalMap: !!material.getNormalTexture(),
+      metallicRoughnessMap: !!material.getMetallicRoughnessTexture(),
+    })),
   textures,
   dimension_error_fraction: dimensionErrors,
   visual_acceptance:

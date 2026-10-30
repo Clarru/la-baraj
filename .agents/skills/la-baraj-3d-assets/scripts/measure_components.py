@@ -40,7 +40,7 @@ for obj in [o for o in bpy.context.scene.objects if o.type == "MESH"]:
                       "center": [(low[i]+high[i])/2 for i in range(3)],
                       "dimensions": [high[i]-low[i] for i in range(3)],"vertex_height_groups":sections})
     bm.free()
-parts.sort(key=lambda p: max(p["dimensions"]), reverse=True)
+parts.sort(key=lambda p: (-round(max(p["dimensions"]),6),tuple(round(v,6) for v in p['center']),p['vertices']))
 output.write_text(json.dumps(parts, indent=2)+"\n")
 for p in parts:
     print(json.dumps({k: [round(v,4) for v in value] if isinstance(value,list) else value for k,value in p.items() if k!='vertex_height_groups'}))

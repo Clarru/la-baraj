@@ -113,7 +113,7 @@ def crate(material):
                 faces=[tuple(range(5,-1,-1)),tuple(range(6,12))]
                 for i in range(6):
                     j=(i+1)%6;faces.append((i,j,j+6,i+6))
-                obj=mesh_object("Iron corner cap",vertices,faces,material)
+                obj=mesh_object("Iron corner cap",vertices,faces,material,1)
                 import bmesh
                 bm=bmesh.new();bm.from_mesh(obj.data);bmesh.ops.recalc_face_normals(bm,faces=list(bm.faces));bm.to_mesh(obj.data);bm.free()
                 bolt("Cap face rivet",(x,sy*.4484,.8079 if top>0 else .0182),(0,sy,0),material,.0194)
@@ -128,5 +128,6 @@ def crate(material):
 
 mode = sys.argv[sys.argv.index("--") + 1]
 bpy.ops.wm.read_factory_settings(use_empty=True)
-material = atlas_material(LAB / "material-atlas-512.png")
+trim=LAB/'material-study/own-trim'
+material = atlas_material(trim/'trim-base-color.png',trim/'trim-normal.png',trim/'trim-metallic-roughness.png')
 {"lantern": lantern, "crate": crate}[mode](material)

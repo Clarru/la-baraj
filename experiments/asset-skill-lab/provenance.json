@@ -87,15 +87,47 @@
     },
     {
       "path": "lantern/final/Lab_Lantern.glb",
-      "bytes": 116624,
-      "sha256": "cdb05820f5c924edf243b15ca952d5707bdca2effc7f1cc582c3f635bd8a94c9"
+      "bytes": 141256,
+      "sha256": "b7938620fc0359bff3462aff92176264ffca179bc61019168c3e5e64795009a1"
     },
     {
       "path": "crate/final/Lab_Crate.glb",
-      "bytes": 86064,
-      "sha256": "042501e677880257f5ee2f4f2af0d5ca24d18fcb6756cb349b3b6f3709eeb56b"
+      "bytes": 126976,
+      "sha256": "604a86ccefc5873b24f96f7eed09e9ca9cca68dc3a6a1fa13eca02cba162a4c0"
+    },
+    {
+      "path": "material-study/own-trim/trim-base-color.png",
+      "bytes": 279895,
+      "sha256": "27d4a675b6ecb6ec05328a85c317036139192fdbc7b559fecbcaf4a2a1f80874"
+    },
+    {
+      "path": "material-study/own-trim/trim-normal.png",
+      "bytes": 105644,
+      "sha256": "0996f44131c25af0362a43d21c547a2d0c320891be1b2c107090347614032b27"
+    },
+    {
+      "path": "material-study/own-trim/trim-metallic-roughness.png",
+      "bytes": 33810,
+      "sha256": "a8261cc06da7a9cc818a270d0f9cab2968ba33c28ce1bd5edc4007d5336e7323"
+    },
+    {
+      "path": "material-study/own-trim/recipe.json",
+      "bytes": 890,
+      "sha256": "2c206694bee83b4535da53d26f8ccfc137a8e236394466976d5323ca41e5a33e"
+    },
+    {
+      "path": "material-study/own-trim/trim-bake-source.blend",
+      "bytes": 389142,
+      "sha256": "a57f1d1b2282569de8c3e7ee79cc8d83c1ad5ef72d0b8dadd768dda362f76fe4"
     }
   ],
   "license_notice_preparation": "Notice text preserved; CRLF and trailing whitespace normalized for repository checks.",
-  "license_original_sha256": "edad12240087a33e08fc031e4e66c2b2b4b2a6d4f086339bde04f741b385fbda"
+  "license_original_sha256": "edad12240087a33e08fc031e4e66c2b2b4b2a6d4f086339bde04f741b385fbda",
+  "surface_revision": {
+    "method": "Own Blender canonical slabs baked to color, tangent normal and metallic/roughness; no Quaternius maps used in final reconstructions",
+    "data_encoding": "lossless WebP, decoded pixels verified",
+    "color_encoding": "WebP quality 90",
+    "geometry_encoding": "16-bit quantization, then Meshopt with decoded attribute/winding/image-payload checks",
+    "runtime_unchanged": true
+  }
 }

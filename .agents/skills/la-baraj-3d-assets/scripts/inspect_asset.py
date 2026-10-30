@@ -20,6 +20,8 @@ def arguments():
     parser.add_argument("--framing", type=Path)
     parser.add_argument("--resolution", type=int, default=640)
     parser.add_argument("--masks", action="store_true")
+    parser.add_argument("--views", default="front,side,rear,three-quarter")
+    parser.add_argument("--key-angle", type=float, default=0)
     return parser.parse_args(sys.argv[sys.argv.index("--") + 1:])
 
 
@@ -81,6 +83,9 @@ def main():
         obj = bpy.data.objects.new(name, data)
         scene.collection.objects.link(obj)
         obj.location = target + Vector(offset) * span / 2
+        if name=='Key' and args.key_angle:
+            delta=obj.location-target;angle=math.radians(args.key_angle)
+            obj.location=target+Vector((delta.x*math.cos(angle)-delta.y*math.sin(angle),delta.x*math.sin(angle)+delta.y*math.cos(angle),delta.z))
         aim(obj, target)
     camera_data = bpy.data.cameras.new("QA camera")
     camera_data.type = "ORTHO"
@@ -90,6 +95,7 @@ def main():
     scene.camera = camera
     views = {"front": (0, -5, .8), "side": (5, 0, .8),
              "rear": (0, 5, .8), "three-quarter": (4, -5, 3)}
+    views={name:offset for name,offset in views.items() if name in args.views.split(',')}
     for name, offset in views.items():
         camera.location = target + Vector(offset) * span
         aim(camera, target)
@@ -110,6 +116,7 @@ def main():
               "mesh_material_slots": sum(len(obj.data.materials) for obj in objects),
               "images": images, "blender_bounds": {"min": list(low), "max": list(high)},
               "blender_dimensions": list(dimensions), "framing": framing,
+              "lighting":{"key_azimuth_degrees":args.key_angle},
               "renderer": "Blender Cycles 24 samples AgX; imported exported GLB"}
     (args.output / "metrics.json").write_text(json.dumps(report, indent=2) + "\n")
     print("ASSET_REPORT " + json.dumps(report), flush=True)
