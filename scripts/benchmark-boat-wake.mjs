@@ -58,10 +58,12 @@ const report = {
   samples: w.WAKE_TRAIL_SAMPLES,
   verticesPerBoat: w.WAKE_VERTEX_COUNT,
   drawsPerBoat: 2,
-  typedArrayBytesPerBoat:
+  upperBoundBytesWithPerGeometryIndex:
     48 * 5 * 4 +
     w.WAKE_VERTEX_COUNT * 3 * 4 * 2 +
     w.wakeRibbonIndex().byteLength,
+  uniqueTypedArrayBytesPerBoat: 48 * 5 * 4 + w.WAKE_VERTEX_COUNT * 3 * 4 * 2,
+  sharedIndexBytes: w.wakeRibbonIndex().byteLength,
   results: [1, 10, 50].map(measure),
 };
 await fs.mkdir("docs/boats/results", { recursive: true });
