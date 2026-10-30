@@ -1,6 +1,6 @@
 # Chill movement: real controller verification
 
-This is a partial evidence record for the draft movement branch, not release acceptance.
+Technical verification record for the movement PR. Earlier observations below are retained as dated implementation evidence; final runtime acceptance follows them.
 
 ## Reproduce
 
@@ -22,9 +22,11 @@ The motion output exposes actual body/visual-root position, contact, grounded st
 - G published `Social_Wave` while standing. Reset during the gesture returned to standing `Idle_Neutral`; subsequent motion did not retain a stale wave state. Movement cancelled the wave and returned through Walk to Idle.
 - Separate dressed-rig front/side captures verified the authored crouch silhouette and appearance. Both crouch clips contain no root drift.
 
-## Remaining gates
+## Final controller repeat (30 October)
 
-Repeat the controller clearance sequence after the final prone clip correction; walk clear of the ceiling and verify standing succeeds, test repeated toggles for vertical drift, and inspect sloped support. Verify crouch/prone/punch suppression during jump, chat, menu, seats, cards, scooter, water and cabin transitions in the full world. Verify two-client pose/gesture parity and the Menu wave action. Run the representative render/performance comparison and restore a normal shared preview build before release.
+Rebuilt the fixture from the final candidate with its exact exported action JSON pinned using Three's `file:` cache key. Actual crouched position under the ceiling was `[56.2265, 5.5842, 68.0349]`, controller height 0.58065m. C refused expansion. Z accepted prone; the after-physics-step capsule quaternion was approximately `(x=0.67391, y=0.21411, z=-0.21411, w=0.67391)`, preserving its horizontal axis. Switching to crouch succeeded; standing still refused. After moving clear, C restored height 1.09015m and identity collider rotation.
+
+Eight more C/C/Z/Z toggles stayed grounded. All four standing samples returned to 1.090229358m, crouch to 0.58044–0.58046m and prone to 0.430197–0.430201m. No accumulated vertical drift. The fixture was closed afterward.
 
 ## Full-world paired-client check
 
@@ -36,4 +38,18 @@ A temporary production-shaped build used the existing `VITE_PLANES_PAIRED_LAB=1 
 - A crouched player walked to the Planes bench and used the actual F interaction. The seated pose became `standing`/`Activity_Sit` with activity `sit`. C, Z, G and P did not override the active table-game UI. Stand up completed back to standing Idle_Neutral and activity none.
 - Both test clients were closed after releasing seats. No production homes or match data were touched.
 
-The canonical main preview was then restored to the normal Cruce follow-up build (not this unfinished movement branch). A fresh normal-local smoke check walked from the cabin to Cruce, used F to open the board, and released the seat. QA controls were absent. PR34 remains independently gated on idle-prop resource allocation and the performance fixture's narrow room contract.
+This paired check preceded the Cruce followup release. PR34 was subsequently merged as `190d7bd` after its resource-allocation fixes; its production table/seat smoke passed. The movement branch includes that release.
+
+
+## Final normal-world regression (30 October)
+
+The latest combined 4173 build used normal LocalWorldRoom authority, no paired-player/performance toolbar. The separate opt-in shrub study and approved rock stayed intact.
+
+- Chat opened through Enter; typing C/Z/P/G produced `czpg` while the player remained Prone_Idle with no held movement keys. Escape closed it.
+- V while prone retained prone with no vehicle. Standing restored the scooter prompt and mounting worked. C/Z/P/G while mounted left the existing rider pose and standing transport posture intact. V parked normally.
+- Opened Menu after walking; Wave hello became enabled as motion settled, and its action closed Menu and produced Social_Wave.
+- Entered the actual cabin after lowered traversal, crouched inside, then used E to leave. The completed exit restored outdoor standing Idle_Neutral.
+- Walked around solid campfire obstacles to the shore; crouched movement crossed into `inWater: true`, `posture: standing`, Swim_Forward. C/Z/P/G in the lake retained Swim_Idle. Swimming ashore restored grounded standing Idle_Neutral.
+- A second normal local client previously received/rendered final Prone_Idle and the same visual root. Presence/chat anchors now lower with posture. Final dressed target-rig tests cover clip bounds, support/hand placement, finite transforms, provenance hash and equality with the runtime JSON.
+
+All temporary test tabs were closed. No production homes, fire or card-game state were changed. See [the measured performance report](../performance/CHILL_MOVEMENT.md) for the identical-camera baseline/candidate load comparison and distant-rig cleanup counters. Deployment evidence belongs to PR33.
