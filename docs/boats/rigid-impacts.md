@@ -101,7 +101,7 @@ finished the previously unpassed rubbing, chain, legacy and delayed-packet cases
 
 | Case | Observed result |
 | --- | --- |
-| Ghost stern, before repair | Driver stops at z −50.761974 with W held, active controls and Ecctrl disabled. Actual contact metadata identifies the remote convex hull still at z −48, despite both disabled flags being false. |
+| Ghost stern, before repair | Driver stops at z −50.761974 with W held, active controls and Ecctrl disabled. Actual contact metadata identifies the remote convex hull still at z −48, despite both body/collider enabled flags being false. |
 | Same geometry, repaired masks | Driver passes the old stop and retains 4.84 m/s in the captured snapshot. The target moves and turns about 15°, with zero rudder. |
 | Two moving boats rubbing | 18/19 corrections, retained speeds 7.46/7.62 m/s, gradual sideways/yaw response, no vertical pop. |
 | Three occupied boats | All three move over 5 m, retain about 1.53–1.59 m/s and receive corrections. Centred contact adds zero spin. |
@@ -146,4 +146,3 @@ On tested head `34be93f`, 416 frontend and 142 server/protocol tests, both
 TypeScript checks, the production build and CI passed. The final branch must
 also include the next accepted main integration and pass the combined checks
 before the release owner deploys the Worker and frontend.
-
