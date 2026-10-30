@@ -35,7 +35,7 @@ function Fixture() {
       const room = currentMultiplayerRoom(),
         v = room?.getSnapshot();
       if (!v) return;
-      if (!started.current && v.status === "online" && v.home) {
+      if (!started.current && v.status === "online" && v.homeIndex !== null) {
         started.current = true;
         approach(role ? 2 : 0);
       }
