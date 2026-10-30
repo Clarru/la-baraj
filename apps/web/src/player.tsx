@@ -974,8 +974,10 @@ export function Player({
           );
     }
     const speed = holding ? 0 : Math.hypot(velocity.x, velocity.z);
-    const waveEligible =
-      active &&
+    const waveAvailable =
+      mode === "walk" &&
+      !holding &&
+      !stunned &&
       !doorTransition &&
       !nowSwimming &&
       !mounted &&
@@ -983,6 +985,7 @@ export function Player({
       stanceRef.current === "standing" &&
       c.isOnGround &&
       speed < 0.2;
+    const waveEligible = waveAvailable && !paused;
     const waveAction = actions[SOCIAL_WAVE_CLIP_NAME];
     if (waveQueued.current) {
       waveQueued.current = false;
@@ -1196,6 +1199,7 @@ export function Player({
         contact: c.standPoint.toArray(),
         grounded: holding || (!nowSwimming && c.isOnGround),
         activity: pose.kind,
+        canWave: waveAvailable,
         animation: waveState.current ? SOCIAL_WAVE_CLIP_NAME : next,
         posture: stanceRef.current,
         groundY,

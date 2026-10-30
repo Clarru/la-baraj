@@ -215,7 +215,8 @@ export default function Game({ initialName }: { initialName: string }) {
   const [navigation] = useState(() =>
     createNavigationFeed({ x: 45, z: 27, heading: 0 }),
   );
-  const latestMotion = useRef<Record<string, unknown>>({});
+  const [waveAvailable, setWaveAvailable] = useState(false);
+  const waveAvailability = useRef(false);
   const fireOutput = useRef<HTMLOutputElement>(null),
     motionOutput = useRef<HTMLOutputElement>(null);
   const updateFireMetrics = useCallback((sample: unknown) => {
@@ -223,7 +224,11 @@ export default function Game({ initialName }: { initialName: string }) {
   }, []);
   const updateMotion = useCallback(
     (sample: Record<string, unknown>) => {
-      latestMotion.current = sample;
+      const available = sample.canWave === true;
+      if (available !== waveAvailability.current) {
+        waveAvailability.current = available;
+        setWaveAvailable(available);
+      }
       room.publishMotion(sample);
       motionOutput.current?.setAttribute("data-motion", JSON.stringify(sample));
       if (Array.isArray(sample.position) && Array.isArray(sample.facing)) {
@@ -742,13 +747,7 @@ export default function Game({ initialName }: { initialName: string }) {
                 !doorTransition &&
                 !planesOpen &&
                 !cruceOpen &&
-                latestMotion.current.posture === "standing" &&
-                latestMotion.current.grounded === true &&
-                Array.isArray(latestMotion.current.velocity) &&
-                Math.hypot(
-                  Number(latestMotion.current.velocity[0]),
-                  Number(latestMotion.current.velocity[2]),
-                ) < 0.2
+                waveAvailable
               }
               onWave={() => {
                 setMode("walk");
