@@ -22,6 +22,16 @@ export const BOAT_DIMENSIONS = {
   deckHeight: 0.8,
 } as const;
 
+/**
+ * Character root relative to the `DriverSeat` empty while driving. The empty is
+ * on the cockpit floor directly under the seated hips. Activity_Sit puts the
+ * pelvis 0.33 m behind the character root, on a seat 0.45 m above it. The
+ * driver cushion top is 0.41 m above the floor (0.47 m above the waterline).
+ * So the root moves 0.33 m forward, putting the hips over the empty, and
+ * 0.04 m down, putting them on the cushion.
+ */
+export const BOAT_DRIVER_OFFSET = [0, -0.04, 0.33] as const;
+
 /** The driver's left is +X (GLB `Grip_L`); right is −X (`Grip_R`). */
 export type BoatSide = "left" | "right";
 
@@ -68,28 +78,4 @@ export function setBoatWheelAngle(rig: BoatRig, wheelAngle: number): void {
 /** Rolls the whole boat so seat, console and wheel lean together; positive dips +X (left). */
 export function applyBoatLean(rig: BoatRig, lean: number): void {
   rig.group.rotation.z = -lean;
-}
-
-// Transitional shim: boat-rider.ts and its test still read the old procedural
-// wheel. Removed in Task 3 when boat-rider takes a supplied wheel normal.
-export const BOAT_METRICS = {
-  wheelPivot: [0, 0.95, 0.05],
-  wheelRadius: 0.19,
-  wheelTilt: 0.6,
-  grips: { left: [-0.19, 0, 0], right: [0.19, 0, 0] },
-} as const;
-
-const tiltAxis = new THREE.Vector3(1, 0, 0);
-const wheelAxis = new THREE.Vector3(0, 0, 1);
-
-/** Transitional shim (removed in Task 3): grip on the old procedural wheel rim. */
-export function boatGripPosition(
-  side: BoatSide,
-  wheelAngle: number,
-): [number, number, number] {
-  return new THREE.Vector3(...BOAT_METRICS.grips[side])
-    .applyAxisAngle(wheelAxis, -wheelAngle)
-    .applyAxisAngle(tiltAxis, BOAT_METRICS.wheelTilt)
-    .add(new THREE.Vector3(...BOAT_METRICS.wheelPivot))
-    .toArray();
 }

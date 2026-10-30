@@ -31,6 +31,8 @@ export type BoatHandle = {
   gripWorldPosition(side: BoatSide, target: THREE.Vector3): THREE.Vector3;
   /** Unit normal of the wheel face, pointing back toward the driver. */
   wheelNormalWorld(target: THREE.Vector3): THREE.Vector3;
+  /** Wheel hub (the rim's centre, `SteeringWheel`) in world space. */
+  wheelHubWorld(target: THREE.Vector3): THREE.Vector3;
   /** Driver seat (cockpit floor under the driver) in boat-local space. */
   driverSeatLocal(target: THREE.Vector3): THREE.Vector3;
 };
@@ -80,6 +82,10 @@ export const Boat = forwardRef<
         return target
           .copy(towardDriver)
           .transformDirection(rig.wheel.matrixWorld);
+      },
+      wheelHubWorld(target) {
+        rig.wheel.updateWorldMatrix(true, false);
+        return target.setFromMatrixPosition(rig.wheel.matrixWorld);
       },
       driverSeatLocal(target) {
         rig.driverSeat.updateWorldMatrix(true, false);

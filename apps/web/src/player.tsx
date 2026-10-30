@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useFrame, useLoader, useThree } from "@react-three/fiber";
 import { useGLTF, useAnimations, OrbitControls } from "@react-three/drei";
 import { Ecctrl, type EcctrlHandle } from "ecctrl";
@@ -29,6 +29,8 @@ import { getActivityPose } from "./activity-state";
 import { Scooter, type ScooterHandle } from "./scooter";
 import { createScooterRiderRig } from "./scooter-rider";
 import { Boat, type BoatHandle } from "./boat";
+import { BOAT_DIMENSIONS, BOAT_DRIVER_OFFSET } from "./boat-geometry";
+import { boatHullBlocked } from "./boat-collision";
 import { createBoatRiderRig } from "./boat-rider";
 import {
   BOAT_TUNING,
@@ -51,6 +53,7 @@ import {
   boatExitCandidates,
   canBoardBoat,
   chooseBoatExit,
+  distanceToHull,
 } from "./boat-placement";
 import {
   getVehicleState,
@@ -86,6 +89,10 @@ import {
   createCharacterActivityRig,
   localFacing,
 } from "./character-actions";
+const boatDriverOffset = new THREE.Vector3(...BOAT_DRIVER_OFFSET);
+/** The wake ring centres on the hull midpoint, this far forward of the pivot. */
+const BOAT_WAKE_FORWARD =
+  (BOAT_DIMENSIONS.bowExtent - BOAT_DIMENSIONS.sternExtent) / 2;
 export type ViewMode = "walk" | "overview" | "study" | "settlement" | "home";
 export const spawn = { x: 45, z: southShore(45) + 12 };
 export const playerPosition = new THREE.Vector3(
@@ -201,7 +208,10 @@ export function Player({
     nearBoat = useRef(false);
   const boatRider = useRef<ReturnType<typeof createBoatRiderRig> | null>(null);
   const leftGrip = useMemo(() => new THREE.Vector3(), []),
-    rightGrip = useMemo(() => new THREE.Vector3(), []);
+    rightGrip = useMemo(() => new THREE.Vector3(), []),
+    wheelNormal = useMemo(() => new THREE.Vector3(), []),
+    wheelHub = useMemo(() => new THREE.Vector3(), []);
+  const boatWake = useRef<THREE.Group>(null);
 
   const animation = useRef("Idle_Neutral");
   const animationHistory = useRef<
@@ -260,6 +270,8 @@ export function Player({
     return () => {
       rig.dispose();
       boatRider.current = null;
+      // The driver sits at the boat's seat; standing resumes at the visual origin.
+      object.position.set(0, 0, 0);
     };
   }, [object]);
   useEffect(() => {
@@ -344,6 +356,7 @@ export function Player({
           body.setLinvel({ x: 0, y: 0, z: 0 }, true);
           body.setGravityScale(1, true);
           boatRider.current?.reset();
+          object.position.set(0, 0, 0);
           mixer.stopAllAction();
           animation.current = "";
           setBoating(false);
@@ -355,10 +368,11 @@ export function Player({
         if (
           body &&
           canBoardBoat({
-            distance: Math.hypot(
-              playerPosition.x - parked.parked[0],
-              playerPosition.z - parked.parked[2],
-            ),
+            distance: distanceToHull(playerPosition.x, playerPosition.z, {
+              x: parked.parked[0],
+              z: parked.parked[2],
+              yaw: parked.yaw,
+            }),
             scooterMounted: getVehicleState().mounted,
             swimming: swimmingRef.current,
             grounded:
@@ -553,6 +567,7 @@ export function Player({
     setJumping(false);
     riderRig.current?.reset();
     boatRider.current?.reset();
+    object.position.set(0, 0, 0);
     mixer.stopAllAction();
     animation.current = "";
     setRiding(false);
@@ -830,17 +845,30 @@ export function Player({
       if (boatBlockedAhead(p.x, p.z, motion.yaw, heading as 1 | -1))
         motion.speed = 0;
       c.body.setGravityScale(0, true);
-      c.body.setLinvel(
-        boatVelocity({
+      const hullVelocity = boatVelocity({
+        yaw: motion.yaw,
+        speed: motion.speed,
+        velocityY: v.y,
+        bodyY: p.y,
+        time: performance.now() / 1000,
+        dt,
+      });
+      // Docks, pilings and banks stop the hull; next step reconcileBoatSpeed
+      // drops the commanded speed to the zero it achieved.
+      if (
+        boatHullBlocked(world, rapier, {
+          x: p.x,
+          z: p.z,
           yaw: motion.yaw,
-          speed: motion.speed,
-          velocityY: v.y,
-          bodyY: p.y,
-          time: performance.now() / 1000,
-          dt,
-        }),
-        true,
-      );
+          dx: hullVelocity.x * dt,
+          dz: hullVelocity.z * dt,
+          exclude: c.body,
+        })
+      ) {
+        hullVelocity.x = 0;
+        hullVelocity.z = 0;
+      }
+      c.body.setLinvel(hullVelocity, true);
       updateBoatMotion(motion.yaw, motion.speed);
     }
     const braking = mounted && (k.has("KeyS") || k.has("ArrowDown"));
@@ -1097,10 +1125,23 @@ export function Player({
     if (boatingNow && boat.current) {
       const { wheelAngle, lean } = boatMotion.current;
       boat.current.update({ wheelAngle, lean });
+      boat.current.driverSeatLocal(object.position).add(boatDriverOffset);
       boatRider.current?.update({
         left: boat.current.gripWorldPosition("left", leftGrip),
         right: boat.current.gripWorldPosition("right", rightGrip),
+        wheelNormal: boat.current.wheelNormalWorld(wheelNormal),
+        hub: boat.current.wheelHubWorld(wheelHub),
       });
+    }
+    if (boatingNow && boatWake.current) {
+      const yaw = boatMotion.current.yaw;
+      boatWake.current.position.set(
+        Math.sin(yaw) * BOAT_WAKE_FORWARD,
+        0,
+        Math.cos(yaw) * BOAT_WAKE_FORWARD,
+      );
+      // The ring's long axis is its local X; turn it along the hull.
+      boatWake.current.rotation.y = yaw + Math.PI / 2;
     }
     sampleClock.current += dt;
     if (sampleClock.current > 1 / 7 && visual.current) {
@@ -1134,10 +1175,11 @@ export function Player({
         !paused &&
         !mounted &&
         !boatingNow &&
-        Math.hypot(
-          p.x - getBoatState().parked[0],
-          p.z - getBoatState().parked[2],
-        ) <= BOAT_BOARD_DISTANCE;
+        distanceToHull(p.x, p.z, {
+          x: getBoatState().parked[0],
+          z: getBoatState().parked[2],
+          yaw: getBoatState().yaw,
+        }) <= BOAT_BOARD_DISTANCE;
       if (boatNear !== nearBoat.current) {
         nearBoat.current = boatNear;
         onBoatHint?.(boatNear);
@@ -1215,10 +1257,16 @@ export function Player({
         <primitive object={object} dispose={null} />
         <StunStars room={currentMultiplayerRoom()} />
         <Scooter ref={scooter} visible={riding} />
-        <Boat ref={boat} visible={boating} />
+        <Suspense fallback={null}>
+          <Boat ref={boat} visible={boating} />
+        </Suspense>
       </group>
       {swimming && <SwimWake />}
-      {boating && <SwimWake scale={2.6} />}
+      {boating && (
+        <group ref={boatWake}>
+          <SwimWake scale={BOAT_DIMENSIONS.length / 1.4} />
+        </group>
+      )}
     </Ecctrl>
   );
 }

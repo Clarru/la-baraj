@@ -124,6 +124,8 @@ function RemoteAvatarRig({
   const boatState = useRef({ previousYaw: 0, wheelAngle: 0, lean: 0 });
   const gripLeft = useMemo(() => new THREE.Vector3(), []);
   const gripRight = useMemo(() => new THREE.Vector3(), []);
+  const wheelNormal = useMemo(() => new THREE.Vector3(), []);
+  const wheelHub = useMemo(() => new THREE.Vector3(), []);
   const scooterMounted = useRef(false);
   const target = useMemo(() => new THREE.Vector3(), []);
   const previousAnimation = useRef(""),
@@ -325,6 +327,8 @@ function RemoteAvatarRig({
         helpers.current?.boatRider.update({
           left: gripLeft,
           right: gripRight,
+          wheelNormal: handle.wheelNormalWorld(wheelNormal),
+          hub: handle.wheelHubWorld(wheelHub),
         });
       }
     }

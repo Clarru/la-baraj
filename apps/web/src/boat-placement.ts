@@ -1,24 +1,36 @@
+import { BOAT_DIMENSIONS } from "./boat-geometry";
 import { inWater, southShore, terrainHeight } from "./geography";
 import { LAKE_LEVEL } from "./swim-motion";
 
+const { beam, bowExtent, sternExtent } = BOAT_DIMENSIONS;
+
 /** The two `<Dock>` x positions in settlement.tsx. */
 export const BOAT_DOCK_XS = [0, -235] as const;
-/** Boat offset east of the dock centreline, clear of the deck and its posts. */
-export const BOAT_DOCK_SIDE_OFFSET = 3.2;
-/** Boat offset out into the lake from the south shore. */
-export const BOAT_DOCK_LAKE_OFFSET = 11;
-/** Furthest the player can be from the boat and still board. */
-export const BOAT_BOARD_DISTANCE = 3.5;
+/**
+ * Boat pivot east of the dock centreline: the 1.7 m deck half-width, the
+ * 1.10 m hull half-beam and 0.9 m of open water between them.
+ */
+export const BOAT_DOCK_SIDE_OFFSET = 3.7;
+/**
+ * Boat pivot out into the lake from the south shore. At the shallower x = 0
+ * dock the shoreward stern corner then floats in 0.68 m of water, and the
+ * stern still lies alongside the deck's far end for boarding.
+ */
+export const BOAT_DOCK_LAKE_OFFSET = 13;
+/** Furthest the player can be from the hull's edge and still board. */
+export const BOAT_BOARD_DISTANCE = 1.6;
 /**
  * Deepest water (m) a stepped-out driver stands in. Below the swim thresholds in
  * swim-motion.ts (enter 0.62, exit 0.42), so the player wades instead of swimming.
  */
 export const BOAT_WADE_DEPTH = 0.4;
-const EXIT_STEPS = [1.6, 2.6] as const;
-/** Bow steps clear the 1.8 m hull half-length plus the 0.3 m capsule radius. */
-const BOW_EXIT_STEPS = [2.2, 3.2] as const;
-/** Land-only far ring: reaches a gentle bank from where the shallows stop the hull. */
-const EXIT_FAR_STEP = 4.5;
+/** Exit steps beyond the hull's edge: clear of the hull with the 0.3 m capsule radius. */
+const EXIT_CLEARANCES = [0.7, 1.7] as const;
+/**
+ * Land-only far ring beyond the hull's edge: from where the shallows stop the
+ * hull, it reaches a gentle bank 2.2 m past the bow probe.
+ */
+const EXIT_FAR_CLEARANCE = 3;
 
 type Spawn = { position: [number, number, number]; yaw: number };
 
@@ -42,7 +54,25 @@ export function nearestDockSpawn(x: number): Spawn {
   return boatDockSpawn(dockX);
 }
 
-/** Whether the player may board the boat right now. */
+/** Ground distance from (px, pz) to the hull's footprint rectangle; 0 inside. */
+export function distanceToHull(
+  px: number,
+  pz: number,
+  boat: { x: number; z: number; yaw: number },
+): number {
+  const dx = px - boat.x,
+    dz = pz - boat.z;
+  const sin = Math.sin(boat.yaw),
+    cos = Math.cos(boat.yaw);
+  const forward = dx * sin + dz * cos,
+    side = dx * cos - dz * sin;
+  return Math.hypot(
+    Math.max(Math.abs(side) - beam / 2, 0),
+    Math.max(forward - bowExtent, -sternExtent - forward, 0),
+  );
+}
+
+/** Whether the player may board the boat right now; `distance` is distanceToHull. */
 export function canBoardBoat(input: {
   distance: number;
   scooterMounted: boolean;
@@ -64,8 +94,8 @@ export function canBoardBoat(input: {
 
 /** Shallowest water (m) the hull may enter. */
 export const BOAT_MIN_DEPTH = 0.5;
-/** Probe distance ahead of the hull centre: 1.8 m half-length plus margin. */
-export const BOAT_PROBE_DISTANCE = 2.2;
+/** Probe distance ahead of the pivot: the bow extent plus 0.8 m margin. */
+export const BOAT_PROBE_DISTANCE = bowExtent + 0.8;
 
 /** Whether land or shallows lie just ahead (direction 1) or astern (-1); non-finite input counts as blocked. */
 export function boatBlockedAhead(
@@ -85,9 +115,10 @@ export function boatBlockedAhead(
 }
 
 /**
- * Exit points per step: left and right at 1.6 m / 2.6 m, then bow at 2.2 m / 3.2 m,
- * then a far ring of left, right, bow at 4.5 m (left of +Z-forward is +X).
- * The water fallback always uses the first, nearest candidate.
+ * Exit points per step, measured from the hull's edge: left and right of the
+ * pivot, then ahead of the bow, at 0.7 m and 1.7 m, then a land-only far ring
+ * at 3 m (left of +Z-forward is +X). The water fallback always uses the first,
+ * nearest candidate.
  */
 export function boatExitCandidates(
   x: number,
@@ -102,16 +133,15 @@ export function boatExitCandidates(
   const lx = fz,
     lz = -fx;
   const out: [number, number][] = [];
-  const sides = [...EXIT_STEPS, EXIT_FAR_STEP],
-    bows = [...BOW_EXIT_STEPS, EXIT_FAR_STEP];
-  sides.forEach((d, i) => {
-    const bow = bows[i];
+  for (const clearance of [...EXIT_CLEARANCES, EXIT_FAR_CLEARANCE]) {
+    const d = beam / 2 + clearance,
+      bow = bowExtent + clearance;
     out.push(
       [px + lx * d, pz + lz * d],
       [px - lx * d, pz - lz * d],
       [px + fx * bow, pz + fz * bow],
     );
-  });
+  }
   return out;
 }
 
