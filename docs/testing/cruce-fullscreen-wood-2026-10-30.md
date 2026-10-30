@@ -30,3 +30,11 @@ Native capture provider padding lies outside the measured CSS viewport. QA contr
 317 frontend tests pass. Target furniture/geometry/board tests pass after the new meshes. Export checks verify actual bounds/floor, real wood image bytes, complete finite normal/UV data and bounded triangle counts. TypeScript and normal production build pass; normal chunks exclude QA toolbar strings. The preceding116 protocol tests remain applicable: this revision changes no engine/server rules or wire schema.
 
 Mechanical scan:84 advisories,0 non-advisory. Retained Cruce materials/type values intentionally differ from the historical global design document; no unrelated theme repair was attempted. Independent final desktop visual/source review: **SHIP**. Supplemental mobile advisory remains outside desktop acceptance.
+
+## Coordinated canonical preview publication
+
+After merging release main `e78265b13298ec11a364e02c9042246c20e0663d`, the release owner delegated the single-preview publication slot. Current integrated checks pass:318 frontend tests,116 server/protocol tests, both TypeScript checks and combined normal production build. Root4173 was published without starting or stopping a listener. It loads normally without QA controls or browser errors.
+
+Published runtime source: `44e3fb1` (current-main merge after fullscreen/timber head4461668). Entry `index-CB3gyjpx.js`, Game `Game-DH7JgdSB.js`; root index SHA256 `c3607cb00750220acfeab41382857edf34700b0c6431c8a76771f4afe59d5c0d`. Previous root is recoverable at `/tmp/la-baraj-before-cruce-fullscreen-2fbvodef/dist`.
+
+The exact approved local rock (`cd3bd08c5ee24e159777f0608cd38af00981613a27c618d89cc53ba658971c7e`), shrub (`2e6ef4136e3cd3cf1ffb6f9097a0d92161303c519d23bfcf7c8dcf56ead6f490`), localhost opt-in query/scale, default foliage, existing internal pages and older immutable chunks were retained. Temporary study source edits were restored; feature tree remained clean. Current character-actions data is byte-equal the merged main source, retaining the latest prone/wave fixes. The root smoke tab was closed. Preview ownership was returned to the release owner; production/main/Worker publication remains theirs.
