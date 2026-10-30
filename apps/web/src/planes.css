@@ -4,7 +4,7 @@
   position: absolute;
   right: 24px;
   bottom: 24px;
-  width: min(720px, calc(100vw - 310px));
+  width: min(820px, calc(100vw - 310px));
   max-height: calc(100vh - 115px);
   overflow: auto;
   pointer-events: auto;
@@ -180,12 +180,6 @@
 .paper-plane-outlines .paper-plane-outline--preview-invalid {
   stroke: #a93e31;
 }
-.paper-grid--small .paper-plane-outlines {
-  left: 16px;
-  top: 16px;
-  width: calc(100% - 16px);
-  height: calc(100% - 16px);
-}
 .paper-grid-row {
   display: contents;
 }
@@ -305,73 +299,6 @@
   gap: 10px;
 }
 .planes-setup-tools p,
-.planes-fleet-mini p {
-  font-size: 14px;
-  line-height: 1.35;
-  margin: 0;
-  color: #465e71;
-}
-.planes-setup-tools .planes-drop-hint {
-  min-height: 1.35em;
-  font-weight: 700;
-  font-size: 13px;
-}
-.planes-setup-tools .planes-drop-hint--valid {
-  color: #24633b;
-}
-.planes-setup-tools .planes-drop-hint--invalid {
-  color: #8c3d31;
-}
-.planes-plane-picker {
-  display: flex;
-  gap: 4px;
-}
-.planes-plane-picker button {
-  border: 0;
-  border-bottom: 2px solid transparent;
-  background: transparent;
-  padding: 6px 3px;
-  flex: 1;
-  font-weight: 700;
-  font-size: 13px;
-}
-.planes-plane-picker button[aria-pressed="true"] {
-  border-bottom-color: #244b70;
-}
-.planes-notebook .planes-secondary {
-  border: 1px solid #9aafbf;
-  background: #f8f5ec80;
-  padding: 7px 10px;
-  text-align: left;
-}
-.planes-notebook .planes-ready {
-  margin-top: 5px;
-  border: 1px solid #244b70;
-  background: #244b70;
-  color: #f9f5e9;
-  padding: 11px 10px;
-  font-weight: 700;
-  text-align: center;
-}
-.planes-notebook .planes-ready:not(:disabled):hover {
-  background: #193d5c;
-}
-.planes-fleet-mini {
-  padding-top: 0;
-}
-.planes-fleet-mini p {
-  margin-top: 10px;
-}
-.paper-grid--small .paper-axis {
-  font-size: 10px;
-  min-height: 16px;
-}
-.paper-grid--small {
-  grid-template-columns: 16px repeat(10, minmax(0, 1fr));
-}
-.paper-grid--small .paper-cell--cockpit::before {
-  border-width: 1px;
-}
 .planes-shot-note {
   min-height: 18px;
   font-size: 14px;
@@ -447,4 +374,223 @@
   margin: 0;
   font-size: 14px;
   color: #465e71;
+}
+
+/* Two stable, equal sheets: the incoming shot belongs on your paper. */
+.planes-play-area--battle {
+  position: relative;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 26px;
+  isolation: isolate;
+}
+.planes-play-area--battle > div {
+  min-width: 0;
+}
+/* Row labels must not stretch cells when two sheets share a narrow window.
+   The column labels keep their 20px row, matching the SVG outline offset. */
+.planes-play-area--battle .paper-grid-row .paper-axis {
+  min-height: 0;
+}
+.planes-play-area--battle .planes-shot-note {
+  min-height: 2.7em;
+}
+.planes-shot {
+  --shot-color: #a44937;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 2;
+  fill: none;
+  stroke: var(--shot-color);
+  stroke-linecap: round;
+}
+.planes-shot--miss {
+  --shot-color: #52738f;
+}
+.planes-shot-trail {
+  stroke-width: 1;
+  stroke-dasharray: 1;
+  animation: planes-trail 600ms ease-out both;
+}
+.planes-shot-core {
+  stroke-width: 2.8;
+  stroke-dasharray: 0.055 1;
+  animation: planes-projectile 310ms cubic-bezier(0.42, 0, 0.72, 0.6) both;
+}
+.planes-shot-impact {
+  stroke-width: 1.5;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: planes-impact 370ms cubic-bezier(0.16, 1, 0.3, 1) 290ms both;
+}
+.planes-shot--head .planes-shot-impact {
+  stroke-width: 2.5;
+}
+.planes-shot-contact {
+  fill: var(--shot-color);
+  stroke: none;
+  animation: planes-contact 200ms ease-out 280ms both;
+}
+.planes-shot-sparks {
+  stroke-width: 1.5;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: planes-sparks 260ms cubic-bezier(0.16, 1, 0.3, 1) 290ms both;
+}
+.planes-notebook .paper-cell--landing::before {
+  animation: planes-ink 150ms ease-out 300ms both;
+}
+.planes-notebook .paper-cell--landing::after {
+  animation: planes-ink 150ms ease-out 350ms both;
+}
+.planes-notebook .paper-cell--landing-head {
+  animation: planes-cockpit 620ms ease-out both;
+}
+@keyframes planes-projectile {
+  0% {
+    stroke-dashoffset: 0.06;
+    opacity: 0;
+  }
+  5% {
+    opacity: 1;
+  }
+  95% {
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: -1;
+    opacity: 0;
+  }
+}
+@keyframes planes-trail {
+  0% {
+    stroke-dashoffset: 1;
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.3;
+  }
+  52% {
+    stroke-dashoffset: 0;
+    opacity: 0.3;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+}
+@keyframes planes-impact {
+  0% {
+    transform: scale(0.2);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+@keyframes planes-contact {
+  0% {
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes planes-sparks {
+  0% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+@keyframes planes-ink {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    clip-path: inset(0);
+  }
+}
+@keyframes planes-cockpit {
+  0%,
+  45% {
+    background-color: transparent;
+  }
+  55% {
+    background-color: #b75b4160;
+  }
+  100% {
+    background-color: #b75b4126;
+  }
+}
+@media (max-width: 900px) {
+  .planes-notebook {
+    width: calc(100vw - 290px);
+    padding-inline: 23px;
+  }
+  .planes-play-area--battle {
+    gap: 18px;
+  }
+}
+@media (max-width: 660px) {
+  .planes-notebook {
+    right: 12px;
+    bottom: 12px;
+    width: calc(100vw - 24px);
+    max-height: calc(100dvh - 100px);
+    padding: 20px 18px 14px;
+  }
+  .planes-notebook::before {
+    left: 9px;
+  }
+  .planes-play-area--battle {
+    gap: 14px;
+  }
+  .planes-play-area--battle .paper-grid {
+    grid-template-columns: 16px repeat(10, minmax(0, 1fr));
+  }
+  .planes-play-area--battle .paper-plane-outlines {
+    left: 16px;
+    width: calc(100% - 16px);
+  }
+  .planes-play-area--battle .paper-axis {
+    font-size: 10px;
+  }
+  .planes-play-area--battle .planes-shot-note {
+    font-size: 13px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .planes-shot-trail,
+  .planes-shot-core,
+  .planes-shot-sparks,
+  .planes-shot-contact {
+    display: none;
+  }
+  .planes-shot-impact {
+    animation: none;
+    opacity: 0.7;
+    transform: none;
+  }
+  .planes-notebook .paper-cell--landing::before,
+  .planes-notebook .paper-cell--landing::after,
+  .planes-notebook .paper-cell--landing-head {
+    animation: none;
+  }
 }
