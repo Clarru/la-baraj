@@ -11,17 +11,19 @@ function shown(object: THREE.Object3D) {
   return true;
 }
 export function BoatSpray(props: React.ComponentProps<typeof Actual>) {
+  const ownSample = useRef(0);
   const root = useRef<THREE.Group>(null),
     hideRemote = useRef(false),
     point = useRef(new THREE.Vector3());
   useEffect(() => {
+    const id = root.current?.uuid;
     const change = (e: Event) => {
       hideRemote.current = Boolean((e as CustomEvent).detail);
     };
     window.addEventListener("boat-qa-hide-remote-wake", change);
     return () => {
       window.removeEventListener("boat-qa-hide-remote-wake", change);
-      if (root.current) sources.delete(root.current.uuid);
+      if (id) sources.delete(id);
     };
   }, []);
   useFrame(({ scene, clock }) => {
@@ -31,16 +33,19 @@ export function BoatSpray(props: React.ComponentProps<typeof Actual>) {
       if (p.name.startsWith("Online player ")) remote = true;
     root.current.visible = !(remote && hideRemote.current);
     const now = clock.elapsedTime;
+    if (now >= ownSample.current) {
+      ownSample.current = now + 0.15;
+      root.current.getWorldPosition(point.current);
+      sources.set(root.current.uuid, {
+        remote,
+        visible: shown(root.current),
+        position: point.current.toArray(),
+        speed: props.speed(),
+        velocity: props.velocity?.() ?? null,
+      });
+    }
     if (now < (nextSample.get(scene) ?? 0)) return;
     nextSample.set(scene, now + 0.15);
-    root.current.getWorldPosition(point.current);
-    sources.set(root.current.uuid, {
-      remote,
-      visible: shown(root.current),
-      position: point.current.toArray(),
-      speed: props.speed(),
-      velocity: props.velocity?.() ?? null,
-    });
     const meshes: unknown[] = [];
     scene.traverse((o) => {
       if (!(o instanceof THREE.Mesh)) return;
