@@ -451,7 +451,9 @@ export default function CruceBoard({
                       error={error}
                     />
                     <div className="cruce-cards-zone">
-                      <div className="cruce-trick">
+                      <div
+                        className={`cruce-trick${active.length === 2 ? " cruce-trick--duel" : ""}`}
+                      >
                         {v.trick.map((p) => (
                           <div
                             className={`cruce-played cruce-played--${tablePosition(p.seat)}`}
@@ -502,7 +504,10 @@ export default function CruceBoard({
                       <strong>{v?.scores[group] ?? 0}</strong>
                     </div>
                   ))}
-                  <span>Partidă de {v?.settings.target ?? 11}</span>
+                  <span>
+                    Partidă de {v?.settings.target ?? 11}
+                    {v.round > 0 ? ` · Runda ${v.round}` : ""}
+                  </span>
                 </div>
                 {!connected && (
                   <p className="cruce-connection" role="status">

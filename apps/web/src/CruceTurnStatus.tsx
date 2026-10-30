@@ -63,7 +63,10 @@ export function CruceTurnStatus({
     (v.deadline === null || now > v.deadline + 1500);
   const lobby = cruceLobby(v);
   return (
-    <div className="cruce-table-status" aria-label="Starea mesei">
+    <div
+      className={`cruce-table-status${timed && !overdue ? " cruce-table-status--timed" : ""}`}
+      aria-label="Starea mesei"
+    >
       <h2 role="status" aria-live="polite" aria-atomic="true">
         {title}
       </h2>
@@ -72,9 +75,9 @@ export function CruceTurnStatus({
           <span>
             {lobby.occupied} din {lobby.total} locuri ocupate
           </span>
-        ) : (
+        ) : !active ? (
           <span>Runda {v.round}</span>
-        )}
+        ) : null}
         {active && v.dealer !== null && (
           <span>Împarte: {v.players[v.dealer]?.name ?? "—"}</span>
         )}
