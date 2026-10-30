@@ -106,3 +106,14 @@ it("continues a newly won full board before offering a fresh game", async () => 
   });
   expect(f.room.arcadeAction).toHaveBeenLastCalledWith({ kind: "new" }, 1);
 });
+
+it("keeps a 125ms input boundary for the server's eight-action rate while tiles settle in 120ms", async () => {
+  const f = await fixture();
+  await act(() => f.controls().move("left"));
+  f.time(1124);
+  await act(() => f.controls().move("right"));
+  expect(f.room.arcadeAction).toHaveBeenCalledTimes(2);
+  f.time(1125);
+  await act(() => f.controls().move("right"));
+  expect(f.room.arcadeAction).toHaveBeenCalledTimes(3);
+});

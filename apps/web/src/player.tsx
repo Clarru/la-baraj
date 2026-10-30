@@ -1,4 +1,8 @@
-import { ARCADE_STATION } from "../../../packages/shared/arcade2048-station";
+import { arcadeExitCamera } from "./arcade2048-camera";
+import {
+  ARCADE_STATION,
+  arcadeStation,
+} from "../../../packages/shared/arcade2048-station";
 import { cruceContactForPose, type CruceSeatContact } from "./cruce-seating";
 import {
   requestSocialWave,
@@ -1692,8 +1696,10 @@ export function CameraRig({
   tableSeat = null,
   cardTableSeat = null,
   arcadeFocus = false,
+  arcadeStationId = null,
 }: {
   arcadeFocus?: boolean;
+  arcadeStationId?: number | null;
   mode: ViewMode;
   resetKey: number;
   homeIndex?: number;
@@ -1731,6 +1737,7 @@ export function CameraRig({
   }, [gl, events.connected]);
   const last = useRef(new THREE.Vector3());
   const priorArcade = useRef(false);
+  const priorArcadeId = useRef<number | null>(null);
   const [focusTransition, setFocusTransition] = useState(false);
   const priorInterior = useRef<number | null>(null);
   const priorTable = useRef<string | null>(null);
@@ -1740,6 +1747,7 @@ export function CameraRig({
     fromTarget: THREE.Vector3;
     target: THREE.Vector3;
     elapsed: number;
+    arcade?: boolean;
   } | null>(null);
   useEffect(() => {
     const c = controls.current;
@@ -1756,14 +1764,19 @@ export function CameraRig({
           ? `planes:${tableSeat}`
           : null;
     const changingTable = priorTable.current !== tableKey;
-    const changingArcade = priorArcade.current !== arcadeFocus;
+    const leavingArcade = priorArcade.current && !arcadeFocus;
+    const changingArcade =
+      priorArcade.current !== arcadeFocus ||
+      (arcadeFocus && priorArcadeId.current !== arcadeStationId);
+    priorArcadeId.current = arcadeStationId;
     priorArcade.current = arcadeFocus;
     if (changingArcade) setFocusTransition(true);
     priorTable.current = tableKey;
     priorInterior.current = interiorIndex;
     if (arcadeFocus) {
-      const y = terrainHeight(ARCADE_STATION.x, ARCADE_STATION.z) + 1.321;
-      c.target.set(ARCADE_STATION.x, y, ARCADE_STATION.z + 0.181);
+      const station = arcadeStation(arcadeStationId ?? -1) ?? ARCADE_STATION;
+      const y = terrainHeight(station.x, station.z) + 1.321;
+      c.target.set(station.x, y, station.z + 0.181);
       const fov = camera instanceof THREE.PerspectiveCamera ? camera.fov : 50;
       const distance = Math.max(
         1.12,
@@ -1778,6 +1791,10 @@ export function CameraRig({
             Math.cos((Math.PI * 8) / 180) * distance,
           ),
         );
+    } else if (leavingArcade) {
+      const exit = arcadeExitCamera(from, fromTarget, playerViewPosition);
+      camera.position.copy(exit.position);
+      c.target.copy(exit.target);
     } else if (cardTableSeat !== null) {
       const angle = (cardTableSeat * Math.PI) / 2;
       camera.position.set(
@@ -1862,6 +1879,7 @@ export function CameraRig({
         to: camera.position.clone(),
         target: c.target.clone(),
         elapsed: 0,
+        arcade: changingArcade || arcadeFocus,
       };
       camera.position.copy(from);
       c.target.copy(fromTarget);
@@ -1871,6 +1889,7 @@ export function CameraRig({
     else c.update();
   }, [
     arcadeFocus,
+    arcadeStationId,
     focusAspect,
     mode,
     camera,
@@ -1887,18 +1906,24 @@ export function CameraRig({
     if (!c) return;
     const transition = blend.current;
     if (transition) {
+      if (transition.arcade && !arcadeFocus) {
+        const delta = playerViewPosition.clone().sub(last.current);
+        transition.from.add(delta);
+        transition.fromTarget.add(delta);
+        transition.to.add(delta);
+        transition.target.add(delta);
+      }
       transition.elapsed += Math.min(dt, 0.05);
-      const duration =
-        arcadeFocus || focusTransition
-          ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
-            ? 0.001
-            : 0.5
-          : 0.8;
+      const duration = transition.arcade
+        ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
+          ? 0.001
+          : 0.5
+        : 0.8;
       const t = Math.min(1, transition.elapsed / duration),
         eased = t * t * (3 - 2 * t);
       camera.position.lerpVectors(transition.from, transition.to, eased);
       c.target.lerpVectors(transition.fromTarget, transition.target, eased);
-      if (arcadeFocus || focusTransition) camera.lookAt(c.target);
+      if (transition.arcade) camera.lookAt(c.target);
       else c.update();
       last.current.copy(playerViewPosition);
       if (t === 1) {

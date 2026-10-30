@@ -11,21 +11,28 @@ import { useGLTF } from "@react-three/drei";
 import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import { RigidBody, CuboidCollider } from "@react-three/rapier";
 import * as THREE from "three";
-import { ARCADE_STATION as STATION } from "../../../packages/shared/arcade2048-station";
+import {
+  ARCADE_STATIONS,
+  LEGACY_ARCADE_STATION,
+  type ArcadeStation,
+} from "../../../packages/shared/arcade2048-station";
 import {
   arcadeOver,
   arcadeWon,
   type ArcadeDirection,
+  type ArcadeStationView,
 } from "../../../packages/shared/arcade2048";
 import { terrainHeight } from "./geography";
 import type { NavigationFeed } from "./navigation-feed";
 import type { useArcade2048 } from "./use-arcade2048";
 import {
+  ARCADE_TILE_MS,
   drawArcadeScreen,
   hitArcadeScreen,
   makeTileAnimation,
   arcadeGpuTilesVisible,
   type TileAnimation,
+  type ArcadeScreenState,
 } from "./arcade2048-screen";
 import {
   getBoatEnvironment,
@@ -35,47 +42,140 @@ import {
 import { lastLighting } from "./day-night";
 import { createArcadeTiles } from "./arcade2048-tiles";
 import { createArcadeResourceLifetime } from "./arcade2048-resources";
-type Controls = ReturnType<typeof useArcade2048>;
-export const arcadeGround = () => terrainHeight(STATION.x, STATION.z);
-export function nearArcade(navigation: NavigationFeed) {
+type Controls = ReturnType<typeof useArcade2048> & { state: ArcadeScreenState };
+export const arcadeGround = (station: ArcadeStation = LEGACY_ARCADE_STATION) =>
+  terrainHeight(station.x, station.z);
+export function nearArcade(
+  navigation: NavigationFeed,
+  station: ArcadeStation = LEGACY_ARCADE_STATION,
+) {
   const p = navigation.getSnapshot();
-  return Math.hypot(p.x - STATION.x, p.z - STATION.z) < 2.3;
+  return Math.hypot(p.x - station.x, p.z - station.z) < 2.3;
+}
+export function availableArcadeStations(
+  supported: boolean,
+): readonly ArcadeStation[] {
+  return supported ? ARCADE_STATIONS : [LEGACY_ARCADE_STATION];
+}
+export function closestArcade(navigation: NavigationFeed, supported: boolean) {
+  const p = navigation.getSnapshot();
+  return [...availableArcadeStations(supported)].sort(
+    (a, b) =>
+      Math.hypot(p.x - a.x, p.z - a.z) - Math.hypot(p.x - b.x, p.z - b.z),
+  )[0];
 }
 export function ArcadeCabinet({
   controls,
   navigation,
   enabled,
   onOpen,
+  selected,
+  stations,
+  supported,
+  selfId,
 }: {
   controls: Controls;
   navigation: NavigationFeed;
   enabled: boolean;
+  onOpen: (id: number) => void;
+  selected: number | null;
+  stations: ArcadeStationView[];
+  supported: boolean;
+  selfId: string;
+}) {
+  return (
+    <>
+      {availableArcadeStations(supported).map((station) => (
+        <StationMachine
+          key={station.id}
+          station={station}
+          data={stations.find((s) => s.id === station.id)}
+          controls={controls}
+          navigation={navigation}
+          enabled={enabled}
+          onOpen={() => onOpen(station.id)}
+          active={selected === station.id}
+          selfId={selfId}
+        />
+      ))}
+    </>
+  );
+}
+function StationMachine({
+  station,
+  data,
+  controls,
+  navigation,
+  enabled,
+  onOpen,
+  active,
+  selfId,
+}: {
+  station: ArcadeStation;
+  data: ArcadeStationView | undefined;
+  controls: Controls;
+  navigation: NavigationFeed;
+  enabled: boolean;
   onOpen: () => void;
+  active: boolean;
+  selfId: string;
 }) {
   const [visible, setVisible] = useState(false),
-    [near, setNear] = useState(false);
-  const last = useRef(0);
+    [near, setNear] = useState(false),
+    last = useRef(0),
+    direction = useRef<ArcadeDirection | null>(null),
+    passiveHardware = useRef({ kind: "", at: 0 });
+  direction.current = data?.direction ?? null;
+  const occupied = !!data?.playerId && data.playerId !== selfId;
+  const passiveState = useMemo(
+    () => ({
+      ...controls.state,
+      active: false,
+      page: "board" as const,
+      pending: false,
+      error: "",
+      focused: false,
+      occupantName: data?.name ?? "",
+      view: data?.game
+        ? {
+            game: data.game,
+            best: data.best,
+            leaders: [],
+            ranked: !controls.state.local,
+          }
+        : null,
+    }),
+    [data, controls.state.local],
+  );
+  const display = active
+    ? controls
+    : {
+        ...controls,
+        state: passiveState,
+        direction,
+        hardware: passiveHardware,
+      };
   useFrame(({ clock }) => {
     if (clock.elapsedTime - last.current < 0.25) return;
     last.current = clock.elapsedTime;
     const p = navigation.getSnapshot(),
-      distance = Math.hypot(p.x - STATION.x, p.z - STATION.z);
-    setVisible((v) => (v !== distance < 65 ? distance < 65 : v));
-    setNear((n) => (n !== distance < 2.3 ? distance < 2.3 : n));
+      distance = Math.hypot(p.x - station.x, p.z - station.z);
+    setVisible(distance < 65);
+    setNear(distance < 2.3);
   });
   return (
     <group
-      position={[STATION.x, arcadeGround(), STATION.z]}
-      name="2048 arcade station"
+      position={[station.x, arcadeGround(station), station.z]}
+      name={`2048 cabinet ${station.id + 1}`}
     >
       <RigidBody type="fixed" colliders={false}>
         <CuboidCollider args={[0.38, 0.96, 0.36]} position={[0, 0.96, 0]} />
       </RigidBody>
-      {(visible || controls.state.active) && (
+      {(visible || active) && (
         <Suspense fallback={null}>
           <CabinetModel
-            controls={controls}
-            near={near && enabled}
+            controls={display}
+            near={near && enabled && !occupied}
             onOpen={onOpen}
           />
         </Suspense>
@@ -135,7 +235,7 @@ function CabinetModel({
         for (const m of [o.material].flat())
           if (m instanceof THREE.MeshStandardMaterial) materials.add(m);
     });
-    const tiles = createArcadeTiles(screen);
+    const tiles = createArcadeTiles(screen, gl);
     const retain = createArcadeResourceLifetime(() => {
       tiles.dispose();
       texture.dispose();
@@ -188,6 +288,7 @@ function CabinetModel({
     controls.state.error,
     controls.state.focused,
     controls.state.local,
+    controls.state.occupantName,
     controls.state.view?.best,
     controls.state.page === "leaders" ? controls.state.view : null,
   ]);
@@ -202,7 +303,7 @@ function CabinetModel({
         );
     previous.current = controls.state.view;
     dirty.current = true;
-  }, [controls.state.view?.game?.revision]);
+  }, [controls.state.view?.game, controls.state.active]);
   const baseNew = useMemo(() => owned.buttonNew?.position.y ?? 0, [owned]),
     baseScores = useMemo(() => owned.buttonScores?.position.y ?? 0, [owned]);
   useEffect(() => {
@@ -219,12 +320,14 @@ function CabinetModel({
     void Promise.all([
       document.fonts.load('400 36px "Bree Serif"'),
       document.fonts.load('700 24px "Alegreya Sans"'),
-    ]).then(() => {
-      if (live) {
-        dirty.current = true;
-        owned.tiles.redrawAtlas();
-      }
-    });
+    ])
+      .then(() => {
+        if (live) {
+          dirty.current = true;
+          owned.tiles.redrawAtlas();
+        }
+      })
+      .catch(() => {});
     return () => {
       live = false;
       media.removeEventListener("change", update);
@@ -233,7 +336,7 @@ function CabinetModel({
   }, [owned]);
   useFrame((_, dt) => {
     const now = performance.now();
-    if (animation.current && now - animation.current.started > 150) {
+    if (animation.current && now - animation.current.started > ARCADE_TILE_MS) {
       animation.current = null;
     }
     if (dirty.current) {
@@ -249,7 +352,8 @@ function CabinetModel({
     for (const m of owned.materials) m.envMapIntensity = intensity;
     const lean =
       animation.current && !reduced.current
-        ? Math.max(0, 1 - (now - animation.current.started) / 150) * 0.14
+        ? Math.max(0, 1 - (now - animation.current.started) / ARCADE_TILE_MS) *
+          0.14
         : 0;
     if (owned.joystick) {
       owned.joystick.rotation.x =
@@ -370,39 +474,73 @@ export function ArcadeEntry({
   enabled,
   onOpen,
   local,
+  supported,
+  stations,
+  selfId,
+  opening,
+  error,
 }: {
   navigation: NavigationFeed;
   enabled: boolean;
-  onOpen: () => void;
+  onOpen: (id: number) => void;
   local: boolean;
+  supported: boolean;
+  stations: ArcadeStationView[];
+  selfId: string;
+  opening: boolean;
+  error: string;
 }) {
-  const [near, setNear] = useState(false);
+  const [station, setStation] = useState(() =>
+      closestArcade(navigation, supported),
+    ),
+    [near, setNear] = useState(false);
   useEffect(() => {
-    const update = () => setNear(nearArcade(navigation));
+    const update = () => {
+      const s = closestArcade(navigation, supported);
+      setStation(s);
+      setNear(nearArcade(navigation, s));
+    };
     update();
     return navigation.subscribe(update);
-  }, [navigation]);
+  }, [navigation, supported]);
+  const occupant = stations.find((s) => s.id === station.id),
+    blocked = !!occupant?.playerId && occupant.playerId !== selfId;
   useEffect(() => {
-    if (!near || !enabled) return;
+    if (!near || !enabled || blocked || opening) return;
     const key = (e: KeyboardEvent) => {
       if (e.code === "KeyE" && !e.repeat && !e.ctrlKey && !e.metaKey) {
         e.preventDefault();
         e.stopImmediatePropagation();
-        onOpen();
+        onOpen(station.id);
       }
     };
     window.addEventListener("keydown", key, true);
     return () => window.removeEventListener("keydown", key, true);
-  }, [near, enabled, onOpen]);
+  }, [near, enabled, blocked, opening, onOpen, station.id]);
   return near && enabled ? (
     <div className="planes-entry">
-      <button type="button" onClick={onOpen}>
-        <kbd>E</kbd> Play 2048
+      <button
+        type="button"
+        disabled={blocked || opening}
+        onClick={() => onOpen(station.id)}
+      >
+        {blocked ? (
+          "Occupied — blocked"
+        ) : opening ? (
+          "Opening…"
+        ) : (
+          <>
+            <kbd>E</kbd> Play 2048
+          </>
+        )}
       </button>
-      <span>
-        {local
-          ? "Local practice · Local records"
-          : "Your game · Global records"}
+      <span role="status">
+        {blocked
+          ? `${occupant!.name} is playing. Choose another cabinet.`
+          : error ||
+            (local
+              ? "Local practice · Local records"
+              : "Your game · Global records")}
       </span>
     </div>
   ) : null;

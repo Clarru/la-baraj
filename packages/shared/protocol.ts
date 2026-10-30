@@ -2,6 +2,7 @@ import {
   parseArcadeAction,
   type ArcadeAction,
   type ArcadeView,
+  type ArcadeStationView,
 } from "./arcade2048";
 import { parseCruceAction, type CruceAction, type CruceView } from "./cruce.ts";
 import { isBubbleText } from "./bubble-chat.ts";
@@ -63,6 +64,7 @@ export type FireState = { lit: boolean; revision: number };
 export type ClientMessage =
   | {
       type: "arcade2048-action";
+      stationId?: number;
       requestId: string;
       revision: number;
       action: ArcadeAction;
@@ -105,7 +107,14 @@ export type CruceRecovery = {
   error?: boolean;
 };
 export type ServerMessage =
-  | { type: "arcade2048"; view: ArcadeView; requestId: string; error?: string }
+  | { type: "arcade-stations"; stations: ArcadeStationView[] }
+  | {
+      type: "arcade2048";
+      stationBlocked?: boolean;
+      view: ArcadeView;
+      requestId: string;
+      error?: string;
+    }
   | { type: "boat-impact"; revision: number; boat: BoatPose }
   | {
       type: "snapshot";
@@ -121,7 +130,8 @@ export type ServerMessage =
       village?: VillageState;
       planes?: PlanesView;
       cruce?: CruceView;
-      features?: { arcade2048?: boolean };
+      features?: { arcade2048?: boolean; arcadeStations?: boolean };
+      arcadeStations?: ArcadeStationView[];
       cruceRecovery?: CruceRecovery;
     }
   | { type: "village"; village: VillageState }
@@ -209,12 +219,22 @@ export function parseClientMessage(raw: string): ClientMessage | null {
   switch (value.type) {
     case "arcade2048-action": {
       const action = parseArcadeAction(value.action);
+      if (
+        value.stationId !== undefined &&
+        (!Number.isInteger(value.stationId) ||
+          Number(value.stationId) < 0 ||
+          Number(value.stationId) > 2)
+      )
+        return null;
       return label(value.requestId, 64) &&
         Number.isSafeInteger(value.revision) &&
         Number(value.revision) >= 0 &&
         action
         ? {
             type: "arcade2048-action",
+            ...(value.stationId !== undefined
+              ? { stationId: Number(value.stationId) }
+              : {}),
             requestId: value.requestId,
             revision: Number(value.revision),
             action,

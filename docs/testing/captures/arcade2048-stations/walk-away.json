@@ -1,0 +1,166 @@
+{
+  "early": {
+    "elapsedMs": 2360,
+    "state": {
+      "status": "online",
+      "selfId": "707e998b-01ea-4788-99db-822cfffeb2d5",
+      "stations": [
+        {
+          "id": 0,
+          "playerId": "817bf932-871f-42f9-a100-c7b7408d128f",
+          "name": "Arcade player QA",
+          "game": {
+            "board": [
+              0,
+              0,
+              0,
+              0,
+              2,
+              0,
+              0,
+              0,
+              2,
+              16,
+              2,
+              0,
+              8,
+              2,
+              0,
+              0
+            ],
+            "score": 60,
+            "moves": 13,
+            "revision": 14,
+            "continued": false
+          },
+          "best": 60,
+          "direction": "left"
+        },
+        {
+          "id": 1,
+          "playerId": null,
+          "name": "",
+          "game": null,
+          "best": 0,
+          "direction": null
+        },
+        {
+          "id": 2,
+          "playerId": null,
+          "name": "",
+          "game": null,
+          "best": 0,
+          "direction": null
+        }
+      ],
+      "privateGame": {
+        "board": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          2,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          2,
+          0
+        ],
+        "score": 0,
+        "moves": 0,
+        "revision": 1,
+        "continued": false
+      },
+      "blocked": false
+    },
+    "controls": 0
+  },
+  "late": {
+    "elapsedMs": 36502,
+    "state": {
+      "status": "online",
+      "selfId": "707e998b-01ea-4788-99db-822cfffeb2d5",
+      "stations": [
+        {
+          "id": 0,
+          "playerId": "817bf932-871f-42f9-a100-c7b7408d128f",
+          "name": "Arcade player QA",
+          "game": {
+            "board": [
+              0,
+              0,
+              0,
+              0,
+              2,
+              0,
+              0,
+              0,
+              2,
+              16,
+              2,
+              0,
+              8,
+              2,
+              0,
+              0
+            ],
+            "score": 60,
+            "moves": 13,
+            "revision": 14,
+            "continued": false
+          },
+          "best": 60,
+          "direction": "left"
+        },
+        {
+          "id": 1,
+          "playerId": null,
+          "name": "",
+          "game": null,
+          "best": 0,
+          "direction": null
+        },
+        {
+          "id": 2,
+          "playerId": null,
+          "name": "",
+          "game": null,
+          "best": 0,
+          "direction": null
+        }
+      ],
+      "privateGame": {
+        "board": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          2,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          2,
+          0
+        ],
+        "score": 0,
+        "moves": 0,
+        "revision": 1,
+        "continued": false
+      },
+      "blocked": false
+    },
+    "controls": 0
+  }
+}

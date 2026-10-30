@@ -6,7 +6,10 @@ import { ALL_EXTENSIONS } from "@gltf-transform/extensions";
 import { MeshoptDecoder } from "meshoptimizer";
 import { Box3, Matrix4, Vector3 } from "three";
 import { inWater, terrainHeight, roadDistance } from "./geography";
-import { ARCADE_STATION as station } from "../../../packages/shared/arcade2048-station";
+import {
+  ARCADE_STATION as station,
+  ARCADE_STATIONS,
+} from "../../../packages/shared/arcade2048-station";
 it("ships a small independently decoded GLB with live-screen UVs, moving nodes, and real PBR maps", async () => {
   await MeshoptDecoder.ready;
   const file = resolve(
@@ -111,4 +114,23 @@ it("places the machine on dry land with a stable small footprint", () => {
     [0.38, 0.36],
   ].map(([x, z]) => terrainHeight(station.x + x, station.z + z));
   expect(Math.max(...heights) - Math.min(...heights)).toBeLessThan(0.12);
+});
+
+it("keeps all three lakeside cabinets dry, stable, and clear of the existing table", () => {
+  for (const s of ARCADE_STATIONS) {
+    expect(inWater(s.x, s.z)).toBe(false);
+    expect(roadDistance(s.x, s.z)).toBeGreaterThan(0.8);
+    expect(Math.hypot(s.x + 5, s.z - 68.37531356447997)).toBeGreaterThan(4);
+    const h = [
+      [-0.38, -0.36],
+      [0.38, -0.36],
+      [-0.38, 0.36],
+      [0.38, 0.36],
+    ].map(([x, z]) => terrainHeight(s.x + x, s.z + z));
+    expect(Math.max(...h) - Math.min(...h)).toBeLessThan(0.12);
+  }
+  for (let i = 1; i < 3; i++)
+    expect(ARCADE_STATIONS[i].x - ARCADE_STATIONS[i - 1].x).toBeGreaterThan(
+      1.5,
+    );
 });

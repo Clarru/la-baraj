@@ -6,3 +6,15 @@ export const ARCADE_STATION = {
   width: 0.76,
   depth: 0.72,
 };
+/** Three machines beside the gathering tables, facing the open approach from the road. */
+export const ARCADE_STATIONS = [
+  { ...ARCADE_STATION, id: 0, x: -11, z: 73.8 },
+  { ...ARCADE_STATION, id: 1, x: -9.4, z: 73.8 },
+  { ...ARCADE_STATION, id: 2, x: -7.8, z: 73.8 },
+] as const;
+export type ArcadeStation =
+  (typeof ARCADE_STATIONS)[number] | (typeof ARCADE_STATION & { id: -1 });
+export const LEGACY_ARCADE_STATION = { ...ARCADE_STATION, id: -1 } as const;
+export function arcadeStation(id: number) {
+  return ARCADE_STATIONS.find((s) => s.id === id);
+}

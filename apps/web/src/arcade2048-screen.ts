@@ -16,6 +16,7 @@ export type ArcadeScreenState = {
   error: string;
   local: boolean;
   focused?: boolean;
+  occupantName?: string;
 };
 export type TileAnimation = {
   started: number;
@@ -24,6 +25,7 @@ export type TileAnimation = {
   spawned: number[];
   gain: number;
 };
+export const ARCADE_TILE_MS = 120;
 export const SCREEN_WIDTH = 512,
   SCREEN_HEIGHT = 640;
 const INK = "#263b30",
@@ -38,11 +40,13 @@ const buttons = {
   continue: [94, 375, 324, 44],
 } as const;
 const demo = [2, 4, 0, 0, 16, 0, 2, 4, 64, 32, 8, 0, 128, 2, 0, 0];
+const emptyBoard = Array<number>(16).fill(0);
 export const ARCADE_CONTROLS_HINT = "Use WASD or mouse to move them";
 export const arcadeDisplayBoard = (s: ArcadeScreenState) =>
-  s.view?.game?.board ?? demo;
+  s.view?.game?.board ?? (s.active ? emptyBoard : demo);
 export const arcadeGpuTilesVisible = (s: ArcadeScreenState) =>
   s.page === "board" &&
+  (!s.active || !!s.view?.game) &&
   !s.error &&
   !(
     s.view?.game &&
@@ -251,7 +255,7 @@ export function drawArcadeScreen(
     );
   const board = arcadeDisplayBoard(s);
   const elapsed = animation ? now - animation.started : Infinity,
-    t = Math.min(1, Math.max(0, elapsed / 150));
+    t = Math.min(1, Math.max(0, elapsed / ARCADE_TILE_MS));
   if (!options.omitTiles && animation && t < 0.72) {
     const move = t / 0.72,
       eased = 1 - (1 - move) ** 3;
@@ -281,7 +285,16 @@ export function drawArcadeScreen(
   if (s.active) {
     text(c, ARCADE_CONTROLS_HINT, 40, 616, 16);
     button(c, [382, 600, 90, 32], "Leave");
-  } else text(c, "E or click to play", 256, 616, 17, INK, "center");
+  } else
+    text(
+      c,
+      s.occupantName ? `Occupied · ${s.occupantName}` : "E or click to play",
+      256,
+      616,
+      17,
+      INK,
+      "center",
+    );
   if (s.page === "leaders") {
     fill(c, [24, 145, 464, 449], PAPER);
     text(
@@ -405,7 +418,8 @@ export function drawArcadeScreen(
       } else line = next;
     }
     text(c, line, 60, y, 21, PAPER);
-  }
+  } else if (s.active && !s.view?.game)
+    text(c, "Opening your game…", 256, 360, 27, INK, "center", true);
   if (s.focused) {
     c.strokeStyle = FOREST;
     c.lineWidth = 3;

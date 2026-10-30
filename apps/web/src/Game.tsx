@@ -3,8 +3,10 @@ import {
   ArcadeEntry,
   ArcadeAccessibility,
   nearArcade,
+  availableArcadeStations,
 } from "./Arcade2048";
 import { useArcade2048 } from "./use-arcade2048";
+import { useArcadeEntry } from "./use-arcade-entry";
 import { captureArcadeKey } from "./arcade2048-input";
 import { reportClientDiagnostic } from "./client-diagnostics";
 import { cruceWorldLab } from "./cruce-world-test";
@@ -182,9 +184,6 @@ export default function Game({ initialName }: { initialName: string }) {
   const chatOpen = chatMode === "editing";
   const closeChat = useCallback(() => setChatMode("closed"), []);
   const finishChat = useCallback(() => setChatMode("display"), []);
-  const [arcadeOpen, setArcadeOpen] = useState(false);
-  const closeArcade = useCallback(() => setArcadeOpen(false), []);
-  const arcade = useArcade2048(room, arcadeOpen, closeArcade);
   const [planesOpen, setPlanesOpen] = useState(false);
   const ownGameSide = planesSeatSide(room.ownSeatId());
   const ownCruceSeat = cruceSeatSide(room.ownSeatId());
@@ -268,12 +267,35 @@ export default function Game({ initialName }: { initialName: string }) {
     interiorIndex === null &&
     ownGameSide === null &&
     ownCruceSeat === null;
-  const openArcade = useCallback(() => {
-    if (arcadeEnabled && nearArcade(navigation)) {
-      closeChat();
-      setArcadeOpen(true);
-    }
-  }, [arcadeEnabled, navigation, closeChat]);
+  const canApproachArcade = useCallback(
+    (id: number) => {
+      const station = availableArcadeStations(
+        room.getSnapshot().arcadeStationsAvailable,
+      ).find((s) => s.id === id);
+      return !!station && nearArcade(navigation, station);
+    },
+    [room, navigation],
+  );
+  const {
+    stationId: arcadeStationId,
+    opening: arcadeOpening,
+    error: arcadeEntryError,
+    open: openArcade,
+    close: closeArcade,
+  } = useArcadeEntry(
+    room,
+    arcadeEnabled,
+    roomView.arcadeBlocked,
+    canApproachArcade,
+    closeChat,
+  );
+  const arcadeOpen = arcadeStationId !== null;
+  const arcade = useArcade2048(
+    room,
+    arcadeOpen,
+    closeArcade,
+    arcadeStationId ?? undefined,
+  );
 
   const [waveAvailable, setWaveAvailable] = useState(false);
   const waveAvailability = useRef(false);
@@ -685,6 +707,10 @@ export default function Game({ initialName }: { initialName: string }) {
               {!performanceLab && (
                 <ArcadeCabinet
                   controls={arcade}
+                  selected={arcadeStationId}
+                  stations={roomView.arcadeStations}
+                  supported={roomView.arcadeStationsAvailable}
+                  selfId={roomView.selfId}
                   navigation={navigation}
                   enabled={arcadeEnabled}
                   onOpen={openArcade}
@@ -702,6 +728,7 @@ export default function Game({ initialName }: { initialName: string }) {
             />
             <CameraRig
               arcadeFocus={arcadeOpen}
+              arcadeStationId={arcadeStationId}
               tableSeat={planesOpen ? ownGameSide : null}
               cardTableSeat={cruceOpen ? ownCruceSeat : null}
               mode={mode}
@@ -725,7 +752,7 @@ export default function Game({ initialName }: { initialName: string }) {
             room={room}
             menuOpen={panel !== null}
             onMenu={() => {
-              setArcadeOpen(false);
+              closeArcade();
               setPanel((current) => (current ? null : "menu"));
             }}
           />
@@ -737,6 +764,11 @@ export default function Game({ initialName }: { initialName: string }) {
           />
           <ArcadeEntry
             local={room.localPreview}
+            supported={roomView.arcadeStationsAvailable}
+            stations={roomView.arcadeStations}
+            selfId={roomView.selfId}
+            opening={arcadeOpening}
+            error={arcadeEntryError}
             navigation={navigation}
             enabled={arcadeEnabled && !arcadeOpen}
             onOpen={openArcade}

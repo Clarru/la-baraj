@@ -1037,3 +1037,95 @@ it("renews a remote bubble's lifetime when the same text is published again", ()
   expect(room.chatFor(friend.id)).toBe("");
   disconnect();
 });
+
+it("keeps independent public cabinet deltas and rejects late private replies after a timed-out entry", async () => {
+  vi.useFakeTimers();
+  const room = new MultiplayerRoom(),
+    stop = room.connect(),
+    socket = sockets[0];
+  socket.open();
+  snapshot(socket);
+  const hello = socket.sent.find((m) => m.type === "hello")!;
+  socket.receive({
+    type: "snapshot",
+    version: 1,
+    selfId: "self-1",
+    players: [self, friend],
+    fire: { lit: true, revision: 0 },
+    seats: {},
+    home: { index: 14, resumeToken: hello.resumeToken },
+    features: { arcade2048: true, arcadeStations: true },
+    arcadeStations: [
+      { id: 0, playerId: null, name: "", game: null, best: 0, direction: null },
+      { id: 1, playerId: null, name: "", game: null, best: 0, direction: null },
+    ],
+  });
+  const game = {
+      board: [2, 2, ...Array(14).fill(0)],
+      score: 0,
+      moves: 0,
+      revision: 1,
+      continued: false,
+    },
+    view = { game, best: 0, leaders: [], ranked: true };
+  socket.receive({
+    type: "arcade-stations",
+    stations: [
+      {
+        id: 0,
+        playerId: "friend-1",
+        name: "Friend",
+        game,
+        best: 0,
+        direction: null,
+      },
+    ],
+  });
+  expect(
+    room.getSnapshot().arcadeStations.find((s) => s.id === 0)?.game,
+  ).toEqual(game);
+  expect(
+    room.getSnapshot().arcadeStations.find((s) => s.id === 1)?.playerId,
+  ).toBeNull();
+  const pending = room.arcadeAction({ kind: "resume" }, 0, 1),
+    request = socket.sent.at(-1)!;
+  expect(request).toMatchObject({ stationId: 1, action: { kind: "resume" } });
+  await vi.advanceTimersByTimeAsync(6001);
+  expect(await pending).toContain("timed out");
+  socket.receive({
+    type: "arcade2048",
+    requestId: request.requestId,
+    view,
+    stationBlocked: true,
+    error: "old denial",
+  });
+  expect(room.getSnapshot().arcadeBlocked).toBe(false);
+  expect(room.getSnapshot().arcade2048).toBeNull();
+  const fresh = room.arcadeAction({ kind: "resume" }, 0, 1),
+    next = socket.sent.at(-1)!;
+  socket.receive({ type: "arcade2048", requestId: next.requestId, view });
+  expect(await fresh).toBeNull();
+  expect(room.getSnapshot().arcade2048).toEqual(view);
+  const older = room.arcadeAction({ kind: "resume" }, 1, 0),
+    oldRequest = socket.sent.at(-1)!;
+  const newer = room.arcadeAction({ kind: "resume" }, 1, 1),
+    newRequest = socket.sent.at(-1)!;
+  socket.receive({ type: "arcade2048", requestId: newRequest.requestId, view });
+  await newer;
+  socket.receive({
+    type: "arcade2048",
+    requestId: oldRequest.requestId,
+    view: { ...view, game: null },
+    stationBlocked: true,
+    error: "stale occupied",
+  });
+  await older;
+  expect(room.getSnapshot().arcadeBlocked).toBe(false);
+  expect(room.getSnapshot().arcade2048).toEqual(view);
+  room.leaveArcade(1);
+  expect(socket.sent.at(-1)).toMatchObject({
+    stationId: 1,
+    action: { kind: "leave" },
+  });
+  stop();
+});
