@@ -3,6 +3,9 @@ import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import {
   TIERS,
+  createMeadowFrameGuard,
+  advanceMeadowFrameGuard,
+  resetMeadowFrameGuard,
   FLOWER_COLOURS,
   meadowTier,
   chunkWindow,
@@ -47,19 +50,25 @@ const grassHigh = new THREE.Color("#6b8545");
 const flowerColours = FLOWER_COLOURS.map((c) => new THREE.Color(c));
 
 const FRAME_BUDGET_MS = 3;
-const GUARD_WARMUP_S = 6;
-const GUARD_SLOW_MS = 38;
-const GUARD_SLOW_FOR_S = 3;
-const GUARD_WINDOW = 120;
 
 type Build = { key: ChunkKey; slot: number };
 
-function makeInstanced(geometry: THREE.BufferGeometry, material: THREE.Material, capacity: number) {
+function makeInstanced(
+  geometry: THREE.BufferGeometry,
+  material: THREE.Material,
+  capacity: number,
+) {
   const mesh = new THREE.InstancedMesh(geometry, material, capacity);
   mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-  mesh.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(capacity * 3), 3);
+  mesh.instanceColor = new THREE.InstancedBufferAttribute(
+    new Float32Array(capacity * 3),
+    3,
+  );
   mesh.instanceColor.setUsage(THREE.DynamicDrawUsage);
-  const random = new THREE.InstancedBufferAttribute(new Float32Array(capacity).fill(1), 1);
+  const random = new THREE.InstancedBufferAttribute(
+    new Float32Array(capacity).fill(1),
+    1,
+  );
   random.setUsage(THREE.DynamicDrawUsage);
   // Per-mesh attribute: instanced attributes on a shared geometry would collide, so use the mesh's own geometry clone.
   mesh.geometry = geometry.clone();
@@ -78,8 +87,16 @@ function MeadowMeshes({ tier }: { tier: ActiveTier }) {
   const { grass, flowers } = useMemo(() => {
     const a = sharedAssets();
     return {
-      grass: makeInstanced(a.grassGeometry, a.grassMaterial, slotCount * settings.grassPerChunk),
-      flowers: makeInstanced(a.flowerGeometry, a.flowerMaterial, slotCount * settings.flowersPerChunk),
+      grass: makeInstanced(
+        a.grassGeometry,
+        a.grassMaterial,
+        slotCount * settings.grassPerChunk,
+      ),
+      flowers: makeInstanced(
+        a.flowerGeometry,
+        a.flowerMaterial,
+        slotCount * settings.flowersPerChunk,
+      ),
     };
   }, [settings, slotCount]);
   useEffect(
@@ -119,7 +136,8 @@ function MeadowMeshes({ tier }: { tier: ActiveTier }) {
         slotCount,
       );
       for (const slot of plan.clear) zeroSlot(grass, flowers, settings, slot);
-      for (const [key, slot] of s.slots) if (plan.clear.includes(slot)) s.slots.delete(key);
+      for (const [key, slot] of s.slots)
+        if (plan.clear.includes(slot)) s.slots.delete(key);
       s.queue = plan.build;
       s.head = 0;
       if (s.current) {
@@ -139,7 +157,13 @@ function MeadowMeshes({ tier }: { tier: ActiveTier }) {
         s.current = { build: beginChunk(next.key, settings), slot: next.slot };
       }
       if (!stepChunk(s.current.build, deadline)) break;
-      writeSlot(grass, flowers, settings, s.current.slot, finishChunk(s.current.build));
+      writeSlot(
+        grass,
+        flowers,
+        settings,
+        s.current.slot,
+        finishChunk(s.current.build),
+      );
       s.slots.set(s.current.build.key, s.current.slot);
       s.current = null;
     }
@@ -154,7 +178,9 @@ function MeadowMeshes({ tier }: { tier: ActiveTier }) {
 }
 
 function markRange(mesh: THREE.InstancedMesh, start: number, count: number) {
-  const random = mesh.geometry.getAttribute("meadowRandom") as THREE.InstancedBufferAttribute;
+  const random = mesh.geometry.getAttribute(
+    "meadowRandom",
+  ) as THREE.InstancedBufferAttribute;
   mesh.instanceMatrix.addUpdateRange(start * 16, count * 16);
   mesh.instanceMatrix.needsUpdate = true;
   mesh.instanceColor!.addUpdateRange(start * 3, count * 3);
@@ -166,10 +192,19 @@ function markRange(mesh: THREE.InstancedMesh, start: number, count: number) {
 function zeroRange(mesh: THREE.InstancedMesh, start: number, end: number) {
   if (end <= start) return;
   mesh.instanceMatrix.array.fill(0, start * 16, end * 16);
-  (mesh.geometry.getAttribute("meadowRandom").array as Float32Array).fill(1, start, end);
+  (mesh.geometry.getAttribute("meadowRandom").array as Float32Array).fill(
+    1,
+    start,
+    end,
+  );
 }
 
-function zeroSlot(grass: THREE.InstancedMesh, flowers: THREE.InstancedMesh, t: (typeof TIERS)[ActiveTier], slot: number) {
+function zeroSlot(
+  grass: THREE.InstancedMesh,
+  flowers: THREE.InstancedMesh,
+  t: (typeof TIERS)[ActiveTier],
+  slot: number,
+) {
   zeroRange(grass, slot * t.grassPerChunk, (slot + 1) * t.grassPerChunk);
   markRange(grass, slot * t.grassPerChunk, t.grassPerChunk);
   zeroRange(flowers, slot * t.flowersPerChunk, (slot + 1) * t.flowersPerChunk);
@@ -184,31 +219,51 @@ function writeSlot(
   sample: ChunkSample,
 ) {
   const gStart = slot * t.grassPerChunk;
-  const gRandom = grass.geometry.getAttribute("meadowRandom").array as Float32Array;
+  const gRandom = grass.geometry.getAttribute("meadowRandom")
+    .array as Float32Array;
   const gColour = grass.instanceColor!.array as Float32Array;
   for (let i = 0; i < sample.grassCount; i++) {
-    const o = i * 6, at = gStart + i;
-    transform.position.set(sample.grass[o], sample.grass[o + 1], sample.grass[o + 2]);
+    const o = i * 6,
+      at = gStart + i;
+    transform.position.set(
+      sample.grass[o],
+      sample.grass[o + 1],
+      sample.grass[o + 2],
+    );
     transform.rotation.set(0, sample.grass[o + 3], 0);
     transform.scale.setScalar(sample.grass[o + 4]);
     transform.updateMatrix();
-    transform.matrix.toArray(grass.instanceMatrix.array as Float32Array, at * 16);
+    transform.matrix.toArray(
+      grass.instanceMatrix.array as Float32Array,
+      at * 16,
+    );
     gRandom[at] = sample.grass[o + 5];
-    colour.lerpColors(grassLow, grassHigh, sample.grass[o + 5]).toArray(gColour, at * 3);
+    colour
+      .lerpColors(grassLow, grassHigh, sample.grass[o + 5])
+      .toArray(gColour, at * 3);
   }
   zeroRange(grass, gStart + sample.grassCount, gStart + t.grassPerChunk);
   markRange(grass, gStart, t.grassPerChunk);
 
   const fStart = slot * t.flowersPerChunk;
-  const fRandom = flowers.geometry.getAttribute("meadowRandom").array as Float32Array;
+  const fRandom = flowers.geometry.getAttribute("meadowRandom")
+    .array as Float32Array;
   const fColour = flowers.instanceColor!.array as Float32Array;
   for (let i = 0; i < sample.flowerCount; i++) {
-    const o = i * 7, at = fStart + i;
-    transform.position.set(sample.flowers[o], sample.flowers[o + 1], sample.flowers[o + 2]);
+    const o = i * 7,
+      at = fStart + i;
+    transform.position.set(
+      sample.flowers[o],
+      sample.flowers[o + 1],
+      sample.flowers[o + 2],
+    );
     transform.rotation.set(0, sample.flowers[o + 3], 0);
     transform.scale.setScalar(sample.flowers[o + 4]);
     transform.updateMatrix();
-    transform.matrix.toArray(flowers.instanceMatrix.array as Float32Array, at * 16);
+    transform.matrix.toArray(
+      flowers.instanceMatrix.array as Float32Array,
+      at * 16,
+    );
     fRandom[at] = sample.flowers[o + 5];
     flowerColours[sample.flowers[o + 6]].toArray(fColour, at * 3);
   }
@@ -220,18 +275,23 @@ export function Meadow({ forceHigh = false }: { forceHigh?: boolean }) {
   const gl = useThree((s) => s.gl);
   const initial = useMemo<MeadowTier>(() => {
     const diagnostics = import.meta.env.VITE_GAME_DIAGNOSTICS === "1";
-    const override = diagnostics ? new URLSearchParams(location.search).get("meadow") : null;
+    const override = diagnostics
+      ? new URLSearchParams(location.search).get("meadow")
+      : null;
     if (forceHigh && !override) return "high";
     const context = gl.getContext();
     const info = context.getExtension("WEBGL_debug_renderer_info");
     return meadowTier({
       override,
       cores: navigator.hardwareConcurrency,
-      memoryGiB: (navigator as Navigator & { deviceMemory?: number }).deviceMemory,
+      memoryGiB: (navigator as Navigator & { deviceMemory?: number })
+        .deviceMemory,
       mobile:
         /Mobi|Android|iPhone|iPad/.test(navigator.userAgent) ||
         window.matchMedia("(pointer: coarse)").matches,
-      renderer: info ? String(context.getParameter(info.UNMASKED_RENDERER_WEBGL)) : "",
+      renderer: info
+        ? String(context.getParameter(info.UNMASKED_RENDERER_WEBGL))
+        : "",
     });
   }, [gl, forceHigh]);
   const [tier, setTier] = useState<MeadowTier>(initial);
@@ -247,22 +307,19 @@ export function Meadow({ forceHigh = false }: { forceHigh?: boolean }) {
     return () => query.removeEventListener("change", update);
   }, []);
 
-  const guard = useRef({ deltas: new Float32Array(GUARD_WINDOW), n: 0, elapsed: 0, slowFor: 0 });
+  const guard = useMemo(createMeadowFrameGuard, []);
+  useEffect(() => {
+    const visible = () => {
+      if (!document.hidden) resetMeadowFrameGuard(guard);
+    };
+    document.addEventListener("visibilitychange", visible);
+    return () => document.removeEventListener("visibilitychange", visible);
+  }, [guard]);
   useFrame((_, dt) => {
-    meadowUniforms.uTime.value = (meadowUniforms.uTime.value + Math.min(dt, 0.1)) % TIME_PERIOD;
-    if (forceHigh || active !== "high") return;
-    const g = guard.current;
-    if (dt > 0.25) return; // tab resume / long stall: not a sign of a slow machine
-    dt = Math.min(dt, 0.1);
-    g.deltas[g.n++ % GUARD_WINDOW] = dt * 1000;
-    g.elapsed += dt;
-    if (g.elapsed < GUARD_WARMUP_S || g.n < GUARD_WINDOW) return;
-    let sum = 0;
-    for (let i = 0; i < GUARD_WINDOW; i++) sum += g.deltas[i];
-    if (sum / GUARD_WINDOW > GUARD_SLOW_MS) {
-      g.slowFor += dt;
-      if (g.slowFor >= GUARD_SLOW_FOR_S) setTier("low");
-    } else g.slowFor = 0;
+    meadowUniforms.uTime.value =
+      (meadowUniforms.uTime.value + Math.min(dt, 0.1)) % TIME_PERIOD;
+    if (forceHigh || active !== "high" || document.hidden) return;
+    if (advanceMeadowFrameGuard(guard, dt)) setTier("low");
   });
 
   if (active === "off") return null;
