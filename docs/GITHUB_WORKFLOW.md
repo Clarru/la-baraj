@@ -34,13 +34,15 @@ Large ignored Blender/source assets remain available in the legacy folder. Copy 
 5. Commit and push the feature branch with `git push -u origin <your-branch>`. No force pushes or direct pushes to main from feature chats.
 6. Open a pull request targeting main; use a draft while unfinished. Include the behavior changed, validation and any asset provenance or shared-file integration concerns. Attach every created PR to the chat with the Codex attachment tool.
 
-The GitHub checks run for pull requests and for main. A branch push is safe to share for review and does not update production. A Vercel preview may be generated, but the Worker allows only the exact production browser origin. Do not widen origin checks to a wildcard. Multiplayer preview testing requires a deliberately approved exact preview origin or integration into production.
+The GitHub checks run for pull requests and for main. A branch push is safe to share for review and does not update production. Automatic Vercel deployments are enabled only for `main` to conserve the free deployment allowance; feature pushes and PR updates do not create Vercel previews. A missing Vercel preview check is expected, while the GitHub code checks remain required. Merge current main into feature branches before further pushes so they include this policy. Use the coordinated local preview for browser acceptance. The Worker still allows only the exact production browser origin; do not widen origin checks to a wildcard.
 
 ## Integration and publication
 
 This chat, **Putting it live**, is the integration/release owner unless the user explicitly assigns another owner. Feature chats may create/push feature branches and PRs. The release owner reviews the diff, resolves overlaps while retaining both features, waits for checks and merges PRs one at a time. Do not merge incomplete work merely because a branch is available.
 
 A merge/push to main automatically builds and deploys the frontend on Vercel. Verify the deployment is Ready and check the production URL after a runtime change. Deploy Cloudflare only for intentional backend/config changes, after compatibility and protocol checks; frontend pushes do not automatically deploy the Worker. No paid upgrade is authorized.
+
+If Vercel refuses a deployment because its quota is exhausted, keep the current working production deployment and record the newer main revision as awaiting deployment. Do not claim a merge is live, repeatedly create deployments, or upgrade the plan. Retry publication when Vercel permits it. The branch deployment policy uses `**` to match branch names containing slashes and an explicit `main: true` exception, following [Vercel's Git configuration rules](https://vercel.com/docs/project-configuration/git-configuration).
 
 The game has one shared world at https://la-baraj.vercel.app/. Old room-query links join that same world; do not generate or introduce new invite rooms. Preserve the canonical world and its ownership/fire storage.
 
