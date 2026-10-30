@@ -122,10 +122,14 @@ export const fishingSpots = [55, 0, -235].map((x) => ({
   x,
   z: southShore(x) + 3,
 }));
+export const FISHING_CLEARANCE = 7;
+export const SHARED_GROUND_CLEARANCE = 11;
 export function activityClearance(x: number, z: number): boolean {
   return (
-    !fishingSpots.some((p) => Math.hypot(x - p.x, z - p.z) < 7) &&
-    !sharedGrounds.some((p) => Math.hypot(x - p.x, z - p.z) < 11)
+    !fishingSpots.some((p) => Math.hypot(x - p.x, z - p.z) < FISHING_CLEARANCE) &&
+    !sharedGrounds.some(
+      (p) => Math.hypot(x - p.x, z - p.z) < SHARED_GROUND_CLEARANCE,
+    )
   );
 }
 export const sharedGrounds = [

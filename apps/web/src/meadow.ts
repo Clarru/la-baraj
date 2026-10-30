@@ -9,6 +9,8 @@ import {
   cabinSpots,
   fishingSpots,
   sharedGrounds,
+  FISHING_CLEARANCE,
+  SHARED_GROUND_CLEARANCE,
   southShore,
   rng,
 } from "./geography";
@@ -62,10 +64,11 @@ function plantable(x: number, z: number, shore: number, wet: boolean, margin: nu
   if (wet || shore <= 4 + margin) return false;
   if (Math.hypot(x - 4, z - (southShore(0) + 12)) <= 16 + margin) return false;
   for (const c of cabinSpots) if (Math.hypot(x - c.x, z - c.z) < 9.5 + margin) return false;
-  for (const p of fishingSpots) if (Math.hypot(x - p.x, z - p.z) < 7 + margin) return false;
-  for (const p of sharedGrounds) if (Math.hypot(x - p.x, z - p.z) < 11 + margin) return false;
+  for (const p of fishingSpots) if (Math.hypot(x - p.x, z - p.z) < FISHING_CLEARANCE + margin) return false;
+  for (const p of sharedGrounds) if (Math.hypot(x - p.x, z - p.z) < SHARED_GROUND_CLEARANCE + margin) return false;
   return drawnRoadDistance(x, z) > 3.2 + margin;
 }
+export const GRID_MARGIN = 1.5;
 export function canMeadow(x: number, z: number, shore?: number, wet?: boolean): boolean {
   const w = wet ?? inWater(x, z);
   if (w) return false;
@@ -127,7 +130,7 @@ export function sampleChunk(key: ChunkKey, settings: TierSettings): ChunkSample 
       const x = x0 + i * step, z = z0 + j * step, k = j * n + i;
       const wet = inWater(x, z), shore = shoreDistance(x, z);
       height[k] = terrainHeight(x, z, shore, wet);
-      ok[k] = plantable(x, z, shore, wet, 1.5) ? 1 : 0;
+      ok[k] = plantable(x, z, shore, wet, GRID_MARGIN) ? 1 : 0;
     }
   const grass = new Float32Array(settings.grassPerChunk * 6);
   const flowers = new Float32Array(settings.flowersPerChunk * 7);
@@ -278,7 +281,7 @@ varying vec2 vMeadow;`,
         `vec3 origin = (modelMatrix * instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
 float d = distance(origin.xz, cameraPosition.xz);
 float density = 1.0 - smoothstep(uFull, uFade, d);
-float vis = clamp((density - meadowRandom) / 0.12, 0.0, 1.0);
+float vis = clamp((density * 1.12 - meadowRandom) / 0.12, 0.0, 1.0);
 vMeadow = vec2(${kind === "grass" ? "uv.y" : "uv.x"}, vis);
 float instScale = length(instanceMatrix[0].xyz);
 vec4 worldPos = modelMatrix * instanceMatrix * vec4(transformed * vis, 1.0);
@@ -288,6 +291,13 @@ gl_Position = projectionMatrix * mvPosition;`,
       );
     shader.fragmentShader = shader.fragmentShader
       .replace("#include <common>", `#include <common>\nvarying vec2 vMeadow;`)
+      // Blades are lit with their authored (up-biased) normal from either side; valid because there is no normal/bump map.
+      .replace(
+        "#include <normal_fragment_begin>",
+        `#include <normal_fragment_begin>
+normal = normalize(vNormal);
+nonPerturbedNormal = normal;`,
+      )
       .replace(
         "#include <color_fragment>",
         `#include <color_fragment>\n${

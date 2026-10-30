@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import * as THREE from "three";
 import { meadowTier, TIERS, canMeadow, chunkWindow, sampleChunk, densityAt, tuftGeometry, flowerGeometry, meadowMaterial, FLOWER_COLOURS } from "./meadow";
+import { FISHING_CLEARANCE, SHARED_GROUND_CLEARANCE } from "./geography";
 import { southShore, cabinSpots, fishingSpots, terrainHeight } from "./geography";
 
 describe("meadow tier", () => {
@@ -72,5 +73,15 @@ describe("density and geometry", () => {
     expect(a.customProgramCacheKey()).not.toBe(b.customProgramCacheKey());
     expect(a.side).toBe(THREE.DoubleSide);
     expect(a.userData.meadowUniforms).toBe(b.userData.meadowUniforms);
+  });
+});
+describe("clearance radii", () => {
+  it("uses the geography clearance constants for activity spots", () => {
+    expect(FISHING_CLEARANCE).toBe(7); expect(SHARED_GROUND_CLEARANCE).toBe(11);
+    const f = fishingSpots[0];
+    expect(canMeadow(f.x, f.z + FISHING_CLEARANCE - 0.5)).toBe(false);
+    const s = TIERS.high, r = sampleChunk(`${Math.floor(f.x / s.chunk)},${Math.floor(f.z / s.chunk)}`, s);
+    for (let i = 0; i < r.grassCount; i++)
+      expect(Math.hypot(r.grass[i*6] - f.x, r.grass[i*6+2] - f.z)).toBeGreaterThanOrEqual(FISHING_CLEARANCE);
   });
 });
