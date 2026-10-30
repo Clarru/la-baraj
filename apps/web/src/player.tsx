@@ -1,3 +1,4 @@
+import { ARCADE_STATION } from "../../../packages/shared/arcade2048-station";
 import { cruceContactForPose, type CruceSeatContact } from "./cruce-seating";
 import {
   requestSocialWave,
@@ -1692,7 +1693,9 @@ export function CameraRig({
   transitioning = false,
   tableSeat = null,
   cardTableSeat = null,
+  arcadeFocus = false,
 }: {
+  arcadeFocus?: boolean;
   mode: ViewMode;
   resetKey: number;
   homeIndex?: number;
@@ -1717,7 +1720,8 @@ export function CameraRig({
     window.addEventListener("keydown", inspect);
     return () => window.removeEventListener("keydown", inspect);
   }, [mode]);
-  const { camera, gl, events } = useThree();
+  const { camera, gl, events, size } = useThree();
+  const focusAspect = arcadeFocus ? size.width / Math.max(1, size.height) : 0;
   useEffect(() => {
     const c = controls.current;
     if (!c) return;
@@ -1728,6 +1732,8 @@ export function CameraRig({
     return bindCameraMouse(c, element);
   }, [gl, events.connected]);
   const last = useRef(new THREE.Vector3());
+  const priorArcade = useRef(false);
+  const [focusTransition, setFocusTransition] = useState(false);
   const priorInterior = useRef<number | null>(null);
   const priorTable = useRef<string | null>(null);
   const blend = useRef<{
@@ -1752,9 +1758,29 @@ export function CameraRig({
           ? `planes:${tableSeat}`
           : null;
     const changingTable = priorTable.current !== tableKey;
+    const changingArcade = priorArcade.current !== arcadeFocus;
+    priorArcade.current = arcadeFocus;
+    if (changingArcade) setFocusTransition(true);
     priorTable.current = tableKey;
     priorInterior.current = interiorIndex;
-    if (cardTableSeat !== null) {
+    if (arcadeFocus) {
+      const y = terrainHeight(ARCADE_STATION.x, ARCADE_STATION.z) + 1.321;
+      c.target.set(ARCADE_STATION.x, y, ARCADE_STATION.z + 0.181);
+      const fov = camera instanceof THREE.PerspectiveCamera ? camera.fov : 50;
+      const distance = Math.max(
+        1.12,
+        0.6 / (2 * Math.tan((fov * Math.PI) / 360) * focusAspect * 0.94),
+      );
+      camera.position
+        .copy(c.target)
+        .add(
+          new THREE.Vector3(
+            0,
+            Math.sin((Math.PI * 8) / 180) * distance,
+            Math.cos((Math.PI * 8) / 180) * distance,
+          ),
+        );
+    } else if (cardTableSeat !== null) {
       const angle = (cardTableSeat * Math.PI) / 2;
       camera.position.set(
         CRUCE_TABLE.x - Math.sin(angle) * 4.3 + Math.cos(angle) * 0.75,
@@ -1831,7 +1857,7 @@ export function CameraRig({
         .add(new THREE.Vector3(...homeWalkCameraOffset(homeIndex)));
       c.target.copy(playerViewPosition).add(new THREE.Vector3(0, 0.8, 0));
     }
-    if (changingRoom || changingTable) {
+    if (changingRoom || changingTable || changingArcade) {
       blend.current = {
         from,
         fromTarget,
@@ -1843,8 +1869,11 @@ export function CameraRig({
       c.target.copy(fromTarget);
     }
     last.current.copy(playerViewPosition);
-    c.update();
+    if (changingArcade || arcadeFocus) camera.lookAt(c.target);
+    else c.update();
   }, [
+    arcadeFocus,
+    focusAspect,
     mode,
     camera,
     resetKey,
@@ -1861,16 +1890,28 @@ export function CameraRig({
     const transition = blend.current;
     if (transition) {
       transition.elapsed += Math.min(dt, 0.05);
-      const t = Math.min(1, transition.elapsed / 0.8),
+      const duration =
+        arcadeFocus || focusTransition
+          ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
+            ? 0.001
+            : 0.5
+          : 0.8;
+      const t = Math.min(1, transition.elapsed / duration),
         eased = t * t * (3 - 2 * t);
       camera.position.lerpVectors(transition.from, transition.to, eased);
       c.target.lerpVectors(transition.fromTarget, transition.target, eased);
-      c.update();
+      if (arcadeFocus || focusTransition) camera.lookAt(c.target);
+      else c.update();
       last.current.copy(playerViewPosition);
-      if (t === 1) blend.current = null;
+      if (t === 1) {
+        blend.current = null;
+        if (focusTransition) setFocusTransition(false);
+      }
       return;
     }
     if (
+      !arcadeFocus &&
+      !focusTransition &&
       tableSeat === null &&
       cardTableSeat === null &&
       interiorIndex === null &&
@@ -1888,7 +1929,12 @@ export function CameraRig({
     <OrbitControls
       ref={controls}
       makeDefault
-      enabled={!transitioning}
+      enabled={
+        !transitioning &&
+        !arcadeFocus &&
+        !focusTransition &&
+        !priorArcade.current
+      }
       enablePan={
         tableSeat === null &&
         cardTableSeat === null &&

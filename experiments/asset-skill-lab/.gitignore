@@ -1,0 +1,10 @@
+# Keep exact failed renders/reports locally; publish selected compact comparison evidence.
+*.log
+**/*.log
+**/*.blend1
+**/*-raw.glb
+asset-comparison.html
+*/reference/*-mask.png
+*/final/qa/*-mask.png
+*/build-v*/
+__pycache__/

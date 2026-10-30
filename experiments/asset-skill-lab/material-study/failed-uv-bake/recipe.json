@@ -1,0 +1,16 @@
+{
+  "source": "material-atlas-512.png",
+  "method": "Own rounded canonical slabs selected-to-active Cycles bake; edge-aware emission color and metallic/roughness. No reference texture maps copied.",
+  "size": [
+    512,
+    512
+  ],
+  "metal_roughness_center": 0.6,
+  "metal_roughness_worn_edge": 0.33,
+  "metallic_center": 0.94,
+  "metallic_worn_edge": 1,
+  "normal_space": "tangent +X +Y +Z",
+  "high_poly_bevel_m": 0.009,
+  "UV_layout": "four equal vertical strips: iron-body, iron-edge, timber-light, timber-dark",
+  "red_channel": "neutral occlusion value 1, not baked AO"
+}

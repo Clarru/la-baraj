@@ -1,3 +1,11 @@
+import {
+  ArcadeCabinet,
+  ArcadeEntry,
+  ArcadeAccessibility,
+  nearArcade,
+} from "./Arcade2048";
+import { useArcade2048 } from "./use-arcade2048";
+import { captureArcadeKey } from "./arcade2048-input";
 import { reportClientDiagnostic } from "./client-diagnostics";
 import { cruceWorldLab } from "./cruce-world-test";
 import { CruceWorldLab } from "./CruceWorldLab";
@@ -173,6 +181,9 @@ export default function Game({ initialName }: { initialName: string }) {
   const chatOpen = chatMode === "editing";
   const closeChat = useCallback(() => setChatMode("closed"), []);
   const finishChat = useCallback(() => setChatMode("display"), []);
+  const [arcadeOpen, setArcadeOpen] = useState(false);
+  const closeArcade = useCallback(() => setArcadeOpen(false), []);
+  const arcade = useArcade2048(room, arcadeOpen, closeArcade);
   const [planesOpen, setPlanesOpen] = useState(false);
   const ownGameSide = planesSeatSide(room.ownSeatId());
   const ownCruceSeat = cruceSeatSide(room.ownSeatId());
@@ -242,6 +253,27 @@ export default function Game({ initialName }: { initialName: string }) {
   const [navigation] = useState(() =>
     createNavigationFeed({ x: 45, z: 27, heading: 0 }),
   );
+  const arcadeEnabled =
+    hasHome &&
+    mode === "walk" &&
+    panel === null &&
+    !planesOpen &&
+    !cruceOpen &&
+    !activityBusy &&
+    !doorTransition &&
+    !chatOpen &&
+    !vehicleMounted &&
+    !boatMounted &&
+    interiorIndex === null &&
+    ownGameSide === null &&
+    ownCruceSeat === null;
+  const openArcade = useCallback(() => {
+    if (arcadeEnabled && nearArcade(navigation)) {
+      closeChat();
+      setArcadeOpen(true);
+    }
+  }, [arcadeEnabled, navigation, closeChat]);
+
   const [waveAvailable, setWaveAvailable] = useState(false);
   const waveAvailability = useRef(false);
   const fireOutput = useRef<HTMLOutputElement>(null),
@@ -286,6 +318,15 @@ export default function Game({ initialName }: { initialName: string }) {
   }, []);
   useEffect(() => {
     const capture = (event: KeyboardEvent) => {
+      if (arcadeOpen) {
+        captureArcadeKey(event, arcade.state, {
+          move: arcade.move,
+          action: arcade.action,
+          leave: closeArcade,
+        });
+        return;
+      }
+
       if (blockPlanesResultExit(event, planesOpen && panel === null)) return;
       if (
         (cruceOpen || ownCruceSeat !== null) &&
@@ -438,6 +479,9 @@ export default function Game({ initialName }: { initialName: string }) {
     window.addEventListener("keydown", capture, true);
     return () => window.removeEventListener("keydown", capture, true);
   }, [
+    arcadeOpen,
+    arcade,
+    closeArcade,
     panel,
     mode,
     interiorIndex,
@@ -475,7 +519,8 @@ export default function Game({ initialName }: { initialName: string }) {
     planesOpen ||
     cruceOpen ||
     ownCruceSeat !== null ||
-    ownGameSide !== null
+    ownGameSide !== null ||
+    arcadeOpen
       ? null
       : vehicleMounted
         ? vehicleHintUntil > 0
@@ -571,28 +616,31 @@ export default function Game({ initialName }: { initialName: string }) {
                 />
               </group>
               {hasHome && (
-                <Player
-                  homeIndex={homeIndex}
-                  mode={mode}
-                  resetKey={resetKey}
-                  paused={
-                    panel !== null ||
-                    activityBusy ||
-                    doorTransition ||
-                    cruceOpen ||
-                    planesOpen ||
-                    chatOpen
-                  }
-                  waveRequest={waveRequest}
-                  onMove={ignoreMovement}
-                  onMotion={updateMotion}
-                  onVehicleChange={setVehicleMounted}
-                  onVehicleHint={setScooterNear}
-                  onBoatChange={setBoatMounted}
-                  onBoatHint={setBoatNear}
-                  indoors={interiorIndex !== null}
-                  doorTransition={doorTransition}
-                />
+                <group visible={!arcadeOpen}>
+                  <Player
+                    homeIndex={homeIndex}
+                    mode={mode}
+                    resetKey={resetKey}
+                    paused={
+                      panel !== null ||
+                      activityBusy ||
+                      arcadeOpen ||
+                      doorTransition ||
+                      cruceOpen ||
+                      planesOpen ||
+                      chatOpen
+                    }
+                    waveRequest={waveRequest}
+                    onMove={ignoreMovement}
+                    onMotion={updateMotion}
+                    onVehicleChange={setVehicleMounted}
+                    onVehicleHint={setScooterNear}
+                    onBoatChange={setBoatMounted}
+                    onBoatHint={setBoatNear}
+                    indoors={interiorIndex !== null}
+                    doorTransition={doorTransition}
+                  />
+                </group>
               )}
               {chatMode !== "closed" && (
                 <LocalBubbleChat
@@ -622,6 +670,7 @@ export default function Game({ initialName }: { initialName: string }) {
                   resetKey={homeResetKey}
                   paused={
                     !hasHome ||
+                    arcadeOpen ||
                     panel !== null ||
                     mode !== "walk" ||
                     interiorIndex !== null ||
@@ -631,6 +680,14 @@ export default function Game({ initialName }: { initialName: string }) {
                   onBusy={setActivityBusy}
                 />
               </group>
+              {!performanceLab && (
+                <ArcadeCabinet
+                  controls={arcade}
+                  navigation={navigation}
+                  enabled={arcadeEnabled}
+                  onOpen={openArcade}
+                />
+              )}
               {performanceLab && <PerformanceMeasurement />}
             </Physics>
             <HomeMarker
@@ -642,6 +699,7 @@ export default function Game({ initialName }: { initialName: string }) {
               }
             />
             <CameraRig
+              arcadeFocus={arcadeOpen}
               tableSeat={planesOpen ? ownGameSide : null}
               cardTableSeat={cruceOpen ? ownCruceSeat : null}
               mode={mode}
@@ -664,7 +722,10 @@ export default function Game({ initialName }: { initialName: string }) {
           <GameHeader
             room={room}
             menuOpen={panel !== null}
-            onMenu={() => setPanel((current) => (current ? null : "menu"))}
+            onMenu={() => {
+              setArcadeOpen(false);
+              setPanel((current) => (current ? null : "menu"));
+            }}
           />
           <Minimap
             room={room}
@@ -672,7 +733,15 @@ export default function Game({ initialName }: { initialName: string }) {
             homeIndex={hasHome ? homeIndex : null}
             cabins={cabins}
           />
-          {!planesOpen &&
+          <ArcadeEntry
+            local={room.localPreview}
+            navigation={navigation}
+            enabled={arcadeEnabled && !arcadeOpen}
+            onOpen={openArcade}
+          />
+          <ArcadeAccessibility controls={arcade} onExit={closeArcade} />
+          {!arcadeOpen &&
+            !planesOpen &&
             !cruceOpen &&
             panel === null &&
             interiorIndex === null &&
@@ -684,7 +753,8 @@ export default function Game({ initialName }: { initialName: string }) {
                 onOpen={openPlanes}
               />
             )}
-          {!cruceOpen &&
+          {!arcadeOpen &&
+            !cruceOpen &&
             !planesOpen &&
             panel === null &&
             interiorIndex === null &&

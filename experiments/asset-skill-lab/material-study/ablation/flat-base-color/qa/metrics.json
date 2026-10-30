@@ -1,0 +1,52 @@
+{
+  "model": "lantern.glb",
+  "glb_bytes": 176280,
+  "mesh_objects": 1,
+  "triangles": 2822,
+  "materials": [
+    "MI_Trim_Metal"
+  ],
+  "mesh_material_slots": 1,
+  "images": [
+    {
+      "name": "T_Trim_Metal_Normal",
+      "width": 512,
+      "height": 512,
+      "channels": 4
+    },
+    {
+      "name": "T_Trim_Metal_ORM",
+      "width": 512,
+      "height": 512,
+      "channels": 4
+    }
+  ],
+  "blender_bounds": {
+    "min": [
+      -0.1786707192659378,
+      -1.2513371706008911,
+      0.08183755725622177
+    ],
+    "max": [
+      0.178670734167099,
+      0.05097728595137596,
+      1.4188451766967773
+    ]
+  },
+  "blender_dimensions": [
+    0.357341468334198,
+    1.3023144006729126,
+    1.3370076417922974
+  ],
+  "framing": {
+    "center": [
+      7.450580596923828e-09,
+      -0.6001799702644348,
+      0.7503413558006287
+    ],
+    "span": 2.032251615524292,
+    "floor": 0.08183755725622177,
+    "resolution": 640
+  },
+  "renderer": "Blender Cycles 24 samples AgX; imported exported GLB"
+}

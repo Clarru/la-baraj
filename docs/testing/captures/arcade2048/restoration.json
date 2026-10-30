@@ -1,0 +1,37 @@
+{
+  "state": "restored",
+  "head": "9ab4427fd97336ab2aadb9308d357a39fcaaabd4",
+  "root": "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/avioane/dist",
+  "backup": "/tmp/la-baraj-arcade-9ab4427f-baseline",
+  "entry": "__2048-9ab4427f-qa.html",
+  "url": "http://127.0.0.1:4173/__2048-9ab4427f-qa.html",
+  "createdDirectories": [
+    "assets/arcade2048"
+  ],
+  "reusedNormalAssetDifferences": {
+    "assets/optimized/Rock_Medium_1.glb": {
+      "candidate": "d6e15c5cc198e751feab2bfaab2e601c53bebdb9bda6a9f63883635d4cbf51f1",
+      "normal": "cd3bd08c5ee24e159777f0608cd38af00981613a27c618d89cc53ba658971c7e"
+    }
+  },
+  "activatedAt": "2026-10-30T16:13:55.232266+00:00",
+  "restoredAt": "2026-10-30T16:39:05.465797+00:00",
+  "restoredCount": 251,
+  "restoredIndex": "e3018f03f03e9ceb98299951cced2dc5d86687a89cebc2b8930a4616d7b06711",
+  "baselineFiles": 251,
+  "addedFiles": [
+    "__2048-9ab4427f-qa.html",
+    "assets/local-world.worker-BSW_JyFG.js",
+    "assets/PlanesBoard-wnY9Blfx.js",
+    "assets/index-B67N9BS7.js",
+    "assets/rapier-DTGm37VB.js",
+    "assets/CruceBoard-uv7Yk7YE.js",
+    "assets/Game-CrmRtpty.css",
+    "assets/Game-C2WvrmKl.js",
+    "assets/arcade2048/CREDITS.txt",
+    "assets/arcade2048/cabinet.glb"
+  ],
+  "baselineManifestSha256": "c25d18615c6aae699e9dd05e9dcd3cc284f5d498721d34651896b92fb6f07bca",
+  "restoredManifestSha256": "c25d18615c6aae699e9dd05e9dcd3cc284f5d498721d34651896b92fb6f07bca",
+  "comparison": "Exact equality of every relative filename, SHA256 and byte size was asserted before return."
+}

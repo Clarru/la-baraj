@@ -1,0 +1,133 @@
+{
+  "source_pack": "https://quaternius.com/packs/fantasypropsmegakit.html",
+  "source_catalog": "apps/web/public/assets/asset-catalog.json",
+  "source_copy_license": "references/LICENSE.txt",
+  "generation_tool": "built-in image_gen",
+  "generation_calls": [
+    {
+      "output": "lantern/imagegen-v1.png",
+      "prompt": "lantern/imagegen-v1-prompt.txt",
+      "inputs": [
+        "lantern/reference/three-quarter.png",
+        "lantern/reference/side.png"
+      ],
+      "input_role": "target design and finish"
+    },
+    {
+      "output": "material-atlas-master.png",
+      "prompt": "material-atlas-prompt.txt",
+      "inputs": [
+        "lantern/reference/three-quarter.png",
+        "crate/reference/three-quarter.png"
+      ],
+      "input_role": "material finish anchors"
+    },
+    {
+      "output": "crate/imagegen-v1.png",
+      "prompt": "crate/imagegen-v1-prompt.txt",
+      "inputs": [
+        "crate/reference/three-quarter.png",
+        "crate/reference/front.png",
+        "crate/reference/side.png"
+      ],
+      "input_role": "target design and finish"
+    },
+    {
+      "output": "material-atlas-v2-master.png",
+      "prompt": "material-atlas-v2-prompt.txt",
+      "inputs": [
+        "material-atlas-master.png",
+        "crate/reference/three-quarter.png",
+        "lantern/reference/three-quarter.png"
+      ],
+      "input_role": "first input edit target; other inputs finish anchors"
+    }
+  ],
+  "runtime_preparation": "Atlas master downsampled to 512x512, then WebP-encoded inside GLBs; geometry authored by build_reconstructions.py, optional 16-bit attribute quantization and calibrated material factors.",
+  "files": [
+    {
+      "path": "references/lantern-original.glb",
+      "bytes": 176332,
+      "sha256": "a1a2565589719d6c1276cdd586dc2ff4e3ff3b0cfe8dc014162858ff8926d4d1"
+    },
+    {
+      "path": "references/crate-original.glb",
+      "bytes": 161276,
+      "sha256": "dc967cbafc3211a98f140306e0db6d69e3068e01dc96d79fd4d9b472f8d07927"
+    },
+    {
+      "path": "references/LICENSE.txt",
+      "bytes": 813,
+      "sha256": "472b93479307e1335ca5e66e02a26eacec690ffac4eee9c7b3ab8c57d31c5252"
+    },
+    {
+      "path": "lantern/imagegen-v1.png",
+      "bytes": 1689671,
+      "sha256": "f3f1d92f26d91a6bd24df6b0c987029cf6fd16d39140112915d33cc713b0fd1a"
+    },
+    {
+      "path": "crate/imagegen-v1.png",
+      "bytes": 1736458,
+      "sha256": "bc8fe264c847d059a027114b3f76074f771d59a1891e1d0099d8bd7f70175bb3"
+    },
+    {
+      "path": "material-atlas-master.png",
+      "bytes": 1573467,
+      "sha256": "115f3d8e49b77b14ecb402acebc1ed87f7bbca42fcc2de43d27f30ff54fdcfe9"
+    },
+    {
+      "path": "material-atlas-v2-master.png",
+      "bytes": 1619203,
+      "sha256": "7f4d7bab83033a475e4af91dbe144f437ac5549488e0368c5a7feb84a340d94f"
+    },
+    {
+      "path": "material-atlas-512.png",
+      "bytes": 265093,
+      "sha256": "805e2330fddb024976046fe1473c05fc11ddea77f635c2bc8093f72053fdf711"
+    },
+    {
+      "path": "lantern/final/Lab_Lantern.glb",
+      "bytes": 141256,
+      "sha256": "b7938620fc0359bff3462aff92176264ffca179bc61019168c3e5e64795009a1"
+    },
+    {
+      "path": "crate/final/Lab_Crate.glb",
+      "bytes": 121940,
+      "sha256": "12e450a9ca84968f5c589a64f9cc8b6d40dcf169df22ae52dbbecf9beb90dcf4"
+    },
+    {
+      "path": "material-study/own-trim/trim-base-color.png",
+      "bytes": 279895,
+      "sha256": "27d4a675b6ecb6ec05328a85c317036139192fdbc7b559fecbcaf4a2a1f80874"
+    },
+    {
+      "path": "material-study/own-trim/trim-normal.png",
+      "bytes": 105644,
+      "sha256": "0996f44131c25af0362a43d21c547a2d0c320891be1b2c107090347614032b27"
+    },
+    {
+      "path": "material-study/own-trim/trim-metallic-roughness.png",
+      "bytes": 33810,
+      "sha256": "a8261cc06da7a9cc818a270d0f9cab2968ba33c28ce1bd5edc4007d5336e7323"
+    },
+    {
+      "path": "material-study/own-trim/recipe.json",
+      "bytes": 890,
+      "sha256": "2c206694bee83b4535da53d26f8ccfc137a8e236394466976d5323ca41e5a33e"
+    },
+    {
+      "path": "material-study/own-trim/trim-bake-source.blend",
+      "bytes": 389142,
+      "sha256": "a57f1d1b2282569de8c3e7ee79cc8d83c1ad5ef72d0b8dadd768dda362f76fe4"
+    }
+  ],
+  "license_notice_preparation": "Notice text preserved; CRLF and trailing whitespace normalized for repository checks.",
+  "license_original_sha256": "edad12240087a33e08fc031e4e66c2b2b4b2a6d4f086339bde04f741b385fbda",
+  "surface_revision": {
+    "method": "Own Blender canonical slabs baked to color, tangent normal and metallic/roughness; no Quaternius maps used in final reconstructions",
+    "data_encoding": "lossless WebP, decoded pixels verified",
+    "color_encoding": "WebP quality 90",
+    "geometry_encoding": "16-bit quantization, then Meshopt with decoded attribute/winding/image-payload checks",
+    "runtime_unchanged": true
+  }
+}

@@ -1,0 +1,80 @@
+[
+  {
+    "name": "MI_Trim_Furniture",
+    "baseColorFactor": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallicFactor": 1,
+    "roughnessFactor": 1,
+    "normalScale": 1,
+    "occlusionStrength": 1,
+    "textures": {
+      "baseColor": {
+        "name": "T_Trim_Furniture_BaseColor",
+        "size": [
+          512,
+          512
+        ],
+        "filename": "MI_Trim_Furniture-baseColor.webp"
+      },
+      "normal": {
+        "name": "T_Trim_Furniture_Normal",
+        "size": [
+          512,
+          512
+        ],
+        "filename": "MI_Trim_Furniture-normal.webp"
+      },
+      "metallicRoughness": {
+        "name": "T_Trim_Furniture_ORM",
+        "size": [
+          512,
+          512
+        ],
+        "filename": "MI_Trim_Furniture-metallicRoughness.webp"
+      }
+    }
+  },
+  {
+    "name": "MI_Trim_Metal",
+    "baseColorFactor": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallicFactor": 1,
+    "roughnessFactor": 1,
+    "normalScale": 1,
+    "occlusionStrength": 1,
+    "textures": {
+      "baseColor": {
+        "name": "T_Trim_Metal_BaseColor",
+        "size": [
+          512,
+          512
+        ],
+        "filename": "MI_Trim_Metal-baseColor.webp"
+      },
+      "normal": {
+        "name": "T_Trim_Metal_Normal",
+        "size": [
+          512,
+          512
+        ],
+        "filename": "MI_Trim_Metal-normal.webp"
+      },
+      "metallicRoughness": {
+        "name": "T_Trim_Metal_ORM",
+        "size": [
+          512,
+          512
+        ],
+        "filename": "MI_Trim_Metal-metallicRoughness.webp"
+      }
+    }
+  }
+]

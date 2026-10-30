@@ -1,0 +1,111 @@
+{
+  "head": "9ab4427fd97336ab2aadb9308d357a39fcaaabd4",
+  "initialSaved": {
+    "board": [
+      "8",
+      "4",
+      "empty",
+      "2",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "2",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty"
+    ],
+    "status": [
+      "Local world",
+      "Score 20. Best 44."
+    ],
+    "position": "{\"x\":12.275161743164062,\"z\":71.85578918457031,\"heading\":-0.9557232729685471}"
+  },
+  "pairedRecords": [
+    "1. Claudiu: 442. Claudiu: 4"
+  ],
+  "privateResume": {
+    "board": [
+      "8",
+      "4",
+      "empty",
+      "2",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "2",
+      "empty",
+      "empty",
+      "empty",
+      "empty",
+      "empty"
+    ],
+    "status": [
+      "Local world",
+      "Score 20. Best 44."
+    ]
+  },
+  "reloadBefore": {
+    "board": [
+      "2",
+      "8",
+      "2",
+      "4",
+      "8",
+      "2",
+      "8",
+      "empty",
+      "16",
+      "empty",
+      "empty",
+      "empty",
+      "32",
+      "2",
+      "empty",
+      "empty"
+    ],
+    "status": [
+      "Local world",
+      "Score 220. Best 220."
+    ]
+  },
+  "reloadAfter": {
+    "board": [
+      "2",
+      "8",
+      "2",
+      "4",
+      "8",
+      "2",
+      "8",
+      "empty",
+      "16",
+      "empty",
+      "empty",
+      "empty",
+      "32",
+      "2",
+      "empty",
+      "empty"
+    ],
+    "status": [
+      "Local world",
+      "Score 220. Best 220."
+    ]
+  },
+  "exactReload": true,
+  "narrow": {
+    "coarse": false,
+    "dpr": 0.75,
+    "height": 844,
+    "width": 390
+  },
+  "scope": "Real local SharedWorker practice, not deployed production ranking; durable restart/stale revisions/failed saves covered by Worker tests."
+}

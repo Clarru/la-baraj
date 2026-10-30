@@ -1,0 +1,39 @@
+# Demonstrated lessons from the lantern reconstruction
+
+These observations apply to this static-prop experiment. They are not evidence about characters, vegetation or full buildings.
+
+| Observed failure                                        | Cause                                                                                              | Correction                                                                                                                                                 |
+| ------------------------------------------------------- | -------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| v1 cage hung about 0.19 m too far toward the beam end   | Overall dimensions were correct, but perspective was used to guess an internal landmark            | Measure component bounds before modeling. Record hanger/cage centers separately from overall bounds.                                                       |
+| v1 links looked like thin wire                          | Generic chain dimensions were substituted for the target's chunky links                            | Measure link width/length and visible link count. Alternate link planes about the local tangent.                                                           |
+| v1 showed a black patch at the post/beam junction       | Equal-width intersecting boxes created coplanar external surfaces                                  | Model the post's actual thin rectangular cross-section; avoid coincident external faces.                                                                   |
+| v1/v2 metal was too pale                                | Generated albedo color and the engine's rendered material response were treated as interchangeable | Use a measured palette/material factor and compare the actual exported GLB under identical lighting. Keep wood and metal factors independently adjustable. |
+| v2 cage lost its ornamental shoulders                   | Broad silhouette matched, but a structural feature was replaced by generic vertical bars           | Add the named profile detail before inventing micro-wear.                                                                                                  |
+| Four overlapping beams per cage band inflated geometry  | Construction convenience was prioritized over closed shape topology                                | Use an extruded square ring with an open center.                                                                                                           |
+| Smaller texture count did not make v1 smaller on disk   | Geometry attributes still dominated the GLB                                                        | Inspect actual bytes. Test optional 16-bit position/normal/UV quantization, then re-import and measure error.                                              |
+| Later corner posts filled too much of the cage aperture | An L-shaped member was replaced by a solid box with the same bounds                                | Inspect cross-section and negative space, not just outer bounds. Reuse a closed profile extrusion.                                                         |
+| Curved chain links bunch up or leave uneven gaps        | Equal curve parameters do not give equal distances                                                 | Sample by arc length and orient each link along the local tangent.                                                                                         |
+
+## Transfer test: wooden crate
+
+| Observed failure                                           | Cause                                                                              | Correction                                                                                                                                                          |
+| ---------------------------------------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Crate v1 used 3,744 triangles versus the reference's 1,576 | Every plank and fitting was a beveled solid, including hidden side faces           | For this sealed prop, use thin visible panels, closed profile caps and simpler tiny nails. Do not apply this shortcut to an open container whose inside is visible. |
+| Extra upright members appeared on the side                 | A generic crate construction replaced the actual front/side structural distinction | Build a per-view component inventory before modeling.                                                                                                               |
+| Grain ran vertically on side-facing horizontal rails       | One fixed UV axis was used around a square ring                                    | Choose the longest in-plane axis per face for that ring. Keep authored axes for other parts.                                                                        |
+| Timber and iron collapsed into one material before tinting | Deduplication ran before the materials received their distinct factors             | Apply semantic material settings first; deduplicate afterward. Names alone do not prevent equivalent-material merging.                                              |
+| Repeated oversized knots looked stamped onto every plank   | Every part sampled the same complete strip                                         | Use bounded deterministic UV phase variation within the correct strip. Never cross into the next material strip.                                                    |
+
+Both final GLBs embed the same atlas bytes, verified by SHA256. This demonstrates reused artwork; a browser may still allocate separate texture objects for separate embedded GLBs. Runtime shared-material caching has not been implemented or measured here.
+
+## Second pass: reflective edge finish
+
+The user identified an important remaining defect: the original has pale, shiny edge treatment. Material inspection showed a normal atlas with rounded borders and a varying reflection map. The color-only reconstruction had removed this behavior. The follow-up in [surfaces.md](surfaces.md) adds an original baked PBR trim set, UV alignment, surface-channel acceptance, pixel-preserving data compression and a light-direction check.
+
+The first own-trim bake returned success but sampled the cube's default UV map instead of the newly added map, turning every strip into timber. This is why a successful bake must be followed by image inspection. Fixing the active render UV solved it. Adding the PBR data then exceeded the raw byte budgets; verified Meshopt compression recovered those bytes without changing decoded attributes or texture payloads.
+
+The final visual comparisons still show differences in edge wear, fine surface finish and chain/cage contours. The crate's high silhouette overlap is not a claim that its material appearance is identical. Treat these as close reconstruction prototypes, not certified replacements.
+
+The first ImageGen sheet preserved the bracket, two chains, open cage and broad textured finish. It did not establish exact part placement. The Blender revisions, rather than additional concept variations, resolved the largest errors.
+
+Do not use the generated atlas master at full resolution in runtime exports. The experiment downsamples to 512x512, converts to WebP and reuses it across the two props. Generated strips are not assumed mathematically tileable; inspect repetition and atlas boundaries.

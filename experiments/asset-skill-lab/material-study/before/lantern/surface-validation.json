@@ -1,0 +1,45 @@
+{
+  "technical_pass": false,
+  "errors": [
+    "Reference normal-map layer missing",
+    "Reference metallic/roughness layer missing"
+  ],
+  "triangles": 2490,
+  "reference_triangles": 2822,
+  "glb_bytes": 116624,
+  "reference_glb_bytes": 176332,
+  "primitives": 1,
+  "material_count": 1,
+  "surfaceRequirements": {
+    "normal": true,
+    "metallicRoughness": true
+  },
+  "materials": [
+    {
+      "name": "LaBaraj iron",
+      "metallicFactor": 0.05000000074505806,
+      "roughnessFactor": 0.7799999713897705,
+      "normalScale": 1,
+      "normalMap": false,
+      "metallicRoughnessMap": false
+    }
+  ],
+  "textures": [
+    {
+      "name": "material-atlas-512",
+      "size": [
+        512,
+        512
+      ],
+      "mime": "image/webp",
+      "bytes": 12766,
+      "sha256": "615ba90bb70aa913ee2bd6f83ea6b050da0bb59bfe275d66575c887dd4f1817d"
+    }
+  ],
+  "dimension_error_fraction": [
+    0.000054543680397367567,
+    0.0019100004073373533,
+    0.0013519522259688443
+  ],
+  "visual_acceptance": "Separate manual comparison required; technical pass is not a 1:1 match or runtime performance claim"
+}

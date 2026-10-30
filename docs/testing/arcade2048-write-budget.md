@@ -1,0 +1,15 @@
+# Arcade save budget
+
+The arcade has an application-level budget of **50,000 successful logical saves per UTC day**, shared across its ranked players. It limits only arcade persistence and uses the existing Durable Object and owner records. Local unranked practice bypasses this durable-save budget.
+
+This guard leaves storage headroom for the rest of the world. Cloudflare documents a Free-plan SQLite allowance of 100,000 rows written per day, includes key-value storage methods in SQLite row billing, and resets daily limits at 00:00 UTC; operations beyond a Free allowance fail. [Official Durable Objects pricing](https://developers.cloudflare.com/durable-objects/platform/pricing/). The application counter measures arcade logical saves, not all Cloudflare billing dimensions or other applications' usage.
+
+Each saved owner row may carry optional `writeBudget: { day, count }`, where day is the integer UTC epoch day. Before a ranked save, the serialized service sums the current-day counts in its loaded owner records and checks the limit. The new count is persisted in the **same owner row** as the new board/best/request IDs. It becomes visible in memory only after that save succeeds. There is no separate quota-key write, no deferred board acknowledgement and no batch of uncommitted accepted moves.
+
+New games, changed moves, changed continuation and nickname updates consume a save when persistence succeeds. Reads, unchanged resumes, unchanged moves, already-continued wins, duplicate requests and failed writes do not consume it. Optional metadata accepts legacy records without deleting or resetting their progress. Reloading the service sums persisted counts, so a restart cannot clear a consumed budget. On a new UTC day, an owner's next accepted save resets only that owner's meter to the new day/count 1; boards and scores do not reset with the date.
+
+At the limit, a write raises the existing arcade-specific error: **“Saving is paused for today. Your board is safe.”** The prior board, best, revision and request history stay unchanged. Reads and unchanged resume still work; a resume that would rename a row is a write and is subject to the same limit. Other world actions retain their own behavior and storage paths.
+
+Tests use tiny injected budgets and cover cross-owner exhaustion, restart recovery, UTC rollover, failed-save rollback/retry, legacy rows, rename and continuation, no-op/read/dedup exclusions, local-practice bypass, malformed metadata and concurrent attempts at the last available save. An actual Worker lifecycle test loads an exhausted persisted meter, verifies the private unchanged-board/error response and unchanged resume, then successfully saves a fire change without disconnecting the player.
+
+This is a backend resource correction after the accepted browser pass at `9ab4427f`; the live screen, camera, material, asset and input code are unchanged. No new browser publication is needed to re-prove those unchanged paths. The compatible Worker still requires release-owner deployment before production global rankings are claimed live.
