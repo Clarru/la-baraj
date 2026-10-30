@@ -493,9 +493,11 @@
   padding: 4px;
 }
 .cruce-auction .cruce-bids strong {
+  line-height: 1;
   font-size: 24px;
 }
 .cruce-auction .cruce-bids span {
+  line-height: 1;
   font-size: 15px;
 }
 .cruce-felt--bidding .cruce-center {
