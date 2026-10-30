@@ -1,0 +1,18 @@
+[
+  {
+    "tag": "la-baraj-client",
+    "serverBuild": "de72084981f7ac5ec9f0919bd9af93be76db5c29",
+    "version": 1,
+    "event": "diagnostic_test",
+    "reportId": "cruce-qa-de72084-proof",
+    "sessionId": "cruce-qa-de72084-session",
+    "time": 1793368831389,
+    "asset": "/assets/qa-de72084.js",
+    "message": "Synthetic diagnostics smoke for PR42",
+    "stack": "",
+    "context": {
+      "environment": "preview",
+      "phase": "lobby"
+    }
+  }
+]
