@@ -1,8 +1,8 @@
 /** Explicit localhost-only authored QA input, consumed by the actual physics controller. */
 let destination: [number, number, number] | null = null;
 export const cruceWorldLab =
+  import.meta.env.VITE_CRUCE_WORLD_LAB === "1" &&
   typeof window !== "undefined" &&
-  import.meta.env?.VITE_CRUCE_WORLD_LAB === "1" &&
   ["localhost", "127.0.0.1"].includes(location.hostname);
 export function requestCruceTestMove(p: [number, number, number]) {
   if (cruceWorldLab) destination = p;
@@ -15,7 +15,7 @@ export function takeCruceTestMove() {
 
 /** Authored lab evidence only; the normal build removes the probe and its data. */
 import * as T from "three";
-import probes from "../../../docs/art-direction/cruce/character-contact-probes.json";
+import probes from "./cruce-contact-probes.json";
 import { CRUCE_TABLE } from "../../../packages/shared/cruce-station";
 import type { CruceSeat } from "../../../packages/shared/cruce";
 const contactSamples = new Map<

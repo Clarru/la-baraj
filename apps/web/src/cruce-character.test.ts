@@ -3,7 +3,7 @@ import * as T from "three";
 import { readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import handPoses from "./cruce-hand-poses.json";
-import contactProbes from "../../../docs/art-direction/cruce/character-contact-probes.json";
+import contactProbes from "./cruce-contact-probes.json";
 import { activitySeatLift } from "./character-actions";
 import {
   CRUCE_TABLE,

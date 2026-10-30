@@ -15,6 +15,7 @@ const runtime = path.resolve(out, "measure-runtime.mjs");
 await build({
   entryPoints: ["apps/web/src/cruce-character.ts"],
   bundle: true,
+  define: { "import.meta.env.VITE_CRUCE_WORLD_LAB": '"0"' },
   platform: "node",
   format: "esm",
   external: ["three"],
@@ -151,7 +152,7 @@ const support = {
   },
 };
 await fs.writeFile(
-  "docs/art-direction/cruce/character-contact-probes.json",
+  "apps/web/src/cruce-contact-probes.json",
   JSON.stringify(support, null, 2) + "\n",
 );
 console.log(
