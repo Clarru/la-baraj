@@ -386,6 +386,11 @@
 .planes-play-area--battle > div {
   min-width: 0;
 }
+/* Row labels must not stretch cells when two sheets share a narrow window.
+   The column labels keep their 20px row, matching the SVG outline offset. */
+.planes-play-area--battle .paper-grid-row .paper-axis {
+  min-height: 0;
+}
 .planes-play-area--battle .planes-shot-note {
   min-height: 2.7em;
 }

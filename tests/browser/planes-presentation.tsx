@@ -64,21 +64,33 @@ function Review() {
         ...before,
         revision: before.revision + 1,
         turn: won ? null : side === 0 ? 1 : 0,
+        players: before.players.map((player, index) =>
+          player
+            ? {
+                ...player,
+                ready: won ? false : player.ready,
+                remaining:
+                  index === (side === 0 ? 1 : 0)
+                    ? fleet.filter(
+                        (plane) =>
+                          !destroyed(plane, [...before.shots[side], shot]),
+                      ).length
+                    : player.remaining,
+              }
+            : null,
+        ) as PlanesView["players"],
         ...(won
           ? ({
               phase: "finished",
               reason: "fleet",
               winner: side,
-              players: before.players.map((p) =>
-                p ? { ...p, ready: false } : null,
-              ) as PlanesView["players"],
             } as const)
           : {}),
         shots:
           side === 0
             ? [[...before.shots[0], shot], before.shots[1]]
             : [before.shots[0], [...before.shots[1], shot]],
-        deadline: Date.now() + 60000,
+        deadline: won ? null : Date.now() + 60000,
         event: {
           id: before.revision + 1,
           at: Date.now(),
@@ -134,7 +146,13 @@ function Review() {
         <button disabled={view.turn !== 1} onClick={incoming}>
           Robin fires
         </button>
-        <button onClick={() => setView(initial())}>Reset match</button>
+        <button
+          onClick={() =>
+            setView((previous) => ({ ...initial(), round: previous.round + 1 }))
+          }
+        >
+          Reset match
+        </button>
         <button onClick={() => setOpen(!open)}>
           {open ? "Fold sheet" : "Open sheet"}
         </button>
