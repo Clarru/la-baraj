@@ -104,6 +104,10 @@ Issues observed (not fixed, no source changed in this task):
 - The parked boat was reported as not blocking the player (see item 1); Task 6 found the collider correct (see Known limits).
 - The boarding prompt appears only close to the hull; at 2.1 m from the edge it was not shown.
 
+## Live-room verification (bending wake and remote boats, 30 October 2026)
+
+Two isolated browser contexts ran the real bundle against a room Worker started locally with `wrangler dev --local` (port 8790, RAM-only), using `tests/browser/boat-live-fixture.tsx` built by `scripts/prepare-boat-live-fixture.mjs` and served from the single 4173 preview. Both clients were online with the other player rendered as a remote boat (LOD hull, seated driver with hands on the wheel, name badge, wake), console error logs empty. Player 1 ran a 3 s turn at 8 m/s: its own V wake bends back along the arc it drove (`captures/live-wake-turning-a.png`, `live-wake-coasting-a.png`) and fades out from the far end over the following seconds (`live-wake-faded-a.png`); player 2 saw the same remote boat and its trailing wake along its path (`captures/live-wake-remote.png`, `live-wake-turning-b.png`). Details, incidental impact observations and the run method are in [results/live-room-2026-10-30.md](results/live-room-2026-10-30.md).
+
 ## Observed issues
 
 - Fixed during verification: the boat could cross the shoreline at full throttle and strand the player in terrain (fix 48e95a5).
