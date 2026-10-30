@@ -10,7 +10,7 @@ import { RemoteAvatar } from "./multiplayer-players";
 import { RemoteScooterFleet } from "./RemoteScooterFleet";
 import type { RemotePlayer } from "./multiplayer";
 import { homeSpawn, homeWalkCameraOffset } from "./home";
-import { terrainHeight, settlementRoadZ } from "./geography";
+import { terrainHeight, settlementRoadZ, southShore } from "./geography";
 import * as THREE from "three";
 
 export type PerformanceScenario =
@@ -20,7 +20,7 @@ export const performanceLab =
   ["127.0.0.1", "localhost"].includes(location.hostname);
 
 type SceneView =
-  "arrival" | "lake" | "road" | "north" | "east" | "south" | "west";
+  "arrival" | "lake" | "road" | "north" | "east" | "south" | "west" | "meadow";
 let sceneView: SceneView = "arrival";
 
 export function PerformancePanel({
@@ -80,6 +80,7 @@ export function PerformancePanel({
           <option value="east">East horizon</option>
           <option value="south">South horizon</option>
           <option value="west">West horizon</option>
+          <option value="meadow">Meadow at eye height</option>
         </select>
       </label>
       <button
@@ -129,6 +130,18 @@ export function PerformanceCamera() {
       east: { position: [0, base + 3.2, 220], target: [10, base + 2, 220] },
       south: { position: [0, base + 3.2, 220], target: [0, base + 2, 230] },
       west: { position: [0, base + 3.2, 220], target: [-10, base + 2, 220] },
+      meadow: {
+        position: [
+          -150,
+          terrainHeight(-150, southShore(-150) + 60) + 1.65,
+          southShore(-150) + 60,
+        ],
+        target: [
+          -150 + 6,
+          terrainHeight(-144, southShore(-150) + 52) + 1.2,
+          southShore(-150) + 52,
+        ],
+      },
     };
   }, []);
   useFrame(() => {

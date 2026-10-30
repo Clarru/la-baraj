@@ -270,11 +270,21 @@ export function flowerGeometry(): THREE.BufferGeometry {
     tris.push({ v: [a, b, c], n }, { v: [b, d, c], n });
   }
   const centre: Vert = { p: [0, top, 0], uv: [1, 1] };
+  const ringY = stem - 0.02;
   const ring = (k: number): Vert => {
     const a = (k / 6) * Math.PI * 2;
-    return { p: [Math.cos(a) * 0.13, stem + 0.01, Math.sin(a) * 0.13], uv: [1, (stem + 0.01) / top] };
+    return { p: [Math.cos(a) * 0.1, ringY, Math.sin(a) * 0.1], uv: [1, ringY / top] };
   };
-  for (let k = 0; k < 6; k++) tris.push({ v: [centre, ring(k), ring(k + 1)], n: [0, 1, 0] });
+  for (let k = 0; k < 6; k++) {
+    const r0 = ring(k), r1 = ring(k + 1);
+    const u = [r0.p[0] - centre.p[0], r0.p[1] - centre.p[1], r0.p[2] - centre.p[2]];
+    const w = [r1.p[0] - centre.p[0], r1.p[1] - centre.p[1], r1.p[2] - centre.p[2]];
+    let nx = u[1] * w[2] - u[2] * w[1], ny = u[2] * w[0] - u[0] * w[2], nz = u[0] * w[1] - u[1] * w[0];
+    const len = Math.hypot(nx, ny, nz) || 1;
+    const sign = ny < 0 ? -1 : 1;
+    nx = (nx / len) * sign; ny = (ny / len) * sign; nz = (nz / len) * sign;
+    tris.push({ v: [centre, r0, r1], n: [nx, ny, nz] });
+  }
   return build(tris);
 }
 
