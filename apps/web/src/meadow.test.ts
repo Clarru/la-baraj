@@ -114,4 +114,5 @@ it("resumable chunk builds match sampleChunk", () => {
   expect(steps).toBeGreaterThan(1);
   const a = finishChunk(b), c = sampleChunk(key, s);
   expect(a.grassCount).toBe(c.grassCount); expect(Array.from(a.grass)).toEqual(Array.from(c.grass));
+  expect(a.flowerCount).toBe(c.flowerCount); expect(Array.from(a.flowers)).toEqual(Array.from(c.flowers));
 });

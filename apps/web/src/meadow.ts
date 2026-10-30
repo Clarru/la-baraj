@@ -119,22 +119,23 @@ const lowNoise = (x: number, z: number) => valueNoise(x / 9, z / 9);
 const flowerPatch = (x: number, z: number) => valueNoise(x / 20 + 11.3, z / 20 - 4.7);
 
 type Grid = { height: Float32Array; ok: Uint8Array };
-export type ChunkBuild = { key: ChunkKey; settings: TierSettings; grid: Grid; cursor: number; total: number };
+export type ChunkBuild = { key: ChunkKey; settings: TierSettings; grid: Grid; cursor: number; total: number; kx: number; kz: number };
 const gridCache = new Map<ChunkKey, Grid>();
 const GRID_CACHE_CAP = 512;
 
 /** Starts a resumable chunk build; a cached grid makes the build complete immediately. */
 export function beginChunk(key: ChunkKey, settings: TierSettings): ChunkBuild {
   const n = settings.chunk / 2 + 1;
+  const [kx, kz] = key.split(",").map(Number);
   const cached = gridCache.get(key);
-  if (cached) return { key, settings, grid: cached, cursor: n * n, total: n * n };
-  return { key, settings, grid: { height: new Float32Array(n * n), ok: new Uint8Array(n * n) }, cursor: 0, total: n * n };
+  if (cached) return { key, settings, grid: cached, cursor: n * n, total: n * n, kx, kz };
+  return { key, settings, grid: { height: new Float32Array(n * n), ok: new Uint8Array(n * n) }, cursor: 0, total: n * n, kx, kz };
 }
 /** Evaluates grid samples until the deadline (clock checked every 9 samples); true when the grid is complete. */
 export function stepChunk(build: ChunkBuild, deadlineMs: number): boolean {
   if (build.cursor >= build.total) return true;
   const { key, settings, grid } = build;
-  const [kx, kz] = key.split(",").map(Number);
+  const { kx, kz } = build;
   const size = settings.chunk, step = 2, n = size / step + 1;
   const x0 = kx * size, z0 = kz * size;
   while (build.cursor < build.total) {
@@ -253,7 +254,7 @@ export function tuftGeometry(): THREE.BufferGeometry {
       uv: [side > 0 ? 1 : side < 0 ? 0 : 0.5, f],
     });
     const n = softNormal(-dz, dx);
-    const bl = at(0, -1, w), br = at(0, 1, w), ml = at(0.5, -1, w * 0.6), mr = at(0.5, 1, w * 0.75), tip = at(1, 0, 0);
+    const bl = at(0, -1, w), br = at(0, 1, w), ml = at(0.5, -1, w * 0.6), mr = at(0.5, 1, w * 0.6), tip = at(1, 0, 0);
     tris.push({ v: [bl, br, ml], n }, { v: [br, mr, ml], n }, { v: [ml, mr, tip], n });
   }
   return build(tris);
