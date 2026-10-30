@@ -17,6 +17,19 @@ const state: BoatState = {
   speed: 0,
   velocity: [0, 0],
 };
+let placementVersion = 0;
+const placementListeners = new Set<() => void>();
+export const getBoatPlacementVersion = () => placementVersion;
+export function subscribeBoatPlacement(listener: () => void) {
+  placementListeners.add(listener);
+  return () => {
+    placementListeners.delete(listener);
+  };
+}
+function placementChanged() {
+  placementVersion++;
+  for (const listener of placementListeners) listener();
+}
 export function getBoatState(): Readonly<BoatState> {
   return state;
 }
@@ -24,6 +37,7 @@ export function mountBoat(): void {
   state.mounted = true;
   state.speed = 0;
   state.velocity = [0, 0];
+  placementChanged();
 }
 export function parkBoat(
   position: [number, number, number],
@@ -34,6 +48,7 @@ export function parkBoat(
   state.yaw = yaw;
   state.speed = 0;
   state.velocity = [0, 0];
+  placementChanged();
 }
 export function updateBoatMotion(
   yaw: number,
