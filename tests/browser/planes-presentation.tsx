@@ -5,6 +5,8 @@ import PlanesBoard from "../../apps/web/src/PlanesBoard";
 import {
   resolveShot,
   planeCells,
+  targetUnavailable,
+  destroyed,
   type Plane,
   type PlanesView,
   type Shot,
@@ -55,10 +57,23 @@ function Review() {
   function accept(side: 0 | 1, x: number, y: number) {
     setView((before) => {
       const shot = resolveShot(fleet, before.shots[side], x, y);
+      const won = fleet.every((plane) =>
+        destroyed(plane, [...before.shots[side], shot]),
+      );
       return {
         ...before,
         revision: before.revision + 1,
-        turn: side === 0 ? 1 : 0,
+        turn: won ? null : side === 0 ? 1 : 0,
+        ...(won
+          ? ({
+              phase: "finished",
+              reason: "fleet",
+              winner: side,
+              players: before.players.map((p) =>
+                p ? { ...p, ready: false } : null,
+              ) as PlanesView["players"],
+            } as const)
+          : {}),
         shots:
           side === 0
             ? [[...before.shots[0], shot], before.shots[1]]
@@ -70,13 +85,12 @@ function Review() {
           actor: "fixture",
           target: "fixture",
           result: shot.result,
-          winner: null,
+          winner: won ? side : null,
         },
       };
     });
   }
   function incoming() {
-    const used = new Set(view.shots[1].map((s) => `${s.x}:${s.y}`));
     const candidates =
       result === "head"
         ? fleet
@@ -93,7 +107,9 @@ function Review() {
                   planeCells(p).some((f) => f.x === c.x && f.y === c.y),
                 ),
             );
-    const point = candidates.find((c) => !used.has(`${c.x}:${c.y}`));
+    const point = candidates.find(
+      (c) => !targetUnavailable(c.x, c.y, view.shots[1]),
+    );
     if (point) accept(1, point.x, point.y);
   }
   return (
