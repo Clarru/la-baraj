@@ -1,4 +1,4 @@
-import { parseClientDiagnostic } from "../packages/shared/client-diagnostics";
+import { parseClientDiagnostic } from "../packages/shared/client-diagnostics.js";
 const windows = new Map<string, { at: number; count: number }>();
 export default {
   async fetch(request: Request): Promise<Response> {
