@@ -1,4 +1,8 @@
 import { LAKE_LEVEL } from "./swim-motion";
+import {
+  boundedBoatVelocity,
+  type BoatPose,
+} from "../../../packages/shared/boats";
 
 /** Motorboat tuning (rad, m, s): slower to turn and heavier than the scooter. */
 export const BOAT_TUNING = {
@@ -32,6 +36,8 @@ export type BoatMotionState = {
   turnRate: number;
   wheelAngle: number;
   lean: number;
+  driftX: number;
+  driftZ: number;
 };
 
 export function createBoatMotionState(yaw: number): BoatMotionState {
@@ -42,6 +48,8 @@ export function createBoatMotionState(yaw: number): BoatMotionState {
     turnRate: 0,
     wheelAngle: 0,
     lean: 0,
+    driftX: 0,
+    driftZ: 0,
   };
 }
 
@@ -92,6 +100,8 @@ export function advanceBoat(
     ? clamp(input.steer, -1, 1)
     : 0;
   const t = BOAT_TUNING;
+  state.driftX *= Math.exp(-2.5 * dt);
+  state.driftZ *= Math.exp(-2.5 * dt);
 
   const boost = input.boost === true && input.throttle > 0;
   if (input.throttle > 0) {
@@ -160,6 +170,8 @@ export function boatVelocity(input: {
   bodyY: number;
   time: number;
   dt: number;
+  driftX?: number;
+  driftZ?: number;
 }) {
   const dt = Number.isFinite(input.dt) ? clamp(input.dt, 0, 0.05) : 0;
   const floatY =
@@ -167,11 +179,25 @@ export function boatVelocity(input: {
     BOAT_TUNING.rideHeight +
     Math.sin(input.time * 1.6) * BOAT_TUNING.bobAmplitude;
   const desiredY = clamp((floatY - input.bodyY) * 4, -1.6, 1.6);
+  const [x, z] = boundedBoatVelocity([
+    Math.sin(input.yaw) * input.speed + (input.driftX ?? 0),
+    Math.cos(input.yaw) * input.speed + (input.driftZ ?? 0),
+  ]);
   return {
-    x: Math.sin(input.yaw) * input.speed,
+    x,
     y: damp(input.velocityY, desiredY, 8, dt),
-    z: Math.cos(input.yaw) * input.speed,
+    z,
   };
+}
+
+/** Adopt server momentum without changing the float height or driving state. */
+export function applyBoatImpact(state: BoatMotionState, boat: BoatPose) {
+  state.yaw = boat.yaw;
+  const [x, z] = boundedBoatVelocity(boat.velocity);
+  state.speed = x * Math.sin(boat.yaw) + z * Math.cos(boat.yaw);
+  state.driftX = x - Math.sin(boat.yaw) * state.speed;
+  state.driftZ = z - Math.cos(boat.yaw) * state.speed;
+  state.turnRate = 0;
 }
 
 /** Yaw rate from two headings, wrapped across the ±π seam. */

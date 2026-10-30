@@ -49,7 +49,11 @@ import { Scooter, type ScooterHandle } from "./scooter";
 import { createScooterRiderRig } from "./scooter-rider";
 import { Boat, type BoatHandle } from "./boat";
 import { BOAT_DRIVER_OFFSET_VECTOR } from "./boat-geometry";
-import { boatHullBlocked, boatTurnBlocked } from "./boat-collision";
+import {
+  boatHullBlocked,
+  boatTurnBlocked,
+  applyBoatBodyImpact,
+} from "./boat-collision";
 import { createBoatRiderRig } from "./boat-rider";
 import {
   BOAT_TUNING,
@@ -723,7 +727,7 @@ export function Player({
     setRiding(false);
     setBoating(false);
     parkVehicle(arrival.scooter, arrival.yaw);
-    resetBoatToDock(arrival.position[0]);
+    resetBoatToDock(arrival.position[0], homeIndex);
     parkedGrounded.current = false;
     onMotion({
       homeIndex,
@@ -746,6 +750,15 @@ export function Player({
   useFrame((_, dt) => {
     const c = controller.current;
     if (!c || !c.body) return;
+    const boatImpact = currentMultiplayerRoom()?.takeBoatImpact();
+    if (boatImpact && getBoatState().mounted)
+      applyBoatBodyImpact(
+        world,
+        rapier,
+        c.body,
+        boatMotion.current,
+        boatImpact.boat,
+      );
     const testMove = takeCruceTestMove();
     if (testMove) {
       c.body.setTranslation(
@@ -1011,7 +1024,8 @@ export function Player({
       const v = c.body.linvel();
       motion.speed = reconcileBoatSpeed(
         motion.speed,
-        v.x * Math.sin(motion.yaw) + v.z * Math.cos(motion.yaw),
+        (v.x - motion.driftX) * Math.sin(motion.yaw) +
+          (v.z - motion.driftZ) * Math.cos(motion.yaw),
       );
       const throttle = active
         ? Number(k.has("KeyW") || k.has("ArrowUp")) -
@@ -1055,6 +1069,8 @@ export function Player({
         bodyY: p.y,
         time: performance.now() / 1000,
         dt,
+        driftX: motion.driftX,
+        driftZ: motion.driftZ,
       });
       // Docks, pilings and banks stop the hull; next step reconcileBoatSpeed
       // drops the commanded speed to the zero it achieved.
@@ -1071,9 +1087,14 @@ export function Player({
         hullVelocity.x = 0;
         hullVelocity.z = 0;
         motion.speed = 0;
+        motion.driftX = 0;
+        motion.driftZ = 0;
       }
       c.body.setLinvel(hullVelocity, true);
-      updateBoatMotion(motion.yaw, motion.speed);
+      updateBoatMotion(motion.yaw, motion.speed, [
+        hullVelocity.x,
+        hullVelocity.z,
+      ]);
     }
     const walkInput = active && !boatingNow;
     const jumpStarted =
@@ -1491,6 +1512,13 @@ export function Player({
       }
       onMotion({
         homeIndex,
+        boat: {
+          position: boatingNow
+            ? [p.x, p.z]
+            : [getBoatState().parked[0], getBoatState().parked[2]],
+          yaw: getBoatState().yaw,
+          velocity: getBoatState().velocity,
+        },
         vehicle: boatingNow ? "Motorboat" : mounted ? "QuickVolt 9" : null,
         vehicleSpeed: boatingNow
           ? getBoatState().speed

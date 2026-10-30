@@ -3,12 +3,17 @@ import {
   useImperativeHandle,
   useLayoutEffect,
   useMemo,
+  useSyncExternalStore,
 } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useGLTF } from "@react-three/drei";
 import { RigidBody, CuboidCollider } from "@react-three/rapier";
 import * as THREE from "three";
-import { getBoatState } from "./boat-state";
+import {
+  getBoatState,
+  getBoatPlacementVersion,
+  subscribeBoatPlacement,
+} from "./boat-state";
 import {
   applyBoatLean,
   setBoatWheelAngle,
@@ -98,8 +103,10 @@ export const Boat = forwardRef<
 });
 
 /** Keep the parked hull solid so the walking player cannot step through it. */
-export function ParkedBoat({ mounted }: { mounted: boolean }) {
+export function ParkedBoat() {
+  useSyncExternalStore(subscribeBoatPlacement, getBoatPlacementVersion);
   const state = getBoatState();
+  const mounted = state.mounted;
   const [x, , z] = state.parked;
   const position: [number, number, number] = [x, LAKE_LEVEL, z];
   const { beam, bowExtent, sternExtent } = BOAT_DIMENSIONS;
