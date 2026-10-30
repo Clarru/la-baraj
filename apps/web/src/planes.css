@@ -815,3 +815,32 @@
     animation: none;
   }
 }
+
+/* Player identity is tied to the authoritative seat, including the reverse view. */
+.planes-side-0 {
+  --player-color: #244b70;
+}
+.planes-side-1 {
+  --player-color: #a44937;
+}
+.planes-player strong {
+  color: var(--player-color, #244b70);
+}
+.planes-player--turn strong::before {
+  background: var(--player-color, #244b70);
+}
+.planes-notebook .planes-side-0 > h3,
+.planes-notebook .planes-side-1 > h3 {
+  color: var(--player-color);
+  border-bottom: 1px solid currentColor;
+  padding-bottom: 6px;
+  margin-bottom: 8px;
+}
+.planes-shot-trail,
+.planes-shot-core {
+  stroke: var(--player-color, #244b70);
+}
+.planes-round-result-paper h2,
+.planes-round-result-paper .planes-result-count {
+  color: var(--player-color, #244b70);
+}

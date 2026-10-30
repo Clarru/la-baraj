@@ -442,12 +442,31 @@ describe("shot animation and the firing lock", () => {
     advance(ROUND_RESULT_DURATION);
     expect(action).not.toHaveBeenCalled();
   });
+  it("keeps player colors tied to seats and aligns the reverse player's header with their sheet", () => {
+    current = { ...current, you: 1, turn: 0 };
+    render();
+    const header = container.querySelector(".planes-player")!;
+    expect(header.classList.contains("planes-side-1")).toBe(true);
+    expect(header.textContent).toContain("Bob (you)");
+    expect(
+      container
+        .querySelector(".planes-own-grid")
+        ?.classList.contains("planes-side-1"),
+    ).toBe(true);
+    expect(
+      container
+        .querySelector(".planes-main-grid")
+        ?.classList.contains("planes-side-0"),
+    ).toBe(true);
+  });
   it("keeps your sheet first and equally detailed, and retains the incoming coordinate", () => {
     render();
     incoming();
     advance(SHOT_DURATION);
     const area = container.querySelector(".planes-play-area--battle")!;
-    expect(area.firstElementChild?.className).toBe("planes-own-grid");
+    expect(area.firstElementChild?.classList.contains("planes-own-grid")).toBe(
+      true,
+    );
     expect(area.querySelectorAll(".paper-grid--small")).toHaveLength(0);
     expect(
       area.querySelector(".planes-own-grid .planes-shot-note")?.textContent,

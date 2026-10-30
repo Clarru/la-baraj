@@ -240,7 +240,7 @@ export function PlanesShot({
   const { width, height, path, x, y, radius } = geometry;
   return (
     <svg
-      className={`planes-shot planes-shot--${presentation.shot.result}`}
+      className={`planes-shot planes-shot--${presentation.shot.result} planes-side-${presentation.side}`}
       viewBox={`0 0 ${width} ${height}`}
       aria-hidden="true"
       data-shot-id={presentation.id}

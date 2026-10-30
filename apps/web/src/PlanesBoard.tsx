@@ -601,14 +601,11 @@ export default function PlanesBoard({
         </div>
       </header>
       <div className="planes-players" aria-label="Players">
-        {([0, 1] as Side[]).map((side) => (
+        {([you ?? 0, otherSide(you ?? 0)] as Side[]).map((side) => (
           <div
             key={side}
-            className={
-              side === view?.turn && phase === "playing"
-                ? "planes-player planes-player--turn"
-                : "planes-player"
-            }
+            className={`planes-player planes-side-${side}${side === view?.turn && phase === "playing" ? " planes-player--turn" : ""}`}
+            data-player-side={side}
           >
             <strong>
               {view?.players[side]?.name ?? "Empty seat"}
@@ -648,7 +645,7 @@ export default function PlanesBoard({
       {you === null ? (
         <div className="planes-spectator">
           {([0, 1] as Side[]).map((side) => (
-            <div key={side}>
+            <div key={side} className={`planes-side-${side}`}>
               <h3>{view?.players[side]?.name ?? "Player"}'s shots</h3>
               <PaperGrid
                 shots={view?.shots[side] ?? []}
@@ -665,7 +662,7 @@ export default function PlanesBoard({
         >
           {showBattle ? (
             <>
-              <div className="planes-own-grid">
+              <div className={`planes-own-grid planes-side-${you}`}>
                 <h3>Your planes</h3>
                 <PaperGrid
                   planes={view?.ownPlanes ?? []}
@@ -679,7 +676,7 @@ export default function PlanesBoard({
                     : "Your planes are visible only to you."}
                 </p>
               </div>
-              <div className="planes-main-grid">
+              <div className={`planes-main-grid planes-side-${otherSide(you)}`}>
                 <h3>{opponent?.name ?? "Opponent"}'s planes</h3>
                 <PaperGrid
                   shots={attackShots}
@@ -710,7 +707,7 @@ export default function PlanesBoard({
             </>
           ) : (
             <>
-              <div className="planes-main-grid">
+              <div className={`planes-main-grid planes-side-${you}`}>
                 <h3>Your planes</h3>
                 <PaperGrid
                   planes={draft}
@@ -853,7 +850,9 @@ export default function PlanesBoard({
           aria-live="polite"
           aria-atomic="true"
         >
-          <div className="planes-round-result-paper">
+          <div
+            className={`planes-round-result-paper planes-side-${view?.winner ?? 0}`}
+          >
             <h2>{view?.players[view.winner ?? 0]?.name ?? "Player"} wins!</h2>
             <p>Another game can start in</p>
             <strong key={roundResult} className="planes-result-count">
