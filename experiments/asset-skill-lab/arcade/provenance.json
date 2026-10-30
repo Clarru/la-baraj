@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "case": "original interactive 2048 arcade cabinet",
+  "geometry": "Original Blender construction; no imported source mesh",
+  "texture": "Original ImageGen-painted surface plus existing original baked trim; no source texture copied",
+  "generatedReference": "reference.webp",
+  "paintMasterLocal": "paint-source.png (ignored, retained locally)",
+  "modelTriangles": 7082,
+  "encodedBytes": 245604,
+  "runtime": "apps/web/public/assets/arcade2048/cabinet.glb",
+  "mapsMaxSize": [
+    512,
+    512
+  ],
+  "qaScope": "Actual runtime Canvas drawing and decoded geometry/PBR; Blender projection studies are not browser screenshots",
+  "files": {
+    "cabinet.glb": "8c007a817cffa60e1740402aac914792698627490efaefa73152b168eb0cd78c",
+    "paint-512.png": "6cd49400a9d50a926437f0ba9cf1ea410a602859cfd8f009b0b7b586b03bd939",
+    "build_cabinet.py": "06898ba3489384fb3ea20591da6c66d61d94d05efa5fdf86e679b5a22fea0b56",
+    "finish_cabinet.mjs": "5dd9d7ae804faacd90fe4bcbfcbe375f20cdb92a862e0cb048d8908536b6ea00",
+    "render_screen.mjs": "f3d383502a1055b472b817a11518947182693a201df7dc47487daac9be0ae828",
+    "render_focus.py": "f53f9832d0c1d0efaeae28f49d9c67ea0ae248a7382f4dd2d861f3f3f953ab20",
+    "prompts.json": "822bc9cc13da7d820036e42ecdaa06cd2a3214da81ca0ad341c381d2e5071707"
+  }
+}

@@ -1,6 +1,6 @@
 ---
 name: la-baraj-3d-assets
-description: Reuse or reconstruct textured Blender props for La Baraj from licensed visual references, with measured proportions, shared materials, small GLB exports and matched-view QA. Use for static game props and compatible variants; character rigging and foliage need their own validated workflows.
+description: Reuse or reconstruct textured Blender props for La Baraj from licensed visual references, with measured proportions, shared materials, small GLB exports and matched-view QA. Use for static or interactive game props and compatible variants; character rigging and foliage need their own validated workflows.
 ---
 
 # La Baraj 3D props
@@ -22,6 +22,8 @@ Supply actual rendered references with explicit roles: target design, style anch
 Evaluate a prompt against named defects. Retain exact prompts and selected outputs. Iterate when the sheet changes structure, obscures details or drifts in finish; stop generating once remaining errors are in Blender geometry, UVs or export. More prompts do not repair a wrong mesh.
 
 Block out measured landmarks first. Use [prop_parts.py](scripts/prop_parts.py) for compatible boxes, beams, ring bands, low-cost links and profile extrusions. Extend it only for a recurring need. Inspect a real render before adding detail. Shared texture atlases may supply wood, iron and surface variation; assign explicit grain axes per part. Avoid long repeated stretches, painted lighting and UV sampling across atlas-strip boundaries.
+
+For live screens, mechanisms or other interactive props, also read [interactive-props.md](references/interactive-props.md). It covers retained nodes/pivots, UV preservation, exported shader checks and the limits of projection studies.
 
 Keep source components named and editable in the .blend; consolidate runtime meshes separately. Pack the selected reference or retain project-relative references. Author sockets alongside geometry and deliver them as explicit metadata; exporting only a joined mesh does not automatically export sockets.
 

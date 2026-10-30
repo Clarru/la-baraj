@@ -1,0 +1,81 @@
+{
+  "model": "cabinet-display-qa.glb",
+  "glb_bytes": 462148,
+  "mesh_objects": 5,
+  "triangles": 7082,
+  "materials": [
+    "LaBaraj timber",
+    "Live display",
+    "Marquee forest ink",
+    "Terracotta buttons",
+    "Ivory buttons",
+    "Pine ochre",
+    "Screen bezel",
+    "Forest enamel",
+    "Warm illuminated marquee"
+  ],
+  "mesh_material_slots": 12,
+  "images": [
+    {
+      "name": "paint-512",
+      "width": 512,
+      "height": 512,
+      "channels": 4
+    },
+    {
+      "name": "QA actual canvas screen",
+      "width": 768,
+      "height": 960,
+      "channels": 4
+    },
+    {
+      "name": "trim-base-color",
+      "width": 512,
+      "height": 512,
+      "channels": 4
+    },
+    {
+      "name": "trim-metallic-roughness-4",
+      "width": 512,
+      "height": 512,
+      "channels": 4
+    },
+    {
+      "name": "trim-normal",
+      "width": 512,
+      "height": 512,
+      "channels": 4
+    }
+  ],
+  "blender_bounds": {
+    "min": [
+      -0.3800078332424164,
+      -0.37099695205688477,
+      0.0
+    ],
+    "max": [
+      0.3800078332424164,
+      0.3529971241950989,
+      1.9129999876022339
+    ]
+  },
+  "blender_dimensions": [
+    0.7600156664848328,
+    0.7239940762519836,
+    1.9129999876022339
+  ],
+  "framing": {
+    "center": [
+      0.0,
+      -0.008999913930892944,
+      0.9564999938011169
+    ],
+    "span": 2.9077599811553956,
+    "floor": 0.0,
+    "resolution": 640
+  },
+  "lighting": {
+    "key_azimuth_degrees": 0
+  },
+  "renderer": "Blender Cycles 24 samples AgX; imported exported GLB"
+}

@@ -1,3 +1,7 @@
+import type {
+  ArcadeAction,
+  ArcadeView,
+} from "../../../packages/shared/arcade2048";
 import type { CruceAction, CruceView } from "../../../packages/shared/cruce";
 import PartySocket from "partysocket";
 import { InputActivity } from "./input-activity";
@@ -44,6 +48,8 @@ type RoomView = {
   cabins: PublicCabin[];
   planes: PlanesView | null;
   cruce: CruceView | null;
+  arcade2048: ArcadeView | null;
+  arcadeAvailable: boolean;
   weather: LakeWeather | null;
 };
 export type RemotePlayer = {
@@ -144,6 +150,13 @@ export class MultiplayerRoom {
   >();
   private diagnostic: HTMLOutputElement | null = null;
   private lastDiagnosticAt = 0;
+  private arcadeRequests = new Map<
+    string,
+    {
+      resolve: (error: string | null) => void;
+      timer: ReturnType<typeof setTimeout>;
+    }
+  >();
   private cruceRequests = new Map<
     string,
     {
@@ -172,6 +185,8 @@ export class MultiplayerRoom {
     cabins: [],
     planes: null,
     cruce: null,
+    arcade2048: null,
+    arcadeAvailable: false,
     weather: null,
   };
   constructor(
@@ -467,6 +482,16 @@ export class MultiplayerRoom {
         if (message.targetId) this.stunTimes.set(message.targetId, now + 2000);
         break;
       }
+      case "arcade2048": {
+        this.publish({ arcade2048: message.view });
+        const pending = this.arcadeRequests.get(message.requestId);
+        if (pending) {
+          clearTimeout(pending.timer);
+          this.arcadeRequests.delete(message.requestId);
+          pending.resolve(message.error ?? null);
+        }
+        break;
+      }
       case "cruce": {
         this.publish({ cruce: message.view });
         if (message.requestId) {
@@ -497,6 +522,9 @@ export class MultiplayerRoom {
         break;
       }
       case "snapshot": {
+        this.publish({
+          arcadeAvailable: message.features?.arcade2048 === true,
+        });
         this.boatRevision =
           message.players.find((p) => p.id === message.selfId)
             ?.boatImpactRevision ?? 0;
@@ -727,6 +755,23 @@ export class MultiplayerRoom {
         Math.max(0, Math.min(2500, Date.now() - view.event.at));
     this.publish({ planes: view });
   }
+  arcadeAction(action: ArcadeAction, revision: number): Promise<string | null> {
+    if (this.view.status !== "online")
+      return Promise.resolve("Reconnecting. Your progress is saved.");
+    if (!this.view.arcadeAvailable)
+      return Promise.resolve("The arcade is updating. Try again soon.");
+    const requestId = crypto.randomUUID();
+    return new Promise((resolve) => {
+      const timer = setTimeout(() => {
+        this.arcadeRequests.delete(requestId);
+        resolve(
+          "Connection timed out. Reopen the cabinet to refresh your saved board.",
+        );
+      }, 6000);
+      this.arcadeRequests.set(requestId, { resolve, timer });
+      this.send({ type: "arcade2048-action", requestId, revision, action });
+    });
+  }
   cruceAction(action: CruceAction, revision: number): Promise<string | null> {
     if (this.view.status !== "online")
       return Promise.resolve("Reconectează-te la lac ca să poți juca Cruce.");
@@ -801,5 +846,10 @@ export class MultiplayerRoom {
       );
     });
     this.cruceRequests.clear();
+    this.arcadeRequests.forEach(({ resolve, timer }) => {
+      clearTimeout(timer);
+      resolve("Connection closed. Your progress is saved.");
+    });
+    this.arcadeRequests.clear();
   }
 }

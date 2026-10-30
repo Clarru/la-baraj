@@ -1,3 +1,4 @@
+import { Arcade2048Service, type ArcadeRecord } from "./arcade2048";
 import { CruceTable, type CruceRecord } from "./cruce-table";
 import { Server, routePartykitRequest, type Connection } from "partyserver";
 import {
@@ -93,6 +94,21 @@ export class WorldRoom extends Server<Env> {
       await this.ctx.storage.get("cruce-table-v1"),
     );
     this.cruce = cruce;
+    let arcade: Arcade2048Service | undefined;
+    try {
+      const prefix = `arcade2048-v1:${HOUSING_EPOCH}:`;
+      const records = await this.ctx.storage.list<ArcadeRecord>({ prefix });
+      arcade = new Arcade2048Service(
+        {
+          save: (owner, record) => this.ctx.storage.put(prefix + owner, record),
+        },
+        [...records.values()],
+      );
+    } catch {
+      console.error(
+        "Arcade progress could not be loaded; arcade disabled until storage recovers.",
+      );
+    }
     this.room = new RoomCore(
       {
         connections: () =>
@@ -101,6 +117,7 @@ export class WorldRoom extends Server<Env> {
         homes,
         planes,
         cruce,
+        arcade,
         retryPlaneCleanup: () => this.retryPlaneCleanup(),
         requestWeather: () => this.scheduleWeather(),
       },

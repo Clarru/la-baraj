@@ -1,3 +1,8 @@
+import {
+  parseArcadeAction,
+  type ArcadeAction,
+  type ArcadeView,
+} from "./arcade2048";
 import { parseCruceAction, type CruceAction, type CruceView } from "./cruce.ts";
 import { isBubbleText } from "./bubble-chat.ts";
 import { BOAT_MAX_SPEED, type BoatPose } from "./boats.ts";
@@ -53,6 +58,12 @@ export type HomeAssignment = { index: number; resumeToken: string };
 export type FireState = { lit: boolean; revision: number };
 export type ClientMessage =
   | {
+      type: "arcade2048-action";
+      requestId: string;
+      revision: number;
+      action: ArcadeAction;
+    }
+  | {
       type: "hello";
       nickname: string;
       requestHome?: true;
@@ -81,6 +92,7 @@ export type ClientMessage =
     }
   | { type: "sync" };
 export type ServerMessage =
+  | { type: "arcade2048"; view: ArcadeView; requestId: string; error?: string }
   | { type: "boat-impact"; revision: number; boat: BoatPose }
   | {
       type: "snapshot";
@@ -96,6 +108,7 @@ export type ServerMessage =
       village?: VillageState;
       planes?: PlanesView;
       cruce?: CruceView;
+      features?: { arcade2048?: boolean };
     }
   | { type: "village"; village: VillageState }
   | { type: "joined"; player: PlayerPresence }
@@ -172,6 +185,20 @@ export function parseClientMessage(raw: string): ClientMessage | null {
   }
   if (!object(value)) return null;
   switch (value.type) {
+    case "arcade2048-action": {
+      const action = parseArcadeAction(value.action);
+      return label(value.requestId, 64) &&
+        Number.isSafeInteger(value.revision) &&
+        Number(value.revision) >= 0 &&
+        action
+        ? {
+            type: "arcade2048-action",
+            requestId: value.requestId,
+            revision: Number(value.revision),
+            action,
+          }
+        : null;
+    }
     case "cruce-action": {
       const action = parseCruceAction(value.action);
       return label(value.requestId, 64) &&

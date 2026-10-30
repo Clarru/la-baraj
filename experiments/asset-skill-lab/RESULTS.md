@@ -83,3 +83,8 @@ The local `asset-comparison.html` is a self-contained Three.js viewer with both 
 - Source material ablations and a 90-degree key-light comparison were inspected. No runtime game material code changed.
 - Skill frontmatter validation passed; Python scripts parsed successfully.
 - Matched four-view and small-scale renders were inspected. No game deployment, full frontend test run or gameplay/FPS claim is part of this experiment.
+
+
+## Transfer to an original interactive item
+
+The [2048 arcade cabinet](arcade/README.md) transfers the accepted timber/iron surface family to a new machine with a live mesh screen, moving controls, personal saved boards and a global leaderboard. It retains separate evidence for authored Canvas screens, decoded GLB/material checks, camera projection and server persistence. Browser integration has its own coordinated preview gate.

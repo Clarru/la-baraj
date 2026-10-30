@@ -33,6 +33,14 @@ const io = new NodeIO()
     "meshopt.decoder": MeshoptDecoder,
   });
 const doc = await io.read(source);
+// Exporters may reuse a name for different packed maps (for example painted vs bare metal).
+// Give each image an unambiguous identity before retaining its lossless pixel evidence.
+const usedNames = new Set();
+for (const [index, texture] of doc.getRoot().listTextures().entries()) {
+  const name = texture.getName() || "texture";
+  texture.setName(usedNames.has(name) ? `${name}-${index}` : name);
+  usedNames.add(texture.getName());
+}
 const dataPixels = new Map();
 for (const material of doc.getRoot().listMaterials())
   for (const texture of [
@@ -70,7 +78,7 @@ for (const material of doc.getRoot().listMaterials()) {
 await doc.transform(
   weld(),
   dedup(),
-  prune(),
+  prune({ keepAttributes: true }),
   textureCompress({
     encoder: sharp,
     targetFormat: "webp",
@@ -123,11 +131,17 @@ function geometryDigest(document) {
       const indices = primitive.getIndices()?.getArray();
       if (indices)
         for (let i = 0; i < indices.length; i += 3) {
-          const triangle = [indices[i], indices[i + 1], indices[i + 2]],
-            start = triangle.indexOf(Math.min(...triangle));
-          hash.update(
-            `${triangle[start]},${triangle[(start + 1) % 3]},${triangle[(start + 2) % 3]};`,
+          const triangle = [indices[i], indices[i + 1], indices[i + 2]];
+          // A codec can rotate even a degenerate triangle. Repeated minima make
+          // indexOf(min) ambiguous, so canonicalize all three cyclic rotations.
+          const rotations = triangle.map((_, start) =>
+            [
+              triangle[start],
+              triangle[(start + 1) % 3],
+              triangle[(start + 2) % 3],
+            ].join(","),
           );
+          hash.update(rotations.sort()[0] + ";");
         }
     }
   return hash.digest("hex");
