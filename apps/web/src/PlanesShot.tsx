@@ -140,6 +140,15 @@ export function useRoundResult(
       : null;
   // Opening an already finished match does not replay a historical victory.
   const acknowledged = useRef(key);
+  const observedPlaying = useRef(
+    connected && open && view?.phase === "playing"
+      ? { round: view.round, you: view.you }
+      : null,
+  );
+  const sameObservedMatch =
+    observedPlaying.current !== null &&
+    observedPlaying.current.round === view?.round &&
+    observedPlaying.current.you === view?.you;
   const [active, setActive] = useState<{
     key: string;
     remaining: number;
@@ -149,19 +158,26 @@ export function useRoundResult(
     connected &&
     open &&
     !presenting &&
+    sameObservedMatch &&
     acknowledged.current !== key;
   useLayoutEffect(() => {
-    if (!key) {
+    if (!view || !connected || !open) {
+      observedPlaying.current = null;
+      acknowledged.current = key;
+      setActive(null);
+    } else if (view.phase === "playing") {
+      observedPlaying.current = { round: view.round, you: view.you };
       acknowledged.current = null;
       setActive(null);
-    } else if (!connected || !open) {
+    } else if (!key || !sameObservedMatch) {
+      observedPlaying.current = null;
       acknowledged.current = key;
       setActive(null);
     } else if (!presenting && acknowledged.current !== key) {
       acknowledged.current = key;
       setActive({ key, remaining: 3 });
     }
-  }, [key, connected, open, presenting]);
+  }, [view, key, connected, open, presenting]);
   useEffect(() => {
     if (!active) return;
     const timer = setInterval(
@@ -175,7 +191,7 @@ export function useRoundResult(
     );
     return () => clearInterval(timer);
   }, [active?.key]);
-  return connected && open && key
+  return connected && open && key && sameObservedMatch
     ? active?.key === key
       ? active.remaining
       : starting

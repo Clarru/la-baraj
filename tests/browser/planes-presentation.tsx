@@ -57,6 +57,12 @@ function Review() {
     [open, setOpen] = useState(true),
     [connected, setConnected] = useState(true);
   const [result, setResult] = useState<Shot["result"]>("body");
+  const [loading, setLoading] = useState(false);
+  useEffect(() => {
+    if (!loading) return;
+    const timeout = setTimeout(() => setLoading(false), 150);
+    return () => clearTimeout(timeout);
+  }, [loading]);
   useEffect(() => {
     const capture = (event: KeyboardEvent) => {
       if (blockPlanesResultExit(event, open)) return;
@@ -231,6 +237,23 @@ function Review() {
         >
           Show winner
         </button>
+        <button
+          onClick={() => {
+            setLoading(true);
+            setView((previous) => ({
+              ...previous,
+              phase: "finished",
+              winner: 0,
+              reason: "fleet",
+              turn: null,
+              players: previous.players.map((p) =>
+                p ? { ...p, ready: false } : null,
+              ) as PlanesView["players"],
+            }));
+          }}
+        >
+          Load finished history
+        </button>
         <button onClick={() => setOpen(!open)}>
           {open ? "Fold sheet" : "Open sheet"}
         </button>
@@ -243,7 +266,7 @@ function Review() {
         </output>
       </aside>
       <PlanesBoard
-        view={view}
+        view={loading ? null : view}
         open={open}
         connected={connected}
         onClose={() => setOpen(false)}

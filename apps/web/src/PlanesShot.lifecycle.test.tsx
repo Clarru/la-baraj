@@ -19,11 +19,15 @@ import {
 let container: HTMLDivElement, root: Root, current: PlanesView;
 let reduced = false;
 const action = vi.fn(async () => null);
-function render(open = true, connected = true) {
+function render(
+  open = true,
+  connected = true,
+  state: PlanesView | null = current,
+) {
   act(() =>
     root.render(
       <PlanesBoard
-        view={current}
+        view={state}
         open={open}
         connected={connected}
         onAction={action}
@@ -403,6 +407,18 @@ describe("shot animation and the firing lock", () => {
     ).toBe("1:0");
     advance(SHOT_DURATION - 500);
     expect(targets()[0].disabled).toBe(false);
+  });
+  it("does not celebrate a finished history arriving after a loading or reconnect null snapshot", () => {
+    render(true, true, null);
+    current = { ...current, phase: "finished", winner: 0, reason: "fleet" };
+    render();
+    expect(container.querySelector(".planes-round-result")).toBeNull();
+    current = { ...current, phase: "playing", winner: null, reason: null };
+    render();
+    render(true, true, null);
+    current = { ...current, phase: "finished", winner: 1, reason: "fleet" };
+    render();
+    expect(container.querySelector(".planes-round-result")).toBeNull();
   });
   it("suppresses a historical victory on mount and on fold/reopen during the result", () => {
     current = { ...current, phase: "finished", winner: 0, reason: "fleet" };
