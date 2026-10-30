@@ -480,7 +480,10 @@ describe("Cruce authoritative table", () => {
     expect(plays).toBe(24);
     expect(resumed).toBe(true);
     expect(t.view(null).phase).toBe("round-end");
-    expect(t.view(null).roundPoints.reduce((a, b) => a + b, 0)).toBe(120);
+    const result = t.view(null);
+    expect(result.roundPoints.reduce((a, b) => a + b, 0)).toBe(
+      120 + result.announcements.reduce((a, b) => a + b, 0),
+    );
   });
   it("rejects corrupt saved decks rather than duplicating cards", async () => {
     const { t, saved } = await table();

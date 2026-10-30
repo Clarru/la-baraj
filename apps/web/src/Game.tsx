@@ -712,6 +712,7 @@ export default function Game({ initialName }: { initialName: string }) {
                   requestTableStand();
                 }}
                 onSit={(seat) => room.claimSeat(CRUCE_SEATS[seat])}
+                onSync={() => room.syncCruce()}
               />
             </Suspense>
           )}

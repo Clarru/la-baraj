@@ -982,6 +982,7 @@ describe("weather freshness", () => {
     socket.open();
     snapshot(socket);
     const now = Date.now();
+    syncWorldTime(now);
     socket.receive({
       type: "weather",
       weather: {

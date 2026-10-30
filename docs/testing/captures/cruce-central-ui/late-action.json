@@ -1,0 +1,13 @@
+{
+  "before": {
+    "phase": "playing",
+    "overdue": true,
+    "revision": 14
+  },
+  "after": {
+    "phase": "trick",
+    "overdue": false,
+    "revision": 15,
+    "cardRemoved": true
+  }
+}

@@ -1,3 +1,4 @@
+import { createCruceCardGeometry } from "./cruce-card-geometry";
 import * as T from "three";
 import handPoses from "./cruce-hand-poses.json";
 import { setWorldRotation, solveTwoBoneIK } from "./limb-ik";
@@ -43,7 +44,7 @@ export function createCruceCharacterRig(
   bones[2]?.add(fan);
   fan.position.set(0.042, 0.113, 0.01);
   fan.rotation.y = -Math.PI / 2;
-  const cardGeometry = new T.PlaneGeometry(0.085, 0.137);
+  const cardGeometry = createCruceCardGeometry();
   geometries.push(cardGeometry);
   const sideMaterial = new T.MeshStandardMaterial({
     color: "#f9f2df",
