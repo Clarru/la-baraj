@@ -1,8 +1,8 @@
 {
   "model": "Lab_Crate.glb",
-  "glb_bytes": 126976,
+  "glb_bytes": 121940,
   "mesh_objects": 1,
-  "triangles": 1552,
+  "triangles": 1328,
   "materials": [
     "LaBaraj timber",
     "LaBaraj iron"

@@ -1,9 +1,9 @@
 {
   "technical_pass": true,
   "errors": [],
-  "triangles": 1552,
+  "triangles": 1328,
   "reference_triangles": 1576,
-  "glb_bytes": 126976,
+  "glb_bytes": 121940,
   "reference_glb_bytes": 161276,
   "primitives": 2,
   "material_count": 2,

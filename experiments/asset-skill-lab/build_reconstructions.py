@@ -5,12 +5,12 @@ import sys
 from pathlib import Path
 
 import bpy
-from mathutils import Vector
+from mathutils import Vector,Matrix
 
 ROOT = Path(__file__).resolve().parents[2]
 LAB = ROOT / "experiments/asset-skill-lab"
 sys.path.insert(0, str(ROOT / ".agents/skills/la-baraj-3d-assets/scripts"))
-from prop_parts import atlas_material, beam, bolt, box, chain_link, corbel, extrude_z, mesh_object, pyramid, save_export, square_band
+from prop_parts import atlas_material, beam, bolt, box, chain_link, corbel, extrude_z, mesh_object, pyramid, rectangular_band, save_export, square_band
 
 
 def lantern(material):
@@ -101,10 +101,14 @@ def crate(material):
             obj.data.materials.clear();obj.data.materials.append(bpy.data.materials['LaBaraj timber'])
             uv_map(obj,3,grain_axis=-1)
     for x in [-.2425,.2425]:
-        box("Top strap",(x,-.0019,.832),(.0982,.8563,.042),material,3,1,bevel=.003)
-        box("Bottom strap",(x,-.0019,-.006),(.0982,.8563,.042),material,3,1,bevel=0)
+        # Measure the inner opening too: band width 98mm is not its 49/53mm
+        # section thickness. One closed loop removes both gaps and coplanar joints.
+        strap=rectangular_band('Continuous wooden wrap band',(0,0,0),
+                               (.856326,.87989),(.750705,.781183),.098218,material,3,.086488)
+        uv_map(strap,3,grain_axis=-1)
+        strap.rotation_euler=Matrix(((0,0,1),(1,0,0),(0,1,0))).to_euler()
+        strap.location=(x,-.001901,.413032)
         for sy in [-1,1]:
-            box("Front/back strap",(x,sy*.411,.413),(.0982,.034,.8799),material,3,2,bevel=.003)
             for top in [-1,1]:
                 zc=.8137 if top>0 else .0124
                 # A single L-profile cap replaces two intersecting beveled cubes.

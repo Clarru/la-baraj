@@ -20,7 +20,7 @@ Our own rounded canonical slabs are baked onto low-detail UV planes. The resulti
 - **Tangent normals:** rounded perimeter shading and restrained surface bump, baked in Blender with +X/+Y/+Z convention.
 - **Metallic/roughness:** strongly metallic iron, smoother exposed edges, rougher central paint and non-metallic wood. Red is neutral 1, not a claimed AO bake.
 
-The model's metal UVs now align with these surface bands; small rivets and real bevel faces sample a flatter lighter area. Both props reuse the same three image payloads. No new geometry was added and no Quaternius texture is used in either final reconstruction.
+The model's metal UVs now align with these surface bands; small rivets and real bevel faces sample a flatter lighter area. Both props reuse the same three image payloads. No Quaternius texture is used in either final reconstruction. A subsequent measured wrap-band correction closes dark gaps under the caps and reduces the crate from 1,552 to 1,328 triangles.
 
 The unlit reference top-metal region averaged approximately sRGB [131.8,124.8,134.1], while our earlier body strip averaged [105.3,105.0,115.0]. Surface color is calibrated in linear space, retaining identical camera/light/exposure for comparison. These calibration factors belong to this atlas, not every future asset.
 
@@ -34,10 +34,10 @@ A second key-light azimuth checks the reflection response with fixed geometry/ca
 
 ## Cost and verification
 
-| Asset   | Reference bytes | New PBR bytes | Triangles, unchanged from previous reconstruction |
+| Asset   | Reference bytes | New PBR bytes | Final triangles |
 | ------- | --------------: | ------------: | ------------------------------------------------: |
 | Lantern |         176,332 |       141,256 |                                             2,490 |
-| Crate   |         161,276 |       126,976 |                                             1,552 |
+| Crate   |         161,276 |       121,940 |                                             1,328 |
 
 Each export uses three 512x512 images. This matches the lantern reference's texture count and is lower than the crate reference's six. It is more shader/texture work than the former one-map simplification, so no frame-rate equivalence to that simplification is claimed.
 
@@ -63,3 +63,7 @@ A future in-game integration needs a targeted surface profile and appropriate sh
 `experiments/asset-skill-lab/reproduce.sh` rebuilds the bake, props, exports and normal matched-view evidence without new ImageGen calls. The material ablation uses `material-study/ablate.mjs`, followed by `inspect_asset.py --views three-quarter` for each resulting variant with the reference framing. Light-sweep renders use the same framing with `--key-angle 90`.
 
 After those renders, run `python3 experiments/asset-skill-lab/material-study/build_evidence.py` to compose the unchanged-render comparison sheets. The reproducible surface workflow is in `.agents/skills/la-baraj-3d-assets/references/surfaces.md`.
+
+### Fitting correction
+
+Detail inspection exposed real cavities beneath the crate caps. The measured wooden wrap band has about 49.4mm vertical section thickness and 52.8mm front/back section thickness; 98.2mm is its width, not its thickness. A single closed rectangular wrap replaces separate thin overlapping bars, fills the cap contacts, and reduces geometry. The surface maps remain shared and unchanged.

@@ -140,6 +140,25 @@ def square_band(name, center, outer, inner, height, material):
     return obj
 
 
+def rectangular_band(name, center, outer, inner, thickness, material, strip=0, inner_thickness=None):
+    """Closed rectangular loop; inner thickness allows a lightly beveled inner rim."""
+    vertices=[]
+    for sign in [-1,1]:
+        for (width,height),depth in [(outer,thickness),(inner,inner_thickness or thickness)]:
+            vertices.extend([(-width/2,-height/2,sign*depth/2),(width/2,-height/2,sign*depth/2),
+                             (width/2,height/2,sign*depth/2),(-width/2,height/2,sign*depth/2)])
+    faces=[]
+    for i in range(4):
+        j=(i+1)%4
+        faces.extend([(i,j,j+4,i+4),(i+8,i+12,j+12,j+8),
+                      (i,i+8,j+8,j),(i+4,j+4,j+12,i+12)])
+    obj=mesh_object(name,vertices,faces,material,strip);obj.location=center
+    import bmesh
+    bm=bmesh.new();bm.from_mesh(obj.data)
+    bmesh.ops.recalc_face_normals(bm,faces=list(bm.faces));bm.to_mesh(obj.data);bm.free()
+    return obj
+
+
 def corbel(name, center, direction, material):
     profile = [(0,0),(.085,0),(.085,-.025),(.060,-.035),
                (.043,-.067),(.030,-.105),(0,-.105)]

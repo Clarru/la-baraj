@@ -12,8 +12,8 @@ The reference files are the project's retained CC0 Quaternius Fantasy Props Mega
 
 | Metric                          | Lantern reference | Lantern reconstruction | Crate reference | Crate reconstruction |
 | ------------------------------- | ----------------: | ---------------------: | --------------: | -------------------: |
-| Triangles                       |             2,822 |                  2,490 |           1,576 |                1,552 |
-| GLB bytes                       |           176,332 |                141,256 |         161,276 |              126,976 |
+| Triangles                       |             2,822 |                  2,490 |           1,576 |                1,328 |
+| GLB bytes                       |           176,332 |                141,256 |         161,276 |              121,940 |
 | Primitive/material groups       |                 1 |                      1 |               2 |                    2 |
 | Embedded textures               |          3 × 512² |               3 × 512² |        6 × 512² |             3 × 512² |
 | Maximum overall dimension error |                 — |                 0.191% |               — |               0.169% |
@@ -31,7 +31,7 @@ Full front, side, rear and three-quarter sheets: [lantern](lantern/final/turnaro
 ## Visual limits
 
 - The lantern preserves the bracket, diagonal brace, two chains, roof and open cage, but chain contours, pointed ends, shoulders and wear patterns differ. Fixed-view alpha silhouette overlap ranges from about 79.0% to 89.7%; the three-quarter view is 86.3%.
-- The crate matches the overall framing and has 98.6–99.0% fixed-view alpha overlap, but its surface grain, metal finish, bevel treatment and cap details remain distinguishable from the original.
+- The crate matches the overall framing and has 98.6–99.5% fixed-view alpha overlap, but its surface grain, metal finish, bevel treatment and cap details remain distinguishable from the original.
 - Alpha overlap measures projected occupied pixels. It is not a percentage of overall visual quality, stylistic identity or full 3D similarity. A high score cannot certify material quality.
 - Interaction sockets are proposed metadata only. Carrying, collisions and world installation were not playtested. The current skill is validated on two static props, not vegetation, animated characters or buildings.
 
