@@ -11,5 +11,10 @@
     "Joystick",
     "Screen"
   ],
+  "joystickPivotGltf": [
+    -0.27,
+    0.967,
+    0.3
+  ],
   "materialProfile": "accepted timber/iron trim + green enamel"
 }

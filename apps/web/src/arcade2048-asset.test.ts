@@ -44,6 +44,12 @@ it("ships a small independently decoded GLB with live-screen UVs, moving nodes, 
         .listNodes()
         .some((n) => n.getName() === name),
     ).toBe(true);
+  const joystick = doc
+    .getRoot()
+    .listNodes()
+    .find((n) => n.getName() === "Joystick")!;
+  expect(joystick.getTranslation()[1]).toBeCloseTo(0.967, 5);
+  expect(joystick.listChildren().some((n) => n.getMesh())).toBe(true);
   const screen = doc
       .getRoot()
       .listNodes()

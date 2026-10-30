@@ -19,7 +19,7 @@ The existing [`PRODUCT.md`](../../PRODUCT.md), [`DESIGN.md`](../../DESIGN.md), [
 
 ## Finalized extension
 
-The runtime asset is an original, authored cabinet rather than a reconstructed source mesh. The decoded measurements are approximately 0.760 × 0.724 × 1.913 m; the nominal contract is 0.76 × 0.72 × 1.92 m. The shipping GLB is 245,604 bytes, 7,082 triangles, five mesh objects and 13 primitives. Its four embedded PBR maps are no larger than 512×512. `Screen`, `Joystick`, `ButtonNew` and `ButtonScores` remain semantic runtime nodes. The screen UV uses the verified top-left origin; Three's `CanvasTexture` uses `flipY=false`, and pointer UVs are mapped directly to the logical canvas.
+The runtime asset is an original, authored cabinet rather than a reconstructed source mesh. The decoded measurements are approximately 0.760 × 0.724 × 1.913 m; the nominal contract is 0.76 × 0.72 × 1.92 m. The shipping GLB is 245,680 bytes, 7,082 triangles, five mesh objects and 13 primitives. Its four embedded PBR maps are no larger than 512×512. `Screen`, `Joystick`, `ButtonNew` and `ButtonScores` remain semantic runtime nodes. The screen UV uses the verified top-left origin; Three's `CanvasTexture` uses `flipY=false`, and pointer UVs are mapped directly to the logical canvas.
 
 The screen is drawn by the runtime [`drawArcadeScreen`](../../apps/web/src/arcade2048-screen.ts) function onto a 768×960 canvas whose logical coordinate system is 512×640. It uses Bree Serif for the display/title voice and Alegreya Sans for utility labels, with warm paper, forest green, ochre/gold, terracotta and deep forest ink. The physical screen and the hidden semantic HTML controls use the same action set. There is no Undo control or parser action.
 

@@ -1,18 +1,18 @@
 {
   "model": "cabinet-display-qa.glb",
-  "glb_bytes": 462148,
+  "glb_bytes": 462228,
   "mesh_objects": 5,
   "triangles": 7082,
   "materials": [
     "Marquee forest ink",
-    "Screen bezel",
+    "LaBaraj timber",
     "Terracotta buttons",
-    "Live display",
-    "Ivory buttons",
+    "Screen bezel",
+    "Pine ochre",
     "Forest enamel",
     "Warm illuminated marquee",
-    "Pine ochre",
-    "LaBaraj timber"
+    "Ivory buttons",
+    "Live display"
   ],
   "mesh_material_slots": 12,
   "images": [

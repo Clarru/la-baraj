@@ -6,7 +6,7 @@
   "generatedReference": "reference.webp",
   "paintMasterLocal": "paint-source.png (ignored, retained locally)",
   "modelTriangles": 7082,
-  "encodedBytes": 245604,
+  "encodedBytes": 245680,
   "runtime": "apps/web/public/assets/arcade2048/cabinet.glb",
   "mapsMaxSize": [
     512,
@@ -14,9 +14,9 @@
   ],
   "qaScope": "Actual runtime Canvas drawing and decoded geometry/PBR; Blender projection studies are not browser screenshots",
   "files": {
-    "cabinet.glb": "8c007a817cffa60e1740402aac914792698627490efaefa73152b168eb0cd78c",
+    "cabinet.glb": "f8374b4b46244fc1b0eb7c0744c6971158ceced68d55042d0276715f1bc28b34",
     "paint-512.png": "6cd49400a9d50a926437f0ba9cf1ea410a602859cfd8f009b0b7b586b03bd939",
-    "build_cabinet.py": "06898ba3489384fb3ea20591da6c66d61d94d05efa5fdf86e679b5a22fea0b56",
+    "build_cabinet.py": "d0481655ccc1bd32bc5dc614dace114b5c4e7510442364a8b4d95ea590cffef5",
     "finish_cabinet.mjs": "5dd9d7ae804faacd90fe4bcbfcbe375f20cdb92a862e0cb048d8908536b6ea00",
     "render_screen.mjs": "f3d383502a1055b472b817a11518947182693a201df7dc47487daac9be0ae828",
     "render_focus.py": "f53f9832d0c1d0efaeae28f49d9c67ea0ae248a7382f4dd2d861f3f3f953ab20",

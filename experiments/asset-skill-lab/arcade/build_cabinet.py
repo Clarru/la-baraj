@@ -115,11 +115,15 @@ bpy.ops.mesh.primitive_uv_sphere_add(segments=12,ring_count=8,radius=.032,locati
 shaft=bpy.data.objects.get('Joystick shaft')
 bpy.ops.object.select_all(action='DESELECT');shaft.select_set(True);joystick.select_set(True);bpy.context.view_layer.objects.active=joystick;bpy.ops.object.join();joystick.name='Joystick'
 bpy.context.scene.cursor.location=(-.27,-.30,.967);bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
+# Quantization can recenter mesh nodes. A semantic parent preserves the real mechanism pivot.
+joystick.name='JoystickHandle'
+pivot=bpy.data.objects.new('Joystick',None);bpy.context.collection.objects.link(pivot);pivot.location=(-.27,-.30,.967)
+bpy.context.view_layer.update();world=joystick.matrix_world.copy();joystick.parent=pivot;joystick.matrix_world=world
 for name,x,mat in [('ButtonNew',.14,cream),('ButtonScores',.25,red)]:
     cylinder(name+' bezel',(x,-.30,.964),.029,.010,iron,1,16)
     cylinder(name,(x,-.30,.975),.024,.014,mat,0,16)
 # Join static parts only; the four functional nodes must retain their names.
-dynamic={'Screen','Joystick','ButtonNew','ButtonScores'}
+dynamic={'Screen','JoystickHandle','ButtonNew','ButtonScores'}
 bpy.ops.object.select_all(action='DESELECT')
 statics=[o for o in bpy.context.scene.objects if o.type=='MESH' and o.name not in dynamic]
 for o in statics:o.select_set(True)
@@ -127,4 +131,4 @@ bpy.context.view_layer.objects.active=statics[0];bpy.ops.object.join();bpy.conte
 bpy.ops.wm.save_as_mainfile(filepath=str(OUT/'Arcade2048.blend'))
 bpy.ops.object.select_all(action='SELECT')
 bpy.ops.export_scene.gltf(filepath=str(OUT/'Arcade2048-raw.glb'),export_format='GLB',export_apply=True,export_yup=True)
-(OUT/'contract.json').write_text(json.dumps({'height':1.92,'width':.76,'depth':.72,'trianglesMax':10000,'bytesMax':400000,'screenUvOrigin':'top-left','runtimeNodes':sorted(dynamic),'materialProfile':'accepted timber/iron trim + green enamel'},indent=2))
+(OUT/'contract.json').write_text(json.dumps({'height':1.92,'width':.76,'depth':.72,'trianglesMax':10000,'bytesMax':400000,'screenUvOrigin':'top-left','runtimeNodes':['ButtonNew','ButtonScores','Joystick','Screen'],'joystickPivotGltf':[-.27,.967,.30],'materialProfile':'accepted timber/iron trim + green enamel'},indent=2))
