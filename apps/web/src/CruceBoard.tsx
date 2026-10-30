@@ -276,6 +276,7 @@ export default function CruceBoard({
     <div className="cruce-overlay" data-testid="cruce-board">
       <section
         className="cruce-board"
+        lang="ro"
         role="dialog"
         aria-modal="true"
         aria-labelledby="cruce-title"

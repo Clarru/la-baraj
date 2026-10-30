@@ -264,6 +264,11 @@
 .cruce-timer--overdue {
   color: #f3df9a;
 }
+.cruce-table-interruption {
+  margin: 0;
+  max-width: 30ch;
+  font-size: 16px;
+}
 .cruce-table-reconnect {
   font-size: 16px;
   color: #f3df9a;
