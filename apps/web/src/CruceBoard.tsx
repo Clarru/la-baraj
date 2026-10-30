@@ -146,6 +146,11 @@ export default function CruceBoard({
     };
   }, [open]);
   useEffect(() => {
+    // Phase/turn changes can remove the focused Ready/bid control.
+    if (open && document.activeElement === document.body)
+      ref.current?.focus({ preventScroll: true });
+  }, [open, v?.phase, v?.turn]);
+  useEffect(() => {
     if (leaveSequence.current === leaveRequest) return;
     leaveSequence.current = leaveRequest;
     if (v && !["lobby", "finished", "round-end"].includes(v.phase))
