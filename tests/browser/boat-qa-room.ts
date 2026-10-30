@@ -4,7 +4,7 @@ import type {
   ClientMessage,
   ServerMessage,
 } from "../../packages/shared/protocol";
-/** Observation only: the actual transport, parser and response stay unchanged. */
+/** Local QA shim: record corrections, emulate legacy fields and optional wire delay. */
 export class LocalWorldRoom extends NormalRoom {
   protected override send(message: ClientMessage) {
     let outgoing = message;
