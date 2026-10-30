@@ -1,0 +1,80 @@
+@font-face {
+  font-family: "Bree Serif";
+  src: url("/fonts/bree-serif-latin-400-normal.woff2");
+}
+@font-face {
+  font-family: "Alegreya Sans";
+  src: url("/fonts/alegreya-sans-latin-400-normal.woff2");
+}
+@font-face {
+  font-family: "Alegreya Sans";
+  src: url("/fonts/alegreya-sans-latin-700-normal.woff2");
+  font-weight: 700;
+}
+:root {
+  --font-body: "Alegreya Sans", sans-serif;
+  --font-heading: "Bree Serif", serif;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: #324738;
+  color: #f7f3e8;
+  font: 16px/1.4 var(--font-body);
+}
+.review-controls {
+  padding: 24px;
+  width: 250px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+.review-controls h1 {
+  font: 24px var(--font-heading);
+  margin: 0;
+}
+.review-controls p {
+  margin: 0;
+}
+.review-controls button,
+.review-controls select {
+  font: inherit;
+  padding: 8px;
+  color: #244b70;
+  background: #f7f3e8;
+  border: 1px solid #a4bace;
+}
+.review-controls button:disabled {
+  opacity: 0.5;
+}
+.review-controls output {
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 660px) {
+  .review-controls {
+    width: auto;
+    padding: 12px;
+    flex-flow: row wrap;
+    gap: 8px;
+  }
+  .review-controls h1,
+  .review-controls p {
+    width: 100%;
+    font-size: 14px;
+  }
+  .review-controls button,
+  .review-controls select {
+    font-size: 13px;
+    padding: 4px;
+  }
+  .review-controls label,
+  .review-controls output {
+    font-size: 13px;
+  }
+  .planes-notebook {
+    max-height: calc(100dvh - 180px);
+  }
+}
