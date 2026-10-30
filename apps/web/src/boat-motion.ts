@@ -1,6 +1,9 @@
 import { LAKE_LEVEL } from "./swim-motion";
 import {
   boundedBoatVelocity,
+  boundedBoatAngularVelocity,
+  BOAT_ANGULAR_DRAG,
+  wrapBoatYaw,
   type BoatPose,
 } from "../../../packages/shared/boats";
 
@@ -100,8 +103,6 @@ export function advanceBoat(
     ? clamp(input.steer, -1, 1)
     : 0;
   const t = BOAT_TUNING;
-  state.driftX *= Math.exp(-2.5 * dt);
-  state.driftZ *= Math.exp(-2.5 * dt);
 
   const boost = input.boost === true && input.throttle > 0;
   if (input.throttle > 0) {
@@ -126,12 +127,15 @@ export function advanceBoat(
   }
 
   state.steer = damp(state.steer, steerInput, 6, dt);
-  state.turnRate =
+  const targetTurnRate =
     state.steer *
     t.maxTurnRate *
     Math.min(Math.abs(state.speed) / t.fullTurnSpeed, 1) *
     boostTurnScale(state.speed) *
     Math.sign(state.speed);
+  state.turnRate = damp(state.turnRate, targetTurnRate, BOAT_ANGULAR_DRAG, dt);
+  const worldX = Math.sin(state.yaw) * state.speed + state.driftX;
+  const worldZ = Math.cos(state.yaw) * state.speed + state.driftZ;
   const nextYaw = state.yaw + state.turnRate * dt;
   if (
     nextYaw !== state.yaw &&
@@ -139,10 +143,20 @@ export function advanceBoat(
     !input.canTurn(state.yaw, nextYaw)
   )
     state.turnRate = 0;
-  else state.yaw = nextYaw;
+  else if (nextYaw !== state.yaw) state.yaw = wrapBoatYaw(nextYaw);
+  // Rotating the hull cannot rotate its momentum for free. Water gradually
+  // removes lateral slip; the motor has already accelerated along the old keel.
+  state.speed = worldX * Math.sin(state.yaw) + worldZ * Math.cos(state.yaw);
+  const sideDrag = Math.exp(-2.5 * dt);
+  state.driftX = (worldX - Math.sin(state.yaw) * state.speed) * sideDrag;
+  state.driftZ = (worldZ - Math.cos(state.yaw) * state.speed) * sideDrag;
+  setBoatVelocity(state, [
+    Math.sin(state.yaw) * state.speed + state.driftX,
+    Math.cos(state.yaw) * state.speed + state.driftZ,
+  ]);
   state.wheelAngle = damp(
     state.wheelAngle,
-    boatWheelTarget(state.turnRate),
+    state.steer * t.wheelMaxAngle,
     10,
     dt,
   );
@@ -193,11 +207,16 @@ export function boatVelocity(input: {
 /** Adopt server momentum without changing the float height or driving state. */
 export function applyBoatImpact(state: BoatMotionState, boat: BoatPose) {
   state.yaw = boat.yaw;
-  const [x, z] = boundedBoatVelocity(boat.velocity);
-  state.speed = x * Math.sin(boat.yaw) + z * Math.cos(boat.yaw);
-  state.driftX = x - Math.sin(boat.yaw) * state.speed;
-  state.driftZ = z - Math.cos(boat.yaw) * state.speed;
-  state.turnRate = 0;
+  setBoatVelocity(state, boat.velocity);
+  state.turnRate = boundedBoatAngularVelocity(boat.angularVelocity ?? 0);
+}
+export function setBoatVelocity(state: BoatMotionState, velocity: number[]) {
+  const [x, z] = boundedBoatVelocity(velocity),
+    fx = Math.sin(state.yaw),
+    fz = Math.cos(state.yaw);
+  state.speed = x * fx + z * fz;
+  state.driftX = x - fx * state.speed;
+  state.driftZ = z - fz * state.speed;
 }
 
 /** Yaw rate from two headings, wrapped across the ±π seam. */

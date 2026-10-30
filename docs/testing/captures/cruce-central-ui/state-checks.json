@@ -1,0 +1,91 @@
+[
+  {
+    "scenario": "overdue",
+    "state": "Tu jociÎmparte: AmaliaPoți juca în continuare0 s",
+    "timers": 1
+  },
+  {
+    "scenario": "away",
+    "state": "Amalia se reconecteazăÎmparte: AmaliaLoc rezervat încă 25 s",
+    "timers": 0
+  },
+  {
+    "scenario": "disconnected",
+    "state": "Conexiune întreruptăÎmparte: Amalia",
+    "timers": 0
+  },
+  {
+    "scenario": "lobby",
+    "state": "Putem începe partida2 din 2 locuri ocupate",
+    "timers": 0
+  },
+  {
+    "scenario": "round-end",
+    "state": "Runda s-a încheiatRunda 1",
+    "timers": 0
+  },
+  {
+    "scenario": "large1920",
+    "metrics": {
+      "items": [
+        {
+          "h": 744.8229370117188,
+          "name": "cruce-felt",
+          "w": 744.8229370117188,
+          "x": 427.5833435058594,
+          "y": 86.29167175292969
+        },
+        {
+          "h": 63.59375,
+          "name": "cruce-player cruce-player--0 cruce-player--turn cruce-player--you",
+          "w": 107.70833587646484,
+          "x": 746.1354370117188,
+          "y": 745.5208740234375
+        },
+        {
+          "h": 74.32292175292969,
+          "name": "cruce-player cruce-player--2",
+          "w": 176,
+          "x": 711.9896240234375,
+          "y": 108.29167175292967
+        },
+        {
+          "h": 67.39583587646484,
+          "name": "cruce-table-status cruce-table-status--timed",
+          "w": 380,
+          "x": 609.9896240234375,
+          "y": 184.2916717529297
+        },
+        {
+          "h": 201.892578125,
+          "name": "cruce-played cruce-played--2",
+          "w": 131.5810546875,
+          "x": 808.4490966796875,
+          "y": 401.3505859375
+        },
+        {
+          "h": 964.9166870117188,
+          "name": "cruce-sidebar",
+          "w": 300,
+          "x": 1600,
+          "y": 86.29167175292969
+        },
+        {
+          "h": 220.08334350585935,
+          "name": "cruce-hand-zone",
+          "w": 1560,
+          "x": 20,
+          "y": 831.125
+        }
+      ],
+      "scroll": [
+        1920,
+        1080
+      ],
+      "viewport": [
+        1920,
+        1080
+      ]
+    }
+  }
+]

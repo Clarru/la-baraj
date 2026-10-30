@@ -136,8 +136,19 @@ function RemoteAvatarRig({ id, room }: { id: string; room: RemoteCardRoom }) {
   // The jet stream sizes itself from the pose speed alone (no protocol change).
   const remoteBoatSpeed = useMemo(
     () => () => {
-      const pose = room.remotes.get(id)?.player;
-      return pose?.vehicle === "boat" ? (pose.speed ?? 0) : 0;
+      const p = room.remotes.get(id)?.player;
+      return p?.vehicle === "boat"
+        ? p.boat
+          ? Math.hypot(...p.boat.velocity)
+          : (p.speed ?? 0)
+        : 0;
+    },
+    [room, id],
+  );
+  const remoteBoatVelocity = useMemo(
+    () => () => {
+      const p = room.remotes.get(id)?.player;
+      return p?.vehicle === "boat" ? (p.boat?.velocity ?? null) : null;
     },
     [room, id],
   );
@@ -374,7 +385,10 @@ function RemoteAvatarRig({ id, room }: { id: string; room: RemoteCardRoom }) {
       if (Number.isFinite(yaw) && dt > 0) {
         const turnRate = inferBoatTurnRate(state.previousYaw, yaw, dt);
         state.wheelAngle +=
-          (boatWheelTarget(turnRate) - state.wheelAngle) *
+          ((player.boat?.angularVelocity === undefined
+            ? boatWheelTarget(turnRate)
+            : (player.boat.rudder ?? 0) * BOAT_TUNING.wheelMaxAngle) -
+            state.wheelAngle) *
           (1 - Math.exp(-10 * dt));
         state.lean +=
           (THREE.MathUtils.clamp(
@@ -434,7 +448,9 @@ function RemoteAvatarRig({ id, room }: { id: string; room: RemoteCardRoom }) {
     <group ref={root} name={`Online player ${id}`}>
       <primitive object={object} dispose={null} />
       {swimming && <SwimWake />}
-      {hasBoat && <BoatSpray speed={remoteBoatSpeed} />}
+      {hasBoat && (
+        <BoatSpray speed={remoteBoatSpeed} velocity={remoteBoatVelocity} />
+      )}
       {hasBoat && (
         <Suspense fallback={null}>
           <Boat ref={boat} visible={boating} detail="lod" />

@@ -1,0 +1,26 @@
+{
+  "placements": {
+    "a": [
+      {
+        "label": "Claudiu a strigat 20",
+        "player": "Claudiu",
+        "position": "cruce-player cruce-player--2",
+        "text": "+20"
+      }
+    ],
+    "b": [
+      {
+        "label": "Claudiu a strigat 20",
+        "player": "Claudiu · Tu",
+        "position": "cruce-player cruce-player--0 cruce-player--you",
+        "text": "+20"
+      }
+    ]
+  },
+  "announcements": [
+    0,
+    0,
+    60,
+    0
+  ]
+}

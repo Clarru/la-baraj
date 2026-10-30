@@ -135,6 +135,39 @@ afterEach(() => {
 });
 
 describe("friends room client", () => {
+  it("publishes quantized physical boat yaw and rotation rather than cosmetic facing", () => {
+    const room = new MultiplayerRoom(),
+      stop = room.connect(),
+      socket = sockets[0];
+    socket.open();
+    snapshot(socket);
+    room.publishMotion({
+      ...sample,
+      vehicle: "Motorboat",
+      boat: {
+        position: [45.123456, 27.123456],
+        velocity: [1.123456, 2.123456],
+        yaw: 0.234567,
+        angularVelocity: 0.345678,
+        rudder: 0.456789,
+      },
+      facing: [1, 0, 0],
+    });
+    const packet = socket.sent.filter((m) => m.type === "pose").at(-1)!;
+    expect(packet.pose).toMatchObject({
+      yaw: 0.235,
+      position: [45.123, 0.05, 27.123],
+      boat: {
+        position: [45.123, 27.123],
+        velocity: [1.123, 2.123],
+        yaw: 0.235,
+        angularVelocity: 0.346,
+        rudder: 0.457,
+      },
+    });
+    expect(parseClientMessage(JSON.stringify(packet))).toEqual(packet);
+    stop();
+  });
   it("requests bounded authoritative sync when a completed Cruce trick stalls and cancels after recovery", () => {
     vi.useFakeTimers();
     const start = 1700000000000;
@@ -259,7 +292,11 @@ describe("friends room client", () => {
     room.publishMotion({ ...sample, feet: [46, 2, 27] });
     expect(
       socket.sent.filter((m) => m.type === "pose").at(-1)!.pose,
-    ).toMatchObject({ vehicle: "none", boat, boatImpactRevision: 0 });
+    ).toMatchObject({
+      vehicle: "none",
+      boat: { ...boat, yaw: 3.141 },
+      boatImpactRevision: 0,
+    });
     stop();
   });
   it.each(["Swim_Forward", "Swim_Idle"])(
@@ -945,6 +982,7 @@ describe("weather freshness", () => {
     socket.open();
     snapshot(socket);
     const now = Date.now();
+    syncWorldTime(now);
     socket.receive({
       type: "weather",
       weather: {

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { wakeMotion } from "./boat-spray";
 import { BOAT_DIMENSIONS } from "./boat-geometry";
 import {
   WAKE_ACROSS,
@@ -60,6 +61,20 @@ describe("wake trail buffer", () => {
     expect(pushWakeSample(trail, far, 0, 3, 1, 1)).toBe(true);
     expect(trail.count).toBe(1);
     expect(trail.data[trail.head * 5]).toBe(far);
+  });
+
+  it("changing from forward travel to reverse cannot bridge through the hull", () => {
+    const trail = createWakeTrail(),
+      forward = wakeMotion(0, 8),
+      reverse = wakeMotion(0, -2);
+    pushWakeSample(trail, forward.x, forward.z, 0, 4, 1);
+    pushWakeSample(trail, forward.x, forward.z + 0.1, 0.2, 4, 1);
+    pushWakeSample(trail, reverse.x, reverse.z, 0.6, 1, 1);
+    expect(trail.count).toBe(1);
+    expect(trail.data[trail.head * 5 + 1]).toBeCloseTo(
+      BOAT_DIMENSIONS.bowExtent,
+      3,
+    );
   });
 
   it("ignores non-finite samples", () => {
@@ -149,22 +164,36 @@ describe("wake ribbon layout", () => {
     }
   });
 
-  it("collapses unused vertices onto the head with zero along", () => {
+  it("unused slots cannot form a visible bridge back across a short trail", () => {
     const trail = createWakeTrail();
-    pushWakeSample(trail, 1, 2, 0, 3, 1);
-    pushWakeSample(trail, 1, 3, 0.2, 3, 1);
+    pushWakeSample(trail, 0, 0, 0, 3, 1);
+    pushWakeSample(trail, 0, 1, 0.2, 3, 1);
+    pushWakeSample(trail, 1, 2, 0.4, 3, 1);
     const { positions, aux, bounds } = buffers();
-    expect(layoutWakeRibbon(trail, 0.2, 0.5, positions, aux, bounds)).toBe(2);
-    for (let arm = 0; arm < WAKE_STRIPS; arm++)
-      for (let slot = 2; slot < WAKE_TRAIL_SAMPLES; slot++)
-        for (let across = 0; across < WAKE_ACROSS; across++) {
-          const v = vertex(slot, arm, across);
-          expect(positions[v * 3]).toBe(Math.fround(1));
-          expect(positions[v * 3 + 1]).toBe(0.5);
-          expect(positions[v * 3 + 2]).toBe(Math.fround(3));
-          expect(aux[v * 3]).toBe(0);
-          expect(aux[v * 3 + 1]).toBe(0);
-        }
+    layoutWakeRibbon(trail, 0.4, 0.1, positions, aux, bounds);
+    const index = wakeRibbonIndex();
+    for (let i = 0; i < index.length; i += 3) {
+      const ids = [index[i], index[i + 1], index[i + 2]];
+      if (
+        !ids.some(
+          (v) =>
+            Math.floor(v / WAKE_ACROSS) % WAKE_TRAIL_SAMPLES >= trail.count,
+        )
+      )
+        continue;
+      const [a, b, c] = ids.map((v) => [
+        positions[v * 3],
+        positions[v * 3 + 2],
+      ]);
+      const area = Math.abs(
+        (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]),
+      );
+      expect(area).toBeLessThan(1e-5);
+    }
+    for (let strip = 0; strip < WAKE_STRIPS; strip++)
+      for (let slot = trail.count; slot < WAKE_TRAIL_SAMPLES; slot++)
+        for (let a = 0; a < WAKE_ACROSS; a++)
+          expect(aux[vertex(slot, strip, a) * 3]).toBe(1);
   });
 
   it("weak samples fade toward 1 and aux carries across and arm", () => {

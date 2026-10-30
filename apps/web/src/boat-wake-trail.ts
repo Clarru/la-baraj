@@ -119,7 +119,7 @@ const mix = (a: number, b: number, t: number) => a + (b - a) * t;
 /**
  * Writes WAKE_VERTEX_COUNT world-space vertices (xyz) and aux (along, across,
  * arm). Slot 0 is the newest sample, higher slots are older; unused slots
- * collapse onto the head. Returns the live sample count and fills `bounds`
+ * collapse onto the oldest live centre. Returns the live sample count and fills `bounds`
  * with [centreX, centreZ, radius].
  */
 export function layoutWakeRibbon(
@@ -157,19 +157,21 @@ export function layoutWakeRibbon(
   bounds[1] = cz;
   bounds[2] = radius;
 
-  const headO = trail.head * STRIDE;
-  const headX = count > 0 ? d[headO] : 0;
-  const headZ = count > 0 ? d[headO + 1] : 0;
+  // Inactive indexed rows must not connect the old tail back to the head.
+  // Collapse them along the oldest row's transverse line and fully fade them.
+  const tailO = count > 0 ? slotOffset(trail, count - 1) : 0;
+  const tailX = count > 0 ? d[tailO] : 0;
+  const tailZ = count > 0 ? d[tailO + 1] : 0;
 
   let travelled = 0;
   for (let s = 0; s < WAKE_TRAIL_SAMPLES; s++) {
     const live = s < count;
-    let x = headX;
-    let z = headZ;
+    let x = tailX;
+    let z = tailZ;
     let lx = 1;
     let lz = 0;
     let along = 0;
-    let alongOut = 0;
+    let alongOut = 1;
     let geomAlong = 0;
     let spread = 0;
     if (live) {

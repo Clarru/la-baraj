@@ -65,10 +65,11 @@ describe("boat motion", () => {
     expect(moving.turnRate).toBeCloseTo(0.9, 2);
   });
 
-  it("wheel follows the actual turn rate, not the key", () => {
+  it("wheel follows the helm while collision spin is independent", () => {
     const rest = createBoatMotionState(0);
     run(rest, 60, 0, 1);
-    expect(Math.abs(rest.wheelAngle)).toBeLessThan(0.01);
+    expect(rest.wheelAngle).toBeGreaterThan(2.3);
+    expect(rest.turnRate).toBe(0);
 
     const moving = createBoatMotionState(0);
     moving.speed = 8;
@@ -216,11 +217,11 @@ describe("boat motion", () => {
     boosted.speed = 12.8;
     for (let i = 0; i < 300; i += 1)
       advanceBoat(boosted, { throttle: 1, steer: 1, dt: DT, boost: true });
-    expect(boosted.speed).toBeCloseTo(12.8, 6);
+    expect(boosted.speed).toBeGreaterThan(BOAT_TUNING.cruise);
+    expect(boosted.speed).toBeLessThan(12.8);
     expect(boosted.turnRate).toBeLessThan(cruise.turnRate);
-    expect(boosted.turnRate).toBeCloseTo(
+    expect(boosted.turnRate).toBeGreaterThan(
       BOAT_TUNING.maxTurnRate * BOAT_TUNING.boostTurnFactor,
-      2,
     );
   });
 

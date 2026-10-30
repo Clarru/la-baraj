@@ -165,6 +165,38 @@ describe("Cruce rules", () => {
       moveCruce(g, 0, { kind: "play", card: 7, announce: true }),
     ).toThrow(/anunța/);
   });
+  it("automatically scores a legal leading pair for legacy announce:false and never calls following/repeated/unpaired cards", () => {
+    const g = start("four-classic");
+    g.turn = 0;
+    g.hands[0] = [1, 2, 5];
+    g.trump = 1;
+    const twenty = moveCruce(g, 0, { kind: "play", card: 1, announce: false });
+    expect(twenty.trick[0].announcement).toBe(20);
+    expect(twenty.announcements[0]).toBe(20);
+    const forty = moveCruce({ ...g, trump: 0 }, 0, {
+      kind: "play",
+      card: 2,
+      announce: false,
+    });
+    expect(forty.trick[0].announcement).toBe(40);
+    expect(
+      moveCruce(g, 0, { kind: "play", card: 5, announce: false }).trick[0]
+        .announcement,
+    ).toBe(0);
+    expect(
+      moveCruce({ ...g, announced: [0] }, 0, {
+        kind: "play",
+        card: 1,
+        announce: false,
+      }).trick[0].announcement,
+    ).toBe(0);
+    const followed = moveCruce(
+      { ...g, trick: [{ seat: 3, card: 0, announcement: 0 }] },
+      0,
+      { kind: "play", card: 1, announce: false },
+    );
+    expect(followed.trick[1].announcement).toBe(0);
+  });
   it("rejects an illegal play atomically; cheating records offences privately for later accusations", () => {
     const g = start("four-classic");
     g.turn = 0;

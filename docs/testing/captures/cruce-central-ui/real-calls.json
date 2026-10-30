@@ -1,0 +1,29 @@
+{
+  "runtime": "5aabce09ddf84b4ddfec48c56e417de57f2237a6",
+  "automatic40BothClients": true,
+  "moves": [
+    {
+      "seat": 2,
+      "card": 13,
+      "announcement": 40,
+      "revision": 9
+    },
+    {
+      "seat": 0,
+      "card": 21,
+      "announcement": 0,
+      "revision": 11
+    },
+    {
+      "seat": 2,
+      "card": 7,
+      "announcement": 20,
+      "revision": 13
+    }
+  ],
+  "found20": {
+    "seat": 2,
+    "card": 7,
+    "revision": 13
+  }
+}

@@ -3,7 +3,7 @@ import { createPortal, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { BOAT_DIMENSIONS } from "./boat-geometry";
 import { BOAT_TUNING } from "./boat-motion";
-import { spraySize, sprayIntensity } from "./boat-spray.ts";
+import { spraySize, sprayIntensity, wakeMotion } from "./boat-spray.ts";
 import {
   WAKE_VERTEX_COUNT,
   createWakeTrail,
@@ -190,13 +190,24 @@ function applyState(material: THREE.ShaderMaterial, state: Float32Array) {
  * anchors itself at the transom on the waterline. `speed` is read every frame
  * (no React re-render): the local boat's motion speed or a remote pose's.
  */
-export function BoatSpray({ speed }: { speed: () => number }) {
+export function BoatSpray({
+  speed,
+  velocity,
+}: {
+  speed: () => number;
+  velocity?: () => readonly [number, number] | null;
+}) {
   const group = useRef<THREE.Group>(null);
   const wake = useRef<THREE.Mesh>(null);
   const tail = useRef<THREE.Points>(null);
   const scene = useThree((s) => s.scene);
   const world = useMemo(() => new THREE.Vector3(), []);
-  const transom = useMemo(() => new THREE.Vector3(), []);
+  const anchor = useMemo(() => new THREE.Vector3(), []),
+    localAnchor = useMemo(() => new THREE.Vector3(), []),
+    localVelocity = useMemo(() => new THREE.Vector3(), []),
+    rotation = useMemo(() => new THREE.Quaternion(), []),
+    motion = useMemo(() => wakeMotion(0, 0), []);
+  const wasSpraying = useRef(false);
   const state = useMemo(() => new Float32Array(4), []);
   const bounds = useMemo(() => new Float32Array(3), []);
   const trail = useMemo(createWakeTrail, []);
@@ -216,7 +227,7 @@ export function BoatSpray({ speed }: { speed: () => number }) {
     if (tail.current)
       tail.current.onBeforeRender = () => applyState(tailMaterial, state);
   }, [state]);
-  useFrame(({ clock, size, viewport }) => {
+  useFrame(({ clock, size, viewport }, delta) => {
     const root = group.current;
     const parent = root?.parent;
     const now = clock.elapsedTime;
@@ -236,18 +247,30 @@ export function BoatSpray({ speed }: { speed: () => number }) {
     if (root) root.visible = sprayOn;
     if (Number.isFinite(now)) {
       if (parent && sprayOn && !hidden) {
-        transom
-          .set(0, 0, -BOAT_DIMENSIONS.sternExtent)
-          .applyMatrix4(parent.matrixWorld);
+        const v = velocity?.();
+        if (v) {
+          parent.getWorldQuaternion(rotation);
+          localVelocity.set(v[0], 0, v[1]).applyQuaternion(rotation.invert());
+        } else localVelocity.set(0, 0, speed());
+        wakeMotion(localVelocity.x, localVelocity.z, motion);
+        if (!wasSpraying.current) localAnchor.set(motion.x, 0, motion.z);
+        else {
+          const blend = 1 - Math.exp(-12 * delta);
+          localAnchor.x += (motion.x - localAnchor.x) * blend;
+          localAnchor.z += (motion.z - localAnchor.z) * blend;
+        }
+        anchor.copy(localAnchor).applyMatrix4(parent.matrixWorld);
         pushWakeSample(
           trail,
-          transom.x,
-          transom.z,
+          anchor.x,
+          anchor.z,
           now,
           Math.min(spray.width, MAX_SPRAY.width),
           spray.opacity,
         );
       }
+      wasSpraying.current = Boolean(parent && sprayOn && !hidden);
+      if (tail.current) tail.current.visible = motion.propeller;
       pruneWakeTrail(trail, now);
       // Skip layout while the trail is and was empty; lay out once more on the
       // transition to empty so the collapsed vertices are uploaded.
