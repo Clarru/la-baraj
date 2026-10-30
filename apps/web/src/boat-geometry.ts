@@ -82,3 +82,15 @@ export function setBoatWheelAngle(rig: BoatRig, wheelAngle: number): void {
 export function applyBoatLean(rig: BoatRig, lean: number): void {
   rig.group.rotation.z = -lean;
 }
+
+const seatWorld = new THREE.Vector3();
+
+/** The `DriverSeat` empty (cockpit floor under the driver) in boat-local space. */
+export function remoteDriverOffset(
+  rig: BoatRig,
+  target: THREE.Vector3,
+): THREE.Vector3 {
+  rig.driverSeat.updateWorldMatrix(true, false);
+  seatWorld.setFromMatrixPosition(rig.driverSeat.matrixWorld);
+  return target.copy(rig.group.worldToLocal(seatWorld));
+}

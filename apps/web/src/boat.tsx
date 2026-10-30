@@ -14,6 +14,7 @@ import {
   setBoatWheelAngle,
   BOAT_DIMENSIONS,
   RUNABOUT_IDS,
+  remoteDriverOffset,
   type BoatSide,
 } from "./boat-geometry";
 import { cloneBoatRig } from "./boat-resources";
@@ -38,7 +39,6 @@ export type BoatHandle = {
 };
 
 const towardDriver = new THREE.Vector3(0, 0, -1);
-const seatWorld = new THREE.Vector3();
 
 export const Boat = forwardRef<
   BoatHandle,
@@ -88,9 +88,7 @@ export const Boat = forwardRef<
         return target.setFromMatrixPosition(rig.wheel.matrixWorld);
       },
       driverSeatLocal(target) {
-        rig.driverSeat.updateWorldMatrix(true, false);
-        seatWorld.setFromMatrixPosition(rig.driverSeat.matrixWorld);
-        return target.copy(rig.group.worldToLocal(seatWorld));
+        return remoteDriverOffset(rig, target);
       },
     }),
     [rig],

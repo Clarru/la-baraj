@@ -1,6 +1,6 @@
 import { it, expect } from "vitest";
 import * as THREE from "three";
-import { applyBoatLean } from "./boat-geometry";
+import { applyBoatLean, extractBoatRig, remoteDriverOffset } from "./boat-geometry";
 import { cloneBoatRig } from "./boat-resources";
 import { loadRunabout } from "./runabout-test-model";
 
@@ -40,4 +40,12 @@ it("clones share geometry but not transforms", async () => {
   });
   a.wheelSpin.rotation.z = 1;
   expect(b.wheelSpin.rotation.z).toBeCloseTo(0);
+});
+
+it("remote drivers sit in the starboard seat", async () => {
+  const lod = extractBoatRig(await loadRunabout("Lake_Runabout_LOD"));
+  const full = extractBoatRig(await loadRunabout("Lake_Runabout"));
+  const seat = remoteDriverOffset(lod, new THREE.Vector3());
+  expect(seat.x).toBeLessThan(-0.2);
+  expect(seat.distanceTo(remoteDriverOffset(full, new THREE.Vector3()))).toBeLessThan(0.02);
 });
