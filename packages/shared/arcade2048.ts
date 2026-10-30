@@ -5,6 +5,7 @@ export type ArcadeAction =
   | { kind: "new" }
   | { kind: "leaders" }
   | { kind: "continue" }
+  | { kind: "leave" }
   | { kind: "move"; direction: ArcadeDirection };
 export type ArcadeMotion = {
   from: number;
@@ -31,6 +32,14 @@ export type ArcadeView = {
   leaders: ArcadeLeader[];
   ranked: boolean;
 };
+export type ArcadeStationView = {
+  id: number;
+  playerId: string | null;
+  name: string;
+  game: ArcadeGame | null;
+  best: number;
+  direction: ArcadeDirection | null;
+};
 export const ARCADE_DIRECTIONS: ArcadeDirection[] = [
   "left",
   "right",
@@ -55,9 +64,12 @@ export function parseArcadeAction(value: unknown): ArcadeAction | null {
     v.kind === "resume" ||
     v.kind === "new" ||
     v.kind === "leaders" ||
-    v.kind === "continue"
+    v.kind === "continue" ||
+    v.kind === "leave"
   )
-    return { kind: v.kind as "resume" | "new" | "leaders" | "continue" };
+    return {
+      kind: v.kind as "resume" | "new" | "leaders" | "continue" | "leave",
+    };
   return v.kind === "move" &&
     ARCADE_DIRECTIONS.includes(v.direction as ArcadeDirection)
     ? { kind: "move", direction: v.direction as ArcadeDirection }

@@ -14,10 +14,31 @@ import {
 } from "../../../packages/shared/arcade2048";
 import type { MultiplayerRoom } from "./multiplayer";
 import type { ArcadePage, ScreenAction } from "./arcade2048-screen";
+export function arcadeConnectionMessage(view: {
+  status: string;
+  arcadeAvailable: boolean;
+  error: string;
+}): string | null {
+  if (view.status === "online")
+    return view.arcadeAvailable
+      ? null
+      : "The arcade is updating. Try again soon.";
+  if (view.status === "connecting")
+    return "Connecting to the shared world. Your game will open when connected.";
+  if (view.status === "reconnecting")
+    return "Reconnecting to the shared world. The cabinet will resume when connected.";
+  if (view.error) return view.error;
+  if (view.status === "offline")
+    return "The arcade needs an online world connection. Rejoin the world to play.";
+  if (view.status === "full")
+    return "The world is busy. Try joining again shortly.";
+  return "The world connection was lost. Use Retry in the connection notice.";
+}
 export function useArcade2048(
   room: MultiplayerRoom,
   open: boolean,
   onExit?: () => void,
+  stationId?: number,
 ) {
   const view = useSyncExternalStore(room.subscribe, room.getSnapshot),
     [page, setPage] = useState<ArcadePage>("board"),
@@ -31,6 +52,11 @@ export function useArcade2048(
     direction = useRef<ArcadeDirection | null>(null);
   const run = useCallback(
     async (action: ArcadeAction) => {
+      const unavailable = arcadeConnectionMessage(room.getSnapshot());
+      if (unavailable) {
+        setError(unavailable);
+        return;
+      }
       if (flight.current) return;
       flight.current = true;
       const id = ++serial.current;
@@ -42,6 +68,7 @@ export function useArcade2048(
         const failure = await room.arcadeAction(
           action,
           room.getSnapshot().arcade2048?.game?.revision ?? 0,
+          ...(stationId !== undefined ? [stationId] : []),
         );
         if (id === serial.current && failure) setError(failure);
       } catch {
@@ -56,27 +83,24 @@ export function useArcade2048(
         }
       }
     },
-    [room],
+    [room, stationId],
   );
   useEffect(() => {
+    // Each connectivity generation owns its restore. Old completions cannot block
+    // or overwrite the request issued after a reconnect (or cabinet reopen).
+    serial.current++;
+    flight.current = false;
+    setPending(false);
     if (!open) {
-      serial.current++;
-      flight.current = false;
-      setPending(false);
       setPage("board");
       setFocused(false);
       setError("");
       return;
     }
-    if (view.status === "online" && view.arcadeAvailable)
-      void run({ kind: "resume" });
-    else
-      setError(
-        view.status === "online"
-          ? "The arcade is updating. Try again soon."
-          : "Reconnecting. Your saved game will return when the world reconnects.",
-      );
-  }, [open, view.status, view.arcadeAvailable, run]);
+    const unavailable = arcadeConnectionMessage(room.getSnapshot());
+    if (!unavailable) void run({ kind: "resume" });
+    else setError(unavailable);
+  }, [open, view.status, view.arcadeAvailable, view.error, room, run]);
   const action = useCallback(
     (value: ScreenAction) => {
       if (value === "leave") {
@@ -87,7 +111,7 @@ export function useArcade2048(
       hardware.current = { kind: value, at: performance.now() };
       if (value === "back") {
         setPage("board");
-        setError("");
+        setError(arcadeConnectionMessage(room.getSnapshot()) ?? "");
       } else if (value === "scores") {
         setPage("leaders");
         void run({ kind: "leaders" });
@@ -115,8 +139,9 @@ export function useArcade2048(
   );
   const move = useCallback(
     (d: ArcadeDirection) => {
+      // Eight accepted inputs/second matches the authority; tile visuals settle in 120ms.
       const now = performance.now();
-      if (now - lastMoveAt.current < 150) return;
+      if (now - lastMoveAt.current < 1000 / 8) return;
       if (
         open &&
         page === "board" &&

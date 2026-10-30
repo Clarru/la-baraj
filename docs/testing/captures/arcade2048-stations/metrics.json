@@ -1,0 +1,188 @@
+{
+  "baseline": {
+    "state": {
+      "status": "online",
+      "selfId": "817bf932-871f-42f9-a100-c7b7408d128f",
+      "stations": [
+        {
+          "id": 0,
+          "playerId": "817bf932-871f-42f9-a100-c7b7408d128f",
+          "name": "Arcade player QA",
+          "game": {
+            "board": [
+              0,
+              0,
+              0,
+              2,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              4,
+              4,
+              0,
+              0,
+              2
+            ],
+            "score": 8,
+            "moves": 4,
+            "revision": 5,
+            "continued": false
+          },
+          "best": 8,
+          "direction": "down"
+        },
+        {
+          "id": 1,
+          "playerId": null,
+          "name": "",
+          "game": null,
+          "best": 0,
+          "direction": null
+        },
+        {
+          "id": 2,
+          "playerId": null,
+          "name": "",
+          "game": null,
+          "best": 0,
+          "direction": null
+        }
+      ],
+      "privateGame": {
+        "board": [
+          0,
+          0,
+          0,
+          2,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          4,
+          4,
+          0,
+          0,
+          2
+        ],
+        "score": 8,
+        "moves": 4,
+        "revision": 5,
+        "continued": false
+      },
+      "blocked": false
+    },
+    "metrics": {
+      "screenUploads": 8,
+      "screenGpuUploads": 8,
+      "atlasUploads": 2,
+      "atlasGpuUploads": 2,
+      "matrixUpdates": 67,
+      "tileRenderCalls": 21380,
+      "tileDrawCalls": 1,
+      "frameMedianMs": 8.300000190734863,
+      "frameP95Ms": 10.199999809265137,
+      "cabinetCpuP95Ms": 0.10000000894069672,
+      "samples": 120
+    }
+  },
+  "after": {
+    "state": {
+      "status": "online",
+      "selfId": "817bf932-871f-42f9-a100-c7b7408d128f",
+      "stations": [
+        {
+          "id": 0,
+          "playerId": "817bf932-871f-42f9-a100-c7b7408d128f",
+          "name": "Arcade player QA",
+          "game": {
+            "board": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              2,
+              2,
+              0,
+              8,
+              8,
+              0,
+              4,
+              4,
+              2
+            ],
+            "score": 36,
+            "moves": 12,
+            "revision": 13,
+            "continued": false
+          },
+          "best": 36,
+          "direction": "down"
+        },
+        {
+          "id": 1,
+          "playerId": null,
+          "name": "",
+          "game": null,
+          "best": 0,
+          "direction": null
+        },
+        {
+          "id": 2,
+          "playerId": null,
+          "name": "",
+          "game": null,
+          "best": 0,
+          "direction": null
+        }
+      ],
+      "privateGame": {
+        "board": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          2,
+          2,
+          0,
+          8,
+          8,
+          0,
+          4,
+          4,
+          2
+        ],
+        "score": 36,
+        "moves": 12,
+        "revision": 13,
+        "continued": false
+      },
+      "blocked": false
+    },
+    "metrics": {
+      "screenUploads": 16,
+      "screenGpuUploads": 16,
+      "atlasUploads": 2,
+      "atlasGpuUploads": 2,
+      "matrixUpdates": 195,
+      "tileRenderCalls": 22989,
+      "tileDrawCalls": 1,
+      "frameMedianMs": 8.300000190734863,
+      "frameP95Ms": 10.100000381469727,
+      "cabinetCpuP95Ms": 0.09999999403953552,
+      "samples": 120
+    }
+  }
+}

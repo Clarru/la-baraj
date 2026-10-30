@@ -1,6 +1,7 @@
 import type {
   ArcadeAction,
   ArcadeView,
+  ArcadeStationView,
 } from "../../../packages/shared/arcade2048";
 import { cruceRecoveryDelay, publicCruceDiagnostics } from "./cruce-recovery";
 import {
@@ -59,6 +60,9 @@ type RoomView = {
   cruce: CruceView | null;
   arcade2048: ArcadeView | null;
   arcadeAvailable: boolean;
+  arcadeStationsAvailable: boolean;
+  arcadeStations: ArcadeStationView[];
+  arcadeBlocked: boolean;
   weather: LakeWeather | null;
 };
 export type RemotePlayer = {
@@ -159,9 +163,11 @@ export class MultiplayerRoom {
   >();
   private diagnostic: HTMLOutputElement | null = null;
   private lastDiagnosticAt = 0;
+  private arcadeGeneration = 0;
   private arcadeRequests = new Map<
     string,
     {
+      generation: number;
       resolve: (error: string | null) => void;
       timer: ReturnType<typeof setTimeout>;
     }
@@ -258,6 +264,9 @@ export class MultiplayerRoom {
     cruce: null,
     arcade2048: null,
     arcadeAvailable: false,
+    arcadeStationsAvailable: false,
+    arcadeStations: [],
+    arcadeBlocked: false,
     weather: null,
   };
   constructor(
@@ -558,9 +567,20 @@ export class MultiplayerRoom {
         if (message.targetId) this.stunTimes.set(message.targetId, now + 2000);
         break;
       }
+      case "arcade-stations": {
+        const next = new Map(this.view.arcadeStations.map((s) => [s.id, s]));
+        for (const s of message.stations) next.set(s.id, s);
+        this.publish({ arcadeStations: [...next.values()] });
+        break;
+      }
       case "arcade2048": {
-        this.publish({ arcade2048: message.view });
         const pending = this.arcadeRequests.get(message.requestId);
+        if (!pending) break;
+        if (pending.generation === this.arcadeGeneration)
+          this.publish({
+            arcade2048: message.view,
+            arcadeBlocked: message.stationBlocked === true,
+          });
         if (pending) {
           clearTimeout(pending.timer);
           this.arcadeRequests.delete(message.requestId);
@@ -600,6 +620,8 @@ export class MultiplayerRoom {
       case "snapshot": {
         this.publish({
           arcadeAvailable: message.features?.arcade2048 === true,
+          arcadeStationsAvailable: message.features?.arcadeStations === true,
+          arcadeStations: message.arcadeStations ?? [],
         });
         if (this.pendingCruceRecovery && message.cruce) {
           const info = message.cruceRecovery;
@@ -859,12 +881,17 @@ export class MultiplayerRoom {
         Math.max(0, Math.min(2500, Date.now() - view.event.at));
     this.publish({ planes: view });
   }
-  arcadeAction(action: ArcadeAction, revision: number): Promise<string | null> {
+  arcadeAction(
+    action: ArcadeAction,
+    revision: number,
+    stationId?: number,
+  ): Promise<string | null> {
     if (this.view.status !== "online")
       return Promise.resolve("Reconnecting. Your progress is saved.");
     if (!this.view.arcadeAvailable)
       return Promise.resolve("The arcade is updating. Try again soon.");
-    const requestId = crypto.randomUUID();
+    const requestId = crypto.randomUUID(),
+      generation = ++this.arcadeGeneration;
     return new Promise((resolve) => {
       const timer = setTimeout(() => {
         this.arcadeRequests.delete(requestId);
@@ -872,9 +899,23 @@ export class MultiplayerRoom {
           "Connection timed out. Reopen the cabinet to refresh your saved board.",
         );
       }, 6000);
-      this.arcadeRequests.set(requestId, { resolve, timer });
-      this.send({ type: "arcade2048-action", requestId, revision, action });
+      this.arcadeRequests.set(requestId, { resolve, timer, generation });
+      this.send({
+        type: "arcade2048-action",
+        requestId,
+        revision,
+        action,
+        ...(stationId !== undefined && stationId >= 0 ? { stationId } : {}),
+      });
     });
+  }
+  leaveArcade(stationId: number) {
+    if (this.view.status === "online" && stationId >= 0)
+      void this.arcadeAction(
+        { kind: "leave" },
+        this.view.arcade2048?.game?.revision ?? 0,
+        stationId,
+      );
   }
   cruceAction(action: CruceAction, revision: number): Promise<string | null> {
     if (this.view.status !== "online")

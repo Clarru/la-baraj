@@ -1,5 +1,13 @@
+import type {
+  ArcadeDirection,
+  ArcadeStationView,
+} from "../../packages/shared/arcade2048";
 import { Arcade2048Service, ArcadeError } from "./arcade2048";
-import { ARCADE_STATION } from "../../packages/shared/arcade2048-station";
+import {
+  ARCADE_STATION,
+  ARCADE_STATIONS,
+  arcadeStation,
+} from "../../packages/shared/arcade2048-station";
 import { CruceTable } from "./cruce-table";
 import { CruceError, type CruceSeat } from "../../packages/shared/cruce";
 import {
@@ -40,6 +48,10 @@ export type SessionState = {
   action: Bucket;
   chat?: Bucket;
   arcade?: Bucket;
+  arcadeStation?: number;
+  /** Server-generated generation, independent of replayable client request IDs. */
+  arcadeClaim?: string;
+  arcadeDirection?: ArcadeDirection | null;
   violations: number;
   lastInputAt?: number;
   lastActivityReportAt?: number;
@@ -105,6 +117,45 @@ export class RoomCore {
     this.weather = weather;
     this.broadcast({ type: "weather", weather });
   }
+  private lastArcadeBroadcast = new Map<number, string>();
+  private arcadeStations(): ArcadeStationView[] {
+    return ARCADE_STATIONS.map((station) => {
+      const c = this.active().find(
+          (c) => c.state?.arcadeStation === station.id,
+        ),
+        actor = c ? this.tableActor(c) : null;
+      const view = actor ? this.runtime.arcade?.boardView(actor.owner) : null;
+      return {
+        id: station.id,
+        playerId: actor ? c!.state!.player.id : null,
+        name: actor?.name ?? "",
+        game: view?.game ?? null,
+        best: view?.best ?? 0,
+        direction: c?.state?.arcadeDirection ?? null,
+      };
+    });
+  }
+  private broadcastArcadeStations() {
+    if (!this.runtime.arcade) return;
+    const stations = this.arcadeStations().filter((station) => {
+      const key = JSON.stringify(station);
+      if (this.lastArcadeBroadcast.get(station.id) === key) return false;
+      this.lastArcadeBroadcast.set(station.id, key);
+      return true;
+    });
+    if (stations.length) this.broadcast({ type: "arcade-stations", stations });
+  }
+
+  private releaseArcade(c: RoomConnection) {
+    if (c.state?.arcadeStation === undefined) return;
+    c.setState({
+      ...c.state,
+      arcadeStation: undefined,
+      arcadeClaim: undefined,
+      arcadeDirection: null,
+    });
+    this.broadcastArcadeStations();
+  }
   private tableActor(connection: RoomConnection): TableActor | null {
     const state = connection.state;
     if (!state || state.nameAt === undefined) return null;
@@ -124,6 +175,7 @@ export class RoomCore {
       });
   }
   private restoreCruceSeat(c: RoomConnection, seat: CruceSeat) {
+    this.releaseArcade(c);
     if (!this.active().includes(c)) return;
     c.setState({
       ...c.state!,
@@ -169,6 +221,7 @@ export class RoomCore {
       });
   }
   private restoreGameSeat(connection: RoomConnection, side: 0 | 1) {
+    this.releaseArcade(connection);
     if (!this.active().includes(connection)) return;
     const pose = planesSeatPose(side);
     connection.setState({
@@ -312,7 +365,12 @@ export class RoomCore {
       seats: this.seats(),
       planes: this.planes.view(this.tableActor(connection)),
       cruce: this.cruce.view(this.tableActor(connection)),
-      ...(this.runtime.arcade ? { features: { arcade2048: true } } : {}),
+      ...(this.runtime.arcade
+        ? {
+            features: { arcade2048: true, arcadeStations: true },
+            arcadeStations: this.arcadeStations(),
+          }
+        : {}),
       ...(recovery ? { cruceRecovery: recovery } : {}),
       ...(connection.state.home ? { home: connection.state.home } : {}),
     });
@@ -513,6 +571,17 @@ export class RoomCore {
         }
       }
       connection.setState({ ...current, pose, player, boatPoseAt: now });
+      const claimed = arcadeStation(connection.state!.arcadeStation ?? -1);
+      if (
+        claimed &&
+        (Math.hypot(
+          player.position[0] - claimed.x,
+          player.position[2] - claimed.z,
+        ) > 3.5 ||
+          player.vehicle !== "none" ||
+          player.seatId)
+      )
+        this.releaseArcade(connection);
       resolveRoomBoatCollision(connection, current, this.active(), now);
       this.broadcast(
         { type: "pose", player: connection.state!.player },
@@ -626,49 +695,118 @@ export class RoomCore {
     }
     if (message.type === "arcade2048-action") {
       const actor = this.tableActor(connection),
-        service = this.runtime.arcade;
-      let error: string | undefined;
+        service = this.runtime.arcade,
+        id = message.stationId;
+      let error: string | undefined,
+        stationBlocked = false,
+        claim: string | undefined;
       try {
-        if (!service)
-          throw new ArcadeError("The arcade is temporarily unavailable.");
-        if (!actor || !current.home)
-          throw new ArcadeError(
-            "Your cabin is still being registered. Try again.",
+        if (message.action.kind === "leave") {
+          if (id === undefined || connection.state?.arcadeStation === id)
+            this.releaseArcade(connection);
+        } else {
+          if (!service)
+            throw new ArcadeError("The arcade is temporarily unavailable.");
+          if (!actor || !current.home)
+            throw new ArcadeError(
+              "Your cabin is still being registered. Try again.",
+            );
+          const bucket = consume(
+            current.arcade ?? { tokens: 8, at: now },
+            now,
+            8,
+            8,
           );
-        const bucket = consume(
-          current.arcade ?? { tokens: 8, at: now },
-          now,
-          8,
-          8,
-        );
-        if (!bucket) throw new ArcadeError("One move at a time. Try again.");
-        connection.setState({ ...connection.state!, arcade: bucket });
-        const p = current.player;
-        if (
-          message.action.kind !== "leaders" &&
-          (Math.hypot(
-            p.position[0] - ARCADE_STATION.x,
-            p.position[2] - ARCADE_STATION.z,
-          ) > 3.5 ||
-            p.vehicle !== "none" ||
-            p.seatId ||
-            (current.stunnedUntil ?? 0) > now)
-        )
-          throw new ArcadeError("Walk up to the arcade to play.");
-        await service.act(
-          actor.owner,
-          actor.name,
-          message.action,
-          message.revision,
-          message.requestId,
-          now,
-        );
+          if (!bucket) throw new ArcadeError("One move at a time. Try again.");
+          connection.setState({ ...connection.state!, arcade: bucket });
+          const station =
+            id === undefined ? ARCADE_STATION : arcadeStation(id)!;
+          const p = current.player;
+          if (
+            message.action.kind !== "leaders" &&
+            (Math.hypot(p.position[0] - station.x, p.position[2] - station.z) >
+              3.5 ||
+              p.vehicle !== "none" ||
+              p.seatId ||
+              (current.stunnedUntil ?? 0) > now)
+          )
+            throw new ArcadeError("Walk up to the arcade to play.");
+          if (id !== undefined && message.action.kind !== "leaders") {
+            const occupant = this.active().find(
+              (c) => c !== connection && c.state?.arcadeStation === id,
+            );
+            const other = this.active().find(
+              (c) =>
+                c !== connection &&
+                c.state?.arcadeStation !== undefined &&
+                this.tableActor(c)?.owner === actor.owner,
+            );
+            if (occupant || other) {
+              stationBlocked = true;
+              throw new ArcadeError(
+                occupant
+                  ? `Occupied by ${occupant.state!.player.nickname}. Choose another cabinet.`
+                  : "Your game is open at another cabinet or tab.",
+              );
+            }
+            if (message.action.kind === "resume") {
+              if (
+                current.arcadeStation !== undefined &&
+                current.arcadeStation !== id
+              )
+                this.releaseArcade(connection);
+              claim = crypto.randomUUID();
+              connection.setState({
+                ...connection.state!,
+                arcadeStation: id,
+                arcadeClaim: claim,
+                arcadeDirection: null,
+              });
+            } else if (connection.state!.arcadeStation !== id) {
+              stationBlocked = true;
+              throw new ArcadeError(
+                "This cabinet is blocked. Open a free cabinet first.",
+              );
+            }
+          }
+          claim ??= connection.state?.arcadeClaim;
+          const before = service.boardView(actor.owner).game?.revision;
+          await service.act(
+            actor.owner,
+            actor.name,
+            message.action,
+            message.revision,
+            message.requestId,
+            now,
+          );
+          if (
+            id !== undefined &&
+            connection.state?.arcadeStation === id &&
+            connection.state.arcadeClaim === claim &&
+            message.action.kind === "move" &&
+            service.boardView(actor.owner).game?.revision !== before
+          )
+            connection.setState({
+              ...connection.state,
+              arcadeDirection: message.action.direction,
+            });
+        }
       } catch (e) {
+        if (
+          message.action.kind === "resume" &&
+          claim !== undefined &&
+          connection.state?.arcadeStation === id &&
+          connection.state.arcadeClaim === claim
+        ) {
+          this.releaseArcade(connection);
+          stationBlocked = true;
+        }
         error =
           e instanceof ArcadeError
             ? e.message
             : "Could not save that move. Your saved board is unchanged. Try again.";
       }
+      this.broadcastArcadeStations();
       this.send(connection, {
         type: "arcade2048",
         requestId: message.requestId,
@@ -676,6 +814,7 @@ export class RoomCore {
           service && actor
             ? service.view(actor.owner)
             : { game: null, best: 0, leaders: [], ranked: true },
+        ...(stationBlocked ? { stationBlocked: true } : {}),
         ...(error ? { error } : {}),
       });
       return;
@@ -1083,6 +1222,7 @@ export class RoomCore {
         ? { ...standing, posture: "standing" as const }
         : { ...standing, seatId: message.seatId, posture: "standing" as const };
     connection.setState({ ...connection.state!, player: nextPlayer });
+    if (message.seatId !== null) this.releaseArcade(connection);
     this.send(connection, {
       type: "seat-result",
       requestId: message.requestId,
@@ -1097,6 +1237,7 @@ export class RoomCore {
       this.broadcastCruce();
   }
   disconnect(connection: RoomConnection) {
+    this.releaseArcade(connection);
     if (!connection.state) return;
     this.broadcast(
       { type: "left", id: connection.state.player.id },

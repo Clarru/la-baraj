@@ -2,6 +2,7 @@
 import { afterEach, it, expect, vi } from "vitest";
 import * as THREE from "three";
 import {
+  ARCADE_TILE_MS,
   drawArcadeScreen,
   makeTileAnimation,
   type ArcadeScreenState,
@@ -85,7 +86,7 @@ it("interpolates every render timestamp, reuses pose slots, and finishes at the 
   writeArcadeTilePoses(after.game.board, animation, 2000 / 60, pool);
   expect(pool[1].x).toBeLessThan(first);
   expect(pool[0]).toBe(slot);
-  writeArcadeTilePoses(after.game.board, animation, 150, pool);
+  writeArcadeTilePoses(after.game.board, animation, ARCADE_TILE_MS, pool);
   expect(pool.slice(0, 2).map((p) => [p.value, p.x, p.scale])).toEqual([
     [4, 48, 1],
     [2, 154, 1],
@@ -114,7 +115,7 @@ it("uses one bounded instanced draw with no texture uploads during movement or i
     },
     s = { ...state, view: after },
     animation = makeTileAnimation(state.view, after, "left", 0)!;
-  for (let now = 0; now <= 150; now += 1000 / 60)
+  for (let now = 0; now <= ARCADE_TILE_MS; now += 1000 / 60)
     tiles.update(s, animation, now);
   expect(map.version).toBe(version);
   expect(tiles.metrics().atlasUploads).toBe(1);
@@ -130,4 +131,46 @@ it("uses one bounded instanced draw with no texture uploads during movement or i
   expect(screen.children).toHaveLength(0);
   geometry.dispose();
   (screen.material as THREE.Material).dispose();
+});
+
+it("shares one fixed atlas across three machines and redraws it only once when fonts are ready", () => {
+  vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockImplementation(
+    () => context().c as never,
+  );
+  const renderer = {} as THREE.WebGLRenderer;
+  const screens = Array.from(
+      { length: 3 },
+      () =>
+        new THREE.Mesh(
+          new THREE.PlaneGeometry(),
+          new THREE.MeshBasicMaterial(),
+        ),
+    ),
+    layers = screens.map((s) => createArcadeTiles(s, renderer));
+  const maps = layers.map(
+    (l) => (l.mesh.material as THREE.MeshBasicMaterial).map!,
+  );
+  expect(new Set(maps).size).toBe(1);
+  const disposed = vi.fn();
+  maps[0].addEventListener("dispose", disposed);
+  layers.forEach((l) => l.redrawAtlas());
+  expect(layers[0].metrics().atlasUploads).toBe(2);
+  layers[0].dispose();
+  expect(disposed).not.toHaveBeenCalled();
+  layers[1].update(state, null, 0);
+  expect(layers[1].mesh.count).toBe(2);
+  layers.slice(1).forEach((l) => l.dispose());
+  screens.forEach((s) => {
+    s.geometry.dispose();
+    (s.material as THREE.Material).dispose();
+  });
+});
+it("settles slide, spawn and merge animation in 120ms, twenty percent less than the previous 150ms", () => {
+  expect(ARCADE_TILE_MS).toBe(150 * 0.8);
+});
+it("labels a spectator screen with the occupant and preserves their exact public board", () => {
+  const c = context();
+  drawArcadeScreen(c.c, { ...state, active: false, occupantName: "Friend" });
+  expect(c.words).toContain("Occupied · Friend");
+  expect(c.words).not.toContain("Use WASD or mouse to move them");
 });

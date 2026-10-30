@@ -96,8 +96,11 @@ export class Arcade2048Service {
     await this.store.save(record.owner, structuredClone(next));
     this.records.set(record.owner, next);
   }
-  view(owner: string): ArcadeView {
+  boardView(owner: string): Pick<ArcadeView, "game" | "best"> {
     const r = this.records.get(owner);
+    return { game: r ? structuredClone(r.game) : null, best: r?.best ?? 0 };
+  }
+  view(owner: string): ArcadeView {
     const leaders = [...this.records.values()]
       .filter((r) => r.best > 0)
       .sort(
@@ -114,8 +117,7 @@ export class Arcade2048Service {
         tile: r.bestTile,
       }));
     return {
-      game: r ? structuredClone(r.game) : null,
-      best: r?.best ?? 0,
+      ...this.boardView(owner),
       leaders,
       ranked: this.store.ranked ?? true,
     };
@@ -134,7 +136,8 @@ export class Arcade2048Service {
           "Your cabin is still being registered. Try again.",
         );
       const old = this.records.get(owner);
-      if (action.kind === "leaders") return this.view(owner);
+      if (action.kind === "leaders" || action.kind === "leave")
+        return this.view(owner);
       if (old?.requests.includes(requestId)) return this.view(owner);
       if (action.kind === "resume" && old) {
         if (old.name !== name) {
