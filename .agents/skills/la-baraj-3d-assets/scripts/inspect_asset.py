@@ -1,0 +1,119 @@
+"""Blender CLI: inspect_asset.py -- model.glb output-directory [--framing reference.json].
+
+Import the exported GLB afresh, report evaluated geometry and render fixed views.
+The JSON also serves as an immutable camera/lighting contract for comparisons.
+"""
+import argparse
+import json
+import math
+import sys
+from pathlib import Path
+
+import bpy
+from mathutils import Vector
+
+
+def arguments():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("model", type=Path)
+    parser.add_argument("output", type=Path)
+    parser.add_argument("--framing", type=Path)
+    parser.add_argument("--resolution", type=int, default=640)
+    parser.add_argument("--masks", action="store_true")
+    return parser.parse_args(sys.argv[sys.argv.index("--") + 1:])
+
+
+def aim(obj, point):
+    obj.rotation_euler = (Vector(point) - obj.location).to_track_quat("-Z", "Y").to_euler()
+
+
+def main():
+    args = arguments()
+    args.output.mkdir(parents=True, exist_ok=True)
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    bpy.ops.import_scene.gltf(filepath=str(args.model.resolve()))
+    objects = [obj for obj in bpy.context.scene.objects if obj.type == "MESH"]
+    corners = [obj.matrix_world @ Vector(corner) for obj in objects for corner in obj.bound_box]
+    low = Vector([min(point[i] for point in corners) for i in range(3)])
+    high = Vector([max(point[i] for point in corners) for i in range(3)])
+    center = (low + high) / 2
+    dimensions = high - low
+    depsgraph = bpy.context.evaluated_depsgraph_get()
+    triangles = 0
+    for obj in objects:
+        mesh = obj.evaluated_get(depsgraph).to_mesh()
+        mesh.calc_loop_triangles()
+        triangles += len(mesh.loop_triangles)
+        obj.evaluated_get(depsgraph).to_mesh_clear()
+    materials = list({mat.name for obj in objects for mat in obj.data.materials if mat})
+    images = [{"name": image.name, "width": image.size[0], "height": image.size[1],
+               "channels": image.channels} for image in bpy.data.images if image.size[0]]
+    framing = {"center": list(center), "span": max(dimensions) * 1.52, "floor": low.z,
+               "resolution": args.resolution}
+    if args.framing:
+        framing = json.loads(args.framing.read_text())["framing"]
+    target = Vector(framing["center"])
+    span = framing["span"]
+    scene = bpy.context.scene
+    scene.render.engine = "CYCLES"
+    scene.cycles.samples = 24
+    scene.cycles.use_denoising = True
+    scene.render.resolution_x = scene.render.resolution_y = framing["resolution"]
+    scene.render.resolution_percentage = 100
+    scene.render.image_settings.file_format = "PNG"
+    scene.world = bpy.data.worlds.new("QA neutral world")
+    scene.world.use_nodes = True
+    scene.world.node_tree.nodes["Background"].inputs[0].default_value = (.38, .38, .38, 1)
+    scene.world.node_tree.nodes["Background"].inputs[1].default_value = .6
+    scene.view_settings.view_transform = "AgX"
+    bpy.ops.mesh.primitive_plane_add(size=200, location=(0, 0, framing["floor"] - .002))
+    floor = bpy.context.object
+    floor.name = "QA_FLOOR"
+    material = bpy.data.materials.new("QA neutral floor")
+    material.diffuse_color = (.22, .23, .24, 1)
+    floor.data.materials.append(material)
+    for name, offset, energy, size in [("Key", (-3, -4, 6), 650, 4),
+                                       ("Fill", (4, -1, 3), 250, 3)]:
+        data = bpy.data.lights.new(name, "AREA")
+        data.energy = energy * span * span / 4
+        data.shape = "DISK"
+        data.size = size * span / 2
+        obj = bpy.data.objects.new(name, data)
+        scene.collection.objects.link(obj)
+        obj.location = target + Vector(offset) * span / 2
+        aim(obj, target)
+    camera_data = bpy.data.cameras.new("QA camera")
+    camera_data.type = "ORTHO"
+    camera_data.ortho_scale = span
+    camera = bpy.data.objects.new("QA camera", camera_data)
+    scene.collection.objects.link(camera)
+    scene.camera = camera
+    views = {"front": (0, -5, .8), "side": (5, 0, .8),
+             "rear": (0, 5, .8), "three-quarter": (4, -5, 3)}
+    for name, offset in views.items():
+        camera.location = target + Vector(offset) * span
+        aim(camera, target)
+        scene.render.filepath = str((args.output / f"{name}.png").resolve())
+        bpy.ops.render.render(write_still=True)
+    if args.masks:
+        floor.hide_render = True
+        scene.render.film_transparent = True
+        scene.render.image_settings.color_mode = "RGBA"
+        scene.cycles.samples = 8
+        for name, offset in views.items():
+            camera.location = target + Vector(offset) * span
+            aim(camera,target)
+            scene.render.filepath = str((args.output / f"{name}-mask.png").resolve())
+            bpy.ops.render.render(write_still=True)
+    report = {"model": args.model.name, "glb_bytes": args.model.stat().st_size,
+              "mesh_objects": len(objects), "triangles": triangles, "materials": materials,
+              "mesh_material_slots": sum(len(obj.data.materials) for obj in objects),
+              "images": images, "blender_bounds": {"min": list(low), "max": list(high)},
+              "blender_dimensions": list(dimensions), "framing": framing,
+              "renderer": "Blender Cycles 24 samples AgX; imported exported GLB"}
+    (args.output / "metrics.json").write_text(json.dumps(report, indent=2) + "\n")
+    print("ASSET_REPORT " + json.dumps(report), flush=True)
+
+
+if __name__ == "__main__":
+    main()

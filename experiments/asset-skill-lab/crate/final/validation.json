@@ -1,0 +1,28 @@
+{
+  "technical_pass": true,
+  "errors": [],
+  "triangles": 1552,
+  "reference_triangles": 1576,
+  "glb_bytes": 86064,
+  "reference_glb_bytes": 161276,
+  "primitives": 2,
+  "material_count": 2,
+  "textures": [
+    {
+      "name": "material-atlas-512",
+      "size": [
+        512,
+        512
+      ],
+      "mime": "image/webp",
+      "bytes": 12766,
+      "sha256": "615ba90bb70aa913ee2bd6f83ea6b050da0bb59bfe275d66575c887dd4f1817d"
+    }
+  ],
+  "dimension_error_fraction": [
+    6.369086886781616e-7,
+    0.0005512961694136287,
+    0.0016887155830960232
+  ],
+  "visual_acceptance": "Separate manual comparison required; technical pass is not a 1:1 match or runtime performance claim"
+}
