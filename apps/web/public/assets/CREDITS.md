@@ -17,3 +17,5 @@ Current cabin models Lake_Cabin_Gable, Lake_Cabin_AFrame and Lake_Cabin_Sage rep
 Additional original designs Lake_Cabin_GableBlue, Lake_Cabin_AFrameCopper and Lake_Cabin_SagePergola follow docs/art-direction/cabin-variants-grid.png (built-in image_gen; prompt saved alongside). Blender source construction: scripts/build-cabin-variants.py, reusing the established cabin geometry helpers.
 
 The Motorboat_Stylized model is original project geometry built in code (`apps/web/src/boat-geometry.ts`); no third-party mesh is used.
+
+The Lake_Runabout and Lake_Runabout_LOD models are original project geometry built in Blender with scripts/build-runabout.py, an original classic runabout after the concept renders in docs/art-direction/runabout/; the mahogany grain, deck planking, leather and gauge-face textures are generated procedurally by the same script, and scripts/optimize-runabout.mjs records the optimized files in runabout-library.json. No third-party mesh is used.
