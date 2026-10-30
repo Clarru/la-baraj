@@ -1,3 +1,4 @@
+import { reportClientDiagnostic } from "./client-diagnostics";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { GameIcon } from "./GameArt";
 import { GameClock } from "./GameClock";
@@ -120,6 +121,7 @@ export function GameMenu({
   onClose: () => void;
 }) {
   const [name, setName] = useState(nickname);
+  const [reportCode, setReportCode] = useState("");
   return (
     <GameDialog title="Menu" onClose={onClose}>
       <form
@@ -192,6 +194,22 @@ export function GameMenu({
         </button>
       </div>
       <div className="game-menu-rescue">
+        <button
+          onClick={() => {
+            const id = reportClientDiagnostic(
+              "diagnostic_test",
+              {},
+              "Manual player diagnostic",
+            );
+            if (id) setReportCode(id.slice(0, 8));
+          }}
+        >
+          Report a problem
+        </button>
+        {reportCode && (
+          <output role="status">Diagnostic code: {reportCode}</output>
+        )}
+
         <button onClick={onReset} disabled={homeIndex === null}>
           <GameIcon name="return" size={23} />
           <span>Return to your cabin</span> <kbd>R</kbd>

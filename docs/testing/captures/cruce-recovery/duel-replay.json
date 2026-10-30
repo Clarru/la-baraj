@@ -1,0 +1,520 @@
+{
+  "runtime": "3042d0460b4a5b59815d992badacbe15d9274fd5",
+  "initialSeats": {
+    "localPose": {
+      "activity": "sit",
+      "animation": "Activity_Sit",
+      "boat": {
+        "position": [
+          3.7,
+          38.87531356447997
+        ],
+        "velocity": [
+          0,
+          0
+        ],
+        "yaw": 3.141592653589793
+      },
+      "boatImpactRevision": 0,
+      "jumpPhase": "grounded",
+      "position": [
+        3.87,
+        0.763,
+        68.375
+      ],
+      "posture": "standing",
+      "seatId": "cruce-west:seat:0",
+      "speed": 0,
+      "vehicle": "none",
+      "yaw": 1.571
+    },
+    "mode": "four-standard",
+    "revision": 2,
+    "seats": {
+      "cruce-east:seat:0": "61204898-d2ad-4440-a902-d3346ad9913d",
+      "cruce-west:seat:0": "2327d140-732d-4979-8bd3-d2c853fca7b1"
+    },
+    "selfId": "2327d140-732d-4979-8bd3-d2c853fca7b1",
+    "you": 1
+  },
+  "initialPrivateHands": {
+    "a": [
+      5,
+      2,
+      8,
+      6,
+      12,
+      22,
+      19,
+      21
+    ],
+    "b": [
+      1,
+      0,
+      10,
+      9,
+      17,
+      14,
+      13,
+      15
+    ]
+  },
+  "thirdTrick": {
+    "stock": 4,
+    "handCounts": [
+      7,
+      0,
+      7,
+      0
+    ],
+    "revision": 17
+  },
+  "collected": {
+    "stock": 2,
+    "handCounts": [
+      8,
+      0,
+      8,
+      0
+    ],
+    "revision": 18
+  },
+  "reconnect": {
+    "sameHome": true,
+    "sameSeat": true,
+    "sameHand": true,
+    "revision": 20
+  },
+  "moves": [
+    {
+      "action": "Joacă As de roșu",
+      "you": 0,
+      "revision": 10,
+      "phase": "playing",
+      "trickCount": 1,
+      "stock": 8,
+      "handCounts": [
+        7,
+        0,
+        8,
+        0
+      ]
+    },
+    {
+      "action": "Joacă Treiar de roșu",
+      "you": 2,
+      "revision": 11,
+      "phase": "trick",
+      "trickCount": 2,
+      "stock": 8,
+      "handCounts": [
+        7,
+        0,
+        7,
+        0
+      ]
+    },
+    {
+      "action": "Joacă Pătrar de roșu",
+      "you": 0,
+      "revision": 13,
+      "phase": "playing",
+      "trickCount": 1,
+      "stock": 6,
+      "handCounts": [
+        7,
+        0,
+        8,
+        0
+      ]
+    },
+    {
+      "action": "Joacă Doiar de roșu",
+      "you": 2,
+      "revision": 14,
+      "phase": "trick",
+      "trickCount": 2,
+      "stock": 6,
+      "handCounts": [
+        7,
+        0,
+        7,
+        0
+      ]
+    },
+    {
+      "action": "Joacă Zecar de roșu",
+      "you": 0,
+      "revision": 16,
+      "phase": "playing",
+      "trickCount": 1,
+      "stock": 4,
+      "handCounts": [
+        7,
+        0,
+        8,
+        0
+      ]
+    },
+    {
+      "action": "Joacă Zecar de dubă",
+      "you": 2,
+      "revision": 17,
+      "phase": "trick",
+      "trickCount": 2,
+      "stock": 4,
+      "handCounts": [
+        7,
+        0,
+        7,
+        0
+      ]
+    },
+    {
+      "action": "Joacă Nouar de roșu",
+      "you": 0,
+      "revision": 21,
+      "phase": "playing",
+      "trickCount": 1,
+      "stock": 2,
+      "handCounts": [
+        7,
+        0,
+        8,
+        0
+      ]
+    },
+    {
+      "action": "Joacă Treiar de dubă",
+      "you": 2,
+      "revision": 22,
+      "phase": "trick",
+      "trickCount": 2,
+      "stock": 2,
+      "handCounts": [
+        7,
+        0,
+        7,
+        0
+      ]
+    },
+    {
+      "action": "Joacă As de dubă",
+      "you": 0,
+      "revision": 24,
+      "phase": "playing",
+      "trickCount": 1,
+      "stock": 0,
+      "handCounts": [
+        7,
+        0,
+        8,
+        0
+      ]
+    },
+    {
+      "action": "Joacă Nouar de dubă",
+      "you": 2,
+      "revision": 25,
+      "phase": "trick",
+      "trickCount": 2,
+      "stock": 0,
+      "handCounts": [
+        7,
+        0,
+        7,
+        0
+      ]
+    },
+    {
+      "action": "Joacă Pătrar de dubă",
+      "you": 0,
+      "revision": 27,
+      "phase": "playing",
+      "trickCount": 1,
+      "stock": 0,
+      "handCounts": [
+        6,
+        0,
+        7,
+        0
+      ]
+    },
+    {
+      "action": "Joacă As de verde",
+      "you": 2,
+      "revision": 28,
+      "phase": "trick",
+      "trickCount": 2,
+      "stock": 0,
+      "handCounts": [
+        6,
+        0,
+        6,
+        0
+      ]
+    },
+    {
+      "action": "Joacă Doiar de dubă",
+      "you": 0,
+      "revision": 30,
+      "phase": "playing",
+      "trickCount": 1,
+      "stock": 0,
+      "handCounts": [
+        5,
+        0,
+        6,
+        0
+      ]
+    },
+    {
+      "action": "Joacă Zecar de verde",
+      "you": 2,
+      "revision": 31,
+      "phase": "trick",
+      "trickCount": 2,
+      "stock": 0,
+      "handCounts": [
+        5,
+        0,
+        5,
+        0
+      ]
+    },
+    {
+      "action": "Joacă Doiar de verde",
+      "you": 0,
+      "revision": 33,
+      "phase": "playing",
+      "trickCount": 1,
+      "stock": 0,
+      "handCounts": [
+        4,
+        0,
+        5,
+        0
+      ]
+    },
+    {
+      "action": "Joacă Pătrar de verde",
+      "you": 2,
+      "revision": 34,
+      "phase": "trick",
+      "trickCount": 2,
+      "stock": 0,
+      "handCounts": [
+        4,
+        0,
+        4,
+        0
+      ]
+    },
+    {
+      "action": "Joacă Treiar de verde",
+      "you": 2,
+      "revision": 36,
+      "phase": "playing",
+      "trickCount": 1,
+      "stock": 0,
+      "handCounts": [
+        4,
+        0,
+        3,
+        0
+      ]
+    },
+    {
+      "action": "Joacă Zecar de ghindă",
+      "you": 0,
+      "revision": 37,
+      "phase": "trick",
+      "trickCount": 2,
+      "stock": 0,
+      "handCounts": [
+        3,
+        0,
+        3,
+        0
+      ]
+    },
+    {
+      "action": "Joacă Nouar de verde",
+      "you": 2,
+      "revision": 39,
+      "phase": "playing",
+      "trickCount": 1,
+      "stock": 0,
+      "handCounts": [
+        3,
+        0,
+        2,
+        0
+      ]
+    },
+    {
+      "action": "Joacă Treiar de ghindă",
+      "you": 0,
+      "revision": 40,
+      "phase": "trick",
+      "trickCount": 2,
+      "stock": 0,
+      "handCounts": [
+        2,
+        0,
+        2,
+        0
+      ]
+    },
+    {
+      "action": "Joacă As de ghindă",
+      "you": 2,
+      "revision": 42,
+      "phase": "playing",
+      "trickCount": 1,
+      "stock": 0,
+      "handCounts": [
+        2,
+        0,
+        1,
+        0
+      ]
+    },
+    {
+      "action": "Joacă Doiar de ghindă",
+      "you": 0,
+      "revision": 43,
+      "phase": "trick",
+      "trickCount": 2,
+      "stock": 0,
+      "handCounts": [
+        1,
+        0,
+        1,
+        0
+      ]
+    },
+    {
+      "action": "Joacă Pătrar de ghindă",
+      "you": 2,
+      "revision": 45,
+      "phase": "playing",
+      "trickCount": 1,
+      "stock": 0,
+      "handCounts": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "action": "Joacă Nouar de ghindă",
+      "you": 0,
+      "revision": 46,
+      "phase": "trick",
+      "trickCount": 2,
+      "stock": 0,
+      "handCounts": [
+        0,
+        0,
+        0,
+        0
+      ]
+    }
+  ],
+  "final": {
+    "announced": [],
+    "announcements": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "bid": 1,
+    "bidder": 0,
+    "bids": [
+      1,
+      null,
+      0,
+      null
+    ],
+    "deadline": null,
+    "dealer": 2,
+    "given": [],
+    "hand": [],
+    "handCounts": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "host": 0,
+    "lastTrick": [
+      {
+        "announcement": 0,
+        "card": 20,
+        "seat": 2
+      },
+      {
+        "announcement": 0,
+        "card": 21,
+        "seat": 0
+      }
+    ],
+    "legalCards": [],
+    "notice": "Runda s-a încheiat. Verificați scorul, apoi continuați.",
+    "phase": "round-end",
+    "players": [
+      {
+        "awayUntil": null,
+        "name": "Claudiu",
+        "online": true,
+        "ready": false
+      },
+      null,
+      {
+        "awayUntil": null,
+        "name": "Claudiu",
+        "online": true,
+        "ready": false
+      },
+      null
+    ],
+    "revision": 47,
+    "round": 1,
+    "roundPoints": [
+      81,
+      0,
+      39,
+      0
+    ],
+    "roundScores": [
+      2,
+      0,
+      1,
+      0
+    ],
+    "scores": [
+      2,
+      0,
+      1,
+      0
+    ],
+    "settings": {
+      "cheating": false,
+      "iber": false,
+      "mode": "duel",
+      "target": 11
+    },
+    "stockCount": 0,
+    "trick": [],
+    "trickWinner": 2,
+    "trump": 0,
+    "turn": null,
+    "turnOverdue": false,
+    "version": 1,
+    "winner": null,
+    "you": 0
+  }
+}

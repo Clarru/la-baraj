@@ -145,6 +145,7 @@ function RemoteAvatarRig({ id, room }: { id: string; room: RemoteCardRoom }) {
   const scooterMounted = useRef(false);
   const target = useMemo(() => new THREE.Vector3(), []);
   const wasWaving = useRef(false);
+  const previousCardSeat = useRef<string | undefined>(undefined);
   const previousAnimation = useRef(""),
     previousActivityAt = useRef(-1),
     previousGesture = useRef<string | null>(null),
@@ -239,6 +240,10 @@ function RemoteAvatarRig({ id, room }: { id: string; room: RemoteCardRoom }) {
       }
     }
     target.fromArray(player.position);
+    const cardReseat =
+      previousCardSeat.current !== player.seatId &&
+      cruceSeatSide(player.seatId) !== null;
+    previousCardSeat.current = player.seatId;
     // Presence still arrives; distant rigs need neither bone/IK updates nor badges.
     const visible = player.animation !== "idle";
     group.visible = visible;
@@ -253,6 +258,7 @@ function RemoteAvatarRig({ id, room }: { id: string; room: RemoteCardRoom }) {
     }
     if (
       !initialized.current ||
+      cardReseat ||
       group.position.distanceToSquared(target) > 100
     ) {
       group.position.copy(target);

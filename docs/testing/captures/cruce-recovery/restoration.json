@@ -1,0 +1,17 @@
+{
+  "runtime": "3042d0460b4a5b59815d992badacbe15d9274fd5",
+  "backup": "/var/folders/t0/48hh334d78l9_bv62l091cm00000gn/T/la-baraj-before-cruce-recovery-9hc6p_hy/dist",
+  "beforeCount": 224,
+  "afterCount": 224,
+  "allBytesRestored": true,
+  "removedOwnedAdditions": [
+    "assets/CruceBoard-Ccm9sem1.js",
+    "assets/Game-BST4vywI.js",
+    "assets/PlanesBoard-CPZiFRnu.js",
+    "assets/index-DlYQoBlx.js",
+    "assets/local-world.worker-DOoD8bGc.js",
+    "assets/rapier-Cjlvp4mm.js",
+    "__cruce-recovery-qa.html"
+  ],
+  "index": "3f427788491af25d3dbc92feeaa585c5e75f5250c13cce47bc2887bb1e37c12e"
+}

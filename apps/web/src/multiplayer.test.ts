@@ -37,6 +37,8 @@ vi.mock("partysocket", () => ({
     }
   },
 }));
+import { freshCruce, type CruceView } from "../../../packages/shared/cruce";
+import { syncWorldTime } from "./day-night";
 import { MultiplayerRoom, vehicleKind } from "./multiplayer";
 import {
   queueCabinTransfer,
@@ -81,6 +83,32 @@ function snapshot(socket: FakeSocket, selfId = "self-1", homeIndex = 14) {
     home: { index: homeIndex, resumeToken: hello.resumeToken },
   });
 }
+function stalledCruce(start: number, revision = 10): CruceView {
+  return {
+    ...freshCruce({ mode: "duel", target: 11, iber: false, cheating: false }),
+    version: 1,
+    revision,
+    you: 0,
+    hand: [1],
+    handCounts: [7, 0, 7, 0],
+    stockCount: 4,
+    legalCards: [],
+    host: 0,
+    deadline: start + 1800,
+    phase: "trick",
+    trick: [
+      { seat: 0, card: 5, announcement: 0 },
+      { seat: 2, card: 23, announcement: 0 },
+    ],
+    players: [
+      { name: "Me", online: true, ready: false, awayUntil: null },
+      null,
+      { name: "Friend", online: true, ready: false, awayUntil: null },
+      null,
+    ],
+  } as CruceView;
+}
+
 beforeEach(() => {
   sockets.length = 0;
   storageData.clear();
@@ -97,6 +125,7 @@ beforeEach(() => {
   });
   vi.stubGlobal("WebSocket", { OPEN: 1 });
   vi.spyOn(performance, "now").mockReturnValue(1000);
+  syncWorldTime(Date.now());
 });
 afterEach(() => {
   vi.useRealTimers();
@@ -106,6 +135,80 @@ afterEach(() => {
 });
 
 describe("friends room client", () => {
+  it("requests bounded authoritative sync when a completed Cruce trick stalls and cancels after recovery", () => {
+    vi.useFakeTimers();
+    const start = 1700000000000;
+    vi.setSystemTime(start);
+    vi.spyOn(performance, "now").mockImplementation(
+      () => Date.now() - start + 1000,
+    );
+    syncWorldTime(start);
+    const room = new MultiplayerRoom(),
+      stop = room.connect(),
+      socket = sockets[0];
+    socket.open();
+    snapshot(socket);
+    const view = stalledCruce(start);
+    socket.receive({ type: "cruce", view });
+    const initial = socket.sent.filter((m) => m.type === "sync").length;
+    vi.advanceTimersByTime(3400);
+    expect(socket.sent.filter((m) => m.type === "sync")).toHaveLength(
+      initial + 1,
+    );
+    socket.receive({
+      type: "cruce",
+      view: {
+        ...view,
+        phase: "playing",
+        revision: 11,
+        trick: [],
+        deadline: Date.now() + 60000,
+      },
+    });
+    vi.advanceTimersByTime(15000);
+    expect(socket.sent.filter((m) => m.type === "sync")).toHaveLength(
+      initial + 1,
+    );
+    stop();
+  });
+
+  it("caps retries at three for unchanged stalled state and clears a new watchdog on disconnect", () => {
+    vi.useFakeTimers();
+    const start = 1700000000000;
+    vi.setSystemTime(start);
+    vi.spyOn(performance, "now").mockImplementation(
+      () => Date.now() - start + 1000,
+    );
+    syncWorldTime(start);
+    const room = new MultiplayerRoom(),
+      stop = room.connect(),
+      socket = sockets[0];
+    socket.open();
+    snapshot(socket);
+    const view = stalledCruce(start);
+    const initial = socket.sent.filter((m) => m.type === "sync").length;
+    socket.receive({ type: "cruce", view });
+    vi.advanceTimersByTime(10000);
+    expect(socket.sent.filter((m) => m.type === "sync")).toHaveLength(
+      initial + 3,
+    );
+    socket.receive({ type: "cruce", view: { ...view } });
+    vi.advanceTimersByTime(60000);
+    expect(socket.sent.filter((m) => m.type === "sync")).toHaveLength(
+      initial + 3,
+    );
+    socket.receive({ type: "cruce", view: { ...view, revision: 11 } });
+    const timers = vi.getTimerCount();
+    socket.close();
+    expect(vi.getTimerCount()).toBe(timers - 1);
+    vi.advanceTimersByTime(10000);
+    expect(socket.sent.filter((m) => m.type === "sync")).toHaveLength(
+      initial + 3,
+    );
+    stop();
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
   it("applies each numbered boat correction once and acknowledges the latest result", () => {
     const room = new MultiplayerRoom(),
       stop = room.connect(),

@@ -24,6 +24,7 @@ export type CruceRecord = {
   version: 1;
   revision: number;
   readySince: number;
+  overdueSinceRevision: number | null;
   hostOwner: string | null;
   game: CruceGame;
   members: (Member | null)[];
@@ -33,6 +34,7 @@ const empty = (): CruceRecord => ({
   version: 1,
   revision: 0,
   readySince: 0,
+  overdueSinceRevision: null,
   hostOwner: null,
   game: freshCruce(),
   members: [null, null, null, null],
@@ -54,6 +56,11 @@ export function readCruceRecord(value: unknown): CruceRecord {
       (!Number.isSafeInteger(r.readySince) ||
         r.readySince < 0 ||
         r.readySince > r.revision)) ||
+    (r.overdueSinceRevision !== undefined &&
+      r.overdueSinceRevision !== null &&
+      (!Number.isSafeInteger(r.overdueSinceRevision) ||
+        r.overdueSinceRevision < 0 ||
+        r.overdueSinceRevision > r.revision)) ||
     !g ||
     !validCruceSettings(g.settings) ||
     ![
@@ -161,6 +168,7 @@ export function readCruceRecord(value: unknown): CruceRecord {
   return {
     ...structuredClone(r),
     readySince: r.readySince ?? r.revision,
+    overdueSinceRevision: r.overdueSinceRevision ?? null,
     hostOwner: r.hostOwner ?? r.members.find((m) => m)?.owner ?? null,
   };
 }
@@ -168,7 +176,13 @@ export function nextCruceDeadline(r: CruceRecord): number | null {
   const times = r.members.flatMap((m) =>
     m?.awayUntil === null || !m ? [] : [m.awayUntil],
   );
-  if (r.deadline !== null) times.push(r.deadline);
+  if (
+    r.deadline !== null &&
+    (r.game.phase === "trick" ||
+      r.overdueSinceRevision === null ||
+      r.overdueSinceRevision === undefined)
+  )
+    times.push(r.deadline);
   return times.length ? Math.min(...times) : null;
 }
 export class CruceTable {
@@ -233,6 +247,7 @@ export class CruceTable {
     );
   }
   private clock(r: CruceRecord, now: number) {
+    r.overdueSinceRevision = null;
     const active = activeCruceSeats(r.game.settings.mode);
     const online = active.every(
       (s) => r.members[s] && r.members[s]!.awayUntil === null,
@@ -436,17 +451,31 @@ export class CruceTable {
         await this.commit(r.members.some(Boolean) ? r : empty());
         return true;
       }
-      if (r.deadline === null || r.deadline > now) return false;
+      const active = activeCruceSeats(r.game.settings.mode);
+      if (
+        r.deadline === null &&
+        r.game.phase === "trick" &&
+        r.game.trick.length === active.length &&
+        r.game.trickWinner !== null &&
+        active.every((s) => r.members[s]?.awayUntil === null)
+      )
+        r.deadline = now;
+      if (
+        r.deadline === null ||
+        r.deadline > now ||
+        (r.overdueSinceRevision !== null && r.game.phase !== "trick")
+      )
+        return false;
       if (r.game.phase === "trick") {
         r.game = collectCruceTrick(r.game);
         if (["round-end", "finished"].includes(r.game.phase))
           r.readySince = this.state.revision + 1;
         this.clock(r, now);
-      } else
-        this.abort(
-          r,
-          "Timpul de joc a expirat. Partida s-a oprit. Puteți începe o partidă nouă.",
-        );
+      } else {
+        r.overdueSinceRevision = this.state.revision;
+        r.game.notice =
+          "Timpul a expirat. Îl așteptăm pe jucătorul aflat la rând; partida continuă.";
+      }
       await this.commit(r);
       return true;
     });
@@ -472,13 +501,23 @@ export class CruceTable {
         revision >= this.state.readySince &&
         revision <= this.state.revision &&
         !this.state.members[seat]!.ready;
-      if (revision !== this.state.revision && !concurrentReady)
+      const afterSoftDeadline =
+        this.state.overdueSinceRevision !== null &&
+        revision >= this.state.overdueSinceRevision &&
+        revision <= this.state.revision &&
+        !["configure", "ready", "continue"].includes(action.kind);
+      if (
+        revision !== this.state.revision &&
+        !concurrentReady &&
+        !afterSoftDeadline
+      )
         throw new CruceError(
           "Masa s-a actualizat între timp. Încearcă din nou.",
         );
       const r = structuredClone(this.state),
-        g = r.game;
-      if (r.deadline !== null && r.deadline <= now)
+        g = r.game,
+        actingMember = r.members[seat]!;
+      if (g.phase === "trick" && r.deadline !== null && r.deadline <= now)
         throw new CruceError("Timpul a expirat. Așteptăm actualizarea mesei.");
       if (action.kind === "configure") {
         if (
@@ -491,10 +530,28 @@ export class CruceTable {
         if (!validCruceSettings(action.settings))
           throw new CruceError("Alege o configurație validă pentru partidă.");
         const active = activeCruceSeats(action.settings.mode);
-        if (r.members.some((m, i) => m && !active.includes(i as CruceSeat)))
+        if (r.members.filter(Boolean).length > active.length)
           throw new CruceError(
-            "Pentru această variantă, locurile care nu se folosesc trebuie eliberate. Schimbați locurile înainte de a aplica regulile.",
+            `Sunt ${r.members.filter(Boolean).length} jucători la masă. Varianta aleasă acceptă ${active.length}; alege o variantă cu suficiente locuri.`,
           );
+        const placed: (Member | null)[] = [null, null, null, null];
+        r.members.forEach((member, index) => {
+          if (member && active.includes(index as CruceSeat))
+            placed[index] = member;
+        });
+        r.members.forEach((member, index) => {
+          if (!member || active.includes(index as CruceSeat)) return;
+          const free = active.filter((seat) => !placed[seat]);
+          free.sort(
+            (a, b) =>
+              Math.min(Math.abs(a - index), 4 - Math.abs(a - index)) -
+              Math.min(Math.abs(b - index), 4 - Math.abs(b - index)),
+          );
+          placed[free[0]] = member;
+        });
+        r.members = placed;
+        r.deadline = null;
+        r.overdueSinceRevision = null;
         r.readySince = this.state.revision + 1;
         r.game = freshCruce(action.settings);
         r.members.forEach((m) => {
@@ -539,10 +596,7 @@ export class CruceTable {
           r.readySince = this.state.revision + 1;
         this.clock(r, now);
       }
-      r.members[seat]!.requests = [
-        ...r.members[seat]!.requests,
-        requestId,
-      ].slice(-32);
+      actingMember.requests = [...actingMember.requests, requestId].slice(-32);
       await this.commit(r);
     });
   }
@@ -579,6 +633,7 @@ export class CruceTable {
           : null,
       ),
       deadline: r.deadline,
+      turnOverdue: r.overdueSinceRevision !== null,
       host:
         r.hostOwner === null
           ? null

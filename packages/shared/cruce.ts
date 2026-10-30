@@ -116,6 +116,7 @@ export type CruceView = Omit<
     ready: boolean;
     awayUntil: number | null;
   })[];
+  turnOverdue?: boolean;
   deadline: number | null;
   host: CruceSeat | null;
 };

@@ -9,6 +9,7 @@ export default defineConfig({
       "tests/planes.test.ts",
       "tests/cruce.test.ts",
       "tests/cruce-worker.test.ts",
+      "tests/cruce-freeze.test.ts",
       "tests/planes-worker.test.ts",
       "tests/weather.test.ts",
     ],

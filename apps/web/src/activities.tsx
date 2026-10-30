@@ -131,6 +131,33 @@ export function WorldActivities({
     callbacks.current.onPrompt(null);
   }, [commit]);
 
+  // Variant changes can move an occupied seat atomically; never release the
+  // newly assigned seat merely because the old registry socket became empty.
+  const adoptCruceReseat = useCallback(
+    (now: number) => {
+      const own = room.ownSeatId();
+      if (
+        !own ||
+        own === state.current.seatId ||
+        cruceSeatSide(own) === null ||
+        cruceSeatSide(state.current.seatId) === null
+      )
+        return false;
+      if (state.current.kind === "stand-up" || state.current.standAfterMove) {
+        clear();
+        return true;
+      }
+      const claimed = claimSeat(own, localSeatedActorId);
+      if (claimed)
+        commit({
+          ...beginSitting(claimed, now),
+          kind: "sit",
+          deadline: Infinity,
+        });
+      return true; // Wait for a late-mounted socket instead of relinquishing it.
+    },
+    [room, commit, clear],
+  );
   const requestSeat = useCallback(
     (seatId: string, accepted: () => void, rejected: () => void) => {
       pendingTableSeat.current =
@@ -204,6 +231,12 @@ export function WorldActivities({
       const status = room.getSnapshot().status;
       if (status !== "online" && status !== "offline") clear();
       else if (
+        status === "online" &&
+        !seatPending.current &&
+        adoptCruceReseat(performance.now())
+      )
+        return;
+      else if (
         !seatPending.current &&
         state.current.seatId &&
         !activitySeatIsValid(
@@ -234,7 +267,7 @@ export function WorldActivities({
     };
     sync();
     return room.subscribeWorld(sync);
-  }, [room, clear, commit]);
+  }, [room, clear, commit, adoptCruceReseat]);
   useEffect(() => {
     if (paused && !isTableSeat()) clear();
   }, [paused, clear]);
@@ -449,6 +482,10 @@ export function WorldActivities({
     if (!room.ownSeatId()) tableExitPending.current = false;
     if (takeTableStandRequest() && isTableSeat())
       commit(cancelActivity(state.current, now));
+    const reseating =
+      !seatPending.current &&
+      room.getSnapshot().status === "online" &&
+      adoptCruceReseat(now);
     // The server can restore a saved match before the bench assets finish mounting.
     if (
       !state.current.seatId &&
@@ -469,6 +506,7 @@ export function WorldActivities({
       }
     }
     if (
+      !reseating &&
       !seatPending.current &&
       state.current.seatId &&
       !activitySeatIsValid(
