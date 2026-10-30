@@ -1,0 +1,8 @@
+{
+  "tool": "built-in image_gen",
+  "intent": "original game UI plaque, no generated text",
+  "prompt": "Use case: stylized-concept. Asset type: original raster ornament for the Cruce card game's in-game announcement/bid UI. Create one small horizontal score plaque viewed perfectly face-on, orthographic, as a high quality hand-painted game asset. A shallow warm oak frame with subtly worn carved grain surrounds a calm ivory parchment inset; a thin aged brass lip, tiny engraved acorn/leaf details only at the two ends. The central 65 percent must be completely empty and clean for live HTML numbers to be placed over it. Plaque silhouette approximately 4:1, compact and elegant, slight handmade irregularity, restrained rich material detail readable at 160 by 48 pixels. Warm oak, pale cream, muted brass, compatible with a deep green felt card table. Isolated on a genuinely transparent background with minimal tight contact shadow. No text, no numbers, no letters, no logos, no watermark, no extra objects, no scene, no casino gloss, no ribbon tails, no luminous particles. This is a production game UI bitmap, not a UI mockup.",
+  "source": "exec-921903a1-d8ce-4957-8a55-2b9e45ddf8f3.png",
+  "runtime": "apps/web/public/assets/cruce/announcement-plaque-v1.webp",
+  "processing": "trim transparent padding; resize to640px; preserve alpha; WebP88"
+}
