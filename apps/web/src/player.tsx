@@ -1609,7 +1609,7 @@ export function Player({
         <Suspense fallback={null}>
           <Boat ref={boat} visible={boating} />
         </Suspense>
-        {boating && <BoatSpray speed={localBoatSpeed} />}
+        <BoatSpray speed={localBoatSpeed} />
       </group>
       {swimming && <SwimWake />}
     </Ecctrl>

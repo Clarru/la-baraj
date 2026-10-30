@@ -100,7 +100,7 @@ describe("wake ribbon layout", () => {
       expect(port).toBeCloseTo(-star, 5);
       expect(centre).toBeCloseTo(0, 5);
       const half = Math.abs(star);
-      expect(half).toBeGreaterThan(lastHalf);
+      expect(half).toBeGreaterThanOrEqual(lastHalf - 1e-6);
       lastHalf = half;
     }
     expect(aux[vertex(0, 1, 1) * 3]).toBeCloseTo(0, 5);
@@ -178,19 +178,59 @@ describe("wake ribbon layout", () => {
     expect(aux[vertex(0, 2, 2) * 3 + 2]).toBe(1);
     expect(aux[vertex(0, 0, 0) * 3 + 1]).toBe(-1);
     expect(aux[vertex(0, 0, 0) * 3 + 2]).toBe(-1);
-    expect(BOAT_DIMENSIONS.beam).toBeGreaterThan(0);
   });
 
-  it("never allocates during layout", () => {
+  it("never allocates during push, prune or layout", () => {
     const trail = createWakeTrail();
-    for (let i = 0; i < 5; i++) pushWakeSample(trail, i, 0, i * 0.1, 2, 1);
-    const b = buffers();
-    const { positions, aux, bounds } = b;
-    layoutWakeRibbon(trail, 0.5, 0, positions, aux, bounds);
-    layoutWakeRibbon(trail, 0.6, 0, positions, aux, bounds);
-    expect(b.positions).toBe(positions);
+    const { positions, aux, bounds } = buffers();
+    const Original = Float32Array;
+    let constructed = 0;
+    globalThis.Float32Array = new Proxy(Original, {
+      construct(t, a) {
+        constructed++;
+        return Reflect.construct(t, a);
+      },
+    }) as typeof Float32Array;
+    try {
+      for (let i = 0; i < 20; i++) {
+        pushWakeSample(trail, i, 0, i * 0.1, 2, 1);
+        pruneWakeTrail(trail, i * 0.1);
+        layoutWakeRibbon(trail, i * 0.1, 0, positions, aux, bounds);
+      }
+    } finally {
+      globalThis.Float32Array = Original;
+    }
+    expect(constructed).toBe(0);
     expect(positions.length).toBe(WAKE_VERTEX_COUNT * 3);
-    expect(aux.length).toBe(WAKE_VERTEX_COUNT * 3);
+  });
+
+  it("opens the V over the sample's wake length", () => {
+    const trail = createWakeTrail();
+    for (let i = 0; i <= 12; i++) pushWakeSample(trail, 0, i, i * 0.2, 4.2, 1);
+    const { positions, aux, bounds } = buffers();
+    layoutWakeRibbon(trail, 2.4, 0, positions, aux, bounds);
+    // Slot 9 is 9 m behind the head (samples 1 m apart, head is z = 12).
+    const star = positions[vertex(9, 2, 1) * 3];
+    const port = positions[vertex(9, 0, 1) * 3];
+    const expected = BOAT_DIMENSIONS.beam * 0.425 + 2.1;
+    expect(Math.abs(Math.abs(star) - expected)).toBeLessThan(0.05);
+    expect(Math.abs(Math.abs(port) - expected)).toBeLessThan(0.05);
+    expect(port).toBeCloseTo(-star, 5);
+  });
+
+  it("lays out newest to oldest after the ring has wrapped", () => {
+    const trail = createWakeTrail();
+    for (let i = 0; i < 60; i++) pushWakeSample(trail, 0, i, i * 0.2, 2, 1);
+    expect(trail.count).toBe(WAKE_TRAIL_SAMPLES);
+    const { positions, aux, bounds } = buffers();
+    expect(layoutWakeRibbon(trail, 11.8, 0, positions, aux, bounds)).toBe(
+      WAKE_TRAIL_SAMPLES,
+    );
+    const zAt = (slot: number) => positions[vertex(slot, 1, 1) * 3 + 2];
+    expect(zAt(0)).toBeCloseTo(59, 5);
+    expect(zAt(WAKE_TRAIL_SAMPLES - 1)).toBeCloseTo(60 - WAKE_TRAIL_SAMPLES, 5);
+    for (let slot = WAKE_TRAIL_SAMPLES - 1; slot > 0; slot--)
+      expect(zAt(slot - 1)).toBeGreaterThan(zAt(slot));
   });
 
   it("index covers every strip once", () => {

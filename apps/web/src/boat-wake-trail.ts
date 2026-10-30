@@ -1,19 +1,28 @@
 import { BOAT_DIMENSIONS } from "./boat-geometry";
 
 export const WAKE_TRAIL_SAMPLES = 48;
-/** Metres the transom must move before a new sample is appended. */
+/**
+ * Sampling: the head sample is dragged to the transom every frame; a new
+ * sample is cut only when WAKE_SAMPLE_INTERVAL has elapsed since the head was
+ * cut, or a single frame moved the transom more than WAKE_SAMPLE_DISTANCE.
+ * At normal frame rates samples therefore land every 0.15 s (about 1.2 m apart
+ * at cruise, 1.9 m at boost, about 23 live samples over the 3.5 s fade).
+ */
+/** Metres a single frame may move the transom before a sample is cut early. */
 export const WAKE_SAMPLE_DISTANCE = 0.35;
-/** Seconds after which a new sample is appended even if the boat barely moved. */
+/** Seconds between samples at normal frame rates. */
 export const WAKE_SAMPLE_INTERVAL = 0.15;
 export const WAKE_FADE_SECONDS = 3.5;
 /** A longer jump (teleport, respawn) clears the trail. */
 export const WAKE_RESET_DISTANCE = 6;
 export const WAKE_STRIPS = 3;
 export const WAKE_ACROSS = 3;
-export const WAKE_VERTEX_COUNT =
-  WAKE_TRAIL_SAMPLES * WAKE_STRIPS * WAKE_ACROSS;
+export const WAKE_VERTEX_COUNT = WAKE_TRAIL_SAMPLES * WAKE_STRIPS * WAKE_ACROSS;
 
-/** Floats per sample: x, z, time, spread, strength. */
+/**
+ * Floats per sample: x, z, time, spread, strength. `time` is stored as
+ * Float32, so callers pass a small relative clock (R3F `clock.elapsedTime`).
+ */
 const STRIDE = 5;
 
 export type WakeTrail = { data: Float32Array; head: number; count: number };
@@ -50,7 +59,11 @@ function append(
   d[o + 4] = strength;
 }
 
-/** Returns true when a new sample was appended (vs. head moved or ignored). */
+/**
+ * Drags the head sample to (x, z) each call and appends a new one only after
+ * WAKE_SAMPLE_INTERVAL or a >WAKE_SAMPLE_DISTANCE single-call move. Returns
+ * true when a new sample was appended (vs. head moved or ignored).
+ */
 export function pushWakeSample(
   trail: WakeTrail,
   x: number,
@@ -91,8 +104,7 @@ export function pushWakeSample(
 export function pruneWakeTrail(trail: WakeTrail, time: number): number {
   while (trail.count > 0) {
     const oldest =
-      (trail.head - trail.count + 1 + WAKE_TRAIL_SAMPLES) %
-      WAKE_TRAIL_SAMPLES;
+      (trail.head - trail.count + 1 + WAKE_TRAIL_SAMPLES) % WAKE_TRAIL_SAMPLES;
     if (time - trail.data[oldest * STRIDE + 2] <= WAKE_FADE_SECONDS) break;
     trail.count--;
   }
@@ -158,6 +170,7 @@ export function layoutWakeRibbon(
     let lz = 0;
     let along = 0;
     let alongOut = 0;
+    let geomAlong = 0;
     let spread = 0;
     if (live) {
       const o = slotOffset(trail, s);
@@ -178,17 +191,22 @@ export function layoutWakeRibbon(
         lz = tx / tl;
       }
       const byDistance = length > 0 ? travelled / length : 0;
+      // Geometric opening: the V reaches full spread over this sample's own
+      // wake length (spraySize: length 9 * grow, width 4.2 * grow).
+      const wakeLength = spread * (9 / 4.2);
+      geomAlong =
+        spread > 0 ? Math.min(1, Math.max(0, travelled / wakeLength)) : 1;
       const byAge = (time - d[o + 2]) / WAKE_FADE_SECONDS;
       along = Math.min(1, Math.max(0, Math.max(byDistance, byAge)));
       alongOut = 1 - (1 - along) * d[o + 4];
     }
     for (let strip = 0; strip < WAKE_STRIPS; strip++) {
       const arm = strip - 1;
-      const centre = arm * (beam * 0.425 + 0.5 * spread * along);
+      const centre = arm * (beam * 0.425 + 0.5 * spread * geomAlong);
       const width =
         arm === 0
-          ? mix(beam * 0.55, beam * 0.8, along)
-          : 0.3 + 0.18 * spread * along;
+          ? mix(beam * 0.55, beam * 0.8, geomAlong)
+          : 0.3 + 0.18 * spread * geomAlong;
       for (let a = 0; a < WAKE_ACROSS; a++) {
         const across = a - 1;
         const offset = live ? centre + across * width * 0.5 : 0;

@@ -135,7 +135,10 @@ function RemoteAvatarRig({ id, room }: { id: string; room: RemoteCardRoom }) {
   const boatState = useRef({ previousYaw: 0, wheelAngle: 0, lean: 0 });
   // The jet stream sizes itself from the pose speed alone (no protocol change).
   const remoteBoatSpeed = useMemo(
-    () => () => room.remotes.get(id)?.player.speed ?? 0,
+    () => () => {
+      const pose = room.remotes.get(id)?.player;
+      return pose?.vehicle === "boat" ? (pose.speed ?? 0) : 0;
+    },
     [room, id],
   );
   const gripLeft = useMemo(() => new THREE.Vector3(), []);
@@ -431,7 +434,7 @@ function RemoteAvatarRig({ id, room }: { id: string; room: RemoteCardRoom }) {
     <group ref={root} name={`Online player ${id}`}>
       <primitive object={object} dispose={null} />
       {swimming && <SwimWake />}
-      {boating && <BoatSpray speed={remoteBoatSpeed} />}
+      {hasBoat && <BoatSpray speed={remoteBoatSpeed} />}
       {hasBoat && (
         <Suspense fallback={null}>
           <Boat ref={boat} visible={boating} detail="lod" />

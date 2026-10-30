@@ -200,6 +200,7 @@ export function BoatSpray({ speed }: { speed: () => number }) {
   const state = useMemo(() => new Float32Array(4), []);
   const bounds = useMemo(() => new Float32Array(3), []);
   const trail = useMemo(createWakeTrail, []);
+  const laidOut = useRef(0);
   const wakeGeometry = useMemo(createWakeGeometry, []);
   const spray = useMemo(() => spraySize(0, BOAT_TUNING.cruise), []);
   useEffect(() => () => wakeGeometry.dispose(), [wakeGeometry]);
@@ -223,10 +224,18 @@ export function BoatSpray({ speed }: { speed: () => number }) {
     tailMaterial.uniforms.uPixels.value = size.height * viewport.dpr * 0.5;
     spraySize(speed(), BOAT_TUNING.cruise, spray);
     const sprayOn = spray.opacity > 0;
+    // The ribbon is portalled to the scene, so honour hidden ancestors (e.g.
+    // distant idle remotes) by hand.
+    let hidden = false;
+    for (let a = root?.parent; a; a = a.parent)
+      if (!a.visible) {
+        hidden = true;
+        break;
+      }
     state[INTENSITY] = sprayIntensity(lastLighting());
     if (root) root.visible = sprayOn;
     if (Number.isFinite(now)) {
-      if (parent && sprayOn) {
+      if (parent && sprayOn && !hidden) {
         transom
           .set(0, 0, -BOAT_DIMENSIONS.sternExtent)
           .applyMatrix4(parent.matrixWorld);
@@ -235,32 +244,37 @@ export function BoatSpray({ speed }: { speed: () => number }) {
           transom.x,
           transom.z,
           now,
-          spray.width,
+          Math.min(spray.width, MAX_SPRAY.width),
           spray.opacity,
         );
       }
       pruneWakeTrail(trail, now);
-      const position = wakeGeometry.getAttribute(
-        "position",
-      ) as THREE.BufferAttribute;
-      const aux = wakeGeometry.getAttribute("aux") as THREE.BufferAttribute;
-      layoutWakeRibbon(
-        trail,
-        now,
-        LAKE_LEVEL + FOAM_LIFT,
-        position.array as Float32Array,
-        aux.array as Float32Array,
-        bounds,
-      );
-      position.needsUpdate = true;
-      aux.needsUpdate = true;
-      const sphere = wakeGeometry.boundingSphere;
-      if (sphere) {
-        sphere.center.set(bounds[0], LAKE_LEVEL + FOAM_LIFT, bounds[1]);
-        sphere.radius = bounds[2] + WAKE_LATERAL_PAD;
+      // Skip layout while the trail is and was empty; lay out once more on the
+      // transition to empty so the collapsed vertices are uploaded.
+      if (trail.count > 0 || laidOut.current > 0) {
+        const position = wakeGeometry.getAttribute(
+          "position",
+        ) as THREE.BufferAttribute;
+        const aux = wakeGeometry.getAttribute("aux") as THREE.BufferAttribute;
+        layoutWakeRibbon(
+          trail,
+          now,
+          LAKE_LEVEL + FOAM_LIFT,
+          position.array as Float32Array,
+          aux.array as Float32Array,
+          bounds,
+        );
+        position.needsUpdate = true;
+        aux.needsUpdate = true;
+        const sphere = wakeGeometry.boundingSphere;
+        if (sphere) {
+          sphere.center.set(bounds[0], LAKE_LEVEL + FOAM_LIFT, bounds[1]);
+          sphere.radius = bounds[2] + WAKE_LATERAL_PAD;
+        }
       }
+      laidOut.current = trail.count;
     }
-    if (wake.current) wake.current.visible = trail.count > 1;
+    if (wake.current) wake.current.visible = trail.count > 1 && !hidden;
     if (!root || !parent || !sprayOn) return;
     parent.getWorldPosition(world);
     root.position.set(

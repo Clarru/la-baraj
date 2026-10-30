@@ -83,7 +83,7 @@ Today `boat-spray.tsx` draws the V wake in hull-local space from a packed geomet
   export function wakeRibbonIndex(): Uint16Array; // static, same strip topology as the old packed geometry
   ```
 
-- [ ] **Step 1: Write the failing tests** in `apps/web/src/boat-wake-trail.test.ts`:
+- [x] **Step 1: Write the failing tests** in `apps/web/src/boat-wake-trail.test.ts`:
   - `appends by distance or time`: push (0,0,t=0); push (0.1,0,t=0.05) → false and head position moved to (0.1,0); push (0.5,0,t=0.06) → true (distance); push (0.5,0.01,t=0.3) → true (interval); `count === 3`.
   - `ring wraps without growing`: push `WAKE_TRAIL_SAMPLES + 10` samples 1 m apart, `count === WAKE_TRAIL_SAMPLES`, `data.length` unchanged.
   - `fades out all samples after WAKE_FADE_SECONDS`: 5 samples at t 0..2; `pruneWakeTrail(trail, 2 + WAKE_FADE_SECONDS + 0.01) === 0`; a layout afterwards returns 0 and `bounds[2] >= 0`.
@@ -94,10 +94,10 @@ Today `boat-spray.tsx` draws the V wake in hull-local space from a packed geomet
   - `collapses unused vertices onto the head with zero along`: 2 samples; all vertices from slot 2 on equal the head xyz and `aux along === 0`.
   - `never allocates during layout`: call layout twice with the same buffers, assert the same `Float32Array` instances are untouched in identity and that `positions.length === WAKE_VERTEX_COUNT * 3`.
   - `index covers every strip once`: `wakeRibbonIndex().length === WAKE_STRIPS * (WAKE_TRAIL_SAMPLES - 1) * 2 * 6` and max index `< WAKE_VERTEX_COUNT`.
-- [ ] **Step 2: Run** `npx vitest run apps/web/src/boat-wake-trail.test.ts` → FAIL (module not found).
-- [ ] **Step 3: Implement** `apps/web/src/boat-wake-trail.ts` with the interface above. Layout: walk samples oldest→newest (`along = ageFade = clamp(age / WAKE_FADE_SECONDS, 0, 1)` blended with the distance fraction: `along = max(distanceFromHead / trailLength, age / WAKE_FADE_SECONDS)`), tangent from neighbouring samples (head uses its previous segment), lateral = (−tz, tx). Arm centre `arm * (beam * 0.425 + 0.5 * spread * along)`, width `arm === 0 ? mix(beam*0.55, beam*0.8, along) : 0.3 + 0.18 * spread * along`; multiply `along` written to aux by `(1 - strength)` blend so weak samples fade (`alongOut = 1 - (1 - along) * strength`). Single sample: lateral defaults to (1, 0).
-- [ ] **Step 4: Run** the test file → PASS; run `npx tsc --noEmit`.
-- [ ] **Step 5: Commit** `Add a world-space wake trail buffer and ribbon layout`.
+- [x] **Step 2: Run** `npx vitest run apps/web/src/boat-wake-trail.test.ts` → FAIL (module not found).
+- [x] **Step 3: Implement** `apps/web/src/boat-wake-trail.ts` with the interface above. Layout: walk samples oldest→newest (`along = ageFade = clamp(age / WAKE_FADE_SECONDS, 0, 1)` blended with the distance fraction: `along = max(distanceFromHead / trailLength, age / WAKE_FADE_SECONDS)`), tangent from neighbouring samples (head uses its previous segment), lateral = (−tz, tx). Arm centre `arm * (beam * 0.425 + 0.5 * spread * along)`, width `arm === 0 ? mix(beam*0.55, beam*0.8, along) : 0.3 + 0.18 * spread * along`; multiply `along` written to aux by `(1 - strength)` blend so weak samples fade (`alongOut = 1 - (1 - along) * strength`). Single sample: lateral defaults to (1, 0).
+- [x] **Step 4: Run** the test file → PASS; run `npx tsc --noEmit`.
+- [x] **Step 5: Commit** `Add a world-space wake trail buffer and ribbon layout`.
 
 ### Task 2: Draw the V wake along the trail
 
@@ -109,12 +109,12 @@ Today `boat-spray.tsx` draws the V wake in hull-local space from a packed geomet
 - Consumes: everything in Task 1's Produces block; `createPortal` and `useThree` from `@react-three/fiber`.
 - Produces: `BoatSpray({ speed })` keeps its signature; callers in `player.tsx:1612` and `multiplayer-players.tsx:434` are unchanged.
 
-- [ ] **Step 1: Replace the shared packed `wakeGeometry`** with a per-instance factory `createWakeGeometry()` that allocates `position` (Float32, 3, `DynamicDrawUsage`), `aux` (Float32, 3, `DynamicDrawUsage`), the static index from `wakeRibbonIndex()`, and a `boundingSphere` object updated in place. Dispose it on unmount.
-- [ ] **Step 2: Vertex shader** of `wakeMaterial`: `attribute vec3 aux; vAlong = aux.x; vAcross = aux.y; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);` (drop `uLength`/`uSpread`/`uBeam` use in the wake vertex shader; keep the uniforms object so `applyState` stays shared). Fragment shader unchanged.
-- [ ] **Step 3: `BoatSpray`** — add `trail = useMemo(createWakeTrail)`, `bounds = useMemo(() => new Float32Array(3))`, `transom = useMemo(() => new THREE.Vector3())`. In `useFrame`: compute the transom world point `transom.set(0, 0, -BOAT_DIMENSIONS.sternExtent).applyMatrix4(root.parent.matrixWorld)`; `pushWakeSample(trail, transom.x, transom.z, clock.elapsedTime, spray.width, spray.opacity)` only when `spray.opacity > 0`; `pruneWakeTrail`; `layoutWakeRibbon(trail, clock.elapsedTime, LAKE_LEVEL + FOAM_LIFT, pos.array, aux.array, bounds)`; set both attributes `needsUpdate = true`; set `boundingSphere.center.set(bounds[0], y, bounds[1])`, `radius = bounds[2] + MAX_SPRAY.width + 1`. Wake mesh visible while `trail.count > 1` (even when the boat has stopped, so the wake fades out); the tail/group visibility keeps the old `spray.opacity > 0` rule.
-- [ ] **Step 4: Render** the wake mesh with `createPortal(<mesh .../>, scene)` where `scene = useThree((s) => s.scene)`; keep `renderOrder={2}`, `dispose={null}` on the material only. Tail `<points>` stays inside the group as today.
-- [ ] **Step 5: Verify** `npx tsc --noEmit`, `npm test`, `VITE_GAME_DIAGNOSTICS=1 npm run build`; load the build on 4173 (reuse or start the single preview) in Playwright, board (`V`), hold `W` then `A` for a turn, screenshot: the wake must curve and stay behind the turn. Save to `docs/boats/captures/wake-bend-own.png`.
-- [ ] **Step 6: Docs** — in `docs/boats/README.md` replace the jet-stream description with the trail design (constants, buffer sizes, fade). Commit `Bend the runabout wake along a world-space trail`.
+- [x] **Step 1: Replace the shared packed `wakeGeometry`** with a per-instance factory `createWakeGeometry()` that allocates `position` (Float32, 3, `DynamicDrawUsage`), `aux` (Float32, 3, `DynamicDrawUsage`), the static index from `wakeRibbonIndex()`, and a `boundingSphere` object updated in place. Dispose it on unmount.
+- [x] **Step 2: Vertex shader** of `wakeMaterial`: `attribute vec3 aux; vAlong = aux.x; vAcross = aux.y; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);` (drop `uLength`/`uSpread`/`uBeam` use in the wake vertex shader; keep the uniforms object so `applyState` stays shared). Fragment shader unchanged.
+- [x] **Step 3: `BoatSpray`** — add `trail = useMemo(createWakeTrail)`, `bounds = useMemo(() => new Float32Array(3))`, `transom = useMemo(() => new THREE.Vector3())`. In `useFrame`: compute the transom world point `transom.set(0, 0, -BOAT_DIMENSIONS.sternExtent).applyMatrix4(root.parent.matrixWorld)`; `pushWakeSample(trail, transom.x, transom.z, clock.elapsedTime, spray.width, spray.opacity)` only when `spray.opacity > 0`; `pruneWakeTrail`; `layoutWakeRibbon(trail, clock.elapsedTime, LAKE_LEVEL + FOAM_LIFT, pos.array, aux.array, bounds)`; set both attributes `needsUpdate = true`; set `boundingSphere.center.set(bounds[0], y, bounds[1])`, `radius = bounds[2] + MAX_SPRAY.width + 1`. Wake mesh visible while `trail.count > 1` (even when the boat has stopped, so the wake fades out); the tail/group visibility keeps the old `spray.opacity > 0` rule.
+- [x] **Step 4: Render** the wake mesh with `createPortal(<mesh .../>, scene)` where `scene = useThree((s) => s.scene)`; keep `renderOrder={2}`, `dispose={null}` on the material only. Tail `<points>` stays inside the group as today.
+- [x] **Step 5: Verify** `npx tsc --noEmit`, `npm test`, `VITE_GAME_DIAGNOSTICS=1 npm run build`; load the build on 4173 (reuse or start the single preview) in Playwright, board (`V`), hold `W` then `A` for a turn, screenshot: the wake must curve and stay behind the turn. Save to `docs/boats/captures/wake-bend-own.png`.
+- [x] **Step 6: Docs** — in `docs/boats/README.md` replace the jet-stream description with the trail design (constants, buffer sizes, fade). Commit `Bend the runabout wake along a world-space trail`.
 
 ### Task 3: Live-room verification, captures and docs
 
@@ -123,17 +123,24 @@ Today `boat-spray.tsx` draws the V wake in hull-local space from a packed geomet
 - Create: `docs/boats/results/live-room-2026-10-30.md` (telemetry and steps)
 - Modify: `docs/boats/README.md` (verification entry), `docs/boats/bumps-and-wake-plan.md` (ledger)
 
-- [ ] **Step 1:** `lsof -nP -iTCP:4173 -sTCP:LISTEN`, `lsof -nP -iTCP:8790 -sTCP:LISTEN` — both free (or 4173 a project preview to reuse).
-- [ ] **Step 2:** Start `npx wrangler dev --config apps/server/wrangler.jsonc --port 8790 --var ALLOWED_ORIGINS:http://127.0.0.1:4173 --local` in the background (log to the scratchpad); confirm `curl -s http://127.0.0.1:8790/` returns `ok: true` with the local service.
-- [ ] **Step 3:** `VITE_ROOM_SERVER_URL=http://127.0.0.1:8790 VITE_GAME_DIAGNOSTICS=1 npm run build`, then `npm run preview` (background).
-- [ ] **Step 4:** Two Playwright browser contexts on `http://127.0.0.1:4173/`. In each: wait for status connected (diagnostic DOM), walk to and board the own boat (`V`), confirm the other client renders the remote boat (`data-vehicle="boat"` badge, LOD mesh, `BoatSpray` present under `Online player`).
+- [x] **Step 1:** `lsof -nP -iTCP:4173 -sTCP:LISTEN`, `lsof -nP -iTCP:8790 -sTCP:LISTEN` — both free (or 4173 a project preview to reuse).
+- [x] **Step 2:** Start `npx wrangler dev --config apps/server/wrangler.jsonc --port 8790 --var ALLOWED_ORIGINS:http://127.0.0.1:4173 --local` in the background (log to the scratchpad); confirm `curl -s http://127.0.0.1:8790/` returns `ok: true` with the local service.
+- [x] **Step 3:** `VITE_ROOM_SERVER_URL=http://127.0.0.1:8790 VITE_GAME_DIAGNOSTICS=1 npm run build`, then `npm run preview` (background).
+- [x] **Step 4:** Two Playwright browser contexts on `http://127.0.0.1:4173/`. In each: wait for status connected (diagnostic DOM), walk to and board the own boat (`V`), confirm the other client renders the remote boat (`data-vehicle="boat"` badge, LOD mesh, `BoatSpray` present under `Online player`).
 - [ ] **Step 5:** Bump: drive client A into client B's hull (B stationary then B driving); record speeds before/after from the diagnostic DOM on both clients (A loses most speed, B receives a push; no interpenetration; no jitter for 3 s). Screenshot both sides.
-- [ ] **Step 6:** Wake: A drives a turn; screenshot from B (remote bending wake) and from A (own). Save captures.
-- [ ] **Step 7:** Stop preview and wrangler (`kill` the PIDs you started, verify both ports free). Restore the normal build? — the normal preview is not running on this machine, so leave `dist/` as a diagnostics build and say so in the report.
-- [ ] **Step 8:** Write results file and README entry; commit `Verify boat bumps and bending wake in a local two-client room`.
+- [x] **Step 6:** Wake: A drives a turn; screenshot from B (remote bending wake) and from A (own). Save captures.
+- [x] **Step 7:** Stop preview and wrangler (`kill` the PIDs you started, verify both ports free). Restore the normal build? — the normal preview is not running on this machine, so leave `dist/` as a diagnostics build and say so in the report.
+- [x] **Step 8:** Write results file and README entry; commit `Verify boat bumps and bending wake in a local two-client room`.
 
 ## Ledger
 
 - **R1** — keep main's authoritative boat impacts and turning sweep; verify rather than re-implement (above).
 - **R2** — the wake ribbon is a per-boat dynamic geometry (not instanced): 30 boats × 432 vertices is small, and instancing would need a per-instance texture for the trail anyway.
 - **R3** — the local room server is `wrangler dev` on port 8790 with `ALLOWED_ORIGINS=http://127.0.0.1:4173`, RAM-only (`--local`), killed after the test. Nothing is pointed at the production Worker.
+- **R4** — wake uOpacity is a constant 1 (per-sample strength lives in aux.x); intensity still from state — plan kept applyState shared and left uOpacity unspecified — cost if wrong: wake slightly brighter at very low speed than before (strength already fades it).
+- **R5** — Task 3 (live-room verification) is executed by the controller itself, not an implementer — it is operational (owner-approved listener, shared 4173 coordination with the meadow worktree, browser tooling loaded here); a fixture page adapted from tests/browser/boat-world-fixture.tsx stages hulls via parkBoat/teleport against the REAL local Worker because a scripted 55 m cabin-to-dock walk on two clients is not reliable — cost if wrong: staging bypasses the berth/spawn path (covered by unit tests), not the collision/wake paths under test.
+- **R6** — full `npm test` had one timeout flake (cabin-cutaway.test.ts, 7.5 s > 5 s under concurrent build load); passes in isolation; unrelated to this branch — cost if wrong: none for this branch.
+- **R7** — commit identity stays georgeab550 — the owner's explicit hard rule for this branch overrides AGENTS.md's Clau Marin rule; surfaced in the report — cost if wrong: author rewrite via rebase before PR.
+- **R8** — restore the old V opening angle by using a geometric along = clamp(distFromHead / (spread * 9/4.2)) for arm centre/width while the fade keeps the whole-trail along — brief says keep speed/boost scaling and the old look had the V open over spraySize().length — cost if wrong: owner preferred the narrower streaks; one-line revert.
+- **R9** — one-frame transom lag (Minor 5) and reverse hairpin/inner-arm fold (Minor 7) deferred as cosmetic; filing GitHub issues for the two collision anomalies (Minor 10) is outward-facing, left to the owner (listed in report).
+- **Scope cut** — owner's mid-task cut: the live pass verified remote rendering and the bending wake only; bump testing was dropped and incidental observations live in `docs/boats/results/live-room-2026-10-30.md`; Task 3's capture names became `captures/live-*.png`.
