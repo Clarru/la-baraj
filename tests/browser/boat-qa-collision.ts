@@ -16,6 +16,18 @@ export const boatHullHit: typeof actual = (world, rapier, input) => {
         keys: data ? Object.keys(data) : [],
       });
     });
+  document
+    .querySelector("#boat-world-contacts")
+    ?.setAttribute(
+      "data-physics",
+      JSON.stringify({
+        at: performance.now(),
+        achievedVelocity: input.exclude.linvel(),
+        commandedDisplacement: [input.dx, input.dz],
+        sleeping: input.exclude.isSleeping(),
+        contacts,
+      }),
+    );
   if (contacts.length) {
     const out = document.querySelector("#boat-world-contacts"),
       old = JSON.parse(out?.getAttribute("data-contacts") ?? "[]");

@@ -1595,6 +1595,7 @@ export function Player({
           ? {
               pressedKeys: [...k],
               movementActive: active,
+              controllerEnabled: !swimming && !boating,
               movementMode: mode,
               paused,
               holding,

@@ -152,6 +152,12 @@ function App() {
           keys: motion.pressedKeys,
           desiredControls: [...heldCodes],
           active: motion.movementActive,
+          controllerEnabled: motion.controllerEnabled,
+          physics: JSON.parse(
+            document
+              .querySelector("#boat-world-contacts")
+              ?.getAttribute("data-physics") ?? "null",
+          ),
           paused: motion.paused,
           mode: motion.movementMode,
           frameDt: motion.frameDt,
