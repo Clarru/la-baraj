@@ -1,0 +1,23 @@
+{
+  "grids": [
+    {
+      "cellHeight": 14.229166984558104,
+      "cellWidth": 14.229166984558104,
+      "height": 162.5,
+      "rowPitch": 14.25,
+      "width": 158.33334350585938
+    },
+    {
+      "cellHeight": 14.229166984558104,
+      "cellWidth": 14.229166984558104,
+      "height": 162.5,
+      "rowPitch": 14.25,
+      "width": 158.33334350585938
+    }
+  ],
+  "overflow": false,
+  "viewport": [
+    390,
+    844
+  ]
+}

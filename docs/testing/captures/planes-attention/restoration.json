@@ -1,0 +1,13 @@
+{
+  "baselineFiles": 218,
+  "restoredExactly": true,
+  "removedOwnedAdditions": [
+    "__planes-attention-937a66c-qa.html",
+    "assets/planes-presentation-BTg1M8Rp.js",
+    "assets/planes-presentation-Cz_kdVE9.css",
+    "__planes-attention-final-qa.html",
+    "assets/planes-presentation-D7wUqLrg.js",
+    "assets/planes-presentation-Dc8RgmQc.css"
+  ],
+  "indexSha256": "446afdf64ff95291a53d8e893c37d8809fa6be12ab3cd49a6c10e6bb27e07288"
+}
