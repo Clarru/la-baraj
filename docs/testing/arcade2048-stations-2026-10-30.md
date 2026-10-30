@@ -1,6 +1,6 @@
 # 2048 arcade stations — scoped source review
 
-Status: **bounded actual-Game browser evidence recorded; final review/ship report and production publication pending**.
+Status: **implementation, independent review, bounded actual-Game acceptance and combined checks complete; production publication pending**.
 
 This record covers the ordinary three-station extension relative to baseline `cf01d5a`. It preserves the incumbent 2048 cabinet visuals and rules while adding a row of three cabinets, server-authoritative station occupancy, public spectator state, and a compatibility path for clients or Workers that do not advertise numbered stations. The frozen runtime candidate is `5cbf38bdedb5deb3b5411877ac3ccccd149247b0`; green GitHub CI is recorded as run `41116338799`. The bounded browser pass used the actual Game, GLB, physics and local SharedWorker with two owned identities. The independent frontend recapture review returned **SHIP** for the bounded source + actual-Game capture scope, with no new regressions. No production frontend `55` publication or Worker deployment is claimed.
 
@@ -62,7 +62,7 @@ All three cabinets reuse the renderer-scoped tile atlas. Each screen retains its
 
 ## Focused source evidence
 
-The current automated pass reports **470 web tests in 83 files** and **168 protocol/backend tests in 12 files** passing after the frontend lifecycle fix. Server TypeScript, root TypeScript and the production build pass. The Worker dry-run bundle is **178.12 KiB** uncompressed and **43.91 KiB** gzip, and passes its stated budget check. The backend independent review is **ship**; the frontend source review has no remaining blocker and is awaiting the browser recapture gate.
+The frozen-candidate automated pass reports **470 web tests in 83 files** and **168 protocol/backend tests in 12 files** passing after the frontend lifecycle fix. Server TypeScript, root TypeScript and the production build pass. The Worker dry-run bundle is **178.12 KiB** uncompressed and **43.91 KiB** gzip, and compiles successfully without deployment. The backend independent review is **ship**; the frontend source and bounded browser recapture reviews are also **ship**, with no remaining blocker in that scope.
 
 The focused source coverage includes:
 
@@ -74,7 +74,9 @@ The focused source coverage includes:
 - atomic claims, occupied-station rejection, public DTO redaction, three independent games, hibernation, leave/disconnect/walk/seat release, same-owner duplicate occupancy rejection, storage-failure cleanup and stale-claim generation protection;
 - persisted per-player boards and global leaderboard behavior retained through the existing Worker service.
 
-Policy 54 is merged, feature push `6d471c4` is already present, and a new freeze commit is pending. Green GitHub CI is recorded as run `41116338799`; the later root merge of `main` `755c7f7` and combined checks are not yet part of this evidence record. The earlier Vercel quota note is historical: `main` was reported as accepted READY publicly at `50`, which does not publish `55` or prove a future quota. Publication of `55` remains pending release-owner coordination; no blanket current quota block is claimed.
+Policy 54 is merged. Green GitHub CI for the frozen browser candidate is recorded as run `41116338799`. The later code integration `9a21810` merges `main` `755c7f7` without conflict and preserves both the Meadow import/render and arcade integration. Combined validation passes **495 web tests in 84 files**, **168 protocol/backend tests in 12 files**, root and server TypeScript, the production build, and the Worker dry run (178.12 KiB / 43.91 KiB gzip). These combined source checks do not turn the earlier frozen browser captures into measurements of the Meadow integration.
+
+The earlier Vercel quota note is historical: `main` was reported accepted READY publicly at `50`, which does not publish `55` or prove future availability. Publication of `55` remains pending release-owner coordination; no blanket current quota block is claimed.
 
 ## Bounded actual-Game browser evidence
 
@@ -95,6 +97,6 @@ The browser pass did not exercise production multiplayer, genuine mobile/touch, 
 
 ## Evidence boundary
 
-This is a source, automated-test and bounded actual-Game browser documentation record. It does not claim production multiplayer, mobile/touch, reduced-motion media, three-player concurrency, browser storage-fault injection, presented FPS, numerical live-camera tracing, production `55` publication or Worker deployment. Root `main` 50 integration and combined checks remain pending outside this record.
+This is a source, automated-test and bounded actual-Game browser documentation record. It does not claim production multiplayer, mobile/touch, reduced-motion media, three-player concurrency, browser storage-fault injection, presented FPS, numerical live-camera tracing, production `55` publication or Worker deployment. The `main` 50 code integration and combined checks are complete as recorded above; the combined build has not received an additional browser performance pass.
 
 The extension remains an ordinary visual and interaction extension of the incumbent cabinet. Existing global `DESIGN.md`, `.impeccable/design.json`, `PRODUCT.md`, HUD, world materials and other games remain outside this documentation scope; pre-existing design-document drift is reported elsewhere and is not repaired here.
