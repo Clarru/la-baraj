@@ -26,8 +26,8 @@
 Keep the current room/transport and pose frequency. Optional angular velocity
 also identifies rotation-capable clients; older clients retain translation with
 locked rotation. Quantize transmitted boat coordinates/velocity/rudder to
-millimetre-scale precision so the extra rotation state does not require larger
-normal pose packets. Do not add geometry, textures, physics listeners, services,
+millimetre-scale precision. Omit zero rudder and moored rotation state. The
+representative packet averages shrink; individual packets may still grow slightly. Do not add geometry, textures, physics listeners, services,
 storage migrations or paid infrastructure.
 
 Measure the old/new narrow-phase and 50-boat scenarios on the same process, plus
@@ -42,3 +42,45 @@ boost and rotating sweeps, multi-boat chains, world obstacles, water damping,
 packet bounds/revisions and reset. Run two browser clients through the same
 cases on the coordinated single 4173 server, fix observed failures, preserve and
 restore the shared preview, then submit the fully checked release candidate.
+
+## Implementation and measured budget
+
+Contact generation uses clipped face manifolds, with symmetric normals for tied
+corner features. A two-point normal block solve and one centred friction patch
+avoid contact ordering bias. Position projection is separate from impulses;
+energy and impulse angular momentum tests account for that distinction. Fast
+contacts use restitution 0.05; slow contact uses zero. World pilings/docks use the
+same contact-point impulse response and tapered convex prism. Cached padded
+hulls cover angular sweeps without rebuilding a convex hull each frame.
+
+The pose interval remains 120 ms minimum. A correction is sent once per affected
+owner, after solving, rather than for each manifold iteration. Contact processing
+is capped at 4,096 work units, eight continuous contact events and 12 affected
+boats per packet. Invalid overlap piles brake at the last safe state when the
+budget is exhausted. Normal packed 50-boat coverage does not enter that fallback.
+
+Node 24 on the measured Apple machine (five-trial medians, microseconds/call):
+
+| Kernel | Before | After |
+| --- | ---: | ---: |
+| Swept two-boat contact | about 1.7 | 5.2 |
+| 50-boat scan, one contact | about 1.7 | 15.7 |
+| Packed 50-boat contact island | first-pair model only | 882 |
+| Invalid overlapping 50-boat pile | not equivalent | 2,219, bounded fallback |
+| Rapier world shape cast | 3.18 | 7.03 |
+| New conservative angular query | — | 4.66 |
+
+Representative full pose packet averages before/after: moored 273/255 bytes,
+straight 282/279, turning 321/308, post-impact 321/297. The largest sampled
+individual increase was 21 bytes. These are matched encoding samples, not a
+claim that every packet shrinks. The comparison includes the extra angular state.
+
+The old 50-boat kernel resolved only a first pair; the new kernel includes contact
+island work. These are function/query measurements, not full browser frame time,
+Cloudflare runtime or billing measurements. No new textures, visible meshes,
+services or update frequency were introduced. Reproduce with Node 24:
+`node scripts/benchmark-boat-physics.mjs 3c106da`. Full trials and scope are in
+`docs/performance/results/boat-rigid-impacts-2026-10-30.json`.
+
+A separate coordinated browser pass will verify visible turning, rubbing,
+correction smoothing, docks, legacy protocol emulation and latency before release.

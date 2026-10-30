@@ -285,7 +285,9 @@ export function quantizeBoatPose(boat: BoatPose): BoatPose {
     ...(boat.angularVelocity === undefined
       ? {}
       : { angularVelocity: q(boat.angularVelocity) }),
-    ...(boat.rudder === undefined ? {} : { rudder: q(boat.rudder) }),
+    ...(boat.rudder === undefined || q(boat.rudder) === 0
+      ? {}
+      : { rudder: q(boat.rudder) }),
   };
 }
 function inertia(b: BoatBody) {

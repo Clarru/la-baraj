@@ -763,6 +763,9 @@ export class MultiplayerRoom {
         BOAT_WATERLINE,
         pose.boat.position[1],
       ];
+    } else if (pose.boat) {
+      const { angularVelocity: _spin, rudder: _rudder, ...moored } = pose.boat;
+      pose.boat = moored;
     }
     if (ownSeat) pose.seatId = ownSeat;
     this.lastPose = pose;
