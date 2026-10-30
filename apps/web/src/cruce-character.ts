@@ -1,4 +1,6 @@
 import * as T from "three";
+import handPoses from "./cruce-hand-poses.json";
+import { setWorldRotation, solveTwoBoneIK } from "./limb-ik";
 import { crucePlayTarget } from "../../../packages/shared/cruce-station";
 import type { CruceSeat, CruceView } from "../../../packages/shared/cruce";
 const faceTextures = new Map<number, T.Texture>();
@@ -14,11 +16,11 @@ export function cruceFaceTexture(card: number) {
   }
   return texture;
 }
-/** Only arms/wrists are posed. beginFrame restores the authored mixer pose, avoiding accumulated IK. */
+/** Reversible card pose on the retained skeleton. Restore before the mixer each frame. */
 export function createCruceCharacterRig(
   object: T.Object3D,
   back: T.Texture | null = null,
-  gripClip?: T.AnimationClip,
+  _gripClip?: T.AnimationClip,
 ) {
   const names = [
     "upperarm_l",
@@ -28,17 +30,7 @@ export function createCruceCharacterRig(
     "lowerarm_r",
     "hand_r",
     "spine_01",
-    ...[
-      ...new Set(
-        (gripClip?.tracks ?? [])
-          .filter(
-            (t) =>
-              /^(index|middle|ring|pinky|thumb)_/.test(t.name) &&
-              t.name.endsWith(".quaternion"),
-          )
-          .map((t) => t.name.split(".")[0]),
-      ),
-    ],
+    ...Object.keys(handPoses.poses.rest),
   ];
   const bones = names.map((n) => object.getObjectByName(n));
   const saved = bones.map((b) => b?.quaternion.clone() ?? new T.Quaternion());
@@ -48,7 +40,8 @@ export function createCruceCharacterRig(
   const fan = new T.Group();
   fan.name = "Cruce hand fan";
   bones[2]?.add(fan);
-  fan.position.set(0, 0.085, 0);
+  fan.position.set(0.042, 0.113, 0.01);
+  fan.rotation.y = -Math.PI / 2;
   const cardGeometry = new T.PlaneGeometry(0.085, 0.137);
   geometries.push(cardGeometry);
   const sideMaterial = new T.MeshStandardMaterial({
@@ -75,7 +68,8 @@ export function createCruceCharacterRig(
   const held = card(new T.Group());
   held.name = "Cruce card in playing hand";
   bones[5]?.add(held);
-  held.position.set(0, 0.09, 0);
+  held.position.set(-0.042, 0.164, 0.01);
+  held.rotation.y = -Math.PI / 2;
   const flight = card(object);
   flight.name = "Cruce card flight";
   fan.visible = held.visible = flight.visible = false;
@@ -88,58 +82,24 @@ export function createCruceCharacterRig(
     end = new T.Vector3(),
     target = new T.Vector3(),
     pole = new T.Vector3();
-  const start = new T.Vector3(),
-    middle = new T.Vector3(),
+  const middle = new T.Vector3(),
     tip = new T.Vector3(),
-    direction = new T.Vector3(),
-    bend = new T.Vector3(),
-    from = new T.Vector3(),
-    to = new T.Vector3(),
-    reachable = new T.Vector3();
+    direction = new T.Vector3();
+  const palm = new T.Vector3(),
+    across = new T.Vector3(),
+    frame = new T.Matrix4();
   const q = new T.Quaternion(),
-    parentQ = new T.Quaternion(),
     worldQ = new T.Quaternion();
-  function rotation(b: T.Object3D, world: T.Quaternion) {
-    b.parent?.getWorldQuaternion(parentQ);
-    b.quaternion.copy(parentQ.invert()).multiply(world).normalize();
-    b.updateWorldMatrix(false, true);
-  }
-  function aim(b: T.Object3D, child: T.Object3D, point: T.Vector3) {
-    b.getWorldPosition(start);
-    child.getWorldPosition(tip);
-    from.copy(tip).sub(start).normalize();
-    to.copy(point).sub(start).normalize();
-    q.setFromUnitVectors(from, to);
-    b.getWorldQuaternion(worldQ).premultiply(q);
-    rotation(b, worldQ);
-  }
-  function solve(upper: T.Object3D, lower: T.Object3D, hand: T.Object3D) {
-    upper.getWorldPosition(start);
-    lower.getWorldPosition(middle);
-    hand.getWorldPosition(tip);
-    const a = start.distanceTo(middle),
-      b = middle.distanceTo(tip);
-    direction.copy(target).sub(start);
-    const d = T.MathUtils.clamp(
-      direction.length(),
-      Math.abs(a - b) + 1e-5,
-      a + b - 1e-5,
-    );
-    direction.normalize();
-    reachable.copy(start).addScaledVector(direction, d);
-    to.copy(pole)
-      .sub(start)
-      .addScaledVector(direction, -to.dot(direction))
-      .normalize();
-    const along = (a * a - b * b + d * d) / (2 * d),
-      height = Math.sqrt(Math.max(0, a * a - along * along));
-    bend
-      .copy(start)
-      .addScaledVector(direction, along)
-      .addScaledVector(to, height);
-    aim(upper, lower, bend);
-    aim(lower, hand, reachable);
-  }
+  const fingerPoses = Object.entries(handPoses.poses.rest).map(
+    ([name, values]) => ({
+      bone: object.getObjectByName(name),
+      left: name.endsWith("_l"),
+      rest: new T.Quaternion().fromArray(values),
+      pinch: new T.Quaternion().fromArray(
+        handPoses.poses.pinch[name as keyof typeof handPoses.poses.pinch],
+      ),
+    }),
+  );
   const beginFrame = () => {
     if (applied) bones.forEach((b, i) => b?.quaternion.copy(saved[i]));
     applied = false;
@@ -171,8 +131,8 @@ export function createCruceCharacterRig(
           c.visible = i < count;
           const angle = (i - (count - 1) / 2) * 0.13;
           c.position.set(
-            Math.sin(angle) * 0.12,
-            Math.cos(angle) * 0.025,
+            Math.sin(angle) * 0.06,
+            Math.cos(angle) * 0.06,
             i * 0.001,
           );
           c.rotation.z = -angle;
@@ -213,14 +173,17 @@ export function createCruceCharacterRig(
       applied = true;
       if (bones[6])
         bones[6].quaternion.multiply(q.setFromEuler(new T.Euler(0.12, 0, 0)));
-      for (const track of gripClip?.tracks ?? []) {
-        if (
-          !/^(index|middle|ring|pinky|thumb)_/.test(track.name) ||
-          !track.name.endsWith(".quaternion")
-        )
-          continue;
-        const bone = object.getObjectByName(track.name.split(".")[0]);
-        if (bone) bone.quaternion.slerp(q.fromArray(track.values), 0.75);
+      const releaseGrip =
+        t >= 0 && t < 0.22
+          ? 1
+          : t >= 0.22 && t < 0.38
+            ? 1 - (t - 0.22) / 0.16
+            : 0;
+      for (const pose of fingerPoses) {
+        if (!pose.bone) continue;
+        pose.bone.quaternion
+          .copy(pose.rest)
+          .slerp(pose.pinch, pose.left ? 1 : releaseGrip);
       }
       object.updateWorldMatrix(true, true);
       const reach = t >= 0 && t < 0.9 ? Math.sin((Math.PI * t) / 0.9) : 0;
@@ -228,24 +191,35 @@ export function createCruceCharacterRig(
         const [upper, lower, hand] = bones.slice(side * 3, side * 3 + 3);
         if (!upper || !lower || !hand) continue;
         target.set(
-          side === 0 ? 0.12 : -0.12,
-          side === 0 ? 0.9 : 0.8 + 0.04 * reach,
-          side === 0 ? 0.14 : 0.25 + 0.08 * reach,
+          side === 0 ? 0.18 : -0.18,
+          side === 0 ? 0.95 : 0.83 + 0.035 * reach,
+          side === 0 ? 0.08 : 0.12 + 0.08 * reach,
         );
         object.localToWorld(target);
-        pole.set(side === 0 ? 0.48 : -0.48, 0.67, -0.04);
+        pole.set(side === 0 ? 0.44 : -0.44, side === 0 ? 0.72 : 0.79, -0.09);
         object.localToWorld(pole);
-        solve(upper, lower, hand);
+        solveTwoBoneIK(upper, lower, hand, target, pole);
+        // Pronation belongs to the forearm, not a bent/twisted wrist. Local +Y
+        // follows this rig's forearm and fingers; left/right palm normals mirror.
+        lower.getWorldPosition(middle);
+        hand.getWorldPosition(tip);
+        direction.copy(tip).sub(middle).normalize();
         object.getWorldQuaternion(worldQ);
-        q.setFromEuler(
-          new T.Euler(
-            side === 1 ? Math.PI / 2 : -0.15,
-            side === 0 ? 0.3 : 0,
-            side === 0 ? -0.1 : 0.1,
-          ),
-        );
-        worldQ.multiply(q);
-        rotation(hand, worldQ);
+        palm
+          .set(side === 0 ? -0.15 : 0, side === 0 ? 0 : 1, side === 0 ? -1 : 0)
+          .applyQuaternion(worldQ);
+        palm.addScaledVector(direction, -palm.dot(direction));
+        if (palm.lengthSq() < 1e-8) {
+          palm.set(1, 0, 0).applyQuaternion(worldQ);
+          palm.addScaledVector(direction, -palm.dot(direction));
+        }
+        palm.normalize();
+        across.crossVectors(palm, direction).normalize();
+        palm.crossVectors(direction, across).normalize();
+        q.setFromRotationMatrix(frame.makeBasis(palm, direction, across));
+        setWorldRotation(lower, q);
+        hand.quaternion.identity();
+        hand.updateWorldMatrix(false, true);
       }
       object.updateWorldMatrix(true, true);
       if (acceptedPlay || (t >= 0 && t < 0.22)) {
