@@ -102,6 +102,8 @@ export function GameMenu({
   onControls,
   onHome,
   onReset,
+  onWave,
+  canWave = true,
   onClose,
 }: {
   nickname: string;
@@ -113,6 +115,8 @@ export function GameMenu({
   onControls: () => void;
   onHome: () => void;
   onReset: () => void;
+  onWave?: () => void;
+  canWave?: boolean;
   onClose: () => void;
 }) {
   const [name, setName] = useState(nickname);
@@ -157,6 +161,19 @@ export function GameMenu({
         </p>
       )}
       <div className="game-menu-actions">
+        {onWave && (
+          <button
+            onClick={onWave}
+            disabled={!canWave}
+            title={
+              canWave ? "Wave hello" : "Stand still outside an activity to wave"
+            }
+          >
+            <GameIcon name="people" size={29} />
+            <span>Wave hello</span>
+            <kbd>G</kbd>
+          </button>
+        )}
         <button onClick={onControls}>
           <GameIcon name="controls" size={29} />
           <span>Controls</span>
@@ -214,8 +231,10 @@ const controlRows = [
   ["W A S D / arrows", "Move"],
   ["Shift", "Run"],
   ["Space", "Jump"],
+  ["C / Z", "Toggle crouch / lie prone"],
+  ["G", "Wave hello while standing still"],
   ["Enter / Esc", "Chat above your character / close chat"],
-  ["Q", "Punch a nearby player"],
+  ["P / middle click", "Punch a nearby player while standing"],
   ["Left or right drag / scroll", "Look around / zoom"],
   ["E", "Enter a door, fish, or use the campfire nearby"],
   ["F", "Sit or stand beside a bench"],

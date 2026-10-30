@@ -45,10 +45,12 @@ export function MultiplayerHud({ room }: { room: MultiplayerRoom }) {
         ) : (
           <GameIcon name="offline" size={26} />
         )}
-        <strong>
-          {room.localPreview
-            ? "Local · aceeași lume în filele acestui browser"
-            : label}
+        <strong
+          title={
+            room.localPreview ? "Shared with tabs in this browser" : undefined
+          }
+        >
+          {room.localPreview ? "Local world" : label}
         </strong>
       </span>
       {(message || retry) && (
@@ -60,7 +62,8 @@ export function MultiplayerHud({ room }: { room: MultiplayerRoom }) {
           {retry && <button onClick={() => location.reload()}>Retry</button>}
         </div>
       )}
-      {import.meta.env.DEV && (
+      {(import.meta.env.DEV ||
+        import.meta.env.VITE_GAME_DIAGNOSTICS === "1") && (
         <output
           hidden
           ref={room.attachDiagnostics}

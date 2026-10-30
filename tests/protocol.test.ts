@@ -116,6 +116,10 @@ describe("bounded friend-room protocol", () => {
         type: "pose",
         pose: { ...pose, position: [5001, 0, 0] },
       }),
+      JSON.stringify({
+        type: "pose",
+        pose: { ...pose, posture: "hovering" },
+      }),
       JSON.stringify({ type: "hello", nickname: "<script>" }),
       JSON.stringify({ type: "seat", seatId: "__proto__", requestId: "a" }),
     ])
@@ -814,6 +818,9 @@ describe("playful punches", () => {
       [[0, 1.5, 1], {}],
       [[0, 0, 1], { activity: "sit" }],
       [[0, 0, 1], { animation: "Swim_Idle" }],
+      [[0, 0, 1], { posture: "crouching" }],
+      [[0, 0, 1], { posture: "prone" }],
+      [[0, 0, 1], { animation: "Prone_Idle" }],
       [[0, 0, 1], { vehicle: "scooter" }],
     ] as [PlayerPose["position"], Partial<PlayerPose>][]) {
       const f = fixture(),
