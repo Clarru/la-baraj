@@ -68,7 +68,9 @@ describe("runabout asset", () => {
     expect(triangles(lod)).toBeLessThanOrEqual(8_000);
     const full = materialNames(detailed);
     for (const name of required) expect(full).toContain(name);
+    // The LOD drops the tufting buttons and the gauge glass.
     full.delete("Tufting");
+    full.delete("GaugeGlass");
     expect([...materialNames(lod)].sort()).toEqual([...full].sort());
   });
 

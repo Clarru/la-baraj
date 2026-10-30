@@ -18,6 +18,7 @@ for (const id of ["Lake_Runabout", "Lake_Runabout_LOD"]) {
   for (const material of doc.getRoot().listMaterials()) {
     const name = material.getName();
     if (name === "Glass") material.setAlphaMode("BLEND").setDoubleSided(true);
+    if (name === "GaugeGlass") material.setAlphaMode("BLEND");
     if (name === "Pennant") material.setDoubleSided(true);
   }
   await doc.transform(

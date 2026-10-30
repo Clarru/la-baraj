@@ -297,15 +297,17 @@ def ramp(t, stops):
 MAHOGANY = [(0.0, (40, 12, 6)), (0.3, (80, 25, 11)), (0.55, (114, 40, 17)), (0.8, (146, 58, 26)), (1.0, (172, 80, 40))]
 
 
-def mahogany(h, w, seed, lx=240, ly=1.4):
-    """Grain along image x: long fine streaks, ribbon bands and soft mottle."""
+def mahogany(h, w, seed, lx=80, ly=1.2):
+    """Grain along image x: crisp short streaks, ribbon figure, mottle, rays and open pores."""
     fine = fnoise(h, w, lx, ly, seed)
-    streak = fnoise(h, w, lx * 1.6, ly * 5, seed + 1)
-    ribbon = np.sin(np.linspace(0, 2 * np.pi * 9, h, endpoint=False)[:, None] + 1.6 * fnoise(h, w, lx * 2, 60, seed + 2))
-    mottle = fnoise(h, w, 70, 40, seed + 3)
-    t = 0.55 + 0.07 * fine + 0.05 * streak + 0.03 * ribbon + 0.12 * mottle
+    streak = fnoise(h, w, lx * 1.5, ly * 4, seed + 1)
+    ribbon = np.sin(np.linspace(0, 2 * np.pi * 14, h, endpoint=False)[:, None] + 2.2 * fnoise(h, w, lx * 2, 40, seed + 2))
+    mottle = fnoise(h, w, 40, 26, seed + 3)
+    t = 0.55 + 0.09 * fine + 0.05 * streak + 0.05 * ribbon + 0.09 * mottle
     col = ramp(t, MAHOGANY)
-    pores = np.clip((fnoise(h, w, 30, 0.7, seed + 4) - 1.5) * 0.5, 0, 0.35)
+    rays = np.clip((fnoise(h, w, 3, 9, seed + 5) - 1.9) * 0.6, 0, 0.25)   # short pale flecks across the grain
+    col = col * (1 + rays[..., None])
+    pores = np.clip((fnoise(h, w, 14, 0.6, seed + 4) - 1.3) * 0.7, 0, 0.5)
     return col * (1 - pores[..., None])
 
 
@@ -321,14 +323,14 @@ def hull_texture(n=1024):
         col[y0:y1] = shifted[y0:y1] * rng.uniform(0.9, 1.08)
     y = np.arange(n)[:, None]
     d = np.min([np.abs(y - p * n / planks) for p in range(planks + 1)], axis=0)
-    seam = np.clip(2.2 - d, 0, 1)
-    col = col * (1 - 0.6 * seam[..., None])
+    seam = np.clip(1.6 - d, 0, 1)
+    col = col * (1 - 0.8 * seam[..., None])
     return col / 255
 
 
 def deck_texture(n=1024):
-    """Deck planking across u: a centre king plank and 13 strakes per side with pale caulked seams."""
-    king, per_side = 0.06, 13
+    """Deck planking across u: a pale, wide king plank and 8 strakes per side with pale caulked seams."""
+    king, per_side = 0.10, 8
     edges = [0.5 - king / 2 - k * (0.5 - king / 2) / per_side for k in range(per_side + 1)]
     edges = sorted(set([round(e, 6) for e in edges] + [round(1 - e, 6) for e in edges]))
     field = mahogany(n, n, 31, lx=260, ly=1.5).transpose(1, 0, 2)   # grain along v (image y)
@@ -338,8 +340,10 @@ def deck_texture(n=1024):
     for a, b in zip(edges, edges[1:]):
         m = (x >= a) & (x < b)
         shifted = np.roll(np.roll(field, rng.integers(0, n), axis=0), rng.integers(0, n), axis=1)
-        tone = rng.uniform(0.86, 1.1) * (1.05 if abs((a + b) / 2 - 0.5) < 0.01 else 1)
-        col[:, m] = shifted[:, m] * tone
+        if abs((a + b) / 2 - 0.5) < 0.01:   # king plank: a paler wood
+            col[:, m] = shifted[:, m] * 0.55 + np.array([196, 132, 82]) * 0.45
+        else:
+            col[:, m] = shifted[:, m] * rng.uniform(0.86, 1.1)
     d = np.min([np.abs(x * n - e * n) for e in edges], axis=0)
     seam = np.clip(2.2 - d, 0, 1)[None, :].repeat(n, 0)
     caulk = np.array([232, 218, 186])
@@ -404,7 +408,7 @@ def image(name, arr, data=False):
 
 
 # ---------------------------------------------------------------- materials
-MATS = ['Varnish', 'DeckPlanks', 'Chrome', 'Leather', 'Tufting', 'Glass', 'Ivory', 'BottomPaint',
+MATS = ['Varnish', 'DeckPlanks', 'Chrome', 'Leather', 'Tufting', 'Glass', 'GaugeGlass', 'Ivory', 'BottomPaint',
         'BootStripe', 'Floor', 'GaugeFace', 'Pennant']
 BOX_UV = {'Varnish': 0.5, 'Leather': 4.0, 'Tufting': 4.0}
 
@@ -449,8 +453,9 @@ def make_materials():
         'Chrome': principled('Chrome', (0.92, 0.93, 0.95), 0.08, 1.0),
         'Leather': principled('Leather', rough=0.55, tex=image('Leather_Cream', leather_c),
                               normal=image('Leather_Cream_Normal', leather_n, True)),
-        'Tufting': principled('Tufting', (0.30, 0.235, 0.16), 0.45),
+        'Tufting': principled('Tufting', (0.13, 0.095, 0.06), 0.4),
         'Glass': principled('Glass', (0.20, 0.30, 0.28), 0.03, alpha=0.4, cull=False),
+        'GaugeGlass': principled('GaugeGlass', (0.9, 0.92, 0.92), 0.02, alpha=0.1),
         'Ivory': principled('Ivory', (0.86, 0.78, 0.6), 0.25),
         'BottomPaint': principled('BottomPaint', (0.15, 0.03, 0.022), 0.55),
         'BootStripe': principled('BootStripe', (0.80, 0.74, 0.58), 0.3, coat=0.5),
@@ -732,7 +737,7 @@ def cushion(G, base_centre, ex, ey, W, D, H, q, tufts=True):
     h = np.full(A.shape, H)
     buttons = []
     if tufts and q:
-        h += 0.034 * (1 - (2 * A / Wi) ** 6) * (1 - (2 * Bv / Di) ** 4)
+        h += 0.026 * (1 - (2 * A / Wi) ** 6) * (1 - (2 * Bv / Di) ** 4)
         br, bc = 2, 4
         rowsj = list(range(2, ny - 1, br))
         for k, j in enumerate(rowsj):
@@ -742,7 +747,7 @@ def cushion(G, base_centre, ex, ey, W, D, H, q, tufts=True):
         dent = np.zeros(A.shape)
         for i, j in buttons:
             d2 = (A - a[i]) ** 2 + (Bv - b[j]) ** 2
-            dent = np.maximum(dent, 0.036 * np.exp(-d2 / (2 * 0.018 ** 2)))
+            dent = np.maximum(dent, 0.04 * np.exp(-d2 / (2 * 0.02 ** 2)))
         bset = set(buttons)
         for i, j in buttons:
             for di in (-bc // 2, bc // 2):
@@ -752,7 +757,7 @@ def cushion(G, base_centre, ex, ey, W, D, H, q, tufts=True):
                     dvec = p1 - p0
                     t = np.clip(((A - p0[0]) * dvec[0] + (Bv - p0[1]) * dvec[1]) / dvec.dot(dvec), 0, 1)
                     dd = (A - p0[0] - t * dvec[0]) ** 2 + (Bv - p0[1] - t * dvec[1]) ** 2
-                    dent = np.maximum(dent, 0.016 * np.exp(-dd / (2 * 0.008 ** 2)))
+                    dent = np.maximum(dent, 0.03 * np.exp(-dd / (2 * 0.014 ** 2)))
         h -= dent
     O = Vector(base_centre)
     pt = lambda x, y, z: O + ex * x + ey * y + ez * z
@@ -787,12 +792,12 @@ def cushion(G, base_centre, ex, ey, W, D, H, q, tufts=True):
     G.orient(s0, lambda c: c - mid)
     if tufts and q:
         for i, j in buttons:
-            button(G, pt(a[i], b[j], h[j, i] - 0.002), ex, ey, ez)
+            button(G, pt(a[i], b[j], h[j, i] + 0.001), ex, ey, ez)
         welt = [pt(a[i], b[j], H + 0.002) for n_, (i, j) in enumerate(ring) if n_ % 3 == 0]
         sweep(G, welt, circle(0.0065, 5), 'Tufting', closed=True, side=None, up=ez)
 
 
-def button(G, c, ex, ey, ez, r=0.015, h=0.01):
+def button(G, c, ex, ey, ez, r=0.019, h=0.012):
     """Leather-covered tufting button: a low six-sided dome."""
     ring = lambda rr, hh: [G.v(c + ex * rr * math.cos(k * math.pi / 3) + ey * rr * math.sin(k * math.pi / 3) + ez * hh) for k in range(6)]
     outer, mid, apex = ring(r, 0), ring(r * 0.7, h * 0.75), G.v(c + ez * h)
@@ -866,7 +871,7 @@ def build_helm(G, q):
         G.face(ids, 'GaugeFace', uv)
         G.orient(s0, lambda c_: Y)
         if q:
-            sphere(G, c + Vector((0, 0.006, 0)), r * 0.96, 'Glass', (1, 0.18, 1), seg=(20, 6))
+            sphere(G, c + Vector((0, 0.006, 0)), r * 0.96, 'GaugeGlass', (1, 0.18, 1), seg=(20, 6))
     zs, zh = ZF + 0.45, ZF + 0.56
     for k, x in enumerate((0.27, 0.32, 0.37)):
         cyl(G, Vector((x, face_y, zs)), Vector((x, face_y + 0.012, zs)), 0.011, 'Chrome', 10 if q else 5)
