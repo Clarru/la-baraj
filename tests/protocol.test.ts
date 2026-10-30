@@ -992,3 +992,29 @@ describe("temporary player bubble chat", () => {
     }
   });
 });
+
+it("bounds arcade station IDs and parses leave without trusting forged public state", () => {
+  const base = {
+    type: "arcade2048-action",
+    requestId: "station",
+    revision: 0,
+    action: { kind: "leave", owner: "victim" },
+    stationId: 0,
+  };
+  expect(parseClientMessage(JSON.stringify(base))).toEqual({
+    ...base,
+    action: { kind: "leave" },
+  });
+  for (const stationId of [-1, 3, 0.5, "0", null])
+    expect(
+      parseClientMessage(JSON.stringify({ ...base, stationId })),
+    ).toBeNull();
+  expect(
+    parseClientMessage(JSON.stringify({ ...base, stationId: undefined })),
+  ).toEqual({
+    type: "arcade2048-action",
+    requestId: "station",
+    revision: 0,
+    action: { kind: "leave" },
+  });
+});

@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import {
+  ARCADE_TILE_MS,
   arcadeDisplayBoard,
   arcadeGpuTilesVisible,
   drawArcadeTileFace,
@@ -22,7 +23,7 @@ export function writeArcadeTilePoses(
 ) {
   let count = 0;
   const t = animation
-    ? THREE.MathUtils.clamp((now - animation.started) / 150, 0, 1)
+    ? THREE.MathUtils.clamp((now - animation.started) / ARCADE_TILE_MS, 0, 1)
     : 1;
   const add = (value: number, x: number, y: number, scale = 1) => {
     const p = out[count] ?? (out[count] = { value: 0, x: 0, y: 0, scale: 1 });
@@ -61,17 +62,63 @@ export function writeArcadeTilePoses(
   return count;
 }
 
-/** One instanced draw call; moving tiles update tiny matrices, never a CanvasTexture. */
-export function createArcadeTiles(screen: THREE.Mesh) {
+type TileAtlas = ReturnType<typeof makeTileAtlas>;
+const atlases = new WeakMap<THREE.WebGLRenderer, TileAtlas>();
+/** The fixed font atlas lives with the renderer, like the shared lake reflection map. */
+function makeTileAtlas() {
   const canvas = document.createElement("canvas");
   canvas.width = 1536;
   canvas.height = 768;
-  const context = canvas.getContext("2d")!;
-  const texture = new THREE.CanvasTexture(canvas);
+  const context = canvas.getContext("2d")!,
+    texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
   texture.flipY = false;
   texture.generateMipmaps = false;
   texture.minFilter = THREE.LinearFilter;
+  let uploads = 0,
+    gpuUploads = 0,
+    fontsReady = false;
+  texture.onUpdate = () => {
+    gpuUploads++;
+  };
+  const draw = () => {
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    for (let i = 0; i < 30; i++) {
+      context.save();
+      context.translate((i % 8) * 192, Math.floor(i / 8) * 192);
+      context.beginPath();
+      context.rect(0, 0, 192, 192);
+      context.clip();
+      context.scale(192 / 98, 192 / 98);
+      drawArcadeTileFace(context, 2 ** (i + 1));
+      context.restore();
+    }
+    texture.needsUpdate = true;
+    uploads++;
+  };
+  draw();
+  return {
+    texture,
+    redrawAtlas() {
+      if (!fontsReady) {
+        fontsReady = true;
+        draw();
+      }
+    },
+    metrics: () => ({ atlasUploads: uploads, atlasGpuUploads: gpuUploads }),
+  };
+}
+/** One instanced draw per screen; all three cabinets reuse one atlas per renderer. */
+export function createArcadeTiles(
+  screen: THREE.Mesh,
+  renderer?: THREE.WebGLRenderer,
+) {
+  let atlas = renderer ? atlases.get(renderer) : undefined;
+  if (!atlas) {
+    atlas = makeTileAtlas();
+    if (renderer) atlases.set(renderer, atlas);
+  }
+  const { texture } = atlas;
   const geometry = new THREE.PlaneGeometry(1, 1);
   const offsets = new THREE.InstancedBufferAttribute(
     new Float32Array(16 * 2),
@@ -132,35 +179,14 @@ export function createArcadeTiles(screen: THREE.Mesh) {
   let lastBoard: readonly number[] | null = null,
     lastAnimation: TileAnimation | null = null,
     wasVisible = false;
-  let atlasUploads = 0,
-    matrixUpdates = 0,
-    atlasGpuUploads = 0,
+  let matrixUpdates = 0,
     tileRenderCalls = 0;
-  texture.onUpdate = () => {
-    atlasGpuUploads++;
-  };
   mesh.onBeforeRender = () => {
     tileRenderCalls++;
   };
-  const redrawAtlas = () => {
-    context.clearRect(0, 0, canvas.width, canvas.height);
-    for (let i = 0; i < 30; i++) {
-      context.save();
-      context.translate((i % 8) * 192, Math.floor(i / 8) * 192);
-      context.beginPath();
-      context.rect(0, 0, 192, 192);
-      context.clip();
-      context.scale(192 / 98, 192 / 98);
-      drawArcadeTileFace(context, 2 ** (i + 1));
-      context.restore();
-    }
-    texture.needsUpdate = true;
-    atlasUploads++;
-  };
-  redrawAtlas();
   return {
     mesh,
-    redrawAtlas,
+    redrawAtlas: atlas.redrawAtlas,
     update(
       state: ArcadeScreenState,
       animation: TileAnimation | null,
@@ -194,8 +220,7 @@ export function createArcadeTiles(screen: THREE.Mesh) {
       wasVisible = true;
     },
     metrics: () => ({
-      atlasUploads,
-      atlasGpuUploads,
+      ...atlas.metrics(),
       matrixUpdates,
       tileRenderCalls,
     }),
@@ -203,7 +228,7 @@ export function createArcadeTiles(screen: THREE.Mesh) {
       screen.remove(mesh);
       geometry.dispose();
       material.dispose();
-      texture.dispose();
+      if (!renderer) texture.dispose();
     },
   };
 }

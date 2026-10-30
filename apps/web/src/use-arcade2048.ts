@@ -38,6 +38,7 @@ export function useArcade2048(
   room: MultiplayerRoom,
   open: boolean,
   onExit?: () => void,
+  stationId?: number,
 ) {
   const view = useSyncExternalStore(room.subscribe, room.getSnapshot),
     [page, setPage] = useState<ArcadePage>("board"),
@@ -67,6 +68,7 @@ export function useArcade2048(
         const failure = await room.arcadeAction(
           action,
           room.getSnapshot().arcade2048?.game?.revision ?? 0,
+          ...(stationId !== undefined ? [stationId] : []),
         );
         if (id === serial.current && failure) setError(failure);
       } catch {
@@ -81,7 +83,7 @@ export function useArcade2048(
         }
       }
     },
-    [room],
+    [room, stationId],
   );
   useEffect(() => {
     // Each connectivity generation owns its restore. Old completions cannot block
@@ -138,7 +140,7 @@ export function useArcade2048(
   const move = useCallback(
     (d: ArcadeDirection) => {
       const now = performance.now();
-      if (now - lastMoveAt.current < 150) return;
+      if (now - lastMoveAt.current < 125) return;
       if (
         open &&
         page === "board" &&
