@@ -14,6 +14,7 @@ Phase 1 gives every player a personal motorboat on Lake Cinciș. The boat is a 6
 
 - **V** near the parked boat: board. While driving: step out. Onto land if a bank or dock is within about 4.5 m, otherwise into the water beside the boat.
 - **W** throttle, **S** brake then reverse, **A / D** steer. The boat turns only while it is moving.
+- **Shift** (left or right, the same key the character runs with) held while throttling boosts the boat to 12.8 m/s. Shift without W does nothing. Releasing Shift lets the boat ease back to cruise.
 - **R** returns the player to their cabin and puts the boat back at the nearest dock.
 
 ## Tuning
@@ -24,11 +25,17 @@ Values live in `BOAT_TUNING` in `apps/web/src/boat-motion.ts`.
 - Acceleration 2.4 m/s², reverse acceleration 1.5 m/s², linear coast-down 0.35 m/s², brake deceleration 5 m/s².
 - Maximum turn rate 0.9 rad/s (the scooter uses 1.65), reached at 3 m/s and above.
 - Wheel travel 2.4 rad, hull lean at most 0.06 rad, ride height 0.75 m, bob amplitude 0.03 m.
+- Boost (`boostMultiplier` 1.6, `boostAccel` 2.0 m/s², `boostTurnFactor` 0.75): with W and Shift held the top speed is cruise × 1.6 = 12.8 m/s. The boat reaches cruise at the normal 2.4 m/s², then climbs at 2.0 m/s² (about 2.4 s from 8 to 12.8 m/s). With Shift released and W still held, a boat above cruise slows back to 8 m/s at the coast rate, 0.35 m/s² (about 14 s from 12.8). Above cruise the maximum turn rate eases from 0.9 rad/s down to 0.9 × 0.75 = 0.675 rad/s at 12.8 m/s (`boostTurnScale`), so boosted turns are wider. At or below cruise the motion is unchanged.
+- Server limits at boost: the pose `speed` field is accepted up to 100 m/s (`packages/shared/protocol.ts`). The server has no per-pose position-jump or movement-speed check; it only rate-limits poses (10 per second, burst 3). At 7 poses per second a boosted boat moves about 1.83 m per pose, well under the remote client's 10 m snap distance (`multiplayer-players.tsx`). No protocol or server change was needed.
 - Hull draft is now 0.5 m (`BOAT_DIMENSIONS.draft`). The hull floor never goes below `LAKE_LEVEL + 0.15` (`BOAT_FLOAT_HEIGHT` in `apps/web/src/boat-geometry.ts`).
 - Bank stop: the boat probes the water `bowExtent + 0.8` = 4.483 m ahead (`BOAT_PROBE_DISTANCE`; Phase 1 placeholder: 2.2 m, superseded) and stops when it is shallower than 0.5 m (`BOAT_MIN_DEPTH`), both in `apps/web/src/boat-placement.ts` (`boatBlockedAhead`).
 - Exit candidates (current runabout): measured from the hull edge, sides at beam/2 + 0.7 m and beam/2 + 1.7 m, bow at bowExtent + 0.7 m and bowExtent + 1.7 m, then a land-only far ring of left, right and bow at +3 m (`boatExitCandidates`). Phase 1 placeholder, superseded: sides at 1.6 m and 2.6 m, bow at 2.2 m and 3.2 m, far ring at 4.5 m. The first candidate whose ground lies no more than 0.4 m below the lake surface (`BOAT_WADE_DEPTH`, shallower than the 0.62 m swim threshold) becomes the exit, so the driver wades rather than swims. If none qualifies, the driver enters the water beside the boat at the first candidate.
 - Placement (`apps/web/src/boat-placement.ts`): `BOAT_DOCK_SIDE_OFFSET` 3.7 m (Phase 1: 3.2, superseded), `BOAT_DOCK_LAKE_OFFSET` 13 m (Phase 1: 11, superseded), `BOAT_BOARD_DISTANCE` 1.6 m from the hull edge via `distanceToHull` (Phase 1: 3.5 m from the boat origin, superseded). Spawn at the x = 0 dock: (3.7, ·, 44.875), yaw pi.
 - Hull collision while driving (`apps/web/src/boat-collision.ts`, `boatHullBlocked`): a Rapier shape cast of the hull stops the boat against docks and pilings, so a boat can no longer pass through them.
+
+## Jet stream
+
+The driven boat no longer draws a ring on the water; swimmers keep theirs. Instead a jet stream (`apps/web/src/boat-spray.tsx`, sizing in `apps/web/src/boat-spray.ts`) trails from the transom: a V wake of two foam arms opening from the transom corners plus a centre wash, fading to transparent along its length, and a rooster tail of 20 foam particles thrown up and back behind the transom. It is a child of the yawing boat root, anchored at `-BOAT_DIMENSIONS.sternExtent` on the boat's local Z and on the waterline (`LAKE_LEVEL` + 0.03 m). Its size follows the hull speed (`spraySize`): nothing below 0.5 m/s, fading in by 2.5 m/s, a 9 m wake spreading 4.2 m at cruise, and about 1.46 times that at boost. Foam brightness and opacity follow the day (`sprayIntensity`, 0.3 at night up to 1.0 at noon, from `lastLighting()`). Geometry and the two shader materials are shared by every boat; each boat passes its size to the shared uniforms just before its own draw. Remote boats size their jet stream from the pose `speed`, so no protocol change was needed.
 
 ## Wheel and hands
 
@@ -41,6 +48,7 @@ The existing pose carries `vehicle: "boat"`; no new message type is added. A rem
 ## Known limits
 
 - A parked boat is visible only to its owner. Other players see a boat once it is driven.
+- Parked boat collision: the runabout verification reported the walker standing inside the parked hull. In code the parked boat's fixed collider is mounted whenever the boat is not driven (`ParkedBoat`, `apps/web/src/boat.tsx`), is not a sensor and uses default collision groups. It is a box over the whole hull plan (2.207 × 6.146 m) from 0.10 m below to 0.60 m above the waterline. A swimmer's capsule (radius 0.3 m, half-height 0.35 m, centre about 0.50 m above the waterline) spans 0.15 m below to 1.15 m above it, and a walker standing in the shallows near the stern (about 0.6 m deep) spans about 0.30 m below to 1.00 m above it, so both overlap the box and are blocked. The box top is 0.2 m below the deck (0.8 m), so a player who jumps or drops onto the boat stands on the box with their feet slightly sunk into the deck and windshield. That is the most likely reading of the report; no collider change was made.
 - Boat position is not persisted; it resets to the dock on reload.
 - The north shore terrain is a proxy, so boat-to-bank behaviour there is approximate.
 - Remote players and remote boats (including the new LOD boat) were not verified in a live room: the runs were offline and the production Worker was not contacted.

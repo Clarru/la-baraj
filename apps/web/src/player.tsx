@@ -29,7 +29,7 @@ import { getActivityPose } from "./activity-state";
 import { Scooter, type ScooterHandle } from "./scooter";
 import { createScooterRiderRig } from "./scooter-rider";
 import { Boat, type BoatHandle } from "./boat";
-import { BOAT_DIMENSIONS, BOAT_DRIVER_OFFSET } from "./boat-geometry";
+import { BOAT_DRIVER_OFFSET } from "./boat-geometry";
 import { boatHullBlocked } from "./boat-collision";
 import { createBoatRiderRig } from "./boat-rider";
 import {
@@ -80,6 +80,7 @@ import {
   swimVelocity,
 } from "./swim-motion";
 import { SwimWake } from "./SwimWake";
+import { BoatSpray } from "./boat-spray.tsx";
 import { StunStars } from "./StunStars";
 import { bindCameraMouse } from "./camera-mouse";
 import {
@@ -90,9 +91,8 @@ import {
   localFacing,
 } from "./character-actions";
 const boatDriverOffset = new THREE.Vector3(...BOAT_DRIVER_OFFSET);
-/** The wake ring centres on the hull midpoint, this far forward of the pivot. */
-const BOAT_WAKE_FORWARD =
-  (BOAT_DIMENSIONS.bowExtent - BOAT_DIMENSIONS.sternExtent) / 2;
+/** The local boat's jet stream follows the speed the frame loop publishes. */
+const localBoatSpeed = () => getBoatState().speed;
 export type ViewMode = "walk" | "overview" | "study" | "settlement" | "home";
 export const spawn = { x: 45, z: southShore(45) + 12 };
 export const playerPosition = new THREE.Vector3(
@@ -211,7 +211,6 @@ export function Player({
     rightGrip = useMemo(() => new THREE.Vector3(), []),
     wheelNormal = useMemo(() => new THREE.Vector3(), []),
     wheelHub = useMemo(() => new THREE.Vector3(), []);
-  const boatWake = useRef<THREE.Group>(null);
 
   const animation = useRef("Idle_Neutral");
   const animationHistory = useRef<
@@ -833,6 +832,8 @@ export function Player({
             )
           : 0,
         dt,
+        // The character's run key boosts the boat while the throttle is forward.
+        boost: active && (k.has("ShiftLeft") || k.has("ShiftRight")),
       });
       // Shallows or land within the probe stop the hull before it can climb a
       // bank; at rest the throttle picks the side, so a beached bow can reverse.
@@ -1133,16 +1134,6 @@ export function Player({
         hub: boat.current.wheelHubWorld(wheelHub),
       });
     }
-    if (boatingNow && boatWake.current) {
-      const yaw = boatMotion.current.yaw;
-      boatWake.current.position.set(
-        Math.sin(yaw) * BOAT_WAKE_FORWARD,
-        0,
-        Math.cos(yaw) * BOAT_WAKE_FORWARD,
-      );
-      // The ring's long axis is its local X; turn it along the hull.
-      boatWake.current.rotation.y = yaw + Math.PI / 2;
-    }
     sampleClock.current += dt;
     if (sampleClock.current > 1 / 7 && visual.current) {
       sampleClock.current = 0;
@@ -1260,13 +1251,9 @@ export function Player({
         <Suspense fallback={null}>
           <Boat ref={boat} visible={boating} />
         </Suspense>
+        {boating && <BoatSpray speed={localBoatSpeed} />}
       </group>
       {swimming && <SwimWake />}
-      {boating && (
-        <group ref={boatWake}>
-          <SwimWake scale={BOAT_DIMENSIONS.length / 1.4} />
-        </group>
-      )}
     </Ecctrl>
   );
 }

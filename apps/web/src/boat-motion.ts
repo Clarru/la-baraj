@@ -14,6 +14,12 @@ export const BOAT_TUNING = {
   leanMax: 0.06,
   rideHeight: 0.75,
   bobAmplitude: 0.03,
+  /** Run key + throttle: top speed is cruise × this. */
+  boostMultiplier: 1.6,
+  /** m/s² from cruise up to the boosted top speed. */
+  boostAccel: 2,
+  /** Max turn rate at full boost, as a fraction of maxTurnRate. */
+  boostTurnFactor: 0.75,
 } as const;
 
 /** `speed` is signed forward m/s; +Z is forward at yaw 0, positive yaw turns left. */
@@ -56,10 +62,21 @@ export function boatWheelTarget(turnRate: number): number {
   );
 }
 
+/** 1 at or below cruise, easing to boostTurnFactor at the boosted top speed. */
+export function boostTurnScale(speed: number): number {
+  const t = BOAT_TUNING;
+  const over = clamp(
+    (Math.abs(speed) - t.cruise) / (t.cruise * (t.boostMultiplier - 1)),
+    0,
+    1,
+  );
+  return 1 - (1 - t.boostTurnFactor) * over;
+}
+
 /** Advance throttle, damped steering and yaw by one step (mutates). */
 export function advanceBoat(
   state: BoatMotionState,
-  input: { throttle: -1 | 0 | 1; steer: number; dt: number },
+  input: { throttle: -1 | 0 | 1; steer: number; dt: number; boost?: boolean },
 ): void {
   const dt = Number.isFinite(input.dt) ? clamp(input.dt, 0, 0.05) : 0;
   const steerInput = Number.isFinite(input.steer)
@@ -67,8 +84,19 @@ export function advanceBoat(
     : 0;
   const t = BOAT_TUNING;
 
+  const boost = input.boost === true && input.throttle > 0;
   if (input.throttle > 0) {
-    state.speed = moveToward(state.speed, t.cruise, t.accel * dt);
+    // Above cruise: boost climbs toward its top speed; without boost the hull
+    // eases back down to cruise at the coast rate, never instantly.
+    if (boost && state.speed >= t.cruise)
+      state.speed = moveToward(
+        state.speed,
+        t.cruise * t.boostMultiplier,
+        t.boostAccel * dt,
+      );
+    else if (!boost && state.speed > t.cruise)
+      state.speed = moveToward(state.speed, t.cruise, t.coastRate * dt);
+    else state.speed = moveToward(state.speed, t.cruise, t.accel * dt);
   } else if (input.throttle < 0) {
     state.speed =
       state.speed > 0
@@ -83,6 +111,7 @@ export function advanceBoat(
     state.steer *
     t.maxTurnRate *
     Math.min(Math.abs(state.speed) / t.fullTurnSpeed, 1) *
+    boostTurnScale(state.speed) *
     Math.sign(state.speed);
   state.yaw += state.turnRate * dt;
   state.wheelAngle = damp(

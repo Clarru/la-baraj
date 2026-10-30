@@ -162,6 +162,86 @@ describe("boat motion", () => {
     expect(side.x).toBeCloseTo(8, 6);
   });
 
+  it("boost raises the top speed to boostMultiplier × cruise", () => {
+    expect(BOAT_TUNING.boostMultiplier).toBe(1.6);
+    const state = createBoatMotionState(0);
+    for (let i = 0; i < 600; i += 1) {
+      advanceBoat(state, { throttle: 1, steer: 0, dt: DT, boost: true });
+      expect(state.speed).toBeLessThanOrEqual(12.8 + 1e-9);
+    }
+    expect(Math.abs(state.speed - 12.8)).toBeLessThan(0.05);
+  });
+
+  it("releasing boost settles back to cruise smoothly", () => {
+    const state = createBoatMotionState(0);
+    state.speed = BOAT_TUNING.cruise * BOAT_TUNING.boostMultiplier;
+    let previous = state.speed;
+    for (let i = 0; i < 60 * 30; i += 1) {
+      advanceBoat(state, { throttle: 1, steer: 0, dt: DT, boost: false });
+      expect(previous - state.speed).toBeLessThanOrEqual(
+        BOAT_TUNING.brakeDecel * DT + 1e-9,
+      );
+      expect(state.speed).toBeLessThanOrEqual(previous);
+      expect(state.speed).toBeGreaterThanOrEqual(BOAT_TUNING.cruise);
+      previous = state.speed;
+    }
+    expect(state.speed).toBeCloseTo(BOAT_TUNING.cruise, 6);
+  });
+
+  it("boost only works with the throttle forward", () => {
+    const coasting = createBoatMotionState(0);
+    coasting.speed = 8;
+    const plain = createBoatMotionState(0);
+    plain.speed = 8;
+    for (let i = 0; i < 120; i += 1) {
+      advanceBoat(coasting, { throttle: 0, steer: 0, dt: DT, boost: true });
+      advanceBoat(plain, { throttle: 0, steer: 0, dt: DT });
+    }
+    expect(coasting).toEqual(plain);
+  });
+
+  it("turning is wider at boost", () => {
+    const cruise = createBoatMotionState(0);
+    cruise.speed = 8;
+    run(cruise, 300, 1, 1);
+    const boosted = createBoatMotionState(0);
+    boosted.speed = 12.8;
+    for (let i = 0; i < 300; i += 1)
+      advanceBoat(boosted, { throttle: 1, steer: 1, dt: DT, boost: true });
+    expect(boosted.speed).toBeCloseTo(12.8, 6);
+    expect(boosted.turnRate).toBeLessThan(cruise.turnRate);
+    expect(boosted.turnRate).toBeCloseTo(
+      BOAT_TUNING.maxTurnRate * BOAT_TUNING.boostTurnFactor,
+      2,
+    );
+  });
+
+  it("no boost below cruise changes nothing", () => {
+    const scenario = (boost?: boolean) => {
+      const state = createBoatMotionState(0.2);
+      const trace: number[] = [];
+      const inputs: Array<[-1 | 0 | 1, number, number]> = [
+        [1, 0, 240],
+        [1, 1, 180],
+        [0, -1, 120],
+        [-1, 0.5, 240],
+        [1, -1, 300],
+      ];
+      for (const [throttle, steer, steps] of inputs)
+        for (let i = 0; i < steps; i += 1) {
+          advanceBoat(
+            state,
+            boost === undefined
+              ? { throttle, steer, dt: DT }
+              : { throttle, steer, dt: DT, boost },
+          );
+          trace.push(...Object.values(state));
+        }
+      return trace;
+    };
+    expect(scenario(false)).toEqual(scenario());
+  });
+
   it("infers turn rate across the ±π seam", () => {
     const seam = inferBoatTurnRate(3.13, -3.13, 0.1);
     expect(seam).toBeCloseTo((2 * Math.PI - 6.26) / 0.1, 6);

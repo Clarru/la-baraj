@@ -28,17 +28,15 @@ import type { MultiplayerRoom } from "./multiplayer";
 import { createTableReactionRig } from "./table-reactions";
 import { planesSeatSide } from "../../../packages/shared/planes-station";
 import { SwimWake } from "./SwimWake";
+import { BoatSpray } from "./boat-spray.tsx";
 import { Boat, type BoatHandle } from "./boat";
 import { createBoatRiderRig } from "./boat-rider";
-import { BOAT_DIMENSIONS, BOAT_DRIVER_OFFSET } from "./boat-geometry";
+import { BOAT_DRIVER_OFFSET } from "./boat-geometry";
 import { BOAT_TUNING, boatWheelTarget, inferBoatTurnRate } from "./boat-motion";
 import { AFK_AFTER_MS } from "../../../packages/shared/protocol";
 
 // Only the isolated local browser lab may shorten the visual timeout for QA.
 const boatDriverOffset = new THREE.Vector3(...BOAT_DRIVER_OFFSET);
-/** The wake ring centres on the hull midpoint, this far forward of the pivot. */
-const BOAT_WAKE_FORWARD =
-  (BOAT_DIMENSIONS.bowExtent - BOAT_DIMENSIONS.sternExtent) / 2;
 const displayAfkAfter =
   import.meta.env.VITE_PLANES_PAIRED_LAB === "1" &&
   ["localhost", "127.0.0.1"].includes(location.hostname) &&
@@ -128,6 +126,11 @@ function RemoteAvatarRig({
   const [boating, setBoating] = useState(false);
   const boatingRef = useRef(false);
   const boatState = useRef({ previousYaw: 0, wheelAngle: 0, lean: 0 });
+  // The jet stream sizes itself from the pose speed alone (no protocol change).
+  const remoteBoatSpeed = useMemo(
+    () => () => room.remotes.get(id)?.player.speed ?? 0,
+    [room, id],
+  );
   const gripLeft = useMemo(() => new THREE.Vector3(), []);
   const gripRight = useMemo(() => new THREE.Vector3(), []);
   const wheelNormal = useMemo(() => new THREE.Vector3(), []);
@@ -369,12 +372,7 @@ function RemoteAvatarRig({
     <group ref={root} name={`Online player ${id}`}>
       <primitive object={object} dispose={null} />
       {swimming && <SwimWake />}
-      {boating && (
-        // The root turns with the boat: ring's long axis (local X) along the hull.
-        <group position={[0, 0, BOAT_WAKE_FORWARD]} rotation={[0, Math.PI / 2, 0]}>
-          <SwimWake scale={BOAT_DIMENSIONS.length / 1.4} />
-        </group>
-      )}
+      {boating && <BoatSpray speed={remoteBoatSpeed} />}
       {hasBoat && (
         <Suspense fallback={null}>
           <Boat ref={boat} visible={boating} detail="lod" />
