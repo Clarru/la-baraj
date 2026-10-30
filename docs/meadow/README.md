@@ -40,6 +40,7 @@ Same lab views before and after, `captures/`:
 - `before-shore.jpg` / `after-shore.jpg` — across the lake from the dock (sand bank stays bare by design).
 - `before-dusk.jpg` / `after-dusk.jpg` — arrival view at `?time=19.5`.
 - `after-eye-level.jpg`, `after-eye-level-dusk.jpg`, `after-eye-level-night.jpg` — the new eye-height lab view on the open hill at day, dusk and `?time=0` (no "before" exists for this view; main's lab has no such camera).
+- `final-hill.jpg`, `final-eye-level.jpg` — the same two day views on the final head `886608d`, after the whole-branch review fix wave (flower cells are now visited in a shuffled order, so patches no longer end in straight chunk-grid lines). Their timing samples (`perf/final-*.json`) were taken while the machine's load average was ~58 from other agents' work and are not comparable with the table above; the shader compiled without errors and the console showed nothing new.
 
 ## Rulings made along the way
 
