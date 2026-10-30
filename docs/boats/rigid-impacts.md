@@ -39,9 +39,8 @@ that more accurate maths is free.
 Automated cases cover contact geometry, mirrored/off-centre torque, central hits,
 linear/angular momentum, kinetic energy, rubbing/separation, moored/legacy hulls,
 boost and rotating sweeps, multi-boat chains, world obstacles, water damping,
-packet bounds/revisions and reset. Run two browser clients through the same
-cases on the coordinated single 4173 server, fix observed failures, preserve and
-restore the shared preview, then submit the fully checked release candidate.
+packet bounds/revisions and reset. The coordinated browser matrix below covers
+the actual Game, Player and SharedWorker authority on the single 4173 server.
 
 ## Implementation and measured budget
 
@@ -92,5 +91,59 @@ services or update frequency were introduced. Reproduce with Node 24:
 `node scripts/benchmark-boat-physics.mjs 3c106da`. Full trials and scope are in
 `docs/performance/results/boat-rigid-impacts-2026-10-30.json`.
 
-A separate coordinated browser pass will verify visible turning, rubbing,
-correction smoothing, docks, legacy protocol emulation and latency before release.
+## Coordinated browser acceptance — October 30
+
+The second pass used pre-mask head `af9fc90` and repaired head `34be93f`, both
+based on released main `85184db`. The actual Game/Player and RoomCore ran through
+an isolated in-memory SharedWorker. No production room or extra listener was used.
+The earlier pass had already confirmed physical dock deflection; the second pass
+finished the previously unpassed rubbing, chain, legacy and delayed-packet cases.
+
+| Case | Observed result |
+| --- | --- |
+| Ghost stern, before repair | Driver stops at z −50.761974 with W held, active controls and Ecctrl disabled. Actual contact metadata identifies the remote convex hull still at z −48, despite both disabled flags being false. |
+| Same geometry, repaired masks | Driver passes the old stop and retains 4.84 m/s in the captured snapshot. The target moves and turns about 15°, with zero rudder. |
+| Two moving boats rubbing | 18/19 corrections, retained speeds 7.46/7.62 m/s, gradual sideways/yaw response, no vertical pop. |
+| Three occupied boats | All three move over 5 m, retain about 1.53–1.59 m/s and receive corrections. Centred contact adds zero spin. |
+| Centred head-on | Both stop with zero angular velocity, including the network-rounded opposite heading. |
+| Moored target | Target position stays [0, −48], its owner stays unmounted, and it receives no impact correction. |
+| Boost approach | Peak speed 12.8000002 m/s (Float32 tolerance); target is pushed and both continue around 7.2 m/s without tunnelling. |
+| Legacy protocol emulation | Fresh peer omits angular/rudder fields; every correction retains the legacy shape, rotation stays locked and both boats move. Empty active-case error logs. |
+| Delayed pose/correction delivery | Both clients delay outgoing poses and incoming impact corrections by 100 ms. Both continue moving with off-centre rotation and empty error logs. Peak render translation offsets are 0.427/0.149 m. |
+| Reverse, dismount and reset | Reverse reaches −1.98 m/s along the keel; dismount and reset clear linear/angular motion and mounted state. |
+
+Mounted body height stayed approximately 0.770–0.831 m across the second-pass
+cases. The timed fixture controls send the normal Player keyboard events and
+repeat held keys every 100 ms so each tab represents an independently focused
+driver. The fixed driver's native W hold of 4.2 s covers the fixture's timed 4 s
+command. The latency shim delays pose and impact messages, not all transport
+categories. These are local acceptance tests, not a production network benchmark.
+
+The first legacy attempt inherited a console error from the preceding fixture
+unmount. It is retained in the evidence, followed by a clean fresh-client rerun.
+Explicit fixture teardown also reproduced the unchanged `NearbySolids.tsx:53`
+cleanup calling `body.isValid()` after its Rapier World had been freed. The release
+owner independently reproduced that lifecycle problem without boat code and is
+handling it separately. It was absent from the fresh legacy and delayed driving
+runs; no controller or collision workaround was added for it.
+
+All owned clients explicitly left, the last peer count reached zero and all test
+tabs closed. The ten additive QA paths were removed before the agreed boundary.
+All **251** baseline files matched their SHA-256 manifest exactly; normal index
+`e3018f03f03e9ceb98299951cced2dc5d86687a89cebc2b8930a4616d7b06711` and
+listener PID **12514** on **4173** were preserved.
+
+Focused traces, assertions, raw teardown stacks and restoration paths are in
+[the browser report](results/rigid-browser-2026-10-30.json). Full local raw histories
+are retained in `.impeccable/review/boat-rigid/browser-evidence-final.json`.
+[Off-centre](captures/rigid-impacts/off-centre.png),
+[rubbing](captures/rigid-impacts/rubbing.png),
+[chain](captures/rigid-impacts/chain.png),
+[head-on](captures/rigid-impacts/head-on.png) and
+[delayed-correction](captures/rigid-impacts/latency.png) captures show the actual run.
+
+On tested head `34be93f`, 416 frontend and 142 server/protocol tests, both
+TypeScript checks, the production build and CI passed. The final branch must
+also include the next accepted main integration and pass the combined checks
+before the release owner deploys the Worker and frontend.
+
