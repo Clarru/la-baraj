@@ -25,7 +25,12 @@ import {
   rotateGrab,
   validPlacement,
 } from "./plane-placement";
-import { PlanesShot, usePresentedShot, type PresentedShot } from "./PlanesShot";
+import {
+  PlanesShot,
+  usePresentedShot,
+  useRoundResult,
+  type PresentedShot,
+} from "./PlanesShot";
 import "./planes.css";
 
 export type PlanesBoardProps = {
@@ -242,7 +247,13 @@ export default function PlanesBoard({
   onClose,
   onLeave,
 }: PlanesBoardProps) {
-  const presentation = usePresentedShot(view, connected, open);
+  const { presentation, waiting } = usePresentedShot(view, connected, open);
+  const roundResult = useRoundResult(
+    view,
+    connected,
+    open,
+    Boolean(presentation),
+  );
   const playAreaRef = useRef<HTMLDivElement>(null);
   const [draft, setDraft] = useState<Plane[]>(() => randomFleet());
   const [selected, setSelected] = useState(0),
@@ -281,6 +292,7 @@ export default function PlanesBoard({
     !own?.ready &&
     !pending &&
     !presentation &&
+    roundResult === null &&
     connected;
   useEffect(() => {
     if (!canPlace || !open) {
@@ -308,7 +320,7 @@ export default function PlanesBoard({
     }
   }, [view?.round, you, view?.ownPlanes, phase]);
   const act = async (action: PlanesAction) => {
-    if (!view || pending || presentation) return;
+    if (!view || pending || presentation || roundResult !== null) return;
     setPending(true);
     setError("");
     try {
@@ -501,6 +513,10 @@ export default function PlanesBoard({
                   : "Arrange your planes, then get ready.";
   const keyboard = (event: KeyboardEvent) => {
     event.stopPropagation();
+    if (roundResult !== null) {
+      event.preventDefault();
+      return;
+    }
     if (event.key === "Escape") {
       event.preventDefault();
       if (drag.current) cancelDrag();
@@ -539,8 +555,12 @@ export default function PlanesBoard({
       rotate();
     }
   };
-  const attackShots = you === null ? [] : (view?.shots[you] ?? []),
-    incoming = you === null ? [] : (view?.shots[otherSide(you)] ?? []);
+  const shownShots = (side: Side) => {
+    const next = waiting.find((shot) => shot.side === side);
+    return (view?.shots[side] ?? []).slice(0, next?.index);
+  };
+  const attackShots = you === null ? [] : shownShots(you),
+    incoming = you === null ? [] : shownShots(otherSide(you));
   const latest = attackShots.at(-1),
     latestIncoming = incoming.at(-1);
   return (
@@ -555,6 +575,7 @@ export default function PlanesBoard({
       data-phase={phase}
       data-side={you ?? "spectator"}
       data-shot-presenting={presentation ? "true" : undefined}
+      data-result-countdown={roundResult ?? undefined}
     >
       <header className="planes-heading">
         <h2>Planes</h2>
@@ -562,6 +583,7 @@ export default function PlanesBoard({
           <button
             type="button"
             className="planes-text-button"
+            disabled={roundResult !== null}
             aria-expanded={rules}
             aria-controls="planes-guide"
             onClick={() => setRules(!rules)}
@@ -571,6 +593,7 @@ export default function PlanesBoard({
           <button
             type="button"
             className="planes-text-button"
+            disabled={roundResult !== null}
             onClick={onClose}
           >
             Fold <span aria-hidden="true">Esc</span>
@@ -710,7 +733,7 @@ export default function PlanesBoard({
               </div>
               <div className="planes-setup-tools">
                 {phase === "finished" && (
-                  <p>
+                  <p className="planes-round-summary">
                     {view?.reason === "fleet"
                       ? "Three cockpits found. Well played."
                       : view?.reason === "timeout"
@@ -720,6 +743,11 @@ export default function PlanesBoard({
                           : "The other player left the table."}
                   </p>
                 )}
+                <h3>
+                  {phase === "finished"
+                    ? "Prepare the next round"
+                    : "Arrange your fleet"}
+                </h3>
                 <p className="planes-placement-hint">
                   Drag to move. Press <kbd>R</kbd> to rotate, even while
                   dragging.
@@ -734,7 +762,11 @@ export default function PlanesBoard({
                       : "Can't place here"
                     : "Green fits · red doesn't."}
                 </p>
-                <div className="planes-plane-picker">
+                <div
+                  className="planes-plane-picker"
+                  role="group"
+                  aria-label="Select a plane"
+                >
                   {draft.map((_, i) => (
                     <button
                       type="button"
@@ -747,31 +779,34 @@ export default function PlanesBoard({
                     </button>
                   ))}
                 </div>
-                <button
-                  type="button"
-                  className="planes-secondary"
-                  disabled={!canPlace}
-                  onClick={rotate}
-                >
-                  Rotate <kbd>R</kbd>
-                </button>
-                <button
-                  type="button"
-                  className="planes-secondary"
-                  disabled={!canPlace}
-                  onClick={() => {
-                    setDraft(randomFleet());
-                    setError("");
-                  }}
-                >
-                  Shuffle layout
-                </button>
+                <div className="planes-layout-actions">
+                  <button
+                    type="button"
+                    className="planes-secondary"
+                    disabled={!canPlace}
+                    onClick={rotate}
+                  >
+                    Rotate <kbd>R</kbd>
+                  </button>
+                  <button
+                    type="button"
+                    className="planes-secondary"
+                    disabled={!canPlace}
+                    onClick={() => {
+                      setDraft(randomFleet());
+                      setError("");
+                    }}
+                  >
+                    Shuffle layout
+                  </button>
+                </div>
                 <button
                   type="button"
                   className="planes-ready"
                   disabled={
                     !connected ||
                     pending ||
+                    roundResult !== null ||
                     !opponent ||
                     Boolean(away) ||
                     Boolean(own?.ready)
@@ -804,12 +839,29 @@ export default function PlanesBoard({
           <button
             type="button"
             className="planes-text-button planes-leave"
+            disabled={roundResult !== null}
             onClick={onLeave}
           >
             {showBattle ? "Leave match · forfeit" : "Stand up"}
           </button>
         )}
       </footer>
+      {roundResult !== null && (
+        <div
+          className="planes-round-result"
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          <div className="planes-round-result-paper">
+            <h2>{view?.players[view.winner ?? 0]?.name ?? "Player"} wins!</h2>
+            <p>Another game can start in</p>
+            <strong key={roundResult} className="planes-result-count">
+              {roundResult}
+            </strong>
+          </div>
+        </div>
+      )}
       {rules && (
         <aside
           className="planes-guide"
@@ -821,6 +873,7 @@ export default function PlanesBoard({
             <button
               type="button"
               className="planes-text-button"
+              disabled={roundResult !== null}
               onClick={() => setRules(false)}
             >
               Close

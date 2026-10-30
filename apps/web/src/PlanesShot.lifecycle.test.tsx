@@ -3,7 +3,13 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import PlanesBoard from "./PlanesBoard";
-import { REDUCED_SHOT_DURATION, SHOT_DURATION } from "./PlanesShot";
+import {
+  REDUCED_SHOT_DURATION,
+  SHOT_DURATION,
+  COCKPIT_SHOT_DURATION,
+  ROUND_RESULT_DURATION,
+  shotDuration,
+} from "./PlanesShot";
 import {
   randomFleet,
   type PlanesView,
@@ -126,7 +132,7 @@ describe("shot animation and the firing lock", () => {
       expect(targets().every((b) => b.disabled)).toBe(true);
       act(() => targets()[0].click());
       expect(action).not.toHaveBeenCalled();
-      advance(SHOT_DURATION - 1);
+      advance(shotDuration({ x: 3, y: 3, result }) - 1);
       expect(targets().every((b) => b.disabled)).toBe(true);
       advance(1);
       expect(targets().every((b) => !b.disabled)).toBe(true);
@@ -187,7 +193,7 @@ describe("shot animation and the firing lock", () => {
     act(() => root.unmount());
     root = createRoot(container);
     for (const [index, call] of timeoutSpy.mock.calls.entries()) {
-      if (call[1] === SHOT_DURATION)
+      if (call[1] === SHOT_DURATION || call[1] === COCKPIT_SHOT_DURATION)
         expect(clearSpy).toHaveBeenCalledWith(
           timeoutSpy.mock.results[index].value,
         );
@@ -217,7 +223,26 @@ describe("shot animation and the firing lock", () => {
       container.querySelector('[aria-label="Opponent target grid"]'),
     ).not.toBeNull();
     expect(container.querySelector(".planes-ready")).toBeNull();
-    advance(SHOT_DURATION);
+    advance(COCKPIT_SHOT_DURATION);
+    expect(
+      container.querySelector(".planes-round-result")?.textContent,
+    ).toContain("Bob wins!");
+    expect(container.querySelector(".planes-result-count")?.textContent).toBe(
+      "3",
+    );
+    expect(
+      container.querySelector<HTMLButtonElement>(".planes-ready")?.disabled,
+    ).toBe(true);
+    advance(1000);
+    expect(container.querySelector(".planes-result-count")?.textContent).toBe(
+      "2",
+    );
+    advance(1000);
+    expect(container.querySelector(".planes-result-count")?.textContent).toBe(
+      "1",
+    );
+    advance(1000);
+    expect(container.querySelector(".planes-round-result")).toBeNull();
     expect(
       container.querySelector('[aria-label="Opponent target grid"]'),
     ).toBeNull();
@@ -256,7 +281,7 @@ describe("shot animation and the firing lock", () => {
     ).toBe("M560,25 C560,-11 146,106 146,176");
     bounds.mockRestore();
   });
-  it("replaces an outgoing animation with the next accepted incoming shot without unlocking early", () => {
+  it("finishes an outgoing flight before starting the queued incoming shot", () => {
     current = { ...current, turn: 0 };
     render();
     current = {
@@ -276,11 +301,146 @@ describe("shot animation and the firing lock", () => {
     render();
     advance(400);
     incoming();
+    expect(
+      container.querySelector(".planes-shot")?.getAttribute("data-shot-id"),
+    ).toBe("0:0");
+    expect(
+      container.querySelector(".planes-own-grid .paper-cell--body"),
+    ).toBeNull();
     advance(SHOT_DURATION - 400);
-    expect(targets()[0].disabled).toBe(true);
-    advance(400);
-    expect(targets()[0].disabled).toBe(true);
+    expect(
+      container.querySelector(".planes-shot")?.getAttribute("data-shot-id"),
+    ).toBe("1:0");
+    expect(targets().every((b) => b.disabled)).toBe(true);
+    advance(SHOT_DURATION - 1);
+    expect(targets()[1].disabled).toBe(true);
+    advance(1);
     expect(targets()[1].disabled).toBe(false);
+  });
+  it("plays a coalesced three-shot exchange completely before allowing another shot", () => {
+    current = { ...current, turn: 0 };
+    render();
+    current = {
+      ...current,
+      revision: 4,
+      turn: 1,
+      shots: [
+        [
+          { x: 0, y: 0, result: "miss" },
+          { x: 1, y: 0, result: "miss" },
+        ],
+        [{ x: 3, y: 3, result: "body" }],
+      ],
+      event: {
+        id: 4,
+        at: Date.now(),
+        actor: "a",
+        target: "b",
+        result: "miss",
+        winner: null,
+      },
+    };
+    render();
+    expect(
+      container.querySelector(".planes-shot")?.getAttribute("data-shot-id"),
+    ).toBe("0:0");
+    advance(SHOT_DURATION);
+    expect(
+      container.querySelector(".planes-shot")?.getAttribute("data-shot-id"),
+    ).toBe("1:0");
+    advance(SHOT_DURATION);
+    expect(
+      container.querySelector(".planes-shot")?.getAttribute("data-shot-id"),
+    ).toBe("0:1");
+    advance(SHOT_DURATION);
+    expect(container.querySelector(".planes-shot")).toBeNull();
+    expect(
+      container.querySelector(".planes-main-grid .planes-shot-note")
+        ?.textContent,
+    ).toContain("B1");
+  });
+  it("waits for an existing flight and the queued winning explosion before the victory countdown", () => {
+    current = { ...current, turn: 0 };
+    render();
+    current = {
+      ...current,
+      revision: 2,
+      turn: 1,
+      shots: [[{ x: 0, y: 0, result: "miss" }], []],
+      event: {
+        id: 2,
+        at: Date.now(),
+        actor: "a",
+        target: "b",
+        result: "miss",
+        winner: null,
+      },
+    };
+    render();
+    advance(400);
+    incoming("head", true);
+    expect(
+      container.querySelector(".planes-shot")?.getAttribute("data-shot-id"),
+    ).toBe("0:0");
+    advance(SHOT_DURATION - 400);
+    expect(container.querySelector(".planes-shot-explosion")).not.toBeNull();
+    expect(container.querySelector(".planes-round-result")).toBeNull();
+    advance(COCKPIT_SHOT_DURATION - 1);
+    expect(container.querySelector(".planes-round-result")).toBeNull();
+    advance(1);
+    expect(container.querySelector(".planes-result-count")?.textContent).toBe(
+      "3",
+    );
+  });
+  it("ignores click spam without restarting the active animation or submitting a shot", () => {
+    render();
+    incoming();
+    advance(500);
+    for (let i = 0; i < 30; i++) act(() => targets()[i].click());
+    expect(action).not.toHaveBeenCalled();
+    expect(
+      container.querySelector(".planes-shot")?.getAttribute("data-shot-id"),
+    ).toBe("1:0");
+    advance(SHOT_DURATION - 500);
+    expect(targets()[0].disabled).toBe(false);
+  });
+  it("suppresses a historical victory on mount and on fold/reopen during the result", () => {
+    current = { ...current, phase: "finished", winner: 0, reason: "fleet" };
+    render();
+    expect(container.querySelector(".planes-round-result")).toBeNull();
+    current = {
+      ...current,
+      phase: "playing",
+      winner: null,
+      reason: null,
+      turn: 1,
+    };
+    render();
+    incoming("head", true);
+    advance(COCKPIT_SHOT_DURATION);
+    expect(container.querySelector(".planes-round-result")).not.toBeNull();
+    render(false);
+    render();
+    expect(container.querySelector(".planes-round-result")).toBeNull();
+  });
+  it("clears the victory gate on a new round without sending any rematch command", () => {
+    render();
+    incoming("head", true);
+    advance(COCKPIT_SHOT_DURATION);
+    current = {
+      ...current,
+      round: 2,
+      phase: "setup",
+      winner: null,
+      reason: null,
+      shots: [[], []],
+      event: null,
+    };
+    render();
+    expect(container.querySelector(".planes-round-result")).toBeNull();
+    expect(action).not.toHaveBeenCalled();
+    advance(ROUND_RESULT_DURATION);
+    expect(action).not.toHaveBeenCalled();
   });
   it("keeps your sheet first and equally detailed, and retains the incoming coordinate", () => {
     render();
