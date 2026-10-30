@@ -20,6 +20,8 @@ import {
   type ClientMessage,
 } from "../../packages/shared/protocol";
 import { HomeAllocationError, type HomeAssignments } from "./home-assignments";
+import { resolveRoomBoatCollision } from "./boat-collisions";
+import { BOAT_WATERLINE } from "../../packages/shared/boats";
 import { PlanesTable, TableError, type TableActor } from "./planes-table";
 import {
   PLANES_TABLE,
@@ -41,6 +43,7 @@ export type SessionState = {
   punchAt?: number;
   stunnedUntil?: number;
   punchImmuneUntil?: number;
+  boatPoseAt?: number;
   /** Optional for connection attachments created before home allocation shipped. */
   home?: HomeAssignment;
   nameAt?: number;
@@ -405,6 +408,15 @@ export class RoomCore {
       const pose = consume(current.pose, now, 10, 3);
       // Dropping excess poses absorbs ordinary network batching without an error storm.
       if (!pose) return;
+      // Only the authority advances this revision. In-flight pre-impact poses
+      // cannot overwrite a correction before the driver has applied it.
+      if (
+        (message.pose.boatImpactRevision !== undefined ||
+          current.player.boat !== undefined) &&
+        message.pose.boatImpactRevision !==
+          (current.player.boatImpactRevision ?? 0)
+      )
+        return;
       const { seatId: _ignored, ...clientPose } = message.pose;
       const player = {
         ...current.player,
@@ -420,8 +432,31 @@ export class RoomCore {
             ? "standing"
             : (clientPose.posture ?? current.player.posture),
       };
-      connection.setState({ ...current, pose, player });
-      this.broadcast({ type: "pose", player }, connection);
+      if (player.boat)
+        player.boat =
+          player.vehicle === "boat"
+            ? {
+                position: [player.position[0], player.position[2]],
+                yaw: player.yaw,
+                velocity: player.boat.velocity,
+              }
+            : { ...player.boat, velocity: [0, 0] };
+      if (player.vehicle === "boat" && player.boat) {
+        player.position = [
+          player.position[0],
+          BOAT_WATERLINE,
+          player.position[2],
+        ];
+        player.speed =
+          player.boat.velocity[0] * Math.sin(player.yaw) +
+          player.boat.velocity[1] * Math.cos(player.yaw);
+      }
+      connection.setState({ ...current, pose, player, boatPoseAt: now });
+      resolveRoomBoatCollision(connection, current, this.active(), now);
+      this.broadcast(
+        { type: "pose", player: connection.state!.player },
+        connection,
+      );
       return;
     }
     if (message.type === "activity") {

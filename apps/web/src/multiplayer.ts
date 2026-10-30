@@ -22,6 +22,7 @@ import {
   type PlayerPose,
   type PlayerPresence,
   type ServerMessage,
+  type BoatPose,
 } from "../../../packages/shared/protocol";
 import { syncOnlineSeats } from "./bench-registry";
 import { readPlayerName, savePlayerName } from "./player-name";
@@ -123,6 +124,16 @@ export class MultiplayerRoom {
   private lastSentAt = 0;
   private sentPoses = 0;
   private receivedPoses = 0;
+  private boatRevision = 0;
+  private pendingBoatImpact: Extract<
+    ServerMessage,
+    { type: "boat-impact" }
+  > | null = null;
+  takeBoatImpact() {
+    const impact = this.pendingBoatImpact;
+    this.pendingBoatImpact = null;
+    return impact;
+  }
   private seats: Record<string, string> = {};
   private pending = new Map<
     string,
@@ -309,6 +320,8 @@ export class MultiplayerRoom {
   }
   /** Shared by the real socket and the isolated browser transport. */
   protected connectionClosed() {
+    this.pendingBoatImpact = null;
+    this.boatRevision = 0;
     this.homeAcknowledged = false;
     this.remotes.clear();
     this.chatBubbles.clear();
@@ -418,6 +431,13 @@ export class MultiplayerRoom {
   }
   protected receive(message: ServerMessage) {
     switch (message.type) {
+      case "boat-impact":
+        if (message.revision > this.boatRevision) {
+          this.boatRevision = message.revision;
+          this.pendingBoatImpact = message;
+          this.sentPose = "";
+        }
+        break;
       case "bubble-chat": {
         if (message.id === this.view.selfId || !this.remotes.has(message.id))
           break;
@@ -477,6 +497,9 @@ export class MultiplayerRoom {
         break;
       }
       case "snapshot": {
+        this.boatRevision =
+          message.players.find((p) => p.id === message.selfId)
+            ?.boatImpactRevision ?? 0;
         if (typeof message.serverTime === "number")
           syncWorldTime(message.serverTime);
         if (message.weather === null || validLakeWeather(message.weather))
@@ -614,6 +637,12 @@ export class MultiplayerRoom {
       animation: String(sample.animation ?? "Idle_Neutral"),
       activity: String(sample.activity ?? "none"),
       vehicle: vehicleKind(sample.vehicle),
+      ...((sample.boat ?? this.lastPose?.boat)
+        ? {
+            boat: (sample.boat ?? this.lastPose?.boat) as BoatPose,
+            boatImpactRevision: this.boatRevision,
+          }
+        : {}),
       ...(sample.posture === "standing" ||
       sample.posture === "crouching" ||
       sample.posture === "prone"

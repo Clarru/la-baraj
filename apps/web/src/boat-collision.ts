@@ -1,6 +1,8 @@
 import type RAPIER from "@dimforge/rapier3d-compat";
 import { BOAT_DIMENSIONS } from "./boat-geometry";
 import { LAKE_LEVEL } from "./swim-motion";
+import { applyBoatImpact, type BoatMotionState } from "./boat-motion";
+import type { BoatPose } from "../../../packages/shared/boats";
 
 const { beam, bowExtent, sternExtent } = BOAT_DIMENSIONS;
 /** Hull box: full beam and length, 0.7 m tall (world y 0.10..0.80, clearing the 0.65..0.89 dock deck slab), riding above the lakebed. */
@@ -14,6 +16,10 @@ const LOOK_AHEAD = 0.3;
 /** Limit each conservative angular sweep to about one degree. */
 const TURN_STEP = 0.02;
 const HULL_RADIUS = Math.hypot(beam / 2, Math.max(bowExtent, sternExtent));
+// Other boats use the shared room response, rather than an infinite-mass
+// local stop. Their moored colliders remain solid to walking/swimming players.
+const worldObstacle = (c: RAPIER.Collider) =>
+  !(c.parent()?.userData as { remoteBoat?: boolean } | undefined)?.remoteBoat;
 
 /**
  * Test the complete bow/stern sweep before accepting a new heading. Each
@@ -62,6 +68,7 @@ export function boatTurnBlocked(
         undefined,
         undefined,
         exclude,
+        worldObstacle,
       )
     )
       return true;
@@ -107,6 +114,49 @@ export function boatHullBlocked(
     undefined,
     undefined,
     exclude,
+    worldObstacle,
   );
   return hit !== null;
+}
+
+/** Apply only horizontal momentum; world obstacles take precedence over separation. */
+export function applyBoatBodyImpact(
+  world: RAPIER.World,
+  rapier: typeof RAPIER,
+  body: RAPIER.RigidBody,
+  motion: BoatMotionState,
+  boat: BoatPose,
+) {
+  const p = body.translation(),
+    [x, z] = boat.position;
+  const blocked = boatHullBlocked(world, rapier, {
+    x: p.x,
+    z: p.z,
+    yaw: motion.yaw,
+    dx: x - p.x,
+    dz: z - p.z,
+    exclude: body,
+  });
+  if (!blocked) body.setTranslation({ x, y: p.y, z }, true);
+  const at = body.translation();
+  const yaw = boatTurnBlocked(world, rapier, {
+    x: at.x,
+    z: at.z,
+    fromYaw: motion.yaw,
+    toYaw: boat.yaw,
+    exclude: body,
+  })
+    ? motion.yaw
+    : boat.yaw;
+  applyBoatImpact(motion, { ...boat, yaw });
+  const v = body.linvel();
+  body.setLinvel(
+    {
+      x: Math.sin(motion.yaw) * motion.speed + motion.driftX,
+      y: v.y,
+      z: Math.cos(motion.yaw) * motion.speed + motion.driftZ,
+    },
+    true,
+  );
+  return !blocked;
 }

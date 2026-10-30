@@ -1,4 +1,5 @@
 import * as THREE from "three";
+export { BOAT_DIMENSIONS } from "../../../packages/shared/boats";
 
 /** Shipped runabout GLBs: the detailed boat and its light remote-player LOD. */
 export const RUNABOUT_IDS = {
@@ -13,14 +14,6 @@ export const RUNABOUT_IDS = {
  * Varnish/DeckPlanks centreline of Lake_Runabout.glb: it rises from 0.76 m at
  * the windshield to 0.83 m at the bow, 0.80 m at mid-foredeck (z ≈ 2.5).
  */
-export const BOAT_DIMENSIONS = {
-  length: 6.146,
-  beam: 2.207,
-  bowExtent: 3.683,
-  sternExtent: 2.463,
-  draft: 0.5,
-  deckHeight: 0.8,
-} as const;
 
 /**
  * Character root relative to the `DriverSeat` empty while driving. The empty is

@@ -4,6 +4,7 @@ import { useCruceCharacter } from "./use-cruce-character";
 import { cruceSeatSide } from "../../../packages/shared/cruce-station";
 import {
   Suspense,
+  Fragment,
   useEffect,
   useMemo,
   useRef,
@@ -39,6 +40,7 @@ import { BOAT_DRIVER_OFFSET_VECTOR } from "./boat-geometry";
 import { BOAT_TUNING, boatWheelTarget, inferBoatTurnRate } from "./boat-motion";
 import { AFK_AFTER_MS } from "../../../packages/shared/protocol";
 import { postureFromAnimation, stanceBaseAnimation } from "./stance-motion";
+import { RemoteMooredBoat } from "./RemoteMooredBoat";
 
 // Only the isolated local browser lab may shorten the visual timeout for QA.
 const displayAfkAfter =
@@ -55,7 +57,10 @@ export function MultiplayerPlayers({ room }: { room: MultiplayerRoom }) {
   return (
     <RemoteScooterFleet>
       {ids.map((id) => (
-        <RemoteAvatar key={id} id={id} room={room} />
+        <Fragment key={id}>
+          <RemoteAvatar id={id} room={room} />
+          <RemoteMooredBoat id={id} room={room} />
+        </Fragment>
       ))}
     </RemoteScooterFleet>
   );

@@ -1,5 +1,7 @@
 import { parseCruceAction, type CruceAction, type CruceView } from "./cruce.ts";
 import { isBubbleText } from "./bubble-chat.ts";
+import { BOAT_MAX_SPEED, type BoatPose } from "./boats.ts";
+export type { BoatPose } from "./boats.ts";
 import type { LakeWeather } from "./weather.ts";
 import {
   legalFleet,
@@ -29,6 +31,10 @@ export type PlayerPose = {
   animation: string;
   activity: string;
   vehicle: "none" | "scooter" | "boat";
+  /** Personal boat, including its moored position while the owner is on foot. */
+  boat?: BoatPose;
+  /** Acknowledges only server-issued horizontal boat corrections. */
+  boatImpactRevision?: number;
   /** Explicit posture keeps lowered players synchronized and punch-ineligible. */
   posture?: "standing" | "crouching" | "prone";
   speed?: number;
@@ -75,6 +81,7 @@ export type ClientMessage =
     }
   | { type: "sync" };
 export type ServerMessage =
+  | { type: "boat-impact"; revision: number; boat: BoatPose }
   | {
       type: "snapshot";
       version: typeof PROTOCOL_VERSION;
@@ -113,6 +120,24 @@ export type ServerMessage =
 
 function object(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+function validBoat(value: unknown): value is BoatPose {
+  if (!object(value)) return false;
+  const pair = (v: unknown, limit: number): v is [number, number] =>
+    Array.isArray(v) &&
+    v.length === 2 &&
+    v.every(
+      (n) =>
+        typeof n === "number" && Number.isFinite(n) && Math.abs(n) <= limit,
+    );
+  return (
+    pair(value.position, 5000) &&
+    pair(value.velocity, BOAT_MAX_SPEED) &&
+    Math.hypot(...value.velocity) <= BOAT_MAX_SPEED + 0.001 &&
+    typeof value.yaw === "number" &&
+    Number.isFinite(value.yaw) &&
+    Math.abs(value.yaw) <= 100 * Math.PI
+  );
 }
 function label(value: unknown, max = 48): value is string {
   return (
@@ -271,6 +296,12 @@ export function parseClientMessage(raw: string): ClientMessage | null {
         !label(pose.animation) ||
         !label(pose.activity) ||
         !["none", "scooter", "boat"].includes(pose.vehicle as string) ||
+        (pose.boat !== undefined &&
+          (!validBoat(pose.boat) || pose.boatImpactRevision === undefined)) ||
+        (pose.boatImpactRevision !== undefined &&
+          (!Number.isSafeInteger(pose.boatImpactRevision) ||
+            Number(pose.boatImpactRevision) < 0 ||
+            Number(pose.boatImpactRevision) > 1e9)) ||
         (pose.posture !== undefined &&
           !["standing", "crouching", "prone"].includes(
             pose.posture as string,
@@ -291,6 +322,24 @@ export function parseClientMessage(raw: string): ClientMessage | null {
           animation: pose.animation,
           activity: pose.activity,
           vehicle: pose.vehicle as PlayerPose["vehicle"],
+          ...(pose.boat === undefined
+            ? {}
+            : {
+                boat: {
+                  position: [...(pose.boat as BoatPose).position] as [
+                    number,
+                    number,
+                  ],
+                  yaw: (pose.boat as BoatPose).yaw,
+                  velocity: [...(pose.boat as BoatPose).velocity] as [
+                    number,
+                    number,
+                  ],
+                },
+              }),
+          ...(pose.boatImpactRevision === undefined
+            ? {}
+            : { boatImpactRevision: pose.boatImpactRevision as number }),
           ...(pose.posture === undefined
             ? {}
             : { posture: pose.posture as PlayerPose["posture"] }),
