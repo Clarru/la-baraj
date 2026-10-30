@@ -15,7 +15,7 @@ import { setActivityPose, type ActivityKind } from "./activity-state";
 import { Campfire, type FireMetrics } from "./campfire";
 import { Bench } from "./Bench";
 import { fireIgnitionTime, fireLightingDuration } from "./character-actions";
-import { getBmxState } from "./bmx-state";
+import { vehicleOccupied } from "./boat-state";
 import {
   activitySeatIsValid,
   advanceActivity,
@@ -265,7 +265,7 @@ export function WorldActivities({
       if (
         event.repeat ||
         paused ||
-        getBmxState().mounted ||
+        vehicleOccupied() ||
         (target instanceof HTMLElement &&
           (target.isContentEditable ||
             ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName)))
@@ -441,7 +441,7 @@ export function WorldActivities({
   }, [paused, commit, camera, lit, startLighting, clear, room, requestSeat]);
 
   useFrame((_, dt) => {
-    if (getBmxState().mounted) {
+    if (vehicleOccupied()) {
       if (state.current.kind !== "none" || lastPrompt.current) clear();
       return;
     }

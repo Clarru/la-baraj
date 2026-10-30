@@ -423,5 +423,37 @@
         "Casual_Hoodie.gltf"
       ]
     }
+  ],
+  "original": [
+    {
+      "id": "Lake_Runabout",
+      "pack": "original",
+      "url": "/assets/optimized/Lake_Runabout.glb",
+      "source_path": "scripts/build-runabout.py",
+      "optimizer": "scripts/optimize-runabout.mjs",
+      "bytes": 891932,
+      "sha256": "5a72914653c234863b1fbc8d9fa0cd600185f13432f66ca27c45d55edd29db06",
+      "license": "Original project geometry and procedural textures; no third-party mesh",
+      "reference": "docs/art-direction/runabout/",
+      "animations": [],
+      "files": [
+        "Lake_Runabout.glb"
+      ]
+    },
+    {
+      "id": "Lake_Runabout_LOD",
+      "pack": "original",
+      "url": "/assets/optimized/Lake_Runabout_LOD.glb",
+      "source_path": "scripts/build-runabout.py",
+      "optimizer": "scripts/optimize-runabout.mjs",
+      "bytes": 323904,
+      "sha256": "32dc2a5dd092e794f094b00325a392f339dde2cddb21fcca526a8aefdf4cb4da",
+      "license": "Original project geometry and procedural textures; no third-party mesh",
+      "reference": "docs/art-direction/runabout/",
+      "animations": [],
+      "files": [
+        "Lake_Runabout_LOD.glb"
+      ]
+    }
   ]
 }

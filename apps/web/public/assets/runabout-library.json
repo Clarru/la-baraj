@@ -1,0 +1,40 @@
+{
+  "models": [
+    {
+      "id": "Lake_Runabout",
+      "bytes": 891932,
+      "triangles": 34879,
+      "bounds": {
+        "min": [
+          -1.1034127217382226,
+          -0.5001711574433018,
+          -2.4629690647125244
+        ],
+        "max": [
+          1.1034127217382226,
+          1.317997905337589,
+          3.683316469192505
+        ]
+      },
+      "source": "Original Blender geometry built by scripts/build-runabout.py after docs/art-direction/runabout/ concept; procedural textures generated in the same script; no third-party mesh"
+    },
+    {
+      "id": "Lake_Runabout_LOD",
+      "bytes": 323904,
+      "triangles": 4091,
+      "bounds": {
+        "min": [
+          -1.1048582928528567,
+          -0.5001258784612038,
+          -2.460979461669922
+        ],
+        "max": [
+          1.1048582928528567,
+          1.317952626355491,
+          3.684999942779541
+        ]
+      },
+      "source": "Original Blender geometry built by scripts/build-runabout.py after docs/art-direction/runabout/ concept; procedural textures generated in the same script; no third-party mesh"
+    }
+  ]
+}

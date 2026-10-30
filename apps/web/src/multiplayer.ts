@@ -51,6 +51,9 @@ export type RemotePlayer = {
   activityAt: number;
   lastInputAt?: number;
 };
+export function vehicleKind(name: unknown): PlayerPose["vehicle"] {
+  return name === "Motorboat" ? "boat" : name ? "scooter" : "none";
+}
 export function roomFromLocation() {
   const url = new URL(location.href);
   if (url.searchParams.has("room")) {
@@ -610,7 +613,7 @@ export class MultiplayerRoom {
         ) / 1000,
       animation: String(sample.animation ?? "Idle_Neutral"),
       activity: String(sample.activity ?? "none"),
-      vehicle: sample.vehicle ? "scooter" : "none",
+      vehicle: vehicleKind(sample.vehicle),
       ...(sample.posture === "standing" ||
       sample.posture === "crouching" ||
       sample.posture === "prone"

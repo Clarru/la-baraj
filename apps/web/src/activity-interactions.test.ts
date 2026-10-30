@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import type { BenchSeat } from "./seating-types";
 import {
   activityDurations,
@@ -14,6 +14,8 @@ import {
   reelActivity,
   type ActivityInteraction,
 } from "./activity-interactions";
+import { mountBoat, parkBoat, vehicleOccupied } from "./boat-state";
+import { mountVehicle, parkVehicle } from "./vehicle-state";
 
 const pose = { anchor: [4, 2, 8] as [number, number, number], facing: Math.PI };
 
@@ -252,5 +254,23 @@ describe("lighting a campfire", () => {
     }
     const centered = beginLightingFire([0, 1, 0], [0, 1, 0], 0);
     expect(centered.pose?.anchor?.every(Number.isFinite)).toBe(true);
+  });
+});
+
+describe("vehicle guard", () => {
+  afterEach(() => {
+    parkBoat([0, 0, 0], 0);
+    parkVehicle([0, 0, 0], 0);
+  });
+  it("vehicleOccupied reports a mounted boat or scooter", () => {
+    expect(vehicleOccupied()).toBe(false);
+    mountBoat();
+    expect(vehicleOccupied()).toBe(true);
+    parkBoat([0, 0, 0], 0);
+    expect(vehicleOccupied()).toBe(false);
+    mountVehicle();
+    expect(vehicleOccupied()).toBe(true);
+    parkVehicle([0, 0, 0], 0);
+    expect(vehicleOccupied()).toBe(false);
   });
 });

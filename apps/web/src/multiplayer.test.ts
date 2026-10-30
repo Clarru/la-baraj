@@ -37,7 +37,7 @@ vi.mock("partysocket", () => ({
     }
   },
 }));
-import { MultiplayerRoom } from "./multiplayer";
+import { MultiplayerRoom, vehicleKind } from "./multiplayer";
 import {
   queueCabinTransfer,
   takeCabinTransfer,
@@ -129,6 +129,27 @@ describe("friends room client", () => {
       disconnect();
     },
   );
+  it("maps vehicle names to pose vehicle kinds", () => {
+    expect(vehicleKind("Motorboat")).toBe("boat");
+    expect(vehicleKind("QuickVolt 9")).toBe("scooter");
+    expect(vehicleKind(null)).toBe("none");
+  });
+  it("publishes a motorboat as a boat pose with its speed", () => {
+    const room = new MultiplayerRoom();
+    const disconnect = room.connect(),
+      socket = sockets[0];
+    socket.open();
+    snapshot(socket);
+    room.publishMotion({
+      ...sample,
+      vehicle: "Motorboat",
+      vehicleSpeed: 6.5,
+    });
+    const packet = socket.sent.find((message) => message.type === "pose")!;
+    expect(packet.pose).toMatchObject({ vehicle: "boat", speed: 6.5 });
+    expect(parseClientMessage(JSON.stringify(packet))).toEqual(packet);
+    disconnect();
+  });
   it("publishes and validates an explicit lowered posture", () => {
     const room = new MultiplayerRoom();
     const disconnect = room.connect(),
