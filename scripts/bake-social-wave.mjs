@@ -161,7 +161,7 @@ const clip = new T.AnimationClip(
 );
 clip.blendMode = T.AdditiveAnimationBlendMode;
 const data = T.AnimationClip.toJSON(clip);
-delete data.uuid;
+data.uuid = "d6143bdd-2b5f-48b8-b372-71980450cbbe";
 fs.writeFileSync(
   "assets/character-source/social-wave.json",
   JSON.stringify({
