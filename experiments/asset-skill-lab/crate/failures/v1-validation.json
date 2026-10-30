@@ -1,0 +1,31 @@
+{
+  "technical_pass": false,
+  "errors": [
+    "Triangle budget exceeded",
+    "GLB byte budget exceeded"
+  ],
+  "triangles": 3744,
+  "reference_triangles": 1576,
+  "glb_bytes": 194688,
+  "reference_glb_bytes": 161276,
+  "primitives": 2,
+  "material_count": 1,
+  "textures": [
+    {
+      "name": "material-atlas-512",
+      "size": [
+        512,
+        512
+      ],
+      "mime": "image/webp",
+      "bytes": 8628,
+      "sha256": "184d53501fd27a78adaed70e2a0e0d6d5ee62e42adbd170210d5a31c023103c8"
+    }
+  ],
+  "dimension_error_fraction": [
+    7.07676319766648e-8,
+    0.000009384043831217603,
+    0
+  ],
+  "visual_acceptance": "Separate manual comparison required; technical pass is not a 1:1 match or runtime performance claim"
+}

@@ -1,0 +1,10 @@
+{
+  "space": "glTF scene coordinates in metres, +Y up; untested interaction proposals",
+  "sockets": {
+    "CarryGrip": [
+      0,
+      0.5,
+      0
+    ]
+  }
+}

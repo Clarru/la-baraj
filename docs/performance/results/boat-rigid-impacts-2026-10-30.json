@@ -1,0 +1,154 @@
+{
+  "date": "2026-10-30T16:08:14.326Z",
+  "machine": "Apple M4 Pro",
+  "node": "v24.22.1",
+  "baseline": "3c106da",
+  "scope": "Matched Node function kernels and real Rapier queries. Not a browser-frame, Worker-runtime, or billing benchmark.",
+  "pair": {
+    "before": {
+      "unit": "microseconds per call",
+      "median": 1.3404415999999968,
+      "trials": [
+        1.625725,
+        1.3404415999999968,
+        1.3448125000000004,
+        1.332491699999997,
+        1.3187291999999957
+      ]
+    },
+    "after": {
+      "unit": "microseconds per call",
+      "median": 4.919900000000007,
+      "trials": [
+        7.191920899999998,
+        4.919900000000007,
+        4.891475000000003,
+        4.885179200000004,
+        4.988762500000007
+      ]
+    }
+  },
+  "fiftyBoatsOneContact": {
+    "before": {
+      "unit": "microseconds per call",
+      "median": 1.7095416666666854,
+      "trials": [
+        2.2399166666666965,
+        1.8293473333333168,
+        1.6577363333333324,
+        1.6546113333333021,
+        1.7095416666666854
+      ]
+    },
+    "after": {
+      "unit": "microseconds per call",
+      "median": 13.780736333333305,
+      "trials": [
+        17.041680666666668,
+        13.497069333333343,
+        13.582514000000023,
+        14.134847333333331,
+        13.780736333333305
+      ]
+    }
+  },
+  "packed50": {
+    "after": {
+      "unit": "microseconds per call",
+      "median": 1764.5858333333322,
+      "trials": [
+        1806.5597266666662,
+        1771.2480533333337,
+        1764.5858333333322,
+        1754.3099999999988,
+        1736.0377799999999
+      ]
+    },
+    "work": 3908
+  },
+  "invalidOverlap50": {
+    "after": {
+      "unit": "microseconds per call",
+      "median": 1657.1844466666669,
+      "trials": [
+        1635.9644466666668,
+        1657.1844466666669,
+        1682.299166666665,
+        1662.3052800000005,
+        1632.4475000000045
+      ]
+    },
+    "work": 4096,
+    "budgetLimited": true
+  },
+  "worldQuery": {
+    "beforeBox": {
+      "unit": "microseconds per call",
+      "median": 1.9707540999999764,
+      "trials": [
+        2.410270800000035,
+        2.009283300000061,
+        1.9707540999999764,
+        1.8750791999999818,
+        1.947887499999979
+      ]
+    },
+    "afterConvex": {
+      "unit": "microseconds per call",
+      "median": 4.682441699999981,
+      "trials": [
+        5.008558300000004,
+        4.7993124999999965,
+        4.627408399999967,
+        4.65756250000004,
+        4.682441699999981
+      ]
+    },
+    "afterAngular": {
+      "unit": "microseconds per call",
+      "median": 3.1666291000000455,
+      "trials": [
+        3.3699916999999915,
+        3.1666291000000455,
+        3.089441600000009,
+        3.19859579999993,
+        3.120979199999965
+      ]
+    }
+  },
+  "wire": {
+    "moored": {
+      "meanBefore": 272.8333333333333,
+      "meanAfter": 254.83333333333334,
+      "maxDelta": -18,
+      "samples": 30
+    },
+    "straight": {
+      "meanBefore": 281.6666666666667,
+      "meanAfter": 278.6,
+      "maxDelta": 6,
+      "samples": 30
+    },
+    "turning": {
+      "meanBefore": 321.1666666666667,
+      "meanAfter": 307.76666666666665,
+      "maxDelta": 21,
+      "samples": 30
+    },
+    "impact": {
+      "meanBefore": 321.1666666666667,
+      "meanAfter": 296.8666666666667,
+      "maxDelta": 6,
+      "samples": 30
+    }
+  },
+  "constraints": {
+    "poseMinimumIntervalMs": 120,
+    "newServices": 0,
+    "newTextures": 0,
+    "newVisibleMeshes": 0,
+    "contactWorkLimit": 4096,
+    "maxContactIsland": 12,
+    "maxContinuousEvents": 32
+  }
+}

@@ -1,0 +1,8 @@
+Use case: stylized-concept. Asset type: reusable flat base-color texture atlas for low-poly 3D props, NOT a concept render.
+The attached images show the target Quaternius-like material finish: image 1 is gray weathered iron on an actual lantern; image 2 is warm wood with darker timber rails on an actual crate. Match their restrained hand-painted detail density and muted colors.
+Generate ONLY a square flat material texture, no objects, no lighting, no cast shadows, no perspective, no text, no borders. The entire square is divided into exactly FOUR equal vertical strips, each occupying 25% of the width from top to bottom:
+strip 1 leftmost: muted cool gray painted iron, medium value matching the lantern, broad soft mottled painterly patches, very subtle wear, NO black holes or rivets;
+strip 2: slightly lighter cool gray iron of the same family for exposed bevels and caps, sparse subtle edge-like scuff strokes running vertically, no bright white;
+strip 3: medium warm honey-brown timber matching the crate's light board faces, visible long simple vertical wood-grain streaks, sparse knots, broad low-frequency brush variation;
+strip 4 rightmost: darker warm brown timber matching the crate's structural rails, vertical wood grain and restrained brown streaks.
+This is unlit diffuse/base-color only, color must not contain 3D highlights, ambient occlusion or directional shadows. Keep all detail readable after downsampling to 256 or 512 pixels; avoid photographic grain and noisy micropores. Each strip must be internally seamless vertically. No gaps between strips. No collage of props. Fill the canvas edge to edge.

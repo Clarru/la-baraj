@@ -1,5 +1,10 @@
 # La Baraj — shared workspace rules
 
+## 3D prop production
+
+- For new or reconstructed static 3D props, use [.agents/skills/la-baraj-3d-assets/SKILL.md](.agents/skills/la-baraj-3d-assets/SKILL.md). Reuse existing models/materials/helpers first, establish measured reference budgets, and inspect the exported GLB under matched views.
+- The two-prop research in `experiments/asset-skill-lab/` is experimental. Its technical passes do not establish a perfect visual match or authorize replacing production assets. Character and vegetation workflows remain separate.
+
 ## Product naming
 
 - The game name is **La Baraj** everywhere players or repository visitors see a product name.

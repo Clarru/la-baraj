@@ -1,3 +1,5 @@
+import { CruceTurnStatus } from "./CruceTurnStatus";
+import { CRUCE_CARD_FRAME } from "../../../packages/shared/cruce-card-frame";
 import {
   useEffect,
   useRef,
@@ -64,6 +66,10 @@ export function SuitMark({ suit }: { suit: number }) {
     </svg>
   );
 }
+const cardFrameStyle: CSSProperties = {
+  aspectRatio: `${CRUCE_CARD_FRAME.width} / ${CRUCE_CARD_FRAME.height}`,
+  borderRadius: `${(CRUCE_CARD_FRAME.radius / CRUCE_CARD_FRAME.width) * 100}% / ${(CRUCE_CARD_FRAME.radius / CRUCE_CARD_FRAME.height) * 100}%`,
+};
 export function CruceCard({
   card,
   hidden = false,
@@ -75,6 +81,7 @@ export function CruceCard({
     <span
       className="cruce-card cruce-card--back"
       aria-label="Carte cu fața în jos"
+      style={cardFrameStyle}
     ></span>
   ) : (
     <span
@@ -82,30 +89,13 @@ export function CruceCard({
       role="img"
       aria-label={`${cardName(card)}, ${cardPoints(card)} puncte`}
       style={
-        { backgroundImage: `url("${cruceCardUrl(card)}")` } as CSSProperties
+        {
+          ...cardFrameStyle,
+          backgroundImage: `url("${cruceCardUrl(card)}")`,
+        } as CSSProperties
       }
     />
   );
-}
-function phaseTitle(v: CruceView) {
-  if (
-    !["lobby", "finished", "round-end"].includes(v.phase) &&
-    v.players.some((p) => p && !p.online)
-  )
-    return "Partidă în pauză";
-  if (v.phase === "lobby") return cruceLobby(v)!.title;
-  if (v.phase === "finished")
-    return v.winner === null
-      ? "Partida s-a oprit"
-      : `${cruceTeams(v.settings.mode) ? `Echipa ${v.winner + 1}` : v.players[v.winner]?.name} a câștigat`;
-  if (v.phase === "round-end") return "Runda s-a încheiat";
-  if (v.phase === "trick")
-    return `${v.players[v.trickWinner!]?.name} duce mâna`;
-  const actor =
-    v.turn === v.you
-      ? "E rândul tău"
-      : `E rândul lui ${v.players[v.turn ?? 0]?.name ?? "un jucător"}`;
-  return `${actor} · ${{ cut: "tai sau bați cărțile", bidding: "licitație", trump: "alegerea tromfului", exchange: "împărțirea talonului", playing: "joacă o carte" }[v.phase]}`;
 }
 export type CruceBoardProps = {
   view: CruceView | null;
@@ -116,6 +106,7 @@ export type CruceBoardProps = {
   onLeave: () => void;
   onSit: (s: CruceSeat) => Promise<boolean>;
   leaveRequest?: number;
+  onSync?: () => void;
 };
 export default function CruceBoard({
   view: v,
@@ -126,14 +117,11 @@ export default function CruceBoard({
   onLeave,
   onSit,
   leaveRequest = 0,
+  onSync,
 }: CruceBoardProps) {
   const [pending, setPending] = useState(false),
     [error, setError] = useState("");
-  const [draft, setDraft] = useState<CruceSettings>(
-    v?.settings ?? DEFAULT_CRUCE_SETTINGS,
-  );
-  const [announce, setAnnounce] = useState(false),
-    [giveTo, setGiveTo] = useState<CruceSeat | null>(null);
+  const [giveTo, setGiveTo] = useState<CruceSeat | null>(null);
   const [rules, setRules] = useState(false),
     [now, setNow] = useState(worldNow);
   const [changingSeat, setChangingSeat] = useState(false);
@@ -143,19 +131,11 @@ export default function CruceBoard({
   const ref = useRef<HTMLElement>(null),
     busy = useRef(false);
   useEffect(() => {
-    if (v) setDraft(v.settings);
-  }, [
-    v?.settings.mode,
-    v?.settings.target,
-    v?.settings.iber,
-    v?.settings.cheating,
-  ]);
-  useEffect(() => {
-    setAnnounce(false);
     setGiveTo(null);
   }, [v?.round, v?.turn, v?.phase]);
   useEffect(() => {
     if (!open) return;
+    setNow(worldNow());
     const previous = document.activeElement;
     ref.current?.focus({ preventScroll: true });
     const timer = setInterval(() => setNow(worldNow()), 1000);
@@ -165,6 +145,11 @@ export default function CruceBoard({
         previous.focus({ preventScroll: true });
     };
   }, [open]);
+  useEffect(() => {
+    // Phase/turn changes can remove the focused Ready/bid control.
+    if (open && document.activeElement === document.body)
+      ref.current?.focus({ preventScroll: true });
+  }, [open, v?.phase, v?.turn]);
   useEffect(() => {
     if (leaveSequence.current === leaveRequest) return;
     leaveSequence.current = leaveRequest;
@@ -201,9 +186,6 @@ export default function CruceBoard({
     ),
   ];
   const lobby = v ? cruceLobby(v) : null;
-  const tooManyPlayers = Boolean(
-    v && v.players.filter(Boolean).length > activeCruceSeats(draft.mode).length,
-  );
   const requestLeave = () => {
     if (v && !["lobby", "finished", "round-end"].includes(v.phase))
       setConfirmLeave(true);
@@ -211,14 +193,8 @@ export default function CruceBoard({
   };
   const name = (seat: number) => v?.players[seat]?.name ?? "Loc liber";
   // Keep the same compass order for public plays and the seats around the square.
-  const tablePosition = (seat: CruceSeat) => {
-    const index = active.indexOf(seat);
-    const position =
-      you === null
-        ? index
-        : (index - active.indexOf(you) + active.length) % active.length;
-    return active.length === 2 ? position * 2 : position;
-  };
+  const tablePosition = (seat: CruceSeat) => (seat - (you ?? 0) + 4) % 4;
+  const isYourBid = v?.phase === "bidding" && you !== null && v.turn === you;
   const act = async (action: CruceAction) => {
     if (!v || busy.current) return;
     busy.current = true;
@@ -285,6 +261,7 @@ export default function CruceBoard({
     <div className="cruce-overlay" data-testid="cruce-board">
       <section
         className="cruce-board"
+        lang="ro"
         role="dialog"
         aria-modal="true"
         aria-labelledby="cruce-title"
@@ -322,9 +299,9 @@ export default function CruceBoard({
               (3), pătrar (4), zecar (10), as (11).
             </p>
             <p>
-              Licitezi o singură dată: I înseamnă 33 de puncte, II înseamnă 66,
-              până la VI — 198. Poți spune „Pas”. Cel care licitează cel mai
-              mult alege tromful și iese primul.
+              Licitezi o singură dată: 1 înseamnă 33 de puncte, 2 înseamnă 66,
+              până la 6 — 198. Poți spune „Pas”. Cel care licitează cel mai mult
+              alege tromful și iese primul.
             </p>
             <p>
               Răspunzi obligatoriu la culoare. Dacă nu ai culoarea cerută, dai
@@ -333,10 +310,10 @@ export default function CruceBoard({
             </p>
             <p>
               Treiarul și pătrarul de aceeași culoare formează un anunț: 20 de
-              puncte, sau 40 dacă sunt tromfi. Bifează „Anunț” înainte să ieși
-              cu una dintre ele, cât timp le ai pe amândouă. La iber trebuie să
-              mărești pe culoarea cerută, când poți și nu s-a dat deja un tromf
-              peste ea.
+              puncte, sau 40 dacă sunt tromfi. Anunțul se strigă automat când
+              ieși cu una dintre ele și le ai pe amândouă în mână. La iber
+              trebuie să mărești pe culoarea cerută, când poți și nu s-a dat
+              deja un tromf peste ea.
             </p>
             <p>
               Scorul rundei este partea întreagă din punctele adunate împărțite
@@ -345,12 +322,11 @@ export default function CruceBoard({
               egalitate se mai joacă.
             </p>
             <p>
-              În 4 standard, dacă tai, se licitează din 3 cărți și se anunță
-              tromful înaintea restului; dacă bați, se licitează din toate cele
-              6, iar prima carte stabilește tromful. În 3 standard se licitează
-              din 4 și apoi se mai primesc 4. În 3 cu talon, câștigătorul
-              licitației ia cele 3 cărți rămase și dă câte una fiecărui
-              adversar.
+              Cărțile se împart automat. În 4 standard se licitează din toate
+              cele 6, iar prima carte stabilește tromful. În 3 standard se
+              licitează din 4 și apoi se mai primesc 4. În 3 cu talon,
+              câștigătorul licitației ia cele 3 cărți rămase și dă câte una
+              fiecărui adversar.
             </p>
             {v?.settings.cheating && (
               <p>
@@ -381,16 +357,46 @@ export default function CruceBoard({
                 className={`cruce-table-stage${v.hand.length ? "" : " cruce-table-stage--no-hand"}`}
               >
                 <div
-                  className={`cruce-felt${lobby ? " cruce-felt--lobby" : ""}`}
+                  className={`cruce-felt${lobby ? " cruce-felt--lobby" : ""}${isYourBid ? " cruce-felt--bidding" : ""}`}
                 >
                   {active.map((seat) => {
                     const labelPosition = tablePosition(seat);
                     const p = v.players[seat];
+                    const seatBid = v.bids[seat];
                     return (
                       <div
                         key={seat}
                         className={`cruce-player cruce-player--${labelPosition}${v.turn === seat ? " cruce-player--turn" : ""}${you === seat ? " cruce-player--you" : ""}`}
                       >
+                        {isYourBid && seat === you && (
+                          <div
+                            className="cruce-auction"
+                            aria-label="Licitația ta"
+                          >
+                            <div className="cruce-bids" aria-label="Licitație">
+                              <button
+                                disabled={!myTurn || disabled}
+                                onClick={() =>
+                                  void act({ kind: "bid", value: 0 })
+                                }
+                              >
+                                Pas
+                              </button>
+                              {[1, 2, 3, 4, 5, 6].map((b) => (
+                                <button
+                                  key={b}
+                                  disabled={!myTurn || disabled || b <= v.bid}
+                                  onClick={() =>
+                                    void act({ kind: "bid", value: b })
+                                  }
+                                >
+                                  <strong>{b}</strong>
+                                  <span>{b * 33}</span>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                         <strong title={p?.name}>
                           {p
                             ? `${p.name}${seat === you ? " · Tu" : ""}`
@@ -400,76 +406,83 @@ export default function CruceBoard({
                           {cruceTeams(v.settings.mode)
                             ? `Echipa ${(seat % 2) + 1} · `
                             : ""}
-                          {v.bids[seat] === null
-                            ? p?.ready
-                              ? "Pregătit"
-                              : ""
-                            : v.bids[seat] === 0
-                              ? "Pas"
-                              : `Licitație ${v.bids[seat]} · ${v.bids[seat]! * 33}`}
                           {v.handCounts[seat] > 0
-                            ? ` · ${v.handCounts[seat]} cărți`
+                            ? `${v.handCounts[seat]} cărți`
+                            : p?.ready
+                              ? "Pregătit"
+                              : ""}
+                          {v.phase === "bidding" && v.bids[seat] === 0
+                            ? " · Pas"
                             : ""}
                         </span>
                         {!p && (you === null || changingSeat) && (
                           <button
+                            aria-label={`Ocupă locul ${CRUCE_SEAT_LABELS[seat]}`}
                             disabled={disabled || !between}
                             onClick={() => void sit(seat)}
                           >
-                            Ocupă locul {CRUCE_SEAT_LABELS[seat]}
+                            Așază-te
                           </button>
                         )}
-                        {p && seat !== you && v.handCounts[seat] > 0 && (
-                          <div
-                            className="cruce-hidden-hand"
-                            aria-label={`${p.name} are ${v.handCounts[seat]} cărți ascunse`}
+                        {p && seatBid !== null && seatBid > 0 && (
+                          <span
+                            key={`${v.round}:bid:${seatBid}`}
+                            className={`cruce-call${v.phase === "bidding" ? " cruce-call--fresh" : ""}`}
+                            aria-label={`${p.name} a strigat ${seatBid}`}
                           >
-                            {Array.from(
-                              { length: v.handCounts[seat] },
-                              (_, i) => (
-                                <CruceCard hidden key={i} />
-                              ),
-                            )}
-                          </div>
+                            <strong>{seatBid}</strong>
+                          </span>
                         )}
                       </div>
                     );
                   })}
-                  <div className="cruce-center">
-                    {v.stockCount > 0 && (
-                      <div className="cruce-stock">
-                        <CruceCard hidden />
-                        <span>
-                          {v.stockCount} în{" "}
-                          {v.settings.mode === "duel" ? "talon" : "talon"}
-                        </span>
+                  <div
+                    className={`cruce-center${v.trick.length ? "" : " cruce-center--empty"}`}
+                  >
+                    <CruceTurnStatus
+                      view={v}
+                      connected={connected}
+                      now={now}
+                      onSync={onSync}
+                      error={error}
+                    />
+                    <div className="cruce-cards-zone">
+                      <div
+                        className={`cruce-trick${active.length === 2 ? " cruce-trick--duel" : ""}`}
+                      >
+                        {v.trick.map((p) => (
+                          <div
+                            className={`cruce-played cruce-played--${tablePosition(p.seat)}`}
+                            key={p.seat}
+                            title={name(p.seat)}
+                            role="group"
+                            aria-label={`Carte jucată de ${name(p.seat)}`}
+                          >
+                            <span>{name(p.seat)}</span>
+                            <CruceCard card={p.card} />
+                            {p.announcement > 0 && (
+                              <strong>+{p.announcement}</strong>
+                            )}
+                          </div>
+                        ))}
                       </div>
-                    )}
-                    <div className="cruce-trick">
-                      {v.trick.map((p) => (
-                        <div
-                          className={`cruce-played cruce-played--${tablePosition(p.seat)}`}
-                          key={p.seat}
-                          title={name(p.seat)}
-                          role="group"
-                          aria-label={`Carte jucată de ${name(p.seat)}`}
-                        >
-                          <span>{name(p.seat)}</span>
-                          <CruceCard card={p.card} />
-                          {p.announcement > 0 && (
-                            <strong>+{p.announcement}</strong>
-                          )}
-                        </div>
-                      ))}
                     </div>
-                    {!v.trick.length && (
-                      <p className="cruce-notice">
-                        {lobby
-                          ? `${lobby.occupied} din ${lobby.total} locuri ocupate`
-                          : v.notice}
-                      </p>
-                    )}
                   </div>
+                  {v.stockCount > 0 && (
+                    <div className="cruce-stock">
+                      <CruceCard hidden />
+                      <span>{v.stockCount} în talon</span>
+                    </div>
+                  )}
+                  {v.trump !== null && (
+                    <div className="cruce-table-trump">
+                      <SuitMark suit={v.trump} />
+                      <span>
+                        <small>Tromf</small>
+                        {CRUCE_SUITS[v.trump]}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
               <aside
@@ -487,7 +500,10 @@ export default function CruceBoard({
                       <strong>{v?.scores[group] ?? 0}</strong>
                     </div>
                   ))}
-                  <span>Partidă de {v?.settings.target ?? 11}</span>
+                  <span>
+                    Partidă de {v?.settings.target ?? 11}
+                    {v.round > 0 ? ` · Runda ${v.round}` : ""}
+                  </span>
                 </div>
                 {!connected && (
                   <p className="cruce-connection" role="status">
@@ -505,26 +521,6 @@ export default function CruceBoard({
                     )}
                     s).
                   </p>
-                )}
-                <div className="cruce-status" role="status">
-                  <h2>{phaseTitle(v)}</h2>
-                  <span>
-                    {v.round > 0 ? `Runda ${v.round}` : ""}
-                    {v.deadline && v.phase !== "trick"
-                      ? ` · ${Math.max(0, Math.min(60, Math.ceil((v.deadline - now) / 1000)))}s`
-                      : ""}
-                  </span>
-                </div>
-                {v.trump !== null && (
-                  <div className="cruce-trump">
-                    <SuitMark suit={v.trump} />
-                    <span>
-                      Tromf · {CRUCE_SUITS[v.trump]}
-                      {v.bidder !== null
-                        ? ` · ${name(v.bidder)} a licitat ${v.bid}`
-                        : ""}
-                    </span>
-                  </div>
                 )}
                 {lobby && (
                   <div className="cruce-lobby" role="status">
@@ -545,17 +541,27 @@ export default function CruceBoard({
                     <label>
                       Varianta de joc
                       <select
-                        value={draft.mode}
+                        value={v.settings.mode}
                         disabled={disabled || you === null || v.host !== you}
                         onChange={(e) =>
-                          setDraft({
-                            ...draft,
-                            mode: e.target.value as CruceSettings["mode"],
+                          void act({
+                            kind: "configure",
+                            settings: {
+                              ...v.settings,
+                              mode: e.target.value as CruceSettings["mode"],
+                            },
                           })
                         }
                       >
                         {CRUCE_MODES.map((m) => (
-                          <option value={m} key={m}>
+                          <option
+                            value={m}
+                            key={m}
+                            disabled={
+                              v.players.filter(Boolean).length >
+                              activeCruceSeats(m).length
+                            }
+                          >
                             {CRUCE_MODE_NAMES[m]}
                           </option>
                         ))}
@@ -564,14 +570,17 @@ export default function CruceBoard({
                     <label>
                       Partidă de
                       <select
-                        value={draft.target}
+                        value={v.settings.target}
                         disabled={disabled || you === null || v.host !== you}
                         onChange={(e) =>
-                          setDraft({
-                            ...draft,
-                            target: Number(
-                              e.target.value,
-                            ) as CruceSettings["target"],
+                          void act({
+                            kind: "configure",
+                            settings: {
+                              ...v.settings,
+                              target: Number(
+                                e.target.value,
+                              ) as CruceSettings["target"],
+                            },
                           })
                         }
                       >
@@ -583,10 +592,13 @@ export default function CruceBoard({
                     <label>
                       <input
                         type="checkbox"
-                        checked={draft.iber}
+                        checked={v.settings.iber}
                         disabled={disabled || you === null || v.host !== you}
                         onChange={(e) =>
-                          setDraft({ ...draft, iber: e.target.checked })
+                          void act({
+                            kind: "configure",
+                            settings: { ...v.settings, iber: e.target.checked },
+                          })
                         }
                       />
                       Iber (mărit)
@@ -594,47 +606,22 @@ export default function CruceBoard({
                     <label>
                       <input
                         type="checkbox"
-                        checked={draft.cheating}
+                        checked={v.settings.cheating}
                         disabled={disabled || you === null || v.host !== you}
                         onChange={(e) =>
-                          setDraft({ ...draft, cheating: e.target.checked })
+                          void act({
+                            kind: "configure",
+                            settings: {
+                              ...v.settings,
+                              cheating: e.target.checked,
+                            },
+                          })
                         }
                       />
                       Trișare
                     </label>
-                    {v.host === you && you !== null && (
-                      <button
-                        disabled={
-                          disabled ||
-                          JSON.stringify(draft) ===
-                            JSON.stringify(v.settings) ||
-                          tooManyPlayers
-                        }
-                        onClick={() =>
-                          void act({ kind: "configure", settings: draft })
-                        }
-                      >
-                        Aplică regulile
-                      </button>
-                    )}
                   </div>
                 )}
-                {between && you === v.host && tooManyPlayers && (
-                  <p className="cruce-settings-help" role="status">
-                    Sunt {v.players.filter(Boolean).length} jucători la masă.
-                    Varianta aleasă acceptă{" "}
-                    {activeCruceSeats(draft.mode).length}; alege o variantă cu
-                    suficiente locuri.
-                  </p>
-                )}
-                {between &&
-                  you === v.host &&
-                  JSON.stringify(draft) !== JSON.stringify(v.settings) && (
-                    <p className="cruce-settings-help">
-                      Aplică regulile. Locurile se aranjează automat pentru
-                      varianta aleasă, apoi toți jucătorii confirmă din nou.
-                    </p>
-                  )}
                 {(v.phase === "round-end" ||
                   (v.phase === "finished" && v.winner !== null)) && (
                   <table className="cruce-results">
@@ -689,10 +676,7 @@ export default function CruceBoard({
                         <button
                           className="cruce-primary"
                           disabled={
-                            disabled ||
-                            Boolean(own?.ready) ||
-                            !lobby?.canReady ||
-                            JSON.stringify(draft) !== JSON.stringify(v.settings)
+                            disabled || Boolean(own?.ready) || !lobby?.canReady
                           }
                           onClick={() => void act({ kind: "ready" })}
                         >
@@ -713,48 +697,6 @@ export default function CruceBoard({
                             ? "Îi așteptăm pe ceilalți"
                             : "Runda următoare"}
                         </button>
-                      )}
-                      {v.phase === "cut" && myTurn && (
-                        <>
-                          <button
-                            disabled={disabled}
-                            onClick={() => void act({ kind: "cut", cut: true })}
-                          >
-                            Tai cărțile
-                          </button>
-                          <button
-                            disabled={disabled}
-                            onClick={() =>
-                              void act({ kind: "cut", cut: false })
-                            }
-                          >
-                            Bat cărțile
-                          </button>
-                        </>
-                      )}
-                      {v.phase === "bidding" && (
-                        <div className="cruce-bids" aria-label="Licitație">
-                          <button
-                            disabled={!myTurn || disabled}
-                            onClick={() => void act({ kind: "bid", value: 0 })}
-                          >
-                            Pas
-                          </button>
-                          {[1, 2, 3, 4, 5, 6].map((b) => (
-                            <button
-                              key={b}
-                              disabled={!myTurn || disabled || b <= v.bid}
-                              onClick={() =>
-                                void act({ kind: "bid", value: b })
-                              }
-                            >
-                              <strong>
-                                {["I", "II", "III", "IV", "V", "VI"][b - 1]}
-                              </strong>
-                              <span>{b * 33}</span>
-                            </button>
-                          ))}
-                        </div>
                       )}
                       {v.phase === "trump" &&
                         myTurn &&
@@ -789,30 +731,6 @@ export default function CruceBoard({
                           </span>
                         </>
                       )}
-                      {v.phase === "playing" &&
-                        myTurn &&
-                        v.hand.some((card) =>
-                          canAnnounce(
-                            {
-                              hands: [0, 1, 2, 3].map((s) =>
-                                s === you ? v.hand : [],
-                              ),
-                              trick: v.trick,
-                              announced: v.announced,
-                            },
-                            you,
-                            card,
-                          ),
-                        ) && (
-                          <label>
-                            <input
-                              type="checkbox"
-                              checked={announce}
-                              onChange={(e) => setAnnounce(e.target.checked)}
-                            />
-                            Anunț (20 / 40)
-                          </label>
-                        )}
                       {v.settings.cheating &&
                         (["playing", "trick", "round-end"].includes(v.phase) ||
                           (v.phase === "finished" && v.winner !== null)) &&
@@ -873,14 +791,28 @@ export default function CruceBoard({
                               void act(
                                 v.phase === "exchange"
                                   ? { kind: "give", card, to: giveTo! }
-                                  : { kind: "play", card, announce },
+                                  : {
+                                      kind: "play",
+                                      card,
+                                      announce: canAnnounce(
+                                        {
+                                          hands: [0, 1, 2, 3].map((s) =>
+                                            s === you ? v.hand : [],
+                                          ),
+                                          trick: v.trick,
+                                          announced: v.announced,
+                                        },
+                                        you!,
+                                        card,
+                                      ),
+                                    },
                               )
                             }
                           >
                             <CruceCard card={card} />
                             <span>
                               {
-                                ["Doiar", "Treiar", "Pătrar", "IX", "X", "As"][
+                                ["Doiar", "Treiar", "Pătrar", "9", "10", "As"][
                                   rankOf(card)
                                 ]
                               }{" "}
@@ -928,15 +860,10 @@ export default function CruceBoard({
             </div>
           </div>
         )}
-        {error && (
-          <p className="cruce-error" role="alert">
-            {error}
-          </p>
-        )}
         <footer className="cruce-footer">
           <span>
             {pending
-              ? "Se salvează mutarea…"
+              ? "Se salvează…"
               : you !== null
                 ? "Doar tu îți vezi cărțile. La echipe, partenerul stă în fața ta."
                 : "Cruce · 24 de cărți ungurești"}

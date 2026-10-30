@@ -5,6 +5,11 @@ import {
   boatHullBlocked,
   boatTurnBlocked,
   applyBoatBodyImpact,
+  boatPrism,
+  boatHullHit,
+  applyBoatWorldImpact,
+  setRemoteBoatCollision,
+  PARKED_BOAT_VERTICES,
 } from "./boat-collision";
 import { advanceBoat, createBoatMotionState } from "./boat-motion";
 import { LAKE_LEVEL } from "./swim-motion";
@@ -41,6 +46,42 @@ function scene(piling?: { x: number; y: number; z: number }) {
 }
 
 describe("boat hull collision", () => {
+  it("does not collide with empty space beside the tapered bow", () => {
+    const { world, capsule } = scene({
+      x: beam / 2 - 0.05,
+      y: 0.4,
+      z: bowExtent - 0.3,
+    });
+    expect(
+      boatHullBlocked(world, RAPIER, {
+        x: 0,
+        z: 0,
+        yaw: 0,
+        dx: 0,
+        dz: 0.05,
+        exclude: capsule,
+      }),
+    ).toBe(false);
+  });
+  it("uses a world-space contact to deflect and turn a hull against a piling", () => {
+    const { world, capsule } = scene({ x: 0.95, y: 0.4, z: 2 });
+    const hit = boatHullHit(world, RAPIER, {
+      x: 0,
+      z: 0,
+      yaw: 0,
+      dx: 0.2,
+      dz: 0,
+      exclude: capsule,
+    });
+    expect(hit?.normal).not.toBeNull();
+    const motion = createBoatMotionState(0);
+    motion.speed = 4;
+    motion.driftX = 3;
+    applyBoatWorldImpact(motion, [0, 0], hit!.point, hit!.normal!);
+    expect(motion.turnRate).toBeLessThan(0);
+    expect(motion.driftX).toBeLessThan(3);
+    expect(motion.speed).toBeGreaterThan(0);
+  });
   it("applies a horizontal boat impact without a jump or gravity change", () => {
     const { world, capsule } = scene();
     capsule.setTranslation({ x: 0, y: 0.8, z: 0 }, true);
@@ -115,7 +156,7 @@ describe("boat hull collision", () => {
       dx: Math.sin(yaw) * speed,
       dz: Math.cos(yaw) * speed,
     });
-    const ahead = scene(piling(beam / 2 - 0.05, bowExtent + 0.25));
+    const ahead = scene(piling(0, bowExtent + 0.1));
     expect(
       boatHullBlocked(ahead.world, RAPIER, {
         ...move(0.1),
@@ -181,21 +222,11 @@ describe("boat steering clearance", () => {
     w: Math.cos(yaw / 2),
   });
   function overlaps(world: RAPIER.World, body: RAPIER.RigidBody, yaw: number) {
-    const centre =
-      (BOAT_DIMENSIONS.bowExtent - BOAT_DIMENSIONS.sternExtent) / 2;
     return Boolean(
       world.intersectionWithShape(
-        {
-          x: Math.sin(yaw) * centre,
-          y: LAKE_LEVEL + 0.4,
-          z: Math.cos(yaw) * centre,
-        },
+        { x: 0, y: LAKE_LEVEL + 0.4, z: 0 },
         orientation(yaw),
-        new RAPIER.Cuboid(
-          beam / 2,
-          0.35,
-          (BOAT_DIMENSIONS.bowExtent + BOAT_DIMENSIONS.sternExtent) / 2,
-        ),
+        new RAPIER.ConvexPolyhedron(boatPrism().vertices, boatPrism().indices),
         RAPIER.QueryFilterFlags.EXCLUDE_SENSORS,
         undefined,
         undefined,
@@ -205,23 +236,21 @@ describe("boat steering clearance", () => {
   }
 
   it("rejects the reproduced clear-to-penetrating steering step before committing yaw", () => {
-    const { world, capsule } = scene({ x: beam / 2 + 0.12, y: 0.4, z: 3.1 });
+    const { world, capsule } = scene();
+    world.createCollider(
+      RAPIER.ColliderDesc.cuboid(0.003, 0.65, 0.003).setTranslation(
+        0.114,
+        0.4,
+        bowExtent - 0.004,
+      ),
+    );
+    world.step();
     const motion = createBoatMotionState(0);
     motion.speed = 8;
     motion.steer = 1;
+    motion.turnRate = 0.9;
     expect(overlaps(world, capsule, 0)).toBe(false);
-    // The old translation-only query misses the already-rotated intersection.
     expect(overlaps(world, capsule, 0.015)).toBe(true);
-    expect(
-      boatHullBlocked(world, RAPIER, {
-        x: 0,
-        z: 0,
-        yaw: 0.015,
-        dx: (Math.sin(0.015) * 8) / 60,
-        dz: (Math.cos(0.015) * 8) / 60,
-        exclude: capsule,
-      }),
-    ).toBe(false);
     advanceBoat(motion, {
       throttle: 1,
       steer: 1,
@@ -237,7 +266,7 @@ describe("boat steering clearance", () => {
     });
     expect(motion.yaw).toBe(0);
     expect(motion.turnRate).toBe(0);
-    expect(motion.wheelAngle).toBe(0);
+    expect(motion.wheelAngle).toBeGreaterThan(0);
     expect(overlaps(world, capsule, motion.yaw)).toBe(false);
   });
 
@@ -245,7 +274,7 @@ describe("boat steering clearance", () => {
     const { world, capsule } = scene();
     world.createCollider(
       RAPIER.ColliderDesc.cuboid(0.001, 0.2, 0.001).setTranslation(
-        beam / 2 - 0.001,
+        0,
         0.4,
         bowExtent - 0.001,
       ),
@@ -267,9 +296,9 @@ describe("boat steering clearance", () => {
   it.each([1, -1])(
     "protects bow and stern during turns in direction %s",
     (sign) => {
-      for (const z of [3.1, -BOAT_DIMENSIONS.sternExtent + 0.2]) {
+      for (const z of [bowExtent - 0.01, -BOAT_DIMENSIONS.sternExtent + 0.05]) {
         const { world, capsule } = scene({
-          x: Math.sign(z) * sign * (beam / 2 + 0.1),
+          x: z > 0 ? sign * 0.22 : -sign * ((beam / 2) * 0.86 + 0.1),
           y: 0.4,
           z,
         });
@@ -307,8 +336,10 @@ describe("boat steering clearance", () => {
           exclude: capsule,
         }),
     });
-    expect(motion.yaw).toBeCloseTo(0.015);
-    expect(motion.turnRate).toBeCloseTo(0.9);
+    expect(motion.yaw).toBeGreaterThan(0);
+    expect(motion.yaw).toBeLessThan(0.015);
+    expect(motion.turnRate).toBeGreaterThan(0);
+    expect(motion.turnRate).toBeLessThan(0.9);
     expect(
       boatTurnBlocked(world, RAPIER, {
         x: 0,
@@ -332,5 +363,69 @@ describe("boat steering clearance", () => {
         exclude: capsule,
       }),
     ).toBe(false);
+  });
+});
+
+// The disabled flag alone is insufficient in the shipped Rapier contact pipeline.
+// Hold ride height here so a ghost hull cannot be escaped by climbing over it.
+describe("remote boat physical presence", () => {
+  function setup() {
+    const world = new RAPIER.World({ x: 0, y: 0, z: 0 });
+    worlds.push(world);
+    const driver = world.createRigidBody(
+      RAPIER.RigidBodyDesc.dynamic()
+        .setTranslation(0.893, 0.785, -60)
+        .enabledTranslations(true, false, true)
+        .setCcdEnabled(true),
+    );
+    world.createCollider(RAPIER.ColliderDesc.capsule(0.5, 0.3), driver);
+    const remote = world.createRigidBody(
+      RAPIER.RigidBodyDesc.kinematicPositionBased().setTranslation(
+        0,
+        0.05,
+        -48,
+      ),
+    );
+    world.createCollider(
+      RAPIER.ColliderDesc.convexHull(PARKED_BOAT_VERTICES)!,
+      remote,
+    );
+    world.step();
+    const drive = (frames: number) => {
+      for (let i = 0; i < frames; i++) {
+        driver.setLinvel({ x: 0, y: 0, z: 4 }, true);
+        world.step();
+      }
+    };
+    return { world, driver, remote, drive };
+  }
+  it("an occupied remote hull cannot leave a ghost stern blocking the driver", () => {
+    const { driver, remote, drive } = setup();
+    setRemoteBoatCollision(remote, false);
+    drive(480);
+    expect(driver.translation().z).toBeCloseTo(-28, 2);
+    expect(driver.translation().y).toBeCloseTo(0.785, 5);
+    expect(driver.linvel().z).toBeCloseTo(4, 5);
+    expect(remote.collider(0).collisionGroups()).toBe(0);
+  });
+  it("a moored hull becomes solid again after its driver leaves", () => {
+    const { driver, remote, drive } = setup();
+    setRemoteBoatCollision(remote, false);
+    drive(60);
+    setRemoteBoatCollision(remote, true);
+    drive(420);
+    expect(driver.translation().z).toBeLessThan(-50.5);
+    expect(remote.collider(0).collisionGroups()).toBe(0xffffffff);
+  });
+  it("boarding a moored boat releases an already contacting local driver", () => {
+    const { driver, remote, drive } = setup();
+    setRemoteBoatCollision(remote, true);
+    drive(240);
+    const stopped = driver.translation().z;
+    expect(stopped).toBeLessThan(-50.5);
+    setRemoteBoatCollision(remote, false);
+    drive(120);
+    expect(driver.translation().z - stopped).toBeGreaterThan(7.9);
+    expect(driver.translation().y).toBeCloseTo(0.785, 5);
   });
 });

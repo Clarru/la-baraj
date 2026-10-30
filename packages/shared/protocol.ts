@@ -1,6 +1,15 @@
+import {
+  parseArcadeAction,
+  type ArcadeAction,
+  type ArcadeView,
+} from "./arcade2048";
 import { parseCruceAction, type CruceAction, type CruceView } from "./cruce.ts";
 import { isBubbleText } from "./bubble-chat.ts";
-import { BOAT_MAX_SPEED, type BoatPose } from "./boats.ts";
+import {
+  BOAT_MAX_SPEED,
+  BOAT_MAX_ANGULAR_SPEED,
+  type BoatPose,
+} from "./boats.ts";
 export type { BoatPose } from "./boats.ts";
 import type { LakeWeather } from "./weather.ts";
 import {
@@ -53,6 +62,12 @@ export type HomeAssignment = { index: number; resumeToken: string };
 export type FireState = { lit: boolean; revision: number };
 export type ClientMessage =
   | {
+      type: "arcade2048-action";
+      requestId: string;
+      revision: number;
+      action: ArcadeAction;
+    }
+  | {
       type: "hello";
       nickname: string;
       requestHome?: true;
@@ -90,6 +105,7 @@ export type CruceRecovery = {
   error?: boolean;
 };
 export type ServerMessage =
+  | { type: "arcade2048"; view: ArcadeView; requestId: string; error?: string }
   | { type: "boat-impact"; revision: number; boat: BoatPose }
   | {
       type: "snapshot";
@@ -105,6 +121,7 @@ export type ServerMessage =
       village?: VillageState;
       planes?: PlanesView;
       cruce?: CruceView;
+      features?: { arcade2048?: boolean };
       cruceRecovery?: CruceRecovery;
     }
   | { type: "village"; village: VillageState }
@@ -146,7 +163,15 @@ function validBoat(value: unknown): value is BoatPose {
     Math.hypot(...value.velocity) <= BOAT_MAX_SPEED + 0.001 &&
     typeof value.yaw === "number" &&
     Number.isFinite(value.yaw) &&
-    Math.abs(value.yaw) <= 100 * Math.PI
+    Math.abs(value.yaw) <= 100 * Math.PI &&
+    (value.angularVelocity === undefined ||
+      (typeof value.angularVelocity === "number" &&
+        Number.isFinite(value.angularVelocity) &&
+        Math.abs(value.angularVelocity) <= BOAT_MAX_ANGULAR_SPEED)) &&
+    (value.rudder === undefined ||
+      (typeof value.rudder === "number" &&
+        Number.isFinite(value.rudder) &&
+        Math.abs(value.rudder) <= 1))
   );
 }
 function label(value: unknown, max = 48): value is string {
@@ -182,6 +207,20 @@ export function parseClientMessage(raw: string): ClientMessage | null {
   }
   if (!object(value)) return null;
   switch (value.type) {
+    case "arcade2048-action": {
+      const action = parseArcadeAction(value.action);
+      return label(value.requestId, 64) &&
+        Number.isSafeInteger(value.revision) &&
+        Number(value.revision) >= 0 &&
+        action
+        ? {
+            type: "arcade2048-action",
+            requestId: value.requestId,
+            revision: Number(value.revision),
+            action,
+          }
+        : null;
+    }
     case "cruce-action": {
       const action = parseCruceAction(value.action);
       return label(value.requestId, 64) &&
@@ -341,6 +380,15 @@ export function parseClientMessage(raw: string): ClientMessage | null {
                     number,
                   ],
                   yaw: (pose.boat as BoatPose).yaw,
+                  ...((pose.boat as BoatPose).angularVelocity === undefined
+                    ? {}
+                    : {
+                        angularVelocity: (pose.boat as BoatPose)
+                          .angularVelocity,
+                      }),
+                  ...((pose.boat as BoatPose).rudder === undefined
+                    ? {}
+                    : { rudder: (pose.boat as BoatPose).rudder }),
                   velocity: [...(pose.boat as BoatPose).velocity] as [
                     number,
                     number,

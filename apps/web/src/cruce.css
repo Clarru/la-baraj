@@ -95,14 +95,14 @@
   color: #42574b;
 }
 .cruce-workspace {
-  --cruce-sidebar-width: 340px;
+  --cruce-sidebar-width: 300px;
   flex: 1 1 auto;
   min-height: 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr) var(--cruce-sidebar-width);
   grid-template-rows: minmax(0, 1fr) auto;
-  gap: 0 24px;
-  padding: 20px 28px 0;
+  gap: 0 20px;
+  padding: 16px 20px 0;
   background: #e6e4d8;
 }
 .cruce-workspace[hidden] {
@@ -122,7 +122,8 @@
 }
 .cruce-felt {
   position: relative;
-  width: min(600px, 100cqh, calc(100cqw - 260px));
+  container-type: inline-size;
+  width: min(100cqh, calc(100cqw - 200px));
   aspect-ratio: 1;
   background: #245b45 url("/assets/cruce/felt.webp") center / 300px 300px;
   color: #fcf3d9;
@@ -138,8 +139,8 @@
   justify-items: center;
   gap: 3px;
   width: max-content;
-  max-width: 196px;
-  padding: 8px 12px;
+  max-width: 176px;
+  padding: 6px 8px;
   font-size: 16px;
   text-align: center;
   background: #194331;
@@ -148,7 +149,7 @@
 }
 .cruce-player strong {
   font-size: 20px;
-  max-width: 170px;
+  max-width: 160px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -177,23 +178,11 @@
   top: 50%;
   transform: translate(65%, -50%);
 }
-.cruce-hidden-hand {
-  display: flex;
-  height: 30px;
-  padding-right: 12px;
-  margin-top: 2px;
-}
-.cruce-hidden-hand .cruce-card {
-  width: 22px;
-  margin-right: -10px;
-  border-radius: 2px;
-}
 .cruce-card {
   display: block;
   width: 104px;
-  aspect-ratio: 363 / 585;
   background: #fffef8 center / 100% 100% no-repeat;
-  border-radius: 5px;
+  overflow: hidden;
   box-shadow: 0 3px 7px rgb(12 25 18 / 25%);
 }
 .cruce-card--back {
@@ -202,24 +191,200 @@
 }
 .cruce-center {
   position: absolute;
-  inset: 88px 60px;
+  inset: 84px 32px 72px;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  justify-items: center;
+  gap: 12px;
+  pointer-events: none;
+}
+.cruce-player:has(.cruce-call) > span:first-of-type {
+  display: none;
+}
+.cruce-center--empty {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
 }
-.cruce-trump {
+.cruce-center--empty .cruce-cards-zone {
+  display: none;
+}
+.cruce-table-status {
+  width: min(100%, 380px);
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  text-align: center;
+}
+.cruce-table-status h2 {
+  margin: 0;
+  font: 400 clamp(22px, 2vw, 30px)/1.1 var(--font-heading, "Bree Serif", serif);
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.cruce-table-status--timed {
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 10px;
+}
+.cruce-table-status--timed h2 {
+  grid-column: 1 / -1;
+}
+.cruce-table-status--timed .cruce-table-meta {
+  justify-self: end;
+  align-self: center;
+}
+.cruce-table-status--timed .cruce-timer {
+  width: 72px;
+  justify-self: start;
+}
+.cruce-table-status--timed .cruce-timer > div:first-child > span {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+.cruce-table-status--timed .cruce-timer > div:first-child {
+  justify-content: center;
+}
+.cruce-table-status--timed .cruce-timer-rail {
+  margin-top: 2px;
+}
+.cruce-table-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2px 12px;
+  font-size: 15px;
+  color: #eee3c5;
+  min-width: 0;
+}
+.cruce-table-meta > span {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cruce-timer {
+  width: min(220px, 100%);
+}
+.cruce-timer > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  font-size: 14px;
+  line-height: 1.2;
+}
+.cruce-timer strong {
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.cruce-timer-rail {
+  height: 4px;
+  margin-top: 4px;
+  overflow: hidden;
+  background: rgb(250 241 211 / 20%);
+  border-radius: 2px;
+}
+.cruce-timer-rail span {
+  display: block;
+  height: 100%;
+  background: #f3df9a;
+  transition: width 1s linear;
+}
+.cruce-timer--overdue {
+  color: #f3df9a;
+}
+.cruce-table-interruption {
+  margin: 0;
+  max-width: 30ch;
+  font-size: 16px;
+}
+.cruce-table-reconnect {
+  font-size: 16px;
+  color: #f3df9a;
+}
+.cruce-table-recovery {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  font-size: 16px;
+  pointer-events: auto;
+}
+.cruce-table-status .cruce-error {
+  margin: 0;
+  pointer-events: auto;
+  font-size: 15px;
+}
+.cruce-cards-zone {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  container-type: size;
+  padding-top: 30px;
+  overflow: visible;
+}
+.cruce-call {
+  width: 160px;
+  max-width: 100%;
+  aspect-ratio: 4.95;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 5px;
+  color: #312c1c;
+  background: url("/assets/cruce/announcement-plaque-v1.webp") center / 100%
+    100% no-repeat;
+  filter: drop-shadow(0 3px 3px rgb(10 24 17 / 28%));
+  font-variant-numeric: tabular-nums;
+}
+.cruce-call strong {
+  font: 700 21px/1 var(--font-body);
+}
+.cruce-call > span {
+  font-size: 15px;
+  line-height: 1;
+}
+.cruce-call--fresh {
+  animation: cruce-call-in 420ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes cruce-call-in {
+  from {
+    transform: translateY(6px) scale(0.88);
+    filter: blur(2px) drop-shadow(0 5px 5px rgb(10 24 17 / 30%));
+  }
+  to {
+    transform: translateY(0) scale(1);
+    filter: blur(0) drop-shadow(0 3px 3px rgb(10 24 17 / 28%));
+  }
+}
+.cruce-table-trump {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 17px;
-  background: #f7eddb;
-  color: #243831;
-  padding: 7px 10px;
-  border-radius: 4px;
-  text-align: center;
+  line-height: 1.15;
+}
+.cruce-table-trump > span {
+  display: grid;
+}
+.cruce-table-trump small {
+  font-size: 13px;
+}
+.cruce-table-trump .cruce-suit {
+  width: 28px;
+  height: 28px;
+  padding: 3px;
+  background: #fff5dc;
+  border-radius: 3px;
 }
 .cruce-suit {
   width: 25px;
@@ -243,15 +408,15 @@
 }
 .cruce-trick {
   position: relative;
-  width: 232px;
-  height: 222px;
-  flex-shrink: 0;
+  width: min(270px, calc(100cqw - 20px), calc((100cqh - 20px) * 1.15));
+  aspect-ratio: 1.15;
 }
 .cruce-trick:empty {
   display: none;
 }
 .cruce-played {
   position: absolute;
+  width: calc(100% * 78 / 232);
   display: grid;
   justify-items: center;
   font-size: 16px;
@@ -264,54 +429,95 @@
   clip-path: inset(50%);
 }
 .cruce-played .cruce-card {
-  width: 78px;
+  width: 100%;
 }
 .cruce-played--0 {
   bottom: 0;
-  left: 77px;
+  left: calc(100% * 77 / 232);
   z-index: 4;
 }
 .cruce-played--1 {
   left: 0;
-  top: 48px;
+  top: calc(100% * 48 / 222);
   z-index: 2;
   transform: rotate(-7deg);
 }
 .cruce-played--2 {
   top: 0;
-  left: 77px;
+  left: calc(100% * 77 / 232);
   z-index: 1;
   transform: rotate(3deg);
 }
 .cruce-played--3 {
   right: 0;
-  top: 48px;
+  top: calc(100% * 48 / 222);
   z-index: 3;
   transform: rotate(7deg);
 }
+.cruce-played {
+  transform: none;
+}
 .cruce-played > strong {
   position: absolute;
-  bottom: 3px;
-  right: 4px;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
   color: #243831;
   background: #f3df9a;
-  padding: 2px 4px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  font-size: 20px;
+  line-height: 1;
+  box-shadow: 0 3px 6px rgb(12 25 18 / 25%);
+}
+.cruce-auction {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(360px, calc(100cqw - 16px));
+  padding: 8px;
+  background: #194331;
+  color: #f8efd6;
+  border-radius: 6px;
+  box-shadow: 0 6px 18px rgb(12 25 18 / 30%);
+  text-align: center;
+}
+.cruce-player--0:has(.cruce-auction) {
+  z-index: 8;
+}
+.cruce-auction .cruce-bids button {
+  min-height: 48px;
+  padding: 4px;
+}
+.cruce-auction .cruce-bids strong {
+  line-height: 1;
+  font-size: 24px;
+}
+.cruce-auction .cruce-bids span {
+  line-height: 1;
+  font-size: 15px;
+}
+.cruce-felt--bidding .cruce-center {
+  inset-block: 84px 208px;
 }
 .cruce-stock {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 17px;
+  gap: 8px;
+  font-size: 16px;
+  line-height: 1.15;
 }
 .cruce-stock .cruce-card {
-  width: 36px;
+  width: 26px;
 }
-.cruce-notice {
-  margin: 0;
-  max-width: 30ch;
-  text-align: center;
-  font-size: 20px;
-  line-height: 1.35;
+.cruce-stock > span {
+  max-width: 52px;
 }
 .cruce-sidebar {
   grid-column: 2;
@@ -347,21 +553,8 @@
 .cruce-score-strip > span {
   font-size: 17px;
 }
-.cruce-status {
-  display: grid;
-  gap: 8px;
-  padding: 24px 0 12px;
-}
-.cruce-status h2 {
-  margin: 0;
-  font: 400 26px/1.15 var(--font-heading, "Bree Serif", serif);
-  text-wrap: balance;
-}
-.cruce-status > span {
-  font-size: 17px;
-  font-variant-numeric: tabular-nums;
-}
 .cruce-lobby {
+  padding-top: 20px;
   display: grid;
   gap: 8px;
   font-size: 17px;
@@ -463,10 +656,12 @@
   padding-top: 0;
 }
 .cruce-hand-zone h2 {
+  position: absolute;
+  width: 1px;
+  height: 1px;
   margin: 0;
-  text-align: center;
-  font-size: 18px;
-  font-weight: 700;
+  overflow: hidden;
+  clip-path: inset(50%);
 }
 .cruce-hand {
   display: flex;
@@ -565,7 +760,8 @@
   justify-content: space-between;
   gap: 16px;
   padding: 6px 28px;
-  font-size: 16px;
+  font-size: 14px;
+  line-height: 1.2;
   color: #42574b;
 }
 .cruce-empty {
@@ -639,20 +835,48 @@
   .cruce-workspace {
     padding-top: 12px;
   }
-  .cruce-hidden-hand {
-    display: none;
-  }
   .cruce-center {
-    inset-block: 68px;
+    inset-block: 72px 64px;
     gap: 8px;
   }
-  .cruce-trump {
-    font-size: 16px;
+  .cruce-player {
+    max-width: 148px;
+    padding: 4px 6px;
+    gap: 2px;
+    font-size: 14px;
+  }
+  .cruce-player strong {
+    font-size: 18px;
+  }
+  .cruce-call {
+    width: 136px;
+  }
+  .cruce-call strong {
+    font-size: 18px;
+  }
+  .cruce-call > span {
+    font-size: 14px;
+  }
+  .cruce-table-status {
+    gap: 5px;
+  }
+  .cruce-table-status h2 {
+    font-size: 23px;
+  }
+  .cruce-table-meta {
+    font-size: 14px;
+  }
+  .cruce-timer > div:first-child {
+    font-size: 13px;
+  }
+  .cruce-timer strong {
+    font-size: 15px;
   }
 }
 @media (max-width: 999px) {
   .cruce-board {
     overflow-y: auto;
+    overflow-x: hidden;
     height: 100dvh;
   }
   .cruce-header {
@@ -680,7 +904,7 @@
     container-type: inline-size;
   }
   .cruce-felt {
-    width: min(520px, calc(100cqw - 96px));
+    width: min(720px, calc(100cqw - 160px));
   }
   .cruce-sidebar {
     grid-column: 1;
@@ -708,6 +932,12 @@
   .cruce-header span {
     font-size: 16px;
   }
+  .cruce-header {
+    flex-wrap: wrap;
+  }
+  .cruce-header > div {
+    min-width: 0;
+  }
   .cruce-header-actions {
     gap: 6px;
   }
@@ -723,49 +953,95 @@
     border-width: 10px;
   }
   .cruce-player {
-    max-width: 130px;
-    padding: 6px;
-    font-size: 14px;
+    max-width: 28%;
+    padding: 4px;
+    gap: 2px;
+    font-size: 12px;
   }
   .cruce-player strong {
-    font-size: 17px;
-    max-width: 118px;
+    max-width: 100%;
+    font-size: 15px;
+  }
+  .cruce-player button {
+    min-height: 44px;
+    padding: 4px;
+    font-size: 12px;
+  }
+  .cruce-player--0 {
+    max-width: 50%;
   }
   .cruce-player--1 {
-    top: 22%;
-    transform: translate(-12%, -50%);
+    top: 8px;
+    left: 4px;
+    transform: none;
   }
   .cruce-player--3 {
-    top: 22%;
-    transform: translate(12%, -50%);
+    top: 8px;
+    right: 4px;
+    transform: none;
   }
-  .cruce-hidden-hand {
-    display: none;
+  .cruce-call {
+    width: 120px;
+    min-height: 22px;
+  }
+  .cruce-call strong {
+    font-size: 15px;
+  }
+  .cruce-call > span {
+    font-size: 12px;
+  }
+  .cruce-felt--bidding .cruce-center {
+    inset-block: 64px 188px;
+  }
+  .cruce-auction .cruce-bids strong {
+    font-size: 21px;
   }
   .cruce-center {
-    inset: 64px 78px;
-    gap: 8px;
+    inset: 68px 8px 60px;
+    gap: 6px;
   }
-  .cruce-trick {
-    width: 184px;
-    height: 174px;
+  .cruce-table-status {
+    gap: 4px;
   }
-  .cruce-played .cruce-card {
-    width: 60px;
+  .cruce-table-status h2 {
+    font-size: 21px;
   }
-  .cruce-played--0,
-  .cruce-played--2 {
-    left: 62px;
+  .cruce-table-meta {
+    font-size: 13px;
+    gap: 2px 8px;
   }
-  .cruce-played--1,
-  .cruce-played--3 {
-    top: 34px;
+  .cruce-timer {
+    width: 180px;
   }
-  .cruce-notice {
-    font-size: 18px;
+  .cruce-timer > div:first-child {
+    font-size: 12px;
   }
-  .cruce-trump {
-    font-size: 16px;
+  .cruce-timer strong {
+    font-size: 14px;
+  }
+  .cruce-stock {
+    right: 8px;
+    bottom: 12px;
+    gap: 5px;
+    font-size: 13px;
+  }
+  .cruce-stock .cruce-card {
+    width: 20px;
+  }
+  .cruce-stock > span {
+    max-width: 40px;
+  }
+  .cruce-table-trump {
+    left: 8px;
+    bottom: 12px;
+    font-size: 14px;
+  }
+  .cruce-table-trump small {
+    font-size: 12px;
+  }
+  .cruce-table-trump .cruce-suit {
+    width: 24px;
+    height: 24px;
   }
   .cruce-hand .cruce-card {
     width: 82px;
@@ -785,7 +1061,11 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .cruce-hand button {
+  .cruce-hand button,
+  .cruce-timer-rail span {
     transition: none;
+  }
+  .cruce-call--fresh {
+    animation: none;
   }
 }

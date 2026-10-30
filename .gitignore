@@ -39,3 +39,15 @@ docs/deployment/captures/*-raw.png
 
 # Full-resolution Cruce generation masters are local; ship optimized WebPs and prompts.
 docs/art-direction/cruce/generated/
+
+# Reproducible arcade working files; keep runtime GLB, scripts, prompts and selected evidence.
+experiments/asset-skill-lab/arcade/*.blend*
+experiments/asset-skill-lab/arcade/*-raw.glb
+experiments/asset-skill-lab/arcade/*-pbr.glb
+experiments/asset-skill-lab/arcade/cabinet-display-qa.glb
+experiments/asset-skill-lab/arcade/BreeSerif.ttf
+experiments/asset-skill-lab/arcade/paint-source.png
+experiments/asset-skill-lab/arcade/reference.png
+experiments/asset-skill-lab/arcade/*.log
+experiments/asset-skill-lab/arcade/screen-renderer.cjs
+experiments/asset-skill-lab/arcade/qa/

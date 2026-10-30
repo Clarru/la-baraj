@@ -1,3 +1,4 @@
+import { Arcade2048Service } from "../../server/arcade2048";
 import {
   RoomCore,
   type RoomConnection,
@@ -12,6 +13,7 @@ export function createLocalWorld() {
     connections: () => clients,
     homes: new HomeAssignments({ save: async () => {} }),
     saveFire: async () => {},
+    arcade: new Arcade2048Service({ save: async () => {}, ranked: false }),
   });
   return {
     connect(send: (m: ServerMessage) => void) {

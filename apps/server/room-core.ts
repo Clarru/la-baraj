@@ -1,3 +1,5 @@
+import { Arcade2048Service, ArcadeError } from "./arcade2048";
+import { ARCADE_STATION } from "../../packages/shared/arcade2048-station";
 import { CruceTable } from "./cruce-table";
 import { CruceError, type CruceSeat } from "../../packages/shared/cruce";
 import {
@@ -21,7 +23,7 @@ import {
 } from "../../packages/shared/protocol";
 import { HomeAllocationError, type HomeAssignments } from "./home-assignments";
 import { resolveRoomBoatCollision } from "./boat-collisions";
-import { BOAT_WATERLINE } from "../../packages/shared/boats";
+import { BOAT_WATERLINE, wrapBoatYaw } from "../../packages/shared/boats";
 import { PlanesTable, TableError, type TableActor } from "./planes-table";
 import {
   PLANES_TABLE,
@@ -37,6 +39,7 @@ export type SessionState = {
   pose: Bucket;
   action: Bucket;
   chat?: Bucket;
+  arcade?: Bucket;
   violations: number;
   lastInputAt?: number;
   lastActivityReportAt?: number;
@@ -63,6 +66,7 @@ export type RoomRuntime = {
   homes: HomeAssignments;
   planes?: PlanesTable;
   cruce?: CruceTable;
+  arcade?: Arcade2048Service;
   retryPlaneCleanup?: () => Promise<void>;
   requestWeather?: () => void;
 };
@@ -308,6 +312,7 @@ export class RoomCore {
       seats: this.seats(),
       planes: this.planes.view(this.tableActor(connection)),
       cruce: this.cruce.view(this.tableActor(connection)),
+      ...(this.runtime.arcade ? { features: { arcade2048: true } } : {}),
       ...(recovery ? { cruceRecovery: recovery } : {}),
       ...(connection.state.home ? { home: connection.state.home } : {}),
     });
@@ -462,12 +467,20 @@ export class RoomCore {
         player.boat =
           player.vehicle === "boat"
             ? {
+                ...player.boat,
                 position: player.boat.position,
-                yaw: player.yaw,
+                yaw: wrapBoatYaw(player.boat.yaw),
                 velocity: player.boat.velocity,
               }
-            : { ...player.boat, velocity: [0, 0] };
+            : {
+                ...player.boat,
+                velocity: [0, 0],
+                ...(player.boat.angularVelocity === undefined
+                  ? {}
+                  : { angularVelocity: 0, rudder: 0 }),
+              };
       if (player.vehicle === "boat" && player.boat) {
+        player.yaw = player.boat.yaw;
         player.position = [
           player.boat.position[0],
           BOAT_WATERLINE,
@@ -484,7 +497,14 @@ export class RoomCore {
         Object.assign(player, cruceSeatPose(tableSeat));
         player.seatId = CRUCE_SEATS[tableSeat];
         player.vehicle = "none";
-        if (player.boat) player.boat = { ...player.boat, velocity: [0, 0] };
+        if (player.boat)
+          player.boat = {
+            ...player.boat,
+            velocity: [0, 0],
+            ...(player.boat.angularVelocity === undefined
+              ? {}
+              : { angularVelocity: 0, rudder: 0 }),
+          };
         player.speed = 0;
         player.posture = "standing";
         if (!["sit", "sit-down", "stand-up"].includes(player.activity)) {
@@ -601,6 +621,62 @@ export class RoomCore {
         type: "punch",
         attackerId: p.id,
         targetId: target?.state!.player.id ?? null,
+      });
+      return;
+    }
+    if (message.type === "arcade2048-action") {
+      const actor = this.tableActor(connection),
+        service = this.runtime.arcade;
+      let error: string | undefined;
+      try {
+        if (!service)
+          throw new ArcadeError("The arcade is temporarily unavailable.");
+        if (!actor || !current.home)
+          throw new ArcadeError(
+            "Your cabin is still being registered. Try again.",
+          );
+        const bucket = consume(
+          current.arcade ?? { tokens: 8, at: now },
+          now,
+          8,
+          8,
+        );
+        if (!bucket) throw new ArcadeError("One move at a time. Try again.");
+        connection.setState({ ...connection.state!, arcade: bucket });
+        const p = current.player;
+        if (
+          message.action.kind !== "leaders" &&
+          (Math.hypot(
+            p.position[0] - ARCADE_STATION.x,
+            p.position[2] - ARCADE_STATION.z,
+          ) > 3.5 ||
+            p.vehicle !== "none" ||
+            p.seatId ||
+            (current.stunnedUntil ?? 0) > now)
+        )
+          throw new ArcadeError("Walk up to the arcade to play.");
+        await service.act(
+          actor.owner,
+          actor.name,
+          message.action,
+          message.revision,
+          message.requestId,
+          now,
+        );
+      } catch (e) {
+        error =
+          e instanceof ArcadeError
+            ? e.message
+            : "Could not save that move. Your saved board is unchanged. Try again.";
+      }
+      this.send(connection, {
+        type: "arcade2048",
+        requestId: message.requestId,
+        view:
+          service && actor
+            ? service.view(actor.owner)
+            : { game: null, best: 0, leaders: [], ranked: true },
+        ...(error ? { error } : {}),
       });
       return;
     }

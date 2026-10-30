@@ -1,0 +1,10 @@
+La Baraj — original 2048 arcade cabinet
+
+Cabinet geometry, side motif and reconstruction scripts: authored for La Baraj in Blender.
+Painted timber color map and reference concept: OpenAI ImageGen, with retained prompts/provenance.
+Wood/iron base color, tangent normal and packed metallic/roughness maps: the project's original shared trim bake. No Quaternius mesh or texture is embedded in this cabinet.
+
+2048 concept: Gabriele Cirulli, https://github.com/gabrielecirulli/2048
+Rules implemented independently for this project. No upstream code or iOS app artwork is bundled.
+
+Bree Serif and Alegreya Sans: existing project fonts under the SIL Open Font License. See the project's font notices. Lettering on the cabinet is converted geometry; the live screen uses the existing web fonts.

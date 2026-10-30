@@ -1,0 +1,18 @@
+{
+  "reference_origin": "Quaternius Fantasy Props MegaKit, project-retained CC0 source copy",
+  "reference_catalog": "apps/web/public/assets/asset-catalog.json",
+  "reference_license": "references/LICENSE.txt",
+  "geometry_authorship": "Reconstructed in Blender from rendered views and aggregate component measurements. Reference topology is never imported by build_reconstructions.py.",
+  "material_authorship": "Built-in ImageGen atlas; prompt and original master retained. 512px runtime copy, WebP encoding.",
+  "initial_scope": "Two static props, not production integration or a general claim about all 3D assets",
+  "gates": {
+    "dimension_error_max_fraction": 0.01,
+    "triangles_max_ratio_to_reference": 1.0,
+    "glb_bytes_max_ratio_to_reference": 1.0,
+    "primitive_groups_max_ratio_to_reference": 1.0,
+    "visual_review_required": true,
+    "perfect_match_claim_allowed": false
+  },
+  "lantern": {"width_m":0.35734147,"depth_m":1.30231440,"height_m":1.33700764,"cage_center_blender_y":-0.8075,"hanger_center_blender_y":-0.7916,"reference_triangles":2822,"reference_bytes":176332},
+  "crate": {"width_m":0.84225857,"depth_m":0.90829331,"height_m":0.93092793,"reference_triangles":1576,"reference_bytes":161276}
+}
