@@ -55,7 +55,7 @@ The existing pose carries `vehicle: "boat"`; no new message type is added. A rem
 - At a gentle bank the boat stops in shallow water a few metres from the shoreline. The exit reach extends to the far ring (`EXIT_FAR_CLEARANCE` 3 m beyond the hull edge: about 4.1 m to the sides, 6.7 m ahead of the pivot; Phase 1 reach of 4.5 m, superseded) and shallows up to 0.4 m deep (`BOAT_WADE_DEPTH`) count as ground, but V at a shallows stop on gentle banks may still drop the driver into water; wading ashore takes a few seconds; docks and steeper banks give land exits. North-shore crossing: see Browser verification item 7.
 - Dev-mode verification is blocked by a bug that predates the boats. `React.StrictMode` runs effects twice, and the cleanup at `apps/web/src/NearbySolids.tsx:38` calls `isValid()` on a Rapier world that is already freed. The error is "null pointer passed to rust" and the scene boundary shows "The lake couldn't load". It reproduces on the base commit (6d6e3d8) as well as this branch.
 
-## Browser verification
+## Browser verification (Phase 1 placeholder boat; superseded by Runabout verification below)
 
 Because dev mode cannot load the scene, the run used the production bundle: `VITE_GAME_DIAGNOSTICS=1 npm run build`, then one `npm run preview` on 127.0.0.1:4173, offline with no room server. Playwright Chromium at 1280 x 720, synthetic `KeyboardEvent`s on `window`, telemetry from the `movement-metrics` output. The player's home is cabin 1; the central dock is at x = 0 and the boat spawns at (3.2, 0.05, 46.9), yaw pi.
 
@@ -73,7 +73,7 @@ Console in the preview session: 0 errors and 2 existing warnings (THREE.Clock de
 
 Run on commit 0ad59ae (Tasks 1 to 4), production bundle built with `VITE_GAME_DIAGNOSTICS=1`, one `npm run preview` on 127.0.0.1:4173, offline, Playwright Chromium 1280 x 720, synthetic `KeyboardEvent`s on `window`, telemetry from `movement-metrics`. The player's home is cabin 1 (spawn (55.4, 6.05, 63.8)); the runabout spawned at (3.7, 0.8, 44.875) beside the x = 0 dock.
 
-1. Parked. The boat is visible beside the dock, east side, in the lake (`captures/runabout-parked.png`). Walking up to it, the prompt "Drive the motorboat / W throttle . A/D steer . V step out" showed with the player at z 47.88 (3.0 m from the pivot at z 44.875, about 0.5 m from the stern edge); it did not show at z 49.38 (about 2.1 m from the stern edge). A parked boat is not solid for the player: the walker could stand inside the hull volume.
+1. Parked. The boat is visible beside the dock, east side, in the lake (`captures/runabout-parked.png`). Walking up to it, the prompt "Drive the motorboat / W throttle . A/D steer . V step out" showed with the player at z 47.88 (3.0 m from the pivot at z 44.875, about 0.5 m from the stern edge); it did not show at z 49.38 (about 2.1 m from the stern edge). A parked boat was reported as not solid for the player (the walker could stand inside the hull volume); Task 6 found the collider correct (see Known limits).
 2. Board and drive. V from the water boarded: vehicle "Motorboat", animation `Activity_Sit`, y 0.77. The hint reads "Motorboat / V near a bank to step out". W for 6 s reached 8.0 m/s (the cruise speed) at (3.7, 0.8, 10.9). Holding W and A then curved the boat to the left at 8 m/s. `captures/runabout-turning.png` shows the hull under way with the wheel turned; the camera is beside the boat, so the hands are only partly visible there. `captures/runabout-wheel-hands.png` is a closer view from above and behind, with the wheel turned and the driver's right hand on the rim; the left hand is occluded.
 3. Cockpit. Using only the existing camera (drag to orbit, mouse wheel to zoom in) the camera was orbited above and behind the boat and zoomed in (`captures/runabout-cockpit.png`): mahogany coaming, tufted seats, dashboard gauges and the driver in the right-hand seat.
 4. Dock collision at full throttle. Held at 8.0 m/s, the boat's path went from (-5.22, 49.12) to a stop at (-4.43, 50.66), heading 0.45 rad, beside the west side of the dock with the speed 0 within one telemetry sample; the hull did not enter the dock (`captures/runabout-dock-stop.png`). In an earlier approach the boat stopped at (0.7, 42.5) heading toward +z and could be reversed away. Caveat: both stops were from approaches that met the dock's side and pilings at a shallow angle, not a head-on hit on the dock's end (my steering loop overshot and swung wide).
@@ -90,7 +90,7 @@ Issues observed (not fixed, no source changed in this task):
 
 - Hull collision can wedge the boat against the dock. After the boat stopped alongside it, W alone did not free it; reverse with a steer (S + A/D) was needed, because the boat turns only while moving. Twice an automated W-only loop left the boat stuck until reversed.
 - The boat could not be reversed out in the first S hold after one bank stop (it moved only 0.3 m in 3 s); a later S hold worked normally, so this may be input timing from my synthetic keys, not a bug.
-- The parked boat does not block the player (see item 1).
+- The parked boat was reported as not blocking the player (see item 1); Task 6 found the collider correct (see Known limits).
 - The boarding prompt appears only close to the hull; at 2.1 m from the edge it was not shown.
 
 ## Observed issues

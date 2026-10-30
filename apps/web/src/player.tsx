@@ -29,7 +29,7 @@ import { getActivityPose } from "./activity-state";
 import { Scooter, type ScooterHandle } from "./scooter";
 import { createScooterRiderRig } from "./scooter-rider";
 import { Boat, type BoatHandle } from "./boat";
-import { BOAT_DRIVER_OFFSET } from "./boat-geometry";
+import { BOAT_DRIVER_OFFSET_VECTOR } from "./boat-geometry";
 import { boatHullBlocked } from "./boat-collision";
 import { createBoatRiderRig } from "./boat-rider";
 import {
@@ -90,7 +90,6 @@ import {
   createCharacterActivityRig,
   localFacing,
 } from "./character-actions";
-const boatDriverOffset = new THREE.Vector3(...BOAT_DRIVER_OFFSET);
 /** The local boat's jet stream follows the speed the frame loop publishes. */
 const localBoatSpeed = () => getBoatState().speed;
 export type ViewMode = "walk" | "overview" | "study" | "settlement" | "home";
@@ -1126,7 +1125,7 @@ export function Player({
     if (boatingNow && boat.current) {
       const { wheelAngle, lean } = boatMotion.current;
       boat.current.update({ wheelAngle, lean });
-      boat.current.driverSeatLocal(object.position).add(boatDriverOffset);
+      boat.current.driverSeatLocal(object.position).add(BOAT_DRIVER_OFFSET_VECTOR);
       boatRider.current?.update({
         left: boat.current.gripWorldPosition("left", leftGrip),
         right: boat.current.gripWorldPosition("right", rightGrip),

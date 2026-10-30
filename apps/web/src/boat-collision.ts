@@ -3,12 +3,12 @@ import { BOAT_DIMENSIONS } from "./boat-geometry";
 import { LAKE_LEVEL } from "./swim-motion";
 
 const { beam, bowExtent, sternExtent } = BOAT_DIMENSIONS;
-/** Hull box: full beam and length, 0.6 m tall, riding above the lakebed. */
-const HALF_EXTENTS = { x: beam / 2, y: 0.3, z: (bowExtent + sternExtent) / 2 };
+/** Hull box: full beam and length, 0.7 m tall (world y 0.10..0.80, clearing the 0.65..0.89 dock deck slab), riding above the lakebed. */
+const HALF_EXTENTS = { x: beam / 2, y: 0.35, z: (bowExtent + sternExtent) / 2 };
 /** The hull midpoint lies this far forward of the pivot (the boat origin). */
 const CENTRE_FORWARD = (bowExtent - sternExtent) / 2;
 /** Box centre height: its 0.05 m underside clears a deep lakebed, so open water never drags. */
-const CENTRE_Y = LAKE_LEVEL + 0.35;
+const CENTRE_Y = LAKE_LEVEL + 0.4;
 /** Extra distance swept past this frame's motion, so the hull stops short of contact. */
 const LOOK_AHEAD = 0.3;
 

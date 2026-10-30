@@ -31,12 +31,11 @@ import { SwimWake } from "./SwimWake";
 import { BoatSpray } from "./boat-spray.tsx";
 import { Boat, type BoatHandle } from "./boat";
 import { createBoatRiderRig } from "./boat-rider";
-import { BOAT_DRIVER_OFFSET } from "./boat-geometry";
+import { BOAT_DRIVER_OFFSET_VECTOR } from "./boat-geometry";
 import { BOAT_TUNING, boatWheelTarget, inferBoatTurnRate } from "./boat-motion";
 import { AFK_AFTER_MS } from "../../../packages/shared/protocol";
 
 // Only the isolated local browser lab may shorten the visual timeout for QA.
-const boatDriverOffset = new THREE.Vector3(...BOAT_DRIVER_OFFSET);
 const displayAfkAfter =
   import.meta.env.VITE_PLANES_PAIRED_LAB === "1" &&
   ["localhost", "127.0.0.1"].includes(location.hostname) &&
@@ -334,7 +333,7 @@ function RemoteAvatarRig({
       const handle = boat.current;
       if (handle) {
         handle.update({ wheelAngle: state.wheelAngle, lean: state.lean });
-        handle.driverSeatLocal(object.position).add(boatDriverOffset);
+        handle.driverSeatLocal(object.position).add(BOAT_DRIVER_OFFSET_VECTOR);
         handle.gripWorldPosition("left", gripLeft);
         handle.gripWorldPosition("right", gripRight);
         helpers.current?.boatRider.update({

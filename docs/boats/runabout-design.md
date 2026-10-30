@@ -18,7 +18,7 @@ Reference: the throwaway concept renders in `docs/art-direction/runabout/` (`con
 ## Non-goals
 
 - Passengers. The six seats are for looks and future Phase 3; only the driver sits in this change.
-- Changes to tuning, controls, protocol or the server. The 8 m/s cruise, steering feel, `vehicle: "boat"` and pose traffic all stay as they are.
+- Changes to tuning, controls (superseded for the boost by the Built note below), protocol or the server. The 8 m/s cruise, steering feel, `vehicle: "boat"` and pose traffic all stay as they are.
 - New sounds, damage or fuel.
 
 ## Anti-goals (would count as failure even if it technically works)
@@ -110,4 +110,5 @@ Final numbers (commit 0ad59ae, verified in the game; see `README.md` "Runabout v
 - Rim slide: both hands hold their grips at wheel angle 0. When the wheel is turned and a hand cannot reach its grip, it slides along the rim (same hub, plane and radius) to the nearest reachable point and stays on the wheel.
 - Hub and seat positions are authored in the GLB (`SteeringWheel`, `Grip_L`/`Grip_R`, `DriverSeat`, `Seat_0` to `Seat_5`); their coordinates are not restated here.
 - Remote boats use the LOD, cast no shadows and are not solid.
-- Captures in `docs/boats/captures/` (`runabout-*.png`). Observed in the game: frame time was vsync-bound at 120 Hz in every run, so the boat's cost was not separable; hull collision stopped the boat at the dock and the boat can wedge there until reversed with a steer; a parked boat does not block the player.
+- Captures in `docs/boats/captures/` (`runabout-*.png`). Observed in the game: frame time was vsync-bound at 120 Hz in every run, so the boat's cost was not separable; hull collision stopped the boat at the dock and the boat can wedge there until reversed with a steer; a parked boat was reported as not solid, but Task 6 found the collider correct (see README Known limits).
+- Owner additions after acceptance (Task 6): the wake ring around the driven boat was removed; a speed-scaled jet stream (rooster-tail spray and fading V wake, also on remote boats from the pose speed) was added; holding the run key (Shift) while throttling boosts the boat — `BOAT_TUNING.boostMultiplier` 1.6, `boostAccel` 2, `boostTurnFactor` 0.75, `boostDecay` 1.6; no protocol change. This supersedes the Non-goals line on tuning and controls.

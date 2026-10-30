@@ -19,6 +19,12 @@ const TAIL_PARTICLES = 20;
 /** Rooster-tail reach and peak height as fractions of the wake length. */
 const TAIL_REACH = 0.32;
 const TAIL_HEIGHT = 0.09;
+/** Largest stream: a full boost, plus a 1 m margin on the bounding spheres. */
+const MAX_SPRAY = spraySize(
+  BOAT_TUNING.cruise * BOAT_TUNING.boostMultiplier,
+  BOAT_TUNING.cruise,
+);
+const BOUNDS_MARGIN = 1;
 
 const foam = new THREE.Color("#f6f2e6");
 const time = { value: 0 };
@@ -50,7 +56,10 @@ const wakeGeometry = (() => {
   );
   geometry.setIndex(index);
   // Packed positions are not metres: bound the largest (boosted) wake instead.
-  geometry.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, 0, -7), 9);
+  geometry.boundingSphere = new THREE.Sphere(
+    new THREE.Vector3(0, 0, -MAX_SPRAY.length / 2),
+    MAX_SPRAY.length / 2 + MAX_SPRAY.width / 2 + BOUNDS_MARGIN,
+  );
   return geometry;
 })();
 
@@ -69,7 +78,7 @@ const tailGeometry = (() => {
   );
   geometry.boundingSphere = new THREE.Sphere(
     new THREE.Vector3(0, 0.8, -2.5),
-    4,
+    TAIL_REACH * MAX_SPRAY.length + BOUNDS_MARGIN,
   );
   return geometry;
 })();

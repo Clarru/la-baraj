@@ -35,6 +35,11 @@ export const BOAT_DIMENSIONS = {
  */
 export const BOAT_DRIVER_OFFSET = [0, -0.04, 0.33] as const;
 
+/** `BOAT_DRIVER_OFFSET` as a vector for per-frame `.add()` calls. Read-only, shared: never mutate. */
+export const BOAT_DRIVER_OFFSET_VECTOR = new THREE.Vector3(
+  ...BOAT_DRIVER_OFFSET,
+);
+
 /** The driver's left is +X (GLB `Grip_L`); right is −X (`Grip_R`). */
 export type BoatSide = "left" | "right";
 
