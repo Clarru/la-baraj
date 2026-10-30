@@ -1,6 +1,6 @@
 # Boat bumps and bending wake — design note and plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+**For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Give the runabout a wake that bends through turns and lingers where the boat has been, and verify boat-to-boat bumps and turning collision in a real two-client room against a locally run room server.
 
@@ -133,6 +133,8 @@ Today `boat-spray.tsx` draws the V wake in hull-local space from a packed geomet
 - [x] **Step 8:** Write results file and README entry; commit `Verify boat bumps and bending wake in a local two-client room`.
 
 ## Ledger
+
+- **R10** — the plan header is a plain paragraph, not a blockquote, per the owner's no-callout rule (controller edit after the clean re-review).
 
 - **R1** — keep main's authoritative boat impacts and turning sweep; verify rather than re-implement (above).
 - **R2** — the wake ribbon is a per-boat dynamic geometry (not instanced): 30 boats × 432 vertices is small, and instancing would need a per-instance texture for the trail anyway.
