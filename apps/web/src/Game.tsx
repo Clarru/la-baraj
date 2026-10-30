@@ -26,6 +26,7 @@ import { Physics } from "@react-three/rapier";
 import { GameIcon } from "./GameArt";
 import * as THREE from "three";
 import { Terrain, LakeWater, Roads, Vegetation } from "./environment";
+import { Meadow } from "./MeadowLayer";
 import { Settlement } from "./settlement";
 import { WorldActivities, type ActivityPrompt } from "./activities";
 import { SceneLoading } from "./SceneLoading";
@@ -552,6 +553,7 @@ export default function Game({ initialName }: { initialName: string }) {
                 <Roads />
                 <LakeWater evening={evening} forceDay={performanceLab} />
                 <Vegetation flat={flat} />
+                <Meadow forceHigh={performanceLab} />
                 <Settlement
                   flat={flat}
                   interiorIndex={interiorIndex}

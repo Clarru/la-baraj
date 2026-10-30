@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import * as THREE from "three";
-import { meadowTier, TIERS, canMeadow, chunkWindow, sampleChunk, densityAt, tuftGeometry, flowerGeometry, meadowMaterial, FLOWER_COLOURS } from "./meadow";
+import { meadowTier, TIERS, canMeadow, chunkWindow, sampleChunk, densityAt, tuftGeometry, flowerGeometry, meadowMaterial, FLOWER_COLOURS, planChunkUpdates, windAmplitude } from "./meadow";
 import { FISHING_CLEARANCE, SHARED_GROUND_CLEARANCE } from "./geography";
 import { southShore, cabinSpots, fishingSpots, terrainHeight } from "./geography";
 
@@ -84,4 +84,25 @@ describe("clearance radii", () => {
     for (let i = 0; i < r.grassCount; i++)
       expect(Math.hypot(r.grass[i*6] - f.x, r.grass[i*6+2] - f.z)).toBeGreaterThanOrEqual(FISHING_CLEARANCE);
   });
+});
+
+describe("planChunkUpdates", () => {
+  it("keeps existing chunks, frees departed slots and reuses them for new keys nearest-first", () => {
+    const current = new Map([["0,0", 0], ["1,0", 1], ["9,9", 2]]);
+    const plan = planChunkUpdates(current, ["0,0", "1,0", "0,1"], 4);
+    expect(plan.clear).toEqual([2]);
+    expect(plan.build).toEqual([{ key: "0,1", slot: 2 }]);
+  });
+  it("never exceeds the slot count when the whole window changes", () => {
+    const current = new Map(Array.from({ length: 49 }, (_, i) => [`${i},100`, i] as const));
+    const next = chunkWindow(0, 0, TIERS.high);
+    const plan = planChunkUpdates(current, next, 49);
+    expect(plan.build).toHaveLength(49);
+    expect(new Set(plan.build.map((b) => b.slot)).size).toBe(49);
+    expect(plan.build[0].key).toBe(next[0]);
+  });
+});
+it("silences wind under reduced motion", () => {
+  expect(windAmplitude(true)).toBe(0);
+  expect(windAmplitude(false)).toBeGreaterThan(0);
 });

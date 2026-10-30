@@ -309,3 +309,28 @@ nonPerturbedNormal = normal;`,
   };
   return material;
 }
+
+export type SlotPlan = { build: { key: ChunkKey; slot: number }[]; clear: number[] };
+/** Keys leaving the window free their slot; new keys take free slots nearest-first. Slots count === ring*ring. */
+export function planChunkUpdates(current: Map<ChunkKey, number>, next: ChunkKey[], slotCount: number): SlotPlan {
+  const wanted = new Set(next);
+  const used = new Set<number>();
+  const clear: number[] = [];
+  for (const [key, slot] of current) {
+    if (wanted.has(key)) used.add(slot);
+    else clear.push(slot);
+  }
+  const free: number[] = [];
+  for (let s = 0; s < slotCount; s++) if (!used.has(s)) free.push(s);
+  const build: SlotPlan["build"] = [];
+  let f = 0;
+  for (const key of next) {
+    if (current.has(key)) continue;
+    if (f >= free.length) break;
+    build.push({ key, slot: free[f++] });
+  }
+  return { build, clear };
+}
+export function windAmplitude(reducedMotion: boolean): number {
+  return reducedMotion ? 0 : 0.09;
+}
