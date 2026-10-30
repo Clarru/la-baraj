@@ -71,10 +71,68 @@ const pose = (z: number, vz = 0, yaw = 0, revision = 0): PlayerPose => ({
   vehicle: "boat",
   posture: "standing",
   speed: vz,
-  boat: { position: [0, z], velocity: [0, vz], yaw },
+  boat: {
+    position: [0, z],
+    velocity: [0, vz],
+    yaw,
+    angularVelocity: 0,
+    rudder: 0,
+  },
   boatImpactRevision: revision,
 });
 describe("shared boat authority", () => {
+  it("uses physical yaw rather than a smoothed visual facing and preserves rotational state", async () => {
+    const f = await fixture(),
+      packet = pose(0, 0);
+    packet.yaw = 0.4;
+    packet.boat!.yaw = 0.2;
+    packet.boat!.angularVelocity = 0.3;
+    packet.boat!.rudder = 0.5;
+    await f.send(f.a, packet, 0);
+    expect(f.a.state!.player.yaw).toBeCloseTo(0.2);
+    expect(f.a.state!.player.boat).toMatchObject({
+      angularVelocity: 0.3,
+      rudder: 0.5,
+    });
+  });
+  it("sends contact-point yaw to modern drivers while keeping an older driver rotation locked", async () => {
+    const f = await fixture();
+    const first = pose(0, 8);
+    first.position[0] = 0.7;
+    first.boat!.position[0] = 0.7;
+    await f.send(f.a, first, 0);
+    await f.send(f.b, pose(7), 0);
+    const next = {
+      ...first,
+      position: [0.7, 0.05, 1.6] as [number, number, number],
+      boat: { ...first.boat!, position: [0.7, 1.6] as [number, number] },
+    };
+    await f.send(f.a, next, 200);
+    expect(
+      Math.abs(f.impacts(f.b).at(-1)!.boat.angularVelocity!),
+    ).toBeGreaterThan(0.05);
+    const legacy = await fixture();
+    const old = pose(7);
+    delete old.boat!.angularVelocity;
+    delete old.boat!.rudder;
+    await legacy.send(legacy.a, first, 0);
+    await legacy.send(legacy.b, old, 0);
+    await legacy.send(legacy.a, next, 200);
+    expect(
+      legacy.impacts(legacy.b).at(-1)!.boat.angularVelocity,
+    ).toBeUndefined();
+    expect(legacy.b.closed).toBe(false);
+  });
+  it("propagates a collision into a third occupied boat with one final correction per owner", async () => {
+    const f = await fixture();
+    await f.send(f.a, pose(0, 8), 0);
+    await f.send(f.b, pose(6.4), 0);
+    await f.send(f.observer, pose(12.8), 0);
+    await f.send(f.a, pose(1.6, 8), 200);
+    for (const c of [f.a, f.b, f.observer])
+      expect(f.impacts(c)).toHaveLength(1);
+    expect(f.impacts(f.observer)[0].boat.velocity[1]).toBeGreaterThan(1);
+  });
   it("uses the physical boat position instead of lagged visual feet for collision state", async () => {
     const f = await fixture();
     const packet = pose(1.6, 8);
@@ -251,6 +309,9 @@ describe("shared boat authority", () => {
       { boat: { ...pose(0).boat, yaw: Infinity } },
       { boatImpactRevision: -1 },
       { boatImpactRevision: 1.5 },
+      { boat: { ...pose(0).boat, angularVelocity: 2 } },
+      { boat: { ...pose(0).boat, angularVelocity: NaN } },
+      { boat: { ...pose(0).boat, rudder: 1.01 } },
     ])
       expect(
         parseClientMessage(

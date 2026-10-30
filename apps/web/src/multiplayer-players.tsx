@@ -371,7 +371,10 @@ function RemoteAvatarRig({ id, room }: { id: string; room: RemoteCardRoom }) {
       if (Number.isFinite(yaw) && dt > 0) {
         const turnRate = inferBoatTurnRate(state.previousYaw, yaw, dt);
         state.wheelAngle +=
-          (boatWheelTarget(turnRate) - state.wheelAngle) *
+          ((player.boat?.rudder === undefined
+            ? boatWheelTarget(turnRate)
+            : player.boat.rudder * BOAT_TUNING.wheelMaxAngle) -
+            state.wheelAngle) *
           (1 - Math.exp(-10 * dt));
         state.lean +=
           (THREE.MathUtils.clamp(

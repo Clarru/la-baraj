@@ -1,13 +1,13 @@
 import { Suspense, useLayoutEffect, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import {
-  CuboidCollider,
+  ConvexHullCollider,
   RigidBody,
   type RapierRigidBody,
 } from "@react-three/rapier";
 import * as THREE from "three";
 import { Boat } from "./boat";
-import { BOAT_DIMENSIONS } from "./boat-geometry";
+import { PARKED_BOAT_VERTICES } from "./boat-collision";
 import { LAKE_LEVEL } from "./swim-motion";
 import type { MultiplayerRoom } from "./multiplayer";
 
@@ -58,14 +58,7 @@ export function RemoteMooredBoat({
       colliders={false}
       userData={{ remoteBoat: true }}
     >
-      <CuboidCollider
-        args={[BOAT_DIMENSIONS.beam / 2, 0.35, BOAT_DIMENSIONS.length / 2]}
-        position={[
-          0,
-          0.25,
-          (BOAT_DIMENSIONS.bowExtent - BOAT_DIMENSIONS.sternExtent) / 2,
-        ]}
-      />
+      <ConvexHullCollider args={[PARKED_BOAT_VERTICES]} />
       <group ref={visual} visible={false}>
         <Suspense fallback={null}>
           <Boat detail="lod" />

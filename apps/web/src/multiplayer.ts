@@ -4,6 +4,10 @@ import {
   setClientDiagnosticState,
 } from "./client-diagnostics";
 import type { CruceAction, CruceView } from "../../../packages/shared/cruce";
+import {
+  quantizeBoatPose,
+  BOAT_WATERLINE,
+} from "../../../packages/shared/boats";
 import PartySocket from "partysocket";
 import { InputActivity } from "./input-activity";
 import {
@@ -726,7 +730,9 @@ export class MultiplayerRoom {
       vehicle: vehicleKind(sample.vehicle),
       ...((sample.boat ?? this.lastPose?.boat)
         ? {
-            boat: (sample.boat ?? this.lastPose?.boat) as BoatPose,
+            boat: quantizeBoatPose(
+              (sample.boat ?? this.lastPose?.boat) as BoatPose,
+            ),
             boatImpactRevision: this.boatRevision,
           }
         : {}),
@@ -750,6 +756,14 @@ export class MultiplayerRoom {
     const ownSeat = Object.entries(this.seats).find(
       ([, id]) => id === this.view.selfId,
     )?.[0];
+    if (pose.vehicle === "boat" && pose.boat) {
+      pose.yaw = pose.boat.yaw;
+      pose.position = [
+        pose.boat.position[0],
+        BOAT_WATERLINE,
+        pose.boat.position[1],
+      ];
+    }
     if (ownSeat) pose.seatId = ownSeat;
     this.lastPose = pose;
     this.publishPose(pose);
