@@ -13,6 +13,10 @@ import { WorldRoom } from "../apps/server/index";
 import { HOUSING_EPOCH, type ServerMessage } from "../packages/shared/protocol";
 import type { SessionState } from "../apps/server/room-core";
 import { ARCADE_STATION } from "../packages/shared/arcade2048-station";
+import {
+  ARCADE_DAILY_WRITE_LIMIT,
+  type ArcadeRecord,
+} from "../apps/server/arcade2048";
 class Storage {
   data = new Map<string, unknown>();
   alarm: number | null = null;
@@ -120,4 +124,61 @@ it("actual Worker restores personal boards after hibernation, advertises capabil
   expect(
     [...storage.data.keys()].filter((k) => k.startsWith("arcade2048-v1:")),
   ).toHaveLength(1);
+});
+
+it("isolates a persisted exhausted arcade budget from other world writes", async () => {
+  const storage = new Storage(),
+    a = client(0),
+    owner = `home:${HOUSING_EPOCH}:0`;
+  const key = `arcade2048-v1:${HOUSING_EPOCH}:${owner}`;
+  const row: ArcadeRecord = {
+    version: 1,
+    owner,
+    name: a.state.player.nickname,
+    game: {
+      board: [2, 2, ...Array(14).fill(0)],
+      score: 0,
+      moves: 0,
+      revision: 1,
+      continued: false,
+    },
+    best: 0,
+    bestTile: 2,
+    bestAt: 0,
+    requests: [],
+    writeBudget: {
+      day: Math.floor(Date.now() / 86400000),
+      count: ARCADE_DAILY_WRITE_LIMIT,
+    },
+  };
+  await storage.put(key, row);
+  const world = new WorldRoom(
+    { storage, connections: [a] } as never,
+    {} as never,
+  );
+  await world.onStart();
+  const action = (id: string, kind: string) =>
+    JSON.stringify({
+      type: "arcade2048-action",
+      requestId: id,
+      revision: 1,
+      action: { kind, direction: "left" },
+    });
+  await world.onMessage(a as never, action("blocked", "move"));
+  expect(
+    a.messages.filter((m) => m.type === "arcade2048").at(-1),
+  ).toMatchObject({
+    error: expect.stringContaining("Saving is paused"),
+    view: { game: row.game, best: 0 },
+  });
+  expect(await storage.get(key)).toEqual(row);
+  await world.onMessage(a as never, action("read", "resume"));
+  const resume = a.messages.filter((m) => m.type === "arcade2048").at(-1)!;
+  expect(resume.type === "arcade2048" && resume.error).toBeUndefined();
+  await world.onMessage(
+    a as never,
+    JSON.stringify({ type: "fire", lit: false }),
+  );
+  expect(await storage.get("fire")).toEqual({ lit: false, revision: 1 });
+  expect(a.close).not.toHaveBeenCalled();
 });
