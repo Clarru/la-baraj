@@ -7,3 +7,5 @@ failed-uv-bake/*.blend
 lantern-baseColor.webp
 lantern-normal.webp
 lantern-metallicRoughness.webp
+
+*-original-materials.json
