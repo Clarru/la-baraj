@@ -209,6 +209,9 @@ export function rng(seed: number) {
     return seed / 4294967296;
   };
 }
+export const DOCK_CENTRE_X = 4;
+export const DOCK_CLEARANCE = 16;
+export const dockCentreZ = () => southShore(0) + 12;
 export function canPlant(x: number, z: number): boolean {
   return (
     !inWater(x, z) &&
@@ -216,6 +219,6 @@ export function canPlant(x: number, z: number): boolean {
     shoreDistance(x, z) > 4 &&
     roadDistance(x, z) > 2.2 &&
     !cabinSpots.some((c) => Math.hypot(x - c.x, z - c.z) < 18) &&
-    Math.hypot(x - 4, z - (southShore(0) + 12)) > 16
+    Math.hypot(x - DOCK_CENTRE_X, z - dockCentreZ()) > DOCK_CLEARANCE
   );
 }

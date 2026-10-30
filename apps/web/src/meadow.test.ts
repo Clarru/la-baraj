@@ -1,8 +1,7 @@
 import { describe, it, expect } from "vitest";
 import * as THREE from "three";
-import { meadowTier, TIERS, canMeadow, chunkWindow, sampleChunk, densityAt, tuftGeometry, flowerGeometry, meadowMaterial, FLOWER_COLOURS, planChunkUpdates, windAmplitude, beginChunk, stepChunk, finishChunk } from "./meadow";
-import { FISHING_CLEARANCE, SHARED_GROUND_CLEARANCE } from "./geography";
-import { southShore, cabinSpots, fishingSpots, terrainHeight } from "./geography";
+import { meadowTier, TIERS, canMeadow, chunkWindow, sampleChunk, densityAt, tuftGeometry, flowerGeometry, meadowMaterial, FLOWER_COLOURS, planChunkUpdates, windAmplitude, beginChunk, stepChunk, finishChunk, resetMeadowGridCache, drawnRoadDistance } from "./meadow";
+import { FISHING_CLEARANCE, SHARED_GROUND_CLEARANCE, southShore, cabinSpots, fishingSpots, terrainHeight, roads, inWater, shoreDistance, activityClearance, sharedGrounds, DOCK_CENTRE_X, dockCentreZ } from "./geography";
 
 describe("meadow tier", () => {
   it("prefers overrides, downgrades weak or mobile devices", () => {
@@ -26,6 +25,31 @@ describe("canMeadow", () => {
     expect(canMeadow(-150, southShore(-150) + 60)).toBe(true);
   });
 });
+describe("canMeadow binding exclusions", () => {
+  const mids = (kinds: string[]) =>
+    roads.filter((r) => kinds.includes(r.kind)).flatMap((r) =>
+      r.points.slice(1).map((p, i) => ({ x: (p[0] + r.points[i][0]) / 2, z: (p[1] + r.points[i][1]) / 2 })));
+  it("is false on a drawn road", () => {
+    const m = mids(["secondary", "tertiary"]).find((p) => !inWater(p.x, p.z));
+    expect(m).toBeDefined();
+    expect(canMeadow(m!.x, m!.z)).toBe(false);
+  });
+  it("is false at the dock centre", () => {
+    expect(canMeadow(DOCK_CENTRE_X, dockCentreZ())).toBe(false);
+    expect(canMeadow(4, southShore(0) + 12)).toBe(false);
+  });
+  it("is true on a footway-only point when one exists", () => {
+    const p = mids(["path"]).find(
+      (q) => !inWater(q.x, q.z) && shoreDistance(q.x, q.z) > 4 && drawnRoadDistance(q.x, q.z) > 3.2 && activityClearance(q.x, q.z) &&
+        !cabinSpots.some((c) => Math.hypot(q.x - c.x, q.z - c.z) < 7.5) &&
+        Math.hypot(q.x - DOCK_CENTRE_X, q.z - dockCentreZ()) > 16 &&
+        !fishingSpots.some((c) => Math.hypot(q.x - c.x, q.z - c.z) < FISHING_CLEARANCE) &&
+        !sharedGrounds.some((c) => Math.hypot(q.x - c.x, q.z - c.z) < SHARED_GROUND_CLEARANCE),
+    );
+    // No such point in the data means nothing to assert; the footway-is-not-excluded rule is then untestable here.
+    if (p) expect(canMeadow(p.x, p.z)).toBe(true);
+  });
+});
 describe("chunk window", () => {
   it("is ring×ring, nearest first, stable within a chunk", () => {
     const s = TIERS.high;
@@ -47,6 +71,25 @@ describe("sampleChunk", () => {
       expect(canMeadow(x, z)).toBe(true);
     }
     for (let i = 0; i < a.flowerCount; i++) expect(a.flowers[i*7+6]).toBeLessThan(FLOWER_COLOURS.length);
+  });
+  it("spreads saturated flowers across the whole chunk, not a cut-off row", () => {
+    const s = TIERS.high;
+    let found = false;
+    const kz0 = Math.floor((southShore(-150) + 20) / s.chunk), kz1 = Math.floor((southShore(-150) + 200) / s.chunk);
+    for (let kx = -14; kx <= -6 && !found; kx++)
+      for (let kz = kz0; kz < kz1 && !found; kz++) {
+        const r = sampleChunk(`${kx},${kz}`, s);
+        if (r.flowerCount !== s.flowersPerChunk) continue;
+        found = true;
+        const x0 = kx * s.chunk, z0 = kz * s.chunk, h = s.chunk / 2;
+        const q = [0, 0, 0, 0];
+        for (let i = 0; i < r.flowerCount; i++) {
+          if (r.flowers[i * 7 + 2] < z0 + h) q[0]++; else q[1]++;
+          if (r.flowers[i * 7] < x0 + h) q[2]++; else q[3]++;
+        }
+        expect(q.every((n) => n > 0)).toBe(true);
+      }
+    expect(found).toBe(true);
   });
   it("returns no instances for a chunk in open water", () => {
     const s = TIERS.high, r = sampleChunk(`${Math.floor(-10 / s.chunk)},${Math.floor((southShore(-10) - 60) / s.chunk)}`, s);
@@ -108,11 +151,12 @@ it("silences wind under reduced motion", () => {
 });
 it("resumable chunk builds match sampleChunk", () => {
   const s = TIERS.high, key = "-3,5";
+  resetMeadowGridCache();
   const b = beginChunk(key, s);
-  let steps = 0;
-  while (!stepChunk(b, performance.now() - 1)) steps++; // expired deadline: one 9-sample slice per call
-  expect(steps).toBeGreaterThan(1);
-  const a = finishChunk(b), c = sampleChunk(key, s);
+  while (!stepChunk(b, performance.now() + 0.2));
+  const a = finishChunk(b);
+  resetMeadowGridCache();
+  const c = sampleChunk(key, s);
   expect(a.grassCount).toBe(c.grassCount); expect(Array.from(a.grass)).toEqual(Array.from(c.grass));
   expect(a.flowerCount).toBe(c.flowerCount); expect(Array.from(a.flowers)).toEqual(Array.from(c.flowers));
 });

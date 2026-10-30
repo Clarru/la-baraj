@@ -13,6 +13,9 @@ import {
   SHARED_GROUND_CLEARANCE,
   southShore,
   rng,
+  DOCK_CENTRE_X,
+  DOCK_CLEARANCE,
+  dockCentreZ,
 } from "./geography";
 
 export type MeadowTier = "off" | "low" | "high";
@@ -62,7 +65,7 @@ export function drawnRoadDistance(x: number, z: number): number {
 /** `margin` inflates every exclusion radius; the chunk grid uses it so jittered points stay valid. */
 function plantable(x: number, z: number, shore: number, wet: boolean, margin: number): boolean {
   if (wet || shore <= 4 + margin) return false;
-  if (Math.hypot(x - 4, z - (southShore(0) + 12)) <= 16 + margin) return false;
+  if (Math.hypot(x - DOCK_CENTRE_X, z - dockCentreZ()) <= DOCK_CLEARANCE + margin) return false;
   for (const c of cabinSpots) if (Math.hypot(x - c.x, z - c.z) < 7.5 + margin) return false;
   for (const p of fishingSpots) if (Math.hypot(x - p.x, z - p.z) < FISHING_CLEARANCE + margin) return false;
   for (const p of sharedGrounds) if (Math.hypot(x - p.x, z - p.z) < SHARED_GROUND_CLEARANCE + margin) return false;
@@ -120,14 +123,19 @@ const flowerPatch = (x: number, z: number) => valueNoise(x / 20 + 11.3, z / 20 -
 
 type Grid = { height: Float32Array; ok: Uint8Array };
 export type ChunkBuild = { key: ChunkKey; settings: TierSettings; grid: Grid; cursor: number; total: number; kx: number; kz: number };
-const gridCache = new Map<ChunkKey, Grid>();
+const gridCache = new Map<string, Grid>();
+/** Test-only: forget every cached grid. */
+export function resetMeadowGridCache(): void {
+  gridCache.clear();
+}
+const gridKey = (key: ChunkKey, settings: TierSettings) => `${settings.chunk}:${key}`;
 const GRID_CACHE_CAP = 512;
 
 /** Starts a resumable chunk build; a cached grid makes the build complete immediately. */
 export function beginChunk(key: ChunkKey, settings: TierSettings): ChunkBuild {
   const n = settings.chunk / 2 + 1;
   const [kx, kz] = key.split(",").map(Number);
-  const cached = gridCache.get(key);
+  const cached = gridCache.get(gridKey(key, settings));
   if (cached) return { key, settings, grid: cached, cursor: n * n, total: n * n, kx, kz };
   return { key, settings, grid: { height: new Float32Array(n * n), ok: new Uint8Array(n * n) }, cursor: 0, total: n * n, kx, kz };
 }
@@ -147,8 +155,8 @@ export function stepChunk(build: ChunkBuild, deadlineMs: number): boolean {
     build.cursor++;
     if (build.cursor % 9 === 0 && build.cursor < build.total && performance.now() >= deadlineMs) return false;
   }
-  if (gridCache.size >= GRID_CACHE_CAP) gridCache.delete(gridCache.keys().next().value as ChunkKey);
-  gridCache.set(key, grid);
+  if (gridCache.size >= GRID_CACHE_CAP) gridCache.delete(gridCache.keys().next().value as string);
+  gridCache.set(gridKey(key, settings), grid);
   return true;
 }
 export function sampleChunk(key: ChunkKey, settings: TierSettings): ChunkSample {
@@ -168,8 +176,15 @@ export function finishChunk(build: ChunkBuild): ChunkSample {
   let grassCount = 0, flowerCount = 0;
   const grassPerCell = settings.grassPerChunk / (cells * cells);
   const flowersPerCell = (settings.flowersPerChunk / (cells * cells)) * 2.2;
-  for (let j = 0; j < cells; j++)
-    for (let i = 0; i < cells; i++) {
+  // Shuffled visiting order so capacity saturation cuts patches ragged, not along a row.
+  const order = Array.from({ length: cells * cells }, (_, q) => q);
+  for (let q = order.length - 1; q > 0; q--) {
+    const r = Math.floor(random() * (q + 1));
+    [order[q], order[r]] = [order[r], order[q]];
+  }
+  for (const q of order) {
+    const i = q % cells, j = (q - i) / cells;
+    {
       const k = j * n + i;
       if (!(ok[k] && ok[k + 1] && ok[k + n] && ok[k + n + 1])) continue;
       const h00 = height[k], h10 = height[k + 1], h01 = height[k + n], h11 = height[k + n + 1];
@@ -206,6 +221,7 @@ export function finishChunk(build: ChunkBuild): ChunkSample {
         flowers[o + 6] = other < 0.2 ? Math.floor(random() * FLOWER_COLOURS.length) : dominant;
       }
     }
+  }
   return { grass, grassCount, flowers, flowerCount };
 }
 
@@ -288,9 +304,12 @@ export function flowerGeometry(): THREE.BufferGeometry {
   return build(tris);
 }
 
+const DEFAULT_WIND = 0.09;
+/** Both sway frequencies return to the same phase after this many seconds. */
+export const TIME_PERIOD = 8 * Math.PI;
 export const meadowUniforms = {
   uTime: { value: 0 },
-  uWind: { value: 0.12 },
+  uWind: { value: DEFAULT_WIND },
   uFull: { value: TIERS.high.fullRadius },
   uFade: { value: TIERS.high.fadeRadius },
 };
@@ -326,10 +345,11 @@ float vis = clamp((density * 1.12 - meadowRandom) / 0.12, 0.0, 1.0);
 vMeadow = vec2(${kind === "grass" ? "uv.y" : "uv.x"}, vis);
 float instScale = length(instanceMatrix[0].xyz);
 vec4 worldPos = modelMatrix * instanceMatrix * vec4(transformed * vis, 1.0);
-worldPos.xz += uWind * uv.y * uv.y * instScale * (sin(uTime * 1.3 + worldPos.x * 0.35 + worldPos.z * 0.2) * 0.6 + sin(uTime * 2.1 + worldPos.x * 0.9 + 1.7) * 0.4) * vec2(1.0, 0.6);
+worldPos.xz += uWind * uv.y * uv.y * instScale * (sin(uTime * 1.25 + worldPos.x * 0.35 + worldPos.z * 0.2) * 0.6 + sin(uTime * 2.0 + worldPos.x * 0.9 + 1.7) * 0.4) * vec2(1.0, 0.6);
 vec4 mvPosition = viewMatrix * worldPos;
 gl_Position = projectionMatrix * mvPosition;`,
-      );
+      )
+      .replace("#include <worldpos_vertex>", "vec4 worldPosition = worldPos;");
     shader.fragmentShader = shader.fragmentShader
       .replace("#include <common>", `#include <common>\nvarying vec2 vMeadow;`)
       // Blades are lit with their authored (up-biased) normal from either side; valid because there is no normal/bump map.
@@ -373,5 +393,5 @@ export function planChunkUpdates(current: Map<ChunkKey, number>, next: ChunkKey[
   return { build, clear };
 }
 export function windAmplitude(reducedMotion: boolean): number {
-  return reducedMotion ? 0 : 0.09;
+  return reducedMotion ? 0 : DEFAULT_WIND;
 }

@@ -17,6 +17,7 @@ import {
   flowerGeometry,
   meadowMaterial,
   meadowUniforms,
+  TIME_PERIOD,
   type ChunkKey,
   type MeadowTier,
 } from "./meadow";
@@ -47,7 +48,7 @@ const flowerColours = FLOWER_COLOURS.map((c) => new THREE.Color(c));
 
 const FRAME_BUDGET_MS = 3;
 const GUARD_WARMUP_S = 6;
-const GUARD_SLOW_MS = 28;
+const GUARD_SLOW_MS = 38;
 const GUARD_SLOW_FOR_S = 3;
 const GUARD_WINDOW = 120;
 
@@ -218,12 +219,13 @@ function writeSlot(
 export function Meadow({ forceHigh = false }: { forceHigh?: boolean }) {
   const gl = useThree((s) => s.gl);
   const initial = useMemo<MeadowTier>(() => {
-    if (forceHigh) return "high";
     const diagnostics = import.meta.env.VITE_GAME_DIAGNOSTICS === "1";
+    const override = diagnostics ? new URLSearchParams(location.search).get("meadow") : null;
+    if (forceHigh && !override) return "high";
     const context = gl.getContext();
     const info = context.getExtension("WEBGL_debug_renderer_info");
     return meadowTier({
-      override: diagnostics ? new URLSearchParams(location.search).get("meadow") : null,
+      override,
       cores: navigator.hardwareConcurrency,
       memoryGiB: (navigator as Navigator & { deviceMemory?: number }).deviceMemory,
       mobile:
@@ -233,7 +235,7 @@ export function Meadow({ forceHigh = false }: { forceHigh?: boolean }) {
     });
   }, [gl, forceHigh]);
   const [tier, setTier] = useState<MeadowTier>(initial);
-  const active = forceHigh ? "high" : tier;
+  const active = tier;
 
   useEffect(() => {
     const query = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -247,7 +249,7 @@ export function Meadow({ forceHigh = false }: { forceHigh?: boolean }) {
 
   const guard = useRef({ deltas: new Float32Array(GUARD_WINDOW), n: 0, elapsed: 0, slowFor: 0 });
   useFrame((_, dt) => {
-    meadowUniforms.uTime.value += Math.min(dt, 0.1);
+    meadowUniforms.uTime.value = (meadowUniforms.uTime.value + Math.min(dt, 0.1)) % TIME_PERIOD;
     if (forceHigh || active !== "high") return;
     const g = guard.current;
     if (dt > 0.25) return; // tab resume / long stall: not a sign of a slow machine
