@@ -9,6 +9,7 @@ import {
   type CruceSeat,
 } from "../../packages/shared/cruce";
 import "../../apps/web/src/style.css";
+import "../../apps/web/src/game-art.css";
 function App() {
   const [mode, setMode] = useState<CruceMode>("duel"),
     [scenario, setScenario] = useState("playing");
