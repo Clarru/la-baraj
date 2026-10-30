@@ -1,8 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import {
   TIERS,
+  meadowDrawCount,
+  setMeadowDrawCount,
   createMeadowFrameGuard,
   advanceMeadowFrameGuard,
   resetMeadowFrameGuard,
@@ -76,7 +78,8 @@ function makeInstanced(
   mesh.frustumCulled = false;
   mesh.castShadow = false;
   mesh.receiveShadow = true;
-  mesh.count = capacity;
+  mesh.count = 0;
+  mesh.visible = false;
   mesh.instanceMatrix.array.fill(0);
   return mesh;
 }
@@ -113,18 +116,24 @@ function MeadowMeshes({ tier }: { tier: ActiveTier }) {
     meadowUniforms.uFade.value = settings.fadeRadius;
   }, [settings]);
 
-  const state = useRef({
-    cx: NaN,
-    cz: NaN,
-    slots: new Map<ChunkKey, number>(),
-    queue: [] as Build[],
-    head: 0,
-    current: null as { build: ChunkBuild; slot: number } | null,
-  });
+  const state = useMemo(
+    () => ({
+      grassCounts: new Uint16Array(slotCount),
+      flowerCounts: new Uint16Array(slotCount),
+      cx: NaN,
+      cz: NaN,
+      slots: new Map<ChunkKey, number>(),
+      queue: [] as Build[],
+      head: 0,
+      current: null as { build: ChunkBuild; slot: number } | null,
+    }),
+    [slotCount],
+  );
 
   useFrame(({ camera }) => {
+    let changed = false;
     const frameStart = performance.now();
-    const s = state.current;
+    const s = state;
     const cx = Math.floor(camera.position.x / settings.chunk);
     const cz = Math.floor(camera.position.z / settings.chunk);
     if (cx !== s.cx || cz !== s.cz) {
@@ -135,7 +144,11 @@ function MeadowMeshes({ tier }: { tier: ActiveTier }) {
         chunkWindow(camera.position.x, camera.position.z, settings),
         slotCount,
       );
-      for (const slot of plan.clear) zeroSlot(grass, flowers, settings, slot);
+      for (const slot of plan.clear) {
+        zeroSlot(grass, flowers, settings, slot);
+        s.grassCounts[slot] = s.flowerCounts[slot] = 0;
+        changed = true;
+      }
       for (const [key, slot] of s.slots)
         if (plan.clear.includes(slot)) s.slots.delete(key);
       s.queue = plan.build;
@@ -157,15 +170,23 @@ function MeadowMeshes({ tier }: { tier: ActiveTier }) {
         s.current = { build: beginChunk(next.key, settings), slot: next.slot };
       }
       if (!stepChunk(s.current.build, deadline)) break;
-      writeSlot(
-        grass,
-        flowers,
-        settings,
-        s.current.slot,
-        finishChunk(s.current.build),
-      );
+      const sample = finishChunk(s.current.build);
+      writeSlot(grass, flowers, settings, s.current.slot, sample);
+      s.grassCounts[s.current.slot] = sample.grassCount;
+      s.flowerCounts[s.current.slot] = sample.flowerCount;
+      changed = true;
       s.slots.set(s.current.build.key, s.current.slot);
       s.current = null;
+    }
+    if (changed) {
+      setMeadowDrawCount(
+        grass,
+        meadowDrawCount(s.grassCounts, settings.grassPerChunk),
+      );
+      setMeadowDrawCount(
+        flowers,
+        meadowDrawCount(s.flowerCounts, settings.flowersPerChunk),
+      );
     }
   });
 

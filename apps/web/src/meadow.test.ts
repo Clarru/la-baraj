@@ -3,6 +3,7 @@ import {
   createMeadowFrameGuard,
   resetMeadowFrameGuard,
 } from "./meadow";
+import { meadowDrawCount, setMeadowDrawCount } from "./meadow";
 import { describe, it, expect } from "vitest";
 import * as THREE from "three";
 import {
@@ -85,12 +86,10 @@ describe("canMeadow binding exclusions", () => {
     roads
       .filter((r) => kinds.includes(r.kind))
       .flatMap((r) =>
-        r.points
-          .slice(1)
-          .map((p, i) => ({
-            x: (p[0] + r.points[i][0]) / 2,
-            z: (p[1] + r.points[i][1]) / 2,
-          })),
+        r.points.slice(1).map((p, i) => ({
+          x: (p[0] + r.points[i][0]) / 2,
+          z: (p[1] + r.points[i][1]) / 2,
+        })),
       );
   it("is false on a drawn road", () => {
     const m = mids(["secondary", "tertiary"]).find((p) => !inWater(p.x, p.z));
@@ -335,4 +334,55 @@ describe("adaptive meadow frame guard", () => {
     expect(g.n).toBe(0);
     expect(g.elapsed).toBe(0);
   });
+});
+
+it("empty meadow windows submit noinstances and sparse slots retain their offsets", () => {
+  expect(meadowDrawCount(new Uint16Array(49), 400)).toBe(0);
+  expect(meadowDrawCount(new Uint16Array([4, 0, 3, 0]), 400)).toBe(803);
+  expect(meadowDrawCount(new Uint16Array([400, 0, 0]), 400)).toBe(400);
+  expect(meadowDrawCount(new Uint16Array(49).fill(400), 400)).toBe(19600);
+});
+
+it("hidden meadow updates stay bounded and reappearing meshes fully refresh cleared slots", () => {
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute(
+    "meadowRandom",
+    new THREE.InstancedBufferAttribute(new Float32Array(4), 1),
+  );
+  const mesh = new THREE.InstancedMesh(
+    geometry,
+    new THREE.MeshBasicMaterial(),
+    4,
+  );
+  mesh.instanceColor = new THREE.InstancedBufferAttribute(
+    new Float32Array(12),
+    3,
+  );
+  try {
+    const attributes = [
+      mesh.instanceMatrix,
+      mesh.instanceColor,
+      geometry.getAttribute("meadowRandom") as THREE.InstancedBufferAttribute,
+    ];
+    for (const attr of attributes) attr.addUpdateRange(0, 1);
+    setMeadowDrawCount(mesh, 0);
+    expect(mesh.visible).toBe(false);
+    for (const attr of attributes) expect(attr.updateRanges).toHaveLength(0);
+    for (const attr of attributes) attr.addUpdateRange(1, 1);
+    const versions = attributes.map((a) => a.version);
+    setMeadowDrawCount(mesh, 3);
+    expect(mesh.visible).toBe(true);
+    expect(mesh.count).toBe(3);
+    for (const [i, attr] of attributes.entries()) {
+      expect(attr.updateRanges).toHaveLength(0);
+      expect(attr.version).toBeGreaterThan(versions[i]);
+    }
+    mesh.instanceMatrix.addUpdateRange(0, 16);
+    setMeadowDrawCount(mesh, 4);
+    expect(mesh.instanceMatrix.updateRanges).toHaveLength(1);
+  } finally {
+    mesh.dispose();
+    geometry.dispose();
+    (mesh.material as THREE.Material).dispose();
+  }
 });

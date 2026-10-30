@@ -615,3 +615,34 @@ export function resetMeadowFrameGuard(
   g.deltas.fill(0);
   g.n = g.elapsed = g.slowFor = 0;
 }
+
+/** Keep fixed slot offsets, but draw only through the last occupied instance. */
+export function meadowDrawCount(
+  counts: ArrayLike<number>,
+  perChunk: number,
+): number {
+  for (let slot = counts.length - 1; slot >= 0; slot--)
+    if (counts[slot] > 0) return slot * perChunk + counts[slot];
+  return 0;
+}
+
+/** Hidden meshes do not upload attributes. Drop queued partial ranges while
+ * hidden and force a full refresh when returning so cleared slots cannot ghost. */
+export function setMeadowDrawCount(mesh: THREE.InstancedMesh, count: number) {
+  const refresh = !mesh.visible && count > 0;
+  mesh.count = count;
+  mesh.visible = count > 0;
+  if (!mesh.visible || refresh) {
+    const random = mesh.geometry.getAttribute(
+      "meadowRandom",
+    ) as THREE.InstancedBufferAttribute;
+    for (const attribute of [
+      mesh.instanceMatrix,
+      mesh.instanceColor!,
+      random,
+    ]) {
+      attribute.clearUpdateRanges();
+      if (refresh) attribute.needsUpdate = true;
+    }
+  }
+}
