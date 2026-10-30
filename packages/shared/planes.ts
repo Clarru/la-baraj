@@ -44,6 +44,8 @@ export type PlanesView = {
   ];
   you: Side | null;
   ownPlanes: Plane[] | null;
+  /** Completed-round layouts, indexed by owner side. Never sent during play/setup. */
+  revealedPlanes?: [Plane[] | null, Plane[] | null];
   shots: [Shot[], Shot[]];
   turn: Side | null;
   winner: Side | null;

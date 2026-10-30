@@ -79,6 +79,7 @@ describe("paper-game interaction boundaries", () => {
   it("renders spectators only public grids even if an accidental own-fleet field is supplied", () => {
     const state = view();
     state.you = null;
+    state.revealedPlanes = [state.ownPlanes, state.ownPlanes];
     const html = render(state);
     expect(html).toContain("Alice&#x27;s shots");
     expect(html).toContain("Hidden planes stay private");

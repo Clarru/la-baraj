@@ -706,51 +706,38 @@
     transform: translateY(calc(-1 * var(--burst-distance)));
   }
 }
-.planes-round-result {
-  position: fixed;
-  inset: 0;
-  z-index: 200;
-  display: grid;
-  place-items: center;
-  padding: 24px;
-  background: #10232edb;
-  pointer-events: auto;
+.planes-result-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  padding: 10px 0;
 }
-.planes-round-result-paper {
-  width: min(620px, 100%);
-  padding: 48px 32px 34px;
-  text-align: center;
-  background: #f7f3e8 url("/assets/planes/notebook-paper.webp") center / 520px;
-  border-radius: 3px;
-  box-shadow: 0 12px 40px #071c2650;
+.planes-result-banner strong {
+  font: 400 25px/1.1 var(--font-heading);
+  color: var(--player-color, #244b70);
 }
-.planes-round-result-paper h2 {
-  margin: 0 0 20px;
-  font: 400 clamp(38px, 6vw, 66px)/1.08 var(--font-heading);
-  color: #244b70;
-  overflow-wrap: anywhere;
-}
-.planes-round-result-paper p {
-  margin: 0;
-  font-size: 20px;
-}
-.planes-result-count {
-  display: block;
-  margin-top: 10px;
-  color: #a44937;
-  font: 400 80px/1.1 var(--font-heading);
+.planes-result-banner span {
+  font-size: 14px;
+  color: #465e71;
   font-variant-numeric: tabular-nums;
-  animation: planes-count 220ms ease-out both;
 }
-@keyframes planes-count {
-  from {
-    opacity: 0.35;
-    transform: scale(1.12);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+.planes-result-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  border-top: 1px solid #a4bace;
+  padding-top: 12px;
+}
+.planes-result-actions p {
+  margin: 0;
+  font-size: 14px;
+  color: #465e71;
+}
+.planes-notebook .planes-result-actions .planes-ready {
+  margin: 0;
+  min-width: 180px;
 }
 @media (max-width: 900px) {
   .planes-notebook {
@@ -810,8 +797,7 @@
   }
   .planes-notebook .paper-cell--landing::before,
   .planes-notebook .paper-cell--landing::after,
-  .planes-notebook .paper-cell--landing-head,
-  .planes-result-count {
+  .planes-notebook .paper-cell--landing-head {
     animation: none;
   }
 }
@@ -840,7 +826,16 @@
 .planes-shot-core {
   stroke: var(--player-color, #244b70);
 }
-.planes-round-result-paper h2,
-.planes-round-result-paper .planes-result-count {
-  color: var(--player-color, #244b70);
+
+@media (max-width: 660px) {
+  .planes-result-banner {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .planes-result-actions {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 10px;
+  }
 }

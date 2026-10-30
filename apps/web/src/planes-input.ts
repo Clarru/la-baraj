@@ -16,7 +16,7 @@ export function blockPlanesResultExit(
     ".planes-notebook:not([hidden])[data-result-countdown]",
   );
   const count = board?.getAttribute("data-result-countdown");
-  if (count !== "1" && count !== "2" && count !== "3") return false;
+  if (!["1", "2", "3", "4", "5"].includes(count ?? "")) return false;
   event.preventDefault();
   event.stopImmediatePropagation();
   return true;

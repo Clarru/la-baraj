@@ -256,6 +256,7 @@ export default function PlanesBoard({
   );
   const playAreaRef = useRef<HTMLDivElement>(null);
   const [draft, setDraft] = useState<Plane[]>(() => randomFleet());
+  const [preparedRound, setPreparedRound] = useState<string | null>(null);
   const [selected, setSelected] = useState(0),
     [pending, setPending] = useState(false),
     [error, setError] = useState("");
@@ -286,12 +287,17 @@ export default function PlanesBoard({
     own = you === null ? null : view?.players[you],
     opponent = you === null ? null : view?.players[otherSide(you)];
   const phase = view?.phase ?? "lobby";
+  const finishedKey = `${view?.round}:${you}`;
+  const inspectingResult =
+    phase === "finished" && preparedRound !== finishedKey;
+  const finalLayoutsVisible = phase === "finished" && !presentation;
   const canPlace =
     you !== null &&
     ["lobby", "setup", "finished"].includes(phase) &&
     !own?.ready &&
     !pending &&
     !presentation &&
+    !inspectingResult &&
     roundResult === null &&
     connected;
   useEffect(() => {
@@ -308,13 +314,13 @@ export default function PlanesBoard({
   }, [open]);
   useEffect(() => {
     const key = `${view?.round}:${you}:${phase === "finished" ? "next" : "current"}`;
-    if (view?.ownPlanes && initialized.current !== key) {
+    if (
+      phase !== "finished" &&
+      view?.ownPlanes &&
+      initialized.current !== key
+    ) {
       initialized.current = key;
-      setDraft(
-        phase === "finished"
-          ? randomFleet()
-          : view.ownPlanes.map((p) => ({ ...p })),
-      );
+      setDraft(view.ownPlanes.map((p) => ({ ...p })));
       setSelected(0);
       setError("");
     }
@@ -475,7 +481,8 @@ export default function PlanesBoard({
         Math.ceil(((deadline ?? now) - now) / 1000),
       ),
     );
-  const showBattle = phase === "playing" || Boolean(presentation);
+  const showBattle =
+    phase === "playing" || Boolean(presentation) || inspectingResult;
   const shotResult = (shot: Shot) =>
     shot.result === "head"
       ? "Cockpit hit. Plane down."
@@ -489,11 +496,9 @@ export default function PlanesBoard({
       : phase === "finished"
         ? winner === null
           ? "Round over"
-          : you === winner
-            ? "You won."
-            : you === null
-              ? `${view?.players[winner]?.name ?? "The other player"} won.`
-              : "Your opponent won."
+          : inspectingResult
+            ? "See where every shot landed."
+            : "Arrange your planes for the next round."
         : away
           ? `${away.name} is reconnecting · ${seconds(away.awayUntil)}s`
           : phase === "playing"
@@ -622,8 +627,22 @@ export default function PlanesBoard({
           </div>
         ))}
       </div>
-      <div className="planes-status" role="status">
-        <strong>{status}</strong>
+      <div
+        className={`planes-status${phase === "finished" && winner !== null && !presentation ? ` planes-result-banner planes-side-${winner}` : ""}`}
+        role="status"
+      >
+        <strong>
+          {phase === "finished" && winner !== null && !presentation
+            ? `${view?.players[winner]?.name ?? "Player"} wins!`
+            : status}
+        </strong>
+        {phase === "finished" && winner !== null && !presentation && (
+          <span>
+            {roundResult !== null
+              ? `Review the final boards · ${roundResult}s`
+              : "Round complete · Final boards"}
+          </span>
+        )}
         {(phase === "playing" || phase === "setup") &&
           !away &&
           view?.deadline && (
@@ -645,12 +664,21 @@ export default function PlanesBoard({
             <div key={side} className={`planes-side-${side}`}>
               <h3>{view?.players[side]?.name ?? "Player"}'s shots</h3>
               <PaperGrid
+                planes={
+                  finalLayoutsVisible
+                    ? (view?.revealedPlanes?.[otherSide(side)] ?? [])
+                    : []
+                }
                 shots={view?.shots[side] ?? []}
                 label={`${view?.players[side]?.name ?? "Player"} public shots`}
               />
             </div>
           ))}
-          <p>You're watching. Hidden planes stay private.</p>
+          <p>
+            {finalLayoutsVisible && view?.revealedPlanes
+              ? "Round over. Final layouts revealed."
+              : "You're watching. Hidden planes stay private."}
+          </p>
         </div>
       ) : (
         <div
@@ -662,7 +690,12 @@ export default function PlanesBoard({
               <div className={`planes-own-grid planes-side-${you}`}>
                 <h3>Your planes</h3>
                 <PaperGrid
-                  planes={view?.ownPlanes ?? []}
+                  planes={
+                    finalLayoutsVisible
+                      ? (view?.revealedPlanes?.[you] ??
+                        (own?.ready ? [] : (view?.ownPlanes ?? [])))
+                      : (view?.ownPlanes ?? [])
+                  }
                   shots={incoming}
                   impact={presentation?.incoming ? presentation : null}
                   label="Your private fleet"
@@ -676,6 +709,11 @@ export default function PlanesBoard({
               <div className={`planes-main-grid planes-side-${otherSide(you)}`}>
                 <h3>{opponent?.name ?? "Opponent"}'s planes</h3>
                 <PaperGrid
+                  planes={
+                    finalLayoutsVisible
+                      ? (view?.revealedPlanes?.[otherSide(you)] ?? [])
+                      : []
+                  }
                   shots={attackShots}
                   impact={
                     presentation && !presentation.incoming ? presentation : null
@@ -689,9 +727,11 @@ export default function PlanesBoard({
                 <p className="planes-shot-note">
                   {latest
                     ? `${coordinate(latest)} · ${shotResult(latest)}`
-                    : turn
-                      ? "Choose a square to fire."
-                      : "Waiting for your turn."}
+                    : phase === "finished"
+                      ? "Your shots this round."
+                      : turn
+                        ? "Choose a square to fire."
+                        : "Waiting for your turn."}
                 </p>
               </div>
               {presentation && (
@@ -825,6 +865,34 @@ export default function PlanesBoard({
           )}
         </div>
       )}
+      {inspectingResult && you !== null && !presentation && (
+        <div className="planes-result-actions">
+          <p>
+            {view?.revealedPlanes?.[otherSide(you)]
+              ? "The full layout is revealed. Your shots are still marked."
+              : "Your final shots are still marked."}
+          </p>
+          <button
+            type="button"
+            className="planes-ready"
+            disabled={roundResult !== null || !connected || pending}
+            onClick={() => {
+              setDraft(
+                own?.ready && view?.ownPlanes
+                  ? view.ownPlanes.map((plane) => ({ ...plane }))
+                  : randomFleet(),
+              );
+              setSelected(0);
+              setError("");
+              setPreparedRound(finishedKey);
+            }}
+          >
+            {roundResult !== null
+              ? `Prepare rematch in ${roundResult}s`
+              : "Prepare rematch"}
+          </button>
+        </div>
+      )}
       <p className="planes-error" role="alert">
         {error}
       </p>
@@ -836,28 +904,10 @@ export default function PlanesBoard({
             disabled={roundResult !== null}
             onClick={onLeave}
           >
-            {showBattle ? "Leave match · forfeit" : "Stand up"}
+            {phase === "playing" ? "Leave match · forfeit" : "Stand up"}
           </button>
         )}
       </footer>
-      {roundResult !== null && (
-        <div
-          className="planes-round-result"
-          role="status"
-          aria-live="polite"
-          aria-atomic="true"
-        >
-          <div
-            className={`planes-round-result-paper planes-side-${view?.winner ?? 0}`}
-          >
-            <h2>{view?.players[view.winner ?? 0]?.name ?? "Player"} wins!</h2>
-            <p>Another game can start in</p>
-            <strong key={roundResult} className="planes-result-count">
-              {roundResult}
-            </strong>
-          </div>
-        </div>
-      )}
       {rules && (
         <aside
           className="planes-guide"

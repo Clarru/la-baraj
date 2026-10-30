@@ -37,7 +37,7 @@ describe("round-result exit boundary used by Game capture", () => {
     },
   );
   it("does not lock on hidden, stale, false or expired result attributes", () => {
-    for (const value of ["false", "true", "0", "4", ""]) {
+    for (const value of ["false", "true", "0", "6", ""]) {
       board(value);
       expect(
         blockPlanesResultExit(
