@@ -29,7 +29,6 @@ import { getActivityPose } from "./activity-state";
 import { Scooter, type ScooterHandle } from "./scooter";
 import { createScooterRiderRig } from "./scooter-rider";
 import { Boat, type BoatHandle } from "./boat";
-import { BOAT_FLOAT_HEIGHT } from "./boat-geometry";
 import { createBoatRiderRig } from "./boat-rider";
 import {
   BOAT_TUNING,
@@ -962,7 +961,7 @@ export function Player({
     if (visual.current) {
       visual.current.parent?.getWorldPosition(playerViewPosition);
       const offset = boatingNow
-        ? LAKE_LEVEL + BOAT_FLOAT_HEIGHT - playerViewPosition.y
+        ? LAKE_LEVEL - playerViewPosition.y
         : nowSwimming
           ? SWIM_OFFSET
           : holding

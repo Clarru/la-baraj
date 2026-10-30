@@ -22,6 +22,9 @@ import { WorldActivities, type ActivityPrompt } from "./activities";
 import { SceneLoading } from "./SceneLoading";
 import { ParkedScooter } from "./scooter";
 import { ParkedBoat } from "./boat";
+import { RUNABOUT_IDS } from "./boat-geometry";
+import { assetUrl } from "./assets";
+import { useGLTF } from "@react-three/drei";
 import { SeatingMetrics } from "./SeatingMetrics";
 import { CabinInterior } from "./CabinInterior";
 import { CabinAccess } from "./CabinAccess";
@@ -57,6 +60,10 @@ import {
   DeveloperTools,
   type RenderSample,
 } from "./DeveloperTools";
+
+// Fetch both runabouts with the scene; the boat itself never blocks the world.
+useGLTF.preload(assetUrl(RUNABOUT_IDS.full));
+useGLTF.preload(assetUrl(RUNABOUT_IDS.lod));
 
 class SceneBoundary extends Component<
   { children: ReactNode },
@@ -496,7 +503,11 @@ export default function Game({ initialName }: { initialName: string }) {
                   <PerformanceScene scenario={performanceScenario} />
                 )}
                 {hasHome && <ParkedScooter mounted={vehicleMounted} />}
-                {hasHome && <ParkedBoat mounted={boatMounted} />}
+                {hasHome && (
+                  <Suspense fallback={null}>
+                    <ParkedBoat mounted={boatMounted} />
+                  </Suspense>
+                )}
                 <WorldActivities
                   room={room}
                   onFireMetrics={

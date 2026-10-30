@@ -3,45 +3,17 @@ import * as THREE from "three";
 import {
   BOAT_METRICS,
   applyBoatLean,
-  setBoatWheelAngle,
   boatGripPosition,
-  createBoatRig,
   type BoatSide,
 } from "./boat-geometry";
 import { cloneBoatRig } from "./boat-resources";
+import { loadRunabout } from "./runabout-test-model";
 
 const pivot = new THREE.Vector3(...BOAT_METRICS.wheelPivot);
 const grip = (side: BoatSide, a: number) =>
   new THREE.Vector3(...boatGripPosition(side, a));
 
-it("names every animated and structural part", () => {
-  const rig = createBoatRig();
-  for (const name of [
-    "Motorboat_Stylized",
-    "Hull",
-    "Seat",
-    "SteeringWheel",
-    "Outboard",
-  ])
-    expect(
-      name === "Motorboat_Stylized"
-        ? rig.group
-        : rig.group.getObjectByName(name),
-    ).toBeDefined();
-  expect(rig.group.name).toBe("Motorboat_Stylized");
-  expect(rig.wheel).toBe(rig.group.getObjectByName("SteeringWheel"));
-  expect(rig.hull).toBe(rig.group.getObjectByName("Hull"));
-});
-
-it("fits the declared footprint", () => {
-  const box = new THREE.Box3().setFromObject(createBoatRig().group);
-  const size = box.getSize(new THREE.Vector3());
-  expect(Math.abs(size.z - BOAT_METRICS.length)).toBeLessThan(0.15);
-  expect(Math.abs(size.x - BOAT_METRICS.beam)).toBeLessThan(0.15);
-  expect(box.min.y).toBeGreaterThanOrEqual(-0.5);
-  expect(box.max.y).toBeLessThan(1.4);
-});
-
+// Covers the transitional boatGripPosition shim boat-rider reads until Task 3.
 it("grips sit on the rim and turn with the wheel", () => {
   for (const a of [0, 1.2, -2.4])
     for (const side of ["left", "right"] as const)
@@ -61,31 +33,8 @@ it("grips sit on the rim and turn with the wheel", () => {
   expect(grip("left", Math.PI / 2).distanceTo(top)).toBeLessThan(0.02);
 });
 
-it("visible wheel agrees with boatGripPosition", () => {
-  const rig = createBoatRig();
-  for (const a of [0, 1.2, -2.4, Math.PI / 2]) {
-    setBoatWheelAngle(rig, a);
-    rig.group.updateMatrixWorld(true);
-    for (const side of ["left", "right"] as const) {
-      const world = new THREE.Vector3(...BOAT_METRICS.grips[side]).applyMatrix4(
-        rig.wheelSpin.matrixWorld,
-      );
-      expect(world.distanceTo(grip(side, a))).toBeLessThan(1e-6);
-    }
-  }
-});
-
-it("seat matches the bench sit clip height", () => {
-  expect(BOAT_METRICS.seatHeight).toBe(0.45);
-  const rig = createBoatRig();
-  rig.group.updateMatrixWorld(true);
-  const top = new THREE.Box3().setFromObject(rig.group.getObjectByName("Seat")!)
-    .max.y;
-  expect(Math.abs(top - 0.45)).toBeLessThan(0.03);
-});
-
-it("positive lean dips the left side", () => {
-  const rig = createBoatRig();
+it("positive lean dips the left side", async () => {
+  const rig = cloneBoatRig(await loadRunabout("Lake_Runabout"));
   applyBoatLean(rig, 0.06);
   expect(rig.group.rotation.z).toBeCloseTo(-0.06);
   rig.group.updateMatrixWorld(true);
@@ -98,9 +47,10 @@ it("positive lean dips the left side", () => {
   expect(left.y).toBeLessThan(right.y);
 });
 
-it("clones share geometry but not transforms", () => {
-  const a = cloneBoatRig(),
-    b = cloneBoatRig();
+it("clones share geometry but not transforms", async () => {
+  const scene = await loadRunabout("Lake_Runabout");
+  const a = cloneBoatRig(scene),
+    b = cloneBoatRig(scene);
   const meshes = (root: THREE.Object3D) => {
     const result: THREE.Mesh[] = [];
     root.traverse((n) => {
@@ -109,11 +59,12 @@ it("clones share geometry but not transforms", () => {
     return result;
   };
   expect(a.wheel).not.toBe(b.wheel);
-  const first = meshes(a.wheel),
-    second = meshes(b.wheel);
+  const first = meshes(a.group),
+    second = meshes(b.group);
   expect(first.length).toBeGreaterThan(0);
   first.forEach((mesh, i) => {
     expect(mesh.geometry).toBe(second[i].geometry);
+    expect(mesh.material).toBe(second[i].material);
     expect(mesh).not.toBe(second[i]);
   });
   a.wheelSpin.rotation.z = 1;
