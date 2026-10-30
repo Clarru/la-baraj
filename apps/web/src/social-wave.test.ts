@@ -1,4 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
+import baked from "../../../assets/character-source/social-wave.json";
 import * as THREE from "three";
 import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 import {
@@ -135,6 +138,55 @@ describe("social hello wave", () => {
     expect(peakForearmX).toBeLessThan(peakForearmY * 0.75);
     expect(handMaxX - handMinX).toBeGreaterThan(0.08);
     expect(peakFingerDistance).toBeGreaterThan(0.11);
+  });
+
+  it("keeps a neutral wrist and open fingers through the raised greeting", async () => {
+    for (const idlePhase of [0, 0.7, 1.3]) {
+      const { scene, animations } = await loadRig(rigPath);
+      const mixer = new THREE.AnimationMixer(scene);
+      const idle = mixer
+        .clipAction(animations.find((c) => c.name === "Idle_Neutral")!)
+        .play();
+      const wave = mixer
+        .clipAction(createSocialWaveClip())
+        .setLoop(THREE.LoopOnce, 1);
+      wave.clampWhenFinished = true;
+      wave.play();
+      const position = (name: string) =>
+        scene.getObjectByName(name)!.getWorldPosition(new THREE.Vector3());
+      for (let frame = 0; frame <= 96; frame++) {
+        const time = (SOCIAL_WAVE_DURATION * frame) / 96;
+        mixer.setTime(time);
+        idle.time = (time + idlePhase) % idle.getClip().duration;
+        mixer.update(0);
+        scene.updateMatrixWorld(true);
+        const wrist = position("hand_r");
+        const forearm = wrist.clone().sub(position("lowerarm_r"));
+        const palm = position("middle_01_r").sub(wrist);
+        expect(
+          forearm.angleTo(palm),
+          `wrist at ${time}s, idle phase ${idlePhase}`,
+        ).toBeLessThan(0.4);
+        if (time < 0.36 || time > 1.24) continue;
+        for (const finger of ["index", "middle", "ring", "pinky"]) {
+          const knuckle = position(`${finger}_01_r`);
+          const fingerDirection = position(`${finger}_04_leaf_r`)
+            .sub(knuckle)
+            .normalize();
+          const palmDirection = knuckle.clone().sub(wrist).normalize();
+          expect(
+            fingerDirection.dot(palmDirection),
+            `${finger} folds into a claw`,
+          ).toBeGreaterThan(0.8);
+        }
+      }
+    }
+  });
+
+  it("records the exact shipped rig used to author the hand pose", () => {
+    expect(baked.targetSha256).toBe(
+      createHash("sha256").update(readFileSync(rigPath)).digest("hex"),
+    );
   });
 
   it("restores the authored pose after the additive layer ends", async () => {

@@ -22,6 +22,13 @@ Local motion transmits the visual root position (`sample.feet`); the stance visu
 
 The authored crouch was inspected on the actual dressed character from front and side at a frozen phase. The head/pelvis visibly lower, feet contact the floor and appearance is retained. Real-rig tests measure hip lowering and deformed vertex contact rather than mistaking ankle-joint height for sole height. Both crouch clips have zero root drift.
 
-The first procedural crouch and upright swimming-based prone failed visual acceptance. Prone support/contact correction is still in progress. The full in-world/local-remote transition, activity and performance gates in `docs/CHILL_GAMEPLAY_PLAN.md` remain release requirements. These notes do not claim that the feature is deployed.
+The first procedural crouch and upright swimming-based prone failed visual acceptance. The final target-baked posture delivery passed the runtime, paired-client and measured performance gates recorded in `docs/CHILL_GAMEPLAY_PLAN.md` and shipped in PR33.
 
 The prone exporter accepts source and target rig paths separately. All IK and skinned contact normalization run on the tracked dressed Lakeside_Man target. Exported metadata records its SHA-256. Tests parse the baked JSON onto a fresh target rig; validating the source body or metadata alone is insufficient.
+
+
+## Greeting hand correction
+
+The first released greeting used independent local-axis wrist/thumb offsets. Close-up review exposed a claw-shaped hand despite the acceptable distant silhouette. `scripts/bake-social-wave.mjs [source-glb-path]` now authors the arm against the shipped target rig, retains a neutral wrist along its forearm, and uses compatible authored finger articulation from `Idle_TalkingPhone_Loop` plus the relaxed `A_TPose` thumb. Only the greeting's quaternion tracks change; model, clothing, controls, transport and other actions remain intact.
+
+The baked additive clip and target hash live in `assets/character-source/social-wave.json`. Runtime parses that immutable clip through the existing character-clip cache, with no runtime IK, new texture or network request. Identity endpoints restore the base pose. Tests measure wrist alignment and open fingers through the whole motion at multiple idle phases; close-up front, side and transition inspection supplements those checks.
