@@ -1,5 +1,5 @@
 /** Authored localhost QA only: actual Game/GLB/physics and its isolated in-memory SharedWorker. */
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import Game from "../../apps/web/src/Game";
 import { currentMultiplayerRoom } from "../../apps/web/src/multiplayer";
@@ -29,12 +29,35 @@ function approach(id: number, distance = 1.5) {
 }
 function Fixture() {
   const output = useRef<HTMLOutputElement>(null),
-    started = useRef(false);
+    started = useRef(false),
+    delayNext = useRef(false),
+    installed = useRef<ReturnType<typeof currentMultiplayerRoom>>(null);
+  const [armed, setArmed] = useState(false);
   useEffect(() => {
     const timer = setInterval(() => {
       const room = currentMultiplayerRoom(),
         v = room?.getSnapshot();
-      if (!v) return;
+      if (!v || !room) return;
+      if (installed.current !== room) {
+        installed.current = room;
+        const original = room.arcadeAction.bind(room);
+        room.arcadeAction = (action, revision, stationId) => {
+          const hold = delayNext.current && action.kind === "resume";
+          if (hold) {
+            delayNext.current = false;
+            setArmed(false);
+          }
+          const response = original(action, revision, stationId);
+          return hold
+            ? response.then(
+                (result) =>
+                  new Promise<string | null>((resolve) =>
+                    setTimeout(() => resolve(result), 5000),
+                  ),
+              )
+            : response;
+        };
+      }
       if (!started.current && v.status === "online" && v.homeIndex !== null) {
         started.current = true;
         approach(role ? 2 : 0);
@@ -73,6 +96,14 @@ function Fixture() {
             </button>
           ))}
           <button onClick={() => approach(1, 4.5)}>Observe row</button>
+          <button
+            onClick={() => {
+              delayNext.current = true;
+              setArmed(true);
+            }}
+          >
+            {armed ? "Next entry delayed 5s" : "Delay next entry"}
+          </button>
         </div>
         <output ref={output} data-arcade-qa-state hidden />
       </aside>
