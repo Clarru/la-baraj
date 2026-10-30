@@ -1,0 +1,50 @@
+{
+  "date": "2026-10-30T18:29:43.778Z",
+  "node": "v24.22.2",
+  "machine": "Apple M4 Pro",
+  "scope": "Actual numerical ribbon layout only; no Three renderer, GPU upload, reflection, or full frame cost. Allocation is fixed and re-used.",
+  "samples": 48,
+  "verticesPerBoat": 432,
+  "drawsPerBoat": 2,
+  "upperBoundBytesWithPerGeometryIndex": 14712,
+  "uniqueTypedArrayBytesPerBoat": 11328,
+  "sharedIndexBytes": 3384,
+  "results": [
+    {
+      "boats": 1,
+      "unit": "microseconds per layout of all boats",
+      "median": 1.831125,
+      "trials": [
+        3.2870829999999955,
+        1.831125,
+        1.8798330000000052,
+        1.76700000000001,
+        1.7633749999999964
+      ]
+    },
+    {
+      "boats": 10,
+      "unit": "microseconds per layout of all boats",
+      "median": 17.942915999999997,
+      "trials": [
+        17.764916999999997,
+        17.95233300000001,
+        17.622874999999993,
+        18.516582999999997,
+        17.942915999999997
+      ]
+    },
+    {
+      "boats": 50,
+      "unit": "microseconds per layout of all boats",
+      "median": 89.66562499999998,
+      "trials": [
+        89.66562499999998,
+        89.42820799999998,
+        89.69308399999994,
+        89.13987499999996,
+        90.13533300000006
+      ]
+    }
+  ]
+}

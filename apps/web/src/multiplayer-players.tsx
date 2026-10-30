@@ -137,12 +137,19 @@ function RemoteAvatarRig({ id, room }: { id: string; room: RemoteCardRoom }) {
   const remoteBoatSpeed = useMemo(
     () => () => {
       const p = room.remotes.get(id)?.player;
-      return p?.boat ? Math.hypot(...p.boat.velocity) : (p?.speed ?? 0);
+      return p?.vehicle === "boat"
+        ? p.boat
+          ? Math.hypot(...p.boat.velocity)
+          : (p.speed ?? 0)
+        : 0;
     },
     [room, id],
   );
   const remoteBoatVelocity = useMemo(
-    () => () => room.remotes.get(id)?.player.boat?.velocity ?? null,
+    () => () => {
+      const p = room.remotes.get(id)?.player;
+      return p?.vehicle === "boat" ? (p.boat?.velocity ?? null) : null;
+    },
     [room, id],
   );
   const gripLeft = useMemo(() => new THREE.Vector3(), []);
@@ -441,7 +448,7 @@ function RemoteAvatarRig({ id, room }: { id: string; room: RemoteCardRoom }) {
     <group ref={root} name={`Online player ${id}`}>
       <primitive object={object} dispose={null} />
       {swimming && <SwimWake />}
-      {boating && (
+      {hasBoat && (
         <BoatSpray speed={remoteBoatSpeed} velocity={remoteBoatVelocity} />
       )}
       {hasBoat && (
