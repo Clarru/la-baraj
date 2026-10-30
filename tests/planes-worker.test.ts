@@ -138,6 +138,9 @@ afterEach(() => {
 describe("actual Worker lifecycle with durable storage", () => {
   it("expires a turn without player traffic, releases its chair and retains the later name-plaque alarm", async () => {
     const { world, storage, connections } = await fixture();
+    const original = (await storage.get<PlanesRecord>(
+      "planes-table-v1",
+    ))!.members.map((member) => member?.planes ?? null);
     vi.setSystemTime(61000);
     await world.onAlarm();
     expect(await storage.get("planes-table-v1")).toMatchObject({
@@ -146,6 +149,17 @@ describe("actual Worker lifecycle with durable storage", () => {
       reason: "timeout",
       deadline: null,
     });
+    expect(
+      (await storage.get<PlanesRecord>("planes-table-v1"))!.completedPlanes,
+    ).toEqual(original);
+    for (const connection of connections) {
+      const message = connection.messages
+        .filter((message) => message.type === "planes")
+        .at(-1);
+      expect(
+        message?.type === "planes" ? message.view.revealedPlanes : null,
+      ).toEqual(original);
+    }
     expect(connections[0].state.player.seatId).toBeUndefined();
     expect(storage.alarm).toBe(301000);
     vi.setSystemTime(301000);

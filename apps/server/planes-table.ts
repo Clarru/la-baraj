@@ -35,6 +35,8 @@ export type PlanesRecord = {
   reason: PlanesView["reason"];
   event: PlanesEvent | null;
   deadline: number | null;
+  /** Frozen before rematch readiness can replace a member's private fleet. */
+  completedPlanes?: [Plane[] | null, Plane[] | null];
 };
 const emptyRecord = (): PlanesRecord => ({
   version: 1,
@@ -101,6 +103,12 @@ export function readPlanesRecord(value: unknown): PlanesRecord {
                 s.revealed.y === s.y)),
         ),
     ) ||
+    (r.completedPlanes !== undefined &&
+      (!Array.isArray(r.completedPlanes) ||
+        r.completedPlanes.length !== 2 ||
+        !r.completedPlanes.every(
+          (planes) => planes === null || legalFleet(planes),
+        ))) ||
     ![null, 0, 1].includes(r.turn) ||
     ![null, 0, 1].includes(r.winner) ||
     ![null, "fleet", "left", "connection", "timeout"].includes(r.reason) ||
@@ -118,7 +126,20 @@ export function readPlanesRecord(value: unknown): PlanesRecord {
       ![null, 0, 1].includes(r.event.winner))
   )
     throw Error("Invalid stored Planes event");
-  return structuredClone(r);
+  const record = structuredClone(r);
+  // Legacy finished rounds are safe to freeze only before either player has
+  // supplied a rematch fleet. Otherwise omit the unavailable historical reveal.
+  if (
+    record.phase === "finished" &&
+    record.winner !== null &&
+    !record.completedPlanes &&
+    record.members.every((member) => !member?.ready)
+  ) {
+    record.completedPlanes = structuredClone(
+      record.members.map((member) => member?.planes ?? null),
+    ) as NonNullable<PlanesRecord["completedPlanes"]>;
+  }
+  return record;
 }
 export function nextPlanesDeadline(record: PlanesRecord): number | null {
   const times = record.members.flatMap((m) =>
@@ -238,6 +259,7 @@ export class PlanesTable {
     });
   }
   private freshRound(next: PlanesRecord, now = Date.now()) {
+    delete next.completedPlanes;
     next.phase = next.members.every(Boolean) ? "setup" : "lobby";
     next.shots = [[], []];
     next.turn = null;
@@ -253,6 +275,7 @@ export class PlanesTable {
     next.deadline = next.phase === "setup" ? now + 120_000 : null;
   }
   private startPlaying(next: PlanesRecord, now: number) {
+    delete next.completedPlanes;
     next.phase = "playing";
     next.round++;
     next.shots = [[], []];
@@ -275,6 +298,9 @@ export class PlanesTable {
     winner: Side | null,
     reason: PlanesView["reason"],
   ) {
+    next.completedPlanes = structuredClone(
+      next.members.map((member) => member?.planes ?? null),
+    ) as NonNullable<PlanesRecord["completedPlanes"]>;
     next.phase = "finished";
     next.winner = winner;
     next.reason = reason;
@@ -552,6 +578,9 @@ export class PlanesTable {
       ) as PlanesView["players"],
       you,
       ownPlanes: you === null ? null : r.members[you]!.planes,
+      ...(r.phase === "finished" && r.winner !== null && r.completedPlanes
+        ? { revealedPlanes: r.completedPlanes }
+        : {}),
       shots: r.shots,
       turn: r.turn,
       winner: r.winner,

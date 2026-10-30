@@ -127,7 +127,7 @@ export function usePresentedShot(
   return { presentation: queue[0] ?? null, waiting: queue.slice(1) };
 }
 
-export const ROUND_RESULT_DURATION = 3000;
+export const ROUND_RESULT_DURATION = 5000;
 export function useRoundResult(
   view: PlanesView | null,
   connected: boolean,
@@ -175,7 +175,7 @@ export function useRoundResult(
       setActive(null);
     } else if (!presenting && acknowledged.current !== key) {
       acknowledged.current = key;
-      setActive({ key, remaining: 3 });
+      setActive({ key, remaining: 5 });
     }
   }, [view, key, connected, open, presenting]);
   useEffect(() => {
@@ -195,7 +195,7 @@ export function useRoundResult(
     ? active?.key === key
       ? active.remaining
       : starting
-        ? 3
+        ? 5
         : null
     : null;
 }

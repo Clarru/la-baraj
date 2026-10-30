@@ -8,6 +8,7 @@ import {
   planeCells,
   targetUnavailable,
   destroyed,
+  randomFleet,
   type Plane,
   type PlanesView,
   type Shot,
@@ -20,6 +21,8 @@ const fleet: Plane[] = [
   { x: 7, y: 4, rotation: 0 },
   { x: 2, y: 9, rotation: 2 },
 ];
+const opponentFleet = randomFleet(() => 0.713);
+const fleets: [Plane[], Plane[]] = [fleet, opponentFleet];
 function initial(): PlanesView {
   return {
     version: 1,
@@ -90,8 +93,9 @@ function Review() {
     x: number,
     y: number,
   ): PlanesView {
-    const shot = resolveShot(fleet, before.shots[side], x, y);
-    const won = fleet.every((plane) =>
+    const targetFleet = fleets[side === 0 ? 1 : 0];
+    const shot = resolveShot(targetFleet, before.shots[side], x, y);
+    const won = targetFleet.every((plane) =>
       destroyed(plane, [...before.shots[side], shot]),
     );
     return {
@@ -105,7 +109,7 @@ function Review() {
               ready: won ? false : player.ready,
               remaining:
                 index === (side === 0 ? 1 : 0)
-                  ? fleet.filter(
+                  ? targetFleet.filter(
                       (plane) =>
                         !destroyed(plane, [...before.shots[side], shot]),
                     ).length
@@ -118,6 +122,7 @@ function Review() {
             phase: "finished",
             reason: "fleet",
             winner: side,
+            revealedPlanes: fleets,
           } as const)
         : {}),
       shots:
@@ -227,6 +232,7 @@ function Review() {
               ...previous,
               phase: "finished",
               winner: 0,
+              revealedPlanes: fleets,
               reason: "fleet",
               turn: null,
               players: previous.players.map((p) =>
@@ -244,6 +250,7 @@ function Review() {
               ...previous,
               phase: "finished",
               winner: 0,
+              revealedPlanes: fleets,
               reason: "fleet",
               turn: null,
               players: previous.players.map((p) =>
@@ -253,6 +260,48 @@ function Review() {
           }}
         >
           Load finished history
+        </button>
+        <button
+          onClick={() => {
+            const body = planeCells(opponentFleet[0])[1];
+            const occupied = new Set(
+              opponentFleet.flatMap(planeCells).map((p) => `${p.x}:${p.y}`),
+            );
+            const near = Array.from({ length: 100 }, (_, i) => ({
+              x: i % 10,
+              y: Math.floor(i / 10),
+            })).find(
+              (p) =>
+                !occupied.has(`${p.x}:${p.y}`) &&
+                Math.abs(p.x - body.x) + Math.abs(p.y - body.y) === 1,
+            )!;
+            const hit = resolveShot(opponentFleet, [], body.x, body.y);
+            setView((previous) => ({
+              ...previous,
+              phase: "finished",
+              winner: 1,
+              reason: "fleet",
+              turn: null,
+              event: null,
+              deadline: null,
+              revealedPlanes: fleets,
+              ownPlanes: fleet,
+              shots: [
+                [hit, resolveShot(opponentFleet, [hit], near.x, near.y)],
+                fleet.map((p) => ({
+                  x: p.x,
+                  y: p.y,
+                  result: "head",
+                  revealed: p,
+                })),
+              ],
+              players: previous.players.map((p, i) =>
+                p ? { ...p, ready: false, remaining: i === 0 ? 0 : 3 } : null,
+              ) as PlanesView["players"],
+            }));
+          }}
+        >
+          Show loser review
         </button>
         <button onClick={() => setOpen(!open)}>
           {open ? "Fold sheet" : "Open sheet"}

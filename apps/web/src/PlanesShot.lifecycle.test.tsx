@@ -214,45 +214,59 @@ describe("shot animation and the firing lock", () => {
     advance(1);
     expect(targets()[0].disabled).toBe(false);
   });
-  it("lets the winning impact finish before showing rematch controls", () => {
+  it("keeps the final boards visible for five seconds and until the player explicitly prepares a rematch", () => {
     render();
+    const winnerFleet = randomFleet(() => 0.713);
     current = {
       ...current,
+      revealedPlanes: [current.ownPlanes, winnerFleet],
       players: current.players.map((p) =>
-        p ? { ...p, ready: false } : p,
+        p ? { ...p, ready: false } : null,
       ) as PlanesView["players"],
     };
     incoming("head", true);
+    expect(container.querySelector(".planes-result-banner")).toBeNull();
     expect(
-      container.querySelector('[aria-label="Opponent target grid"]'),
-    ).not.toBeNull();
-    expect(container.querySelector(".planes-ready")).toBeNull();
+      container.querySelector(".planes-main-grid .paper-plane-outlines")
+        ?.children,
+    ).toHaveLength(0);
     advance(COCKPIT_SHOT_DURATION);
     expect(
-      container.querySelector(".planes-round-result")?.textContent,
+      container.querySelector(".planes-result-banner")?.textContent,
     ).toContain("Bob wins!");
-    expect(container.querySelector(".planes-result-count")?.textContent).toBe(
-      "3",
-    );
-    expect(
-      container.querySelector<HTMLButtonElement>(".planes-ready")?.disabled,
-    ).toBe(true);
-    advance(1000);
-    expect(container.querySelector(".planes-result-count")?.textContent).toBe(
-      "2",
-    );
-    advance(1000);
-    expect(container.querySelector(".planes-result-count")?.textContent).toBe(
-      "1",
-    );
-    advance(1000);
     expect(container.querySelector(".planes-round-result")).toBeNull();
     expect(
       container.querySelector('[aria-label="Opponent target grid"]'),
+    ).not.toBeNull();
+    expect(
+      container.querySelector(".planes-main-grid .paper-plane-outlines")
+        ?.children,
+    ).toHaveLength(3);
+    const prepare =
+      container.querySelector<HTMLButtonElement>(".planes-ready")!;
+    expect(prepare.disabled).toBe(true);
+    expect(prepare.textContent).toBe("Prepare rematch in 5s");
+    advance(ROUND_RESULT_DURATION - 1);
+    expect(prepare.disabled).toBe(true);
+    advance(1);
+    expect(prepare.disabled).toBe(false);
+    expect(prepare.textContent).toBe("Prepare rematch");
+    advance(20000);
+    expect(
+      container.querySelector('[aria-label="Opponent target grid"]'),
+    ).not.toBeNull();
+    expect(action).not.toHaveBeenCalled();
+    act(() => prepare.click());
+    expect(
+      container.querySelector('[aria-label="Opponent target grid"]'),
     ).toBeNull();
+    expect(
+      container.querySelector('[aria-label="Your plane placement grid"]'),
+    ).not.toBeNull();
     expect(container.querySelector(".planes-ready")?.textContent).toBe(
       "Rematch",
     );
+    expect(action).not.toHaveBeenCalled();
   });
   it("lands on the actual incoming square relative to the paper, including its page offset", () => {
     const bounds = vi
@@ -363,7 +377,7 @@ describe("shot animation and the firing lock", () => {
         ?.textContent,
     ).toContain("B1");
   });
-  it("waits for an existing flight and the queued winning explosion before the victory countdown", () => {
+  it("waits for an existing flight and the queued winning explosion before the five-second result pause", () => {
     current = { ...current, turn: 0 };
     render();
     current = {
@@ -388,13 +402,13 @@ describe("shot animation and the firing lock", () => {
     ).toBe("0:0");
     advance(SHOT_DURATION - 400);
     expect(container.querySelector(".planes-shot-explosion")).not.toBeNull();
-    expect(container.querySelector(".planes-round-result")).toBeNull();
+    expect(container.querySelector(".planes-result-banner")).toBeNull();
     advance(COCKPIT_SHOT_DURATION - 1);
-    expect(container.querySelector(".planes-round-result")).toBeNull();
+    expect(container.querySelector(".planes-result-banner")).toBeNull();
     advance(1);
-    expect(container.querySelector(".planes-result-count")?.textContent).toBe(
-      "3",
-    );
+    expect(
+      container.querySelector('[data-result-countdown="5"]'),
+    ).not.toBeNull();
   });
   it("ignores click spam without restarting the active animation or submitting a shot", () => {
     render();
@@ -412,18 +426,18 @@ describe("shot animation and the firing lock", () => {
     render(true, true, null);
     current = { ...current, phase: "finished", winner: 0, reason: "fleet" };
     render();
-    expect(container.querySelector(".planes-round-result")).toBeNull();
+    expect(container.querySelector("[data-result-countdown]")).toBeNull();
     current = { ...current, phase: "playing", winner: null, reason: null };
     render();
     render(true, true, null);
     current = { ...current, phase: "finished", winner: 1, reason: "fleet" };
     render();
-    expect(container.querySelector(".planes-round-result")).toBeNull();
+    expect(container.querySelector("[data-result-countdown]")).toBeNull();
   });
   it("suppresses a historical victory on mount and on fold/reopen during the result", () => {
     current = { ...current, phase: "finished", winner: 0, reason: "fleet" };
     render();
-    expect(container.querySelector(".planes-round-result")).toBeNull();
+    expect(container.querySelector("[data-result-countdown]")).toBeNull();
     current = {
       ...current,
       phase: "playing",
@@ -434,10 +448,12 @@ describe("shot animation and the firing lock", () => {
     render();
     incoming("head", true);
     advance(COCKPIT_SHOT_DURATION);
-    expect(container.querySelector(".planes-round-result")).not.toBeNull();
+    expect(
+      container.querySelector('[data-result-countdown="5"]'),
+    ).not.toBeNull();
     render(false);
     render();
-    expect(container.querySelector(".planes-round-result")).toBeNull();
+    expect(container.querySelector("[data-result-countdown]")).toBeNull();
   });
   it("clears the victory gate on a new round without sending any rematch command", () => {
     render();
@@ -453,10 +469,90 @@ describe("shot animation and the firing lock", () => {
       event: null,
     };
     render();
-    expect(container.querySelector(".planes-round-result")).toBeNull();
+    expect(container.querySelector("[data-result-countdown]")).toBeNull();
     expect(action).not.toHaveBeenCalled();
     advance(ROUND_RESULT_DURATION);
     expect(action).not.toHaveBeenCalled();
+  });
+  it.each([0, 1] as const)(
+    "reveals the opponent layout for viewer %i while retaining every shot mark",
+    (you) => {
+      const fleets: [
+        NonNullable<PlanesView["ownPlanes"]>,
+        NonNullable<PlanesView["ownPlanes"]>,
+      ] = [randomFleet(() => 0.3), randomFleet(() => 0.713)];
+      const enemy = you === 0 ? 1 : 0,
+        point = fleets[enemy][0];
+      current = {
+        ...current,
+        you,
+        ownPlanes: fleets[you],
+        phase: "finished",
+        winner: enemy,
+        reason: "fleet",
+        revealedPlanes: fleets,
+        shots:
+          you === 0
+            ? [[{ x: point.x, y: point.y, result: "body" }], []]
+            : [[], [{ x: point.x, y: point.y, result: "body" }]],
+      };
+      render();
+      const target = container.querySelector(".planes-main-grid")!;
+      expect(
+        target.querySelectorAll(".paper-plane-outlines path"),
+      ).toHaveLength(3);
+      expect(target.querySelectorAll(".paper-cell--body")).toHaveLength(1);
+      expect(target.querySelectorAll("button:not(:disabled)")).toHaveLength(0);
+      expect(container.querySelector("[data-result-countdown]")).toBeNull();
+      const before = target.querySelector(".paper-plane-outlines")!.innerHTML;
+      current = {
+        ...current,
+        revision: current.revision + 1,
+        ownPlanes: randomFleet(() => 0.91),
+        players: current.players.map((p, i) =>
+          p ? { ...p, ready: i === enemy } : null,
+        ) as PlanesView["players"],
+      };
+      render();
+      expect(
+        container.querySelector(".planes-main-grid .paper-plane-outlines")!
+          .innerHTML,
+      ).toBe(before);
+      expect(
+        container.querySelectorAll(".planes-main-grid .paper-cell--body"),
+      ).toHaveLength(1);
+    },
+  );
+  it("does not overlay a prepared next fleet onto an unreconstructable legacy result", () => {
+    current = {
+      ...current,
+      phase: "finished",
+      winner: 1,
+      reason: "fleet",
+      players: current.players.map((p, i) =>
+        p ? { ...p, ready: i === 0 } : null,
+      ) as PlanesView["players"],
+      ownPlanes: randomFleet(() => 0.91),
+    };
+    render();
+    expect(
+      container.querySelectorAll(".planes-own-grid .paper-plane-outlines path"),
+    ).toHaveLength(0);
+    expect(
+      container.querySelector('[aria-label="Opponent target grid"]'),
+    ).not.toBeNull();
+  });
+  it("ignores accidental revealed layouts during live play", () => {
+    current = {
+      ...current,
+      revealedPlanes: [randomFleet(() => 0.3), randomFleet(() => 0.713)],
+    };
+    render();
+    expect(
+      container.querySelectorAll(
+        ".planes-main-grid .paper-plane-outlines path",
+      ),
+    ).toHaveLength(0);
   });
   it("keeps player colors tied to seats and aligns the reverse player's header with their sheet", () => {
     current = { ...current, you: 1, turn: 0 };

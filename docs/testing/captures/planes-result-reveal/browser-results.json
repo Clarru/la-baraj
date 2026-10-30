@@ -1,0 +1,139 @@
+{
+  "runtimeHead": "33ba2ae7fb4d6ef7de046d130836c6ddbb15bbda",
+  "redWinner": "Robin wins!",
+  "noFullscreenModal": true,
+  "targetPlaneOutlines": 3,
+  "gridWidths": [
+    369,
+    369
+  ],
+  "mapsBefore": [
+    "81f489ecfe86a73477b7c6b07ccee842c84ae82841f900610bb814759ed75d6b",
+    "7e058c601a6274004054dd45492d9d5f00bc548152748cca5aadae5362b3ea4e"
+  ],
+  "mapsAfter": [
+    "81f489ecfe86a73477b7c6b07ccee842c84ae82841f900610bb814759ed75d6b",
+    "7e058c601a6274004054dd45492d9d5f00bc548152748cca5aadae5362b3ea4e"
+  ],
+  "marksBefore": [
+    "D3 \u00b7 head",
+    "H5 \u00b7 head",
+    "C10 \u00b7 head",
+    "A5 \u00b7 miss",
+    "B5 \u00b7 body"
+  ],
+  "marksAfter": [
+    "D3 \u00b7 head",
+    "H5 \u00b7 head",
+    "C10 \u00b7 head",
+    "A5 \u00b7 miss",
+    "B5 \u00b7 body"
+  ],
+  "afterPause": {
+    "count": null,
+    "action": "Prepare rematch",
+    "actionDisabled": false,
+    "targetButtonsEnabled": 0
+  },
+  "bluePauseTransitions": [
+    {
+      "ms": 140,
+      "count": "5",
+      "counts": [
+        "3 planes left",
+        "0 planes left"
+      ],
+      "prepareDisabled": true,
+      "targetGrid": true,
+      "winner": "Claudiu wins!"
+    },
+    {
+      "ms": 966,
+      "count": "4",
+      "counts": [
+        "3 planes left",
+        "0 planes left"
+      ],
+      "prepareDisabled": true,
+      "targetGrid": true,
+      "winner": "Claudiu wins!"
+    },
+    {
+      "ms": 1967,
+      "count": "3",
+      "counts": [
+        "3 planes left",
+        "0 planes left"
+      ],
+      "prepareDisabled": true,
+      "targetGrid": true,
+      "winner": "Claudiu wins!"
+    },
+    {
+      "ms": 2965,
+      "count": "2",
+      "counts": [
+        "3 planes left",
+        "0 planes left"
+      ],
+      "prepareDisabled": true,
+      "targetGrid": true,
+      "winner": "Claudiu wins!"
+    },
+    {
+      "ms": 3966,
+      "count": "1",
+      "counts": [
+        "3 planes left",
+        "0 planes left"
+      ],
+      "prepareDisabled": true,
+      "targetGrid": true,
+      "winner": "Claudiu wins!"
+    },
+    {
+      "ms": 4967,
+      "count": null,
+      "counts": [
+        "3 planes left",
+        "0 planes left"
+      ],
+      "prepareDisabled": false,
+      "targetGrid": true,
+      "winner": "Claudiu wins!"
+    }
+  ],
+  "explicitPreparation": {
+    "targetGrid": 0,
+    "placementGrid": 1,
+    "label": "Rematch",
+    "fixtureRevisionUnchanged": true
+  },
+  "newLiveRoundTargetPlaneOutlines": 0,
+  "historicalLoad": {
+    "elapsedMs": 290,
+    "count": null,
+    "prepareEnabled": true
+  },
+  "narrow": {
+    "grids": [
+      158.33334350585938,
+      158.33334350585938
+    ],
+    "marks": 2,
+    "overflow": false,
+    "prepare": "Prepare rematch",
+    "targetPlanes": 3,
+    "viewport": [
+      391,
+      844
+    ]
+  },
+  "browserWarningsErrors": [],
+  "notBrowserExercised": [
+    "Reverse viewer seat",
+    "One rematch-ready player and reload",
+    "Ambiguous legacy finished record missing original fleet"
+  ],
+  "coverageForUnexercised": "DOM lifecycle and server/protocol privacy tests"
+}

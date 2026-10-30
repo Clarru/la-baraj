@@ -279,6 +279,91 @@ describe("persistent private table", () => {
     expect(JSON.stringify(spectator)).not.toContain('"planes"');
     expect(f.table.view({ ...a, socket: "forged" }).you).toBeNull();
   });
+  it.each([0, 1] as const)(
+    "reveals only the completed round for winner %i, never a prepared rematch fleet",
+    async (winner) => {
+      const f = tableFixture();
+      await f.start();
+      const actors = [a, b],
+        original = [fleet(), fleet()];
+      const occupied = new Set(
+        planeCells(original[winner][0])
+          .concat(...original[winner].slice(1).map(planeCells))
+          .map((p) => `${p.x}:${p.y}`),
+      );
+      const misses = Array.from({ length: 100 }, (_, i) => ({
+        x: i % 10,
+        y: Math.floor(i / 10),
+      })).filter((p) => !occupied.has(`${p.x}:${p.y}`));
+      let hits = 0,
+        miss = 0;
+      while (f.table.view(null).phase === "playing") {
+        for (const actor of [a, b, null])
+          expect(f.table.view(actor).revealedPlanes).toBeUndefined();
+        const side = f.table.view(null).turn!;
+        const point =
+          side === winner ? original[1 - winner][hits++] : misses[miss++];
+        await f.act(actors[side], { kind: "shot", x: point.x, y: point.y });
+      }
+      const finished = f.table.view(actors[1 - winner]);
+      expect(finished.winner).toBe(winner);
+      expect(finished.revealedPlanes).toEqual(original);
+      expect(f.table.view(null).revealedPlanes).toEqual(original);
+      const oldShots = structuredClone(finished.shots),
+        next = randomFleet(() => 0.713);
+      expect(next).not.toEqual(original[winner]);
+      await f.act(actors[winner], { kind: "rematch", planes: next });
+      expect(f.table.view(actors[winner]).ownPlanes).toEqual(next);
+      expect(f.table.view(actors[1 - winner]).revealedPlanes).toEqual(original);
+      expect(f.table.view(null).revealedPlanes).toEqual(original);
+      expect(f.table.view(null).shots).toEqual(oldShots);
+      const reloaded = new PlanesTable(
+        { save: async () => {} },
+        f.saved.at(-1),
+      );
+      expect(reloaded.view(actors[1 - winner]).revealedPlanes).toEqual(
+        original,
+      );
+      expect(reloaded.view(null).shots).toEqual(oldShots);
+      const copy = reloaded.view(null);
+      copy.revealedPlanes![winner]![0].x = -99;
+      expect(reloaded.view(null).revealedPlanes).toEqual(original);
+      const legacy = structuredClone(f.saved.at(-1)!);
+      delete legacy.completedPlanes;
+      expect(
+        new PlanesTable({ save: async () => {} }, legacy).view(null)
+          .revealedPlanes,
+      ).toBeUndefined();
+      await f.act(actors[1 - winner], { kind: "rematch", planes: next });
+      expect(f.table.view(null).phase).toBe("playing");
+      for (const actor of [a, b, null])
+        expect(f.table.view(actor).revealedPlanes).toBeUndefined();
+      expect(f.saved.at(-1)!.completedPlanes).toBeUndefined();
+    },
+  );
+  it("safely restores legacy completed layouts only before either player has prepared a rematch", async () => {
+    const f = tableFixture();
+    await f.start();
+    await f.table.leave(b);
+    const legacy = structuredClone(f.saved.at(-1)!);
+    delete legacy.completedPlanes;
+    const restored = new PlanesTable({ save: async () => {} }, legacy).view(a);
+    expect(restored.phase).toBe("finished");
+    expect(restored.revealedPlanes?.[0]).toEqual(fleet());
+    expect(restored.revealedPlanes?.[1]).toBeNull();
+    await f.table.join(b, 1, 3000);
+    expect(f.table.view(null).phase).toBe("setup");
+    expect(f.table.view(null).revealedPlanes).toBeUndefined();
+    const bad = structuredClone(legacy);
+    bad.completedPlanes = [[{ x: -1, y: 0, rotation: 0 }], null];
+    expect(() => readPlanesRecord(bad)).toThrow("Invalid stored");
+    const playing = readPlanesRecord(undefined);
+    playing.completedPlanes = [fleet(), fleet()];
+    expect(
+      new PlanesTable({ save: async () => {} }, playing).view(null)
+        .revealedPlanes,
+    ).toBeUndefined();
+  });
   it("requires both players ready, enforces turns, and resolves a complete win", async () => {
     const f = tableFixture();
     await f.start();
