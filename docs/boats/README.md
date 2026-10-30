@@ -81,6 +81,10 @@ Run on commit 0ad59ae (Tasks 1 to 4), production bundle built with `VITE_GAME_DI
 6. Dusk. With `?time=19.5` the in-game clock showed 19:30 and the lake, shore and hull were in dusk light with the boat still reading clearly (`captures/runabout-dusk.png`).
 7. Console: 0 errors apart from the favicon.ico 404, and 2 warnings (THREE.Clock deprecation; Rapier deprecated initialization parameters), across the whole session including the reload for dusk.
 8. Frame time (`requestAnimationFrame` deltas over 3 s, 1280 x 720). The display ran at 120 Hz, so every run is vsync-bound at 8.33 ms and the numbers cannot separate the boat's cost: boat on screen, parked at the dock, median 8.2 / mean 8.33 ms (three 3 s runs, mean 8.33 each; p95 9.1 to 9.3); boat off screen at the same spot, (two runs) median 8.2 / mean 8.34 and 8.33 ms (p95 9.2); driving at 8 m/s, median 8.1 / mean 8.34 ms (p95 10.0, max 11.0). No frame dropped below 120 Hz in any run. Headroom beyond 120 Hz was not measured.
+9. Jet stream and boost (Task 6 build b3516f6, captured by the controller). W held about 6 s from rest: 2.22, 4.74, 6.90, 8.0 m/s at 1 s steps (`captures/runabout-jet-stream.png`). Shift+W: speed rose 8.0, 9.8, 11.9, 12.8 m/s and held 12.8 (`BOAT_TUNING.cruise` x `boostMultiplier`); the plume and V wake are larger and longer (`captures/runabout-jet-stream-boost.png`).
+10. Hands: with the boat stopped and the wheel at angle 0, both hands are on the rim (`captures/runabout-hands-both.png`).
+11. Night: fresh load with `?time=23` (clock 23:00); at the central dock, player at (7.8, 0.73, 46.5), hull edge about 3 m away so no boarding prompt yet; chrome is dark and muted with no glow (`captures/runabout-night.png`).
+12. Console on both of those loads: 0 errors (a favicon.ico 404 on the first load only) and the two known warnings.
 
 Issues observed (not fixed, no source changed in this task):
 
@@ -107,9 +111,13 @@ Issues observed (not fixed, no source changed in this task):
 Runabout captures (all 1280 x 720, taken for the runabout verification above):
 
 - `captures/runabout-parked.png`: the runabout parked beside the dock.
-- `captures/runabout-turning.png`: under way, wheel turned, wake ring.
+- `captures/runabout-turning.png`: under way, wheel turned. It shows the pre-jet-stream wake ring around the boat, as do `runabout-dusk.png` and `runabout-cockpit.png` (the ring was removed in Task 6).
 - `captures/runabout-wheel-hands.png`: wheel turned with the driver's right hand on the rim and the left hand occluded, from above and behind.
-- NOT CAPTURED YET (placeholders, the controller adds these after Task 6): `captures/runabout-jet-stream.png`, `captures/runabout-jet-stream-boost.png`, `captures/runabout-hands-both.png` (both hands visible on the wheel), `captures/runabout-night.png` (chrome at night).
+- `captures/runabout-jet-stream.png`: driving at 8.0 m/s, seen from the starboard-rear quarter: rooster-tail spray dots rising off the transom and a fading V foam wake behind the hull, no ring around the boat.
+- `captures/runabout-jet-stream-boost.png`: Shift+W boost at 12.8 m/s; the spray plume and V wake are visibly larger and longer than at cruise.
+- `captures/runabout-hands-both.png`: boat stopped, wheel angle 0, camera orbited to the bow and zoomed with the existing mouse controls: both hands on the wheel rim behind the windshield, driver in the starboard seat.
+- `captures/runabout-night.png`: `?time=23` (clock 23:00), player wading beside the parked boat at the central dock: the chrome windshield frame, rub rail and cutwater are dark and muted with no glow, and the hull still reads as varnished wood.
+- The jet-stream, boost, hands-both and night captures were taken on the b3516f6 build (before the boostDecay tuning change, which does not affect the visuals).
 - `captures/runabout-cockpit.png`: cockpit, high and close with the existing camera zoomed in.
 - `captures/runabout-dock-stop.png`: the boat stopped beside the dock after full throttle, bow short of the piling.
 - `captures/runabout-swim-exit.png`: driver swimming beside the boat after a mid-lake exit, with the boarding prompt.
