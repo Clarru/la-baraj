@@ -99,3 +99,15 @@ The boat grows from 3.6 × 1.4 m to about 6.1 × 2.2 m. Everything that assumed 
 - The optimized GLB is within budget.
 - All existing tests pass, updated where sizes changed. `npx tsc --noEmit`, `npm test`, `npm run test:protocol`, `npm run server:check` and `npm run build` are clean.
 - In the browser, the Phase 1 acceptance path still holds: board, drive, turn, stop at a bank, step out at a bank and mid-lake, and R back to the dock.
+
+## Built
+
+Final numbers (commit 0ad59ae, verified in the game; see `README.md` "Runabout verification"):
+
+- Assets: `Lake_Runabout.glb` 891,932 bytes / 34,879 triangles; `Lake_Runabout_LOD.glb` 323,904 bytes / 4,091 triangles; WebP textures at most 1024 px.
+- Dimensions: length 6.146 m, beam 2.207 m, bow extent 3.683 m, stern extent 2.463 m, draft 0.500 m, deck height 0.8 m; the GLB bounds top out at 1.318 m. Origin on the waterline at the pivot 40% of the length forward of the transom. Driver offset from the `DriverSeat` empty: [0, -0.04, 0.33].
+- Placement: side offset 3.7 m, lake offset 13 m, board distance 1.6 m from the hull edge, probe distance bowExtent + 0.8 m, exit candidates at beam/2 + 0.7 / 1.7 m and bowExtent + 0.7 / 1.7 m with a land ring at +3 m. Hull collision is a Rapier shape cast (`boat-collision.ts`).
+- Rim slide: both hands hold their grips at wheel angle 0. When the wheel is turned and a hand cannot reach its grip, it slides along the rim (same hub, plane and radius) to the nearest reachable point and stays on the wheel.
+- Hub and seat positions are authored in the GLB (`SteeringWheel`, `Grip_L`/`Grip_R`, `DriverSeat`, `Seat_0` to `Seat_5`); their coordinates are not restated here.
+- Remote boats use the LOD, cast no shadows and are not solid.
+- Captures in `docs/boats/captures/` (`runabout-*.png`). Observed in the game: frame time was vsync-bound at 120 Hz in every run, so the boat's cost was not separable; hull collision stopped the boat at the dock and the boat can wedge there until reversed with a steer; a parked boat does not block the player.

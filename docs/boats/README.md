@@ -1,6 +1,14 @@
 # Personal motorboats in La Baraj
 
-Phase 1 gives every player a personal motorboat on Lake Cinciș. The boat starts parked beside the dock nearest the player's cabin, about 3.2 m east of the dock centreline and 11 m out from the shoreline, facing the open lake. Within 3.5 m of it (on land, on the dock or in the water) the prompt "Drive the motorboat" appears. The driver sits behind a steering wheel with both hands on the grips. Phase 1 is single-boat, single-driver and surface-only; there is no fuel, damage, passengers or boat-to-boat collision.
+Phase 1 gives every player a personal motorboat on Lake Cinciș. The boat is a 6.1 m varnished-mahogany runabout (see "The runabout" below; it replaced the 3.6 m Phase 1 placeholder). It starts parked beside the dock nearest the player's cabin, 3.7 m east of the dock centreline and 13 m out from the south shoreline, facing the open lake. Within `BOAT_BOARD_DISTANCE` (1.6 m from the hull's edge) V boards; the prompt "Drive the motorboat" appears when the player is near the hull. The driver sits in the starboard seat behind a steering wheel with both hands on the grips. Phase 1 is single-boat, single-driver and surface-only; there is no fuel, damage, passengers or boat-to-boat collision.
+
+## The runabout
+
+- Size (`BOAT_DIMENSIONS`, `apps/web/src/boat-geometry.ts`): length 6.146 m, beam 2.207 m, bow extent 3.683 m, stern extent 2.463 m, draft 0.500 m, deck height 0.8 m. Six seats; only the driver seat is used (`Seat_0`..`Seat_5` are empties for later passengers).
+- Origin and pivot: on the waterline at the hull pivot, 40% of the length forward of the transom. While driving, the physics capsule sits at this pivot, so the boat turns about itself; the driver is drawn at the `DriverSeat` empty, offset `BOAT_DRIVER_OFFSET = [0, -0.04, 0.33]` from the capsule root.
+- Assets (`apps/web/public/assets/optimized/`): `Lake_Runabout.glb` 891,932 bytes, 34,879 triangles; `Lake_Runabout_LOD.glb` 323,904 bytes, 4,091 triangles; textures are WebP at most 1024 px. Catalogued in `apps/web/public/assets/runabout-library.json`. Blender renders: `docs/art-direction/runabout/runabout-blender.png`, `runabout-blender-cockpit.png`.
+- Reflections: `apps/web/src/boat-environment.ts` gives the boat its own PMREM gradient environment, intensity 0.15 at night up to 1.0 by day (from `lastLighting()`).
+- Remote players see the LOD boat. It casts no shadows and is not solid.
 
 ## Controls
 
@@ -16,24 +24,26 @@ Values live in `BOAT_TUNING` in `apps/web/src/boat-motion.ts`.
 - Acceleration 2.4 m/s², reverse acceleration 1.5 m/s², linear coast-down 0.35 m/s², brake deceleration 5 m/s².
 - Maximum turn rate 0.9 rad/s (the scooter uses 1.65), reached at 3 m/s and above.
 - Wheel travel 2.4 rad, hull lean at most 0.06 rad, ride height 0.75 m, bob amplitude 0.03 m.
-- The hull floor never goes below `LAKE_LEVEL + 0.15` (`BOAT_FLOAT_HEIGHT` in `apps/web/src/boat-geometry.ts`).
-- Bank stop: the boat probes the water 2.2 m ahead (`BOAT_PROBE_DISTANCE`) and stops when it is shallower than 0.5 m (`BOAT_MIN_DEPTH`), both in `apps/web/src/boat-placement.ts` (`boatBlockedAhead`).
-- Exit candidates: sides at 1.6 m and 2.6 m, then the bow at 2.2 m and 3.2 m, then a land-only far ring of left, right and bow at 4.5 m. The first candidate whose ground lies no more than 0.4 m below the lake surface (`BOAT_WADE_DEPTH`, shallower than the 0.62 m swim threshold) becomes the exit, so the driver wades rather than swims. If none qualifies, the driver enters the water beside the boat at the first (1.6 m) candidate.
+- Hull draft is now 0.5 m (`BOAT_DIMENSIONS.draft`). The hull floor never goes below `LAKE_LEVEL + 0.15` (`BOAT_FLOAT_HEIGHT` in `apps/web/src/boat-geometry.ts`).
+- Bank stop: the boat probes the water `bowExtent + 0.8` = 4.483 m ahead (`BOAT_PROBE_DISTANCE`; Phase 1 placeholder: 2.2 m, superseded) and stops when it is shallower than 0.5 m (`BOAT_MIN_DEPTH`), both in `apps/web/src/boat-placement.ts` (`boatBlockedAhead`).
+- Exit candidates (current runabout): measured from the hull edge, sides at beam/2 + 0.7 m and beam/2 + 1.7 m, bow at bowExtent + 0.7 m and bowExtent + 1.7 m, then a land-only far ring of left, right and bow at +3 m (`boatExitCandidates`). Phase 1 placeholder, superseded: sides at 1.6 m and 2.6 m, bow at 2.2 m and 3.2 m, far ring at 4.5 m. The first candidate whose ground lies no more than 0.4 m below the lake surface (`BOAT_WADE_DEPTH`, shallower than the 0.62 m swim threshold) becomes the exit, so the driver wades rather than swims. If none qualifies, the driver enters the water beside the boat at the first candidate.
+- Placement (`apps/web/src/boat-placement.ts`): `BOAT_DOCK_SIDE_OFFSET` 3.7 m (Phase 1: 3.2, superseded), `BOAT_DOCK_LAKE_OFFSET` 13 m (Phase 1: 11, superseded), `BOAT_BOARD_DISTANCE` 1.6 m from the hull edge via `distanceToHull` (Phase 1: 3.5 m from the boat origin, superseded). Spawn at the x = 0 dock: (3.7, ·, 44.875), yaw pi.
+- Hull collision while driving (`apps/web/src/boat-collision.ts`, `boatHullBlocked`): a Rapier shape cast of the hull stops the boat against docks and pilings, so a boat can no longer pass through them.
 
 ## Wheel and hands
 
-Wheel angle is `clamp(turnRate / maxTurnRate) × 2.4 rad`. A positive value is a left turn and reads counter-clockwise to the driver. Two-bone arm IK (`apps/web/src/limb-ik.ts`) places each hand on its wheel grip every frame, so the hands follow the wheel through the turn.
+Wheel angle is `clamp(turnRate / maxTurnRate) × 2.4 rad`. A positive value is a left turn and reads counter-clockwise to the driver. Two-bone arm IK (`apps/web/src/limb-ik.ts`) places each hand on its wheel grip every frame. At wheel angle 0 both hands hold their grips. At larger wheel angles a hand that cannot reach its grip slides along the rim (same hub, plane and radius) to the nearest reachable point, so it stays on the wheel (`apps/web/src/boat-rider.ts`).
 
 ## Multiplayer
 
-The existing pose carries `vehicle: "boat"`; no new message type is added. A remote client infers the wheel angle from the driver's yaw rate. Clients that have not reloaded show the driver as a seated avatar with no boat. Deploy the la-baraj-world Worker before merging to main: an old Worker rejects `vehicle: "boat"` as an invalid packet and disconnects a boating player after three strikes (about half a second at 7 Hz). This is a blocking release step.
+The existing pose carries `vehicle: "boat"`; no new message type is added. A remote client infers the wheel angle from the driver's yaw rate. Remote boats are drawn with the LOD GLB, cast no shadows and are not solid. Clients that have not reloaded show the driver as a seated avatar with no boat. Deploy the la-baraj-world Worker before merging to main: an old Worker rejects `vehicle: "boat"` as an invalid packet and disconnects a boating player after three strikes (about half a second at 7 Hz). This is a blocking release step.
 
 ## Known limits
 
 - A parked boat is visible only to its owner. Other players see a boat once it is driven.
 - Boat position is not persisted; it resets to the dock on reload.
 - The north shore terrain is a proxy, so boat-to-bank behaviour there is approximate.
-- Remote players and remote boats were not verified: the run was offline and the production Worker was not contacted.
+- Remote players and remote boats (including the new LOD boat) were not verified in a live room: the runs were offline and the production Worker was not contacted.
 - At a gentle bank the boat stops in shallow water a few metres from the shoreline. The exit reach extends to 4.5 m and shallows up to 0.4 m deep (`BOAT_WADE_DEPTH`) count as ground, but V at a shallows stop on gentle banks may still drop the driver into water; wading ashore takes a few seconds; docks and steeper banks give land exits. North-shore crossing: see Browser verification item 7.
 - Dev-mode verification is blocked by a bug that predates the boats. `React.StrictMode` runs effects twice, and the cleanup at `apps/web/src/NearbySolids.tsx:38` calls `isValid()` on a Rapier world that is already freed. The error is "null pointer passed to rust" and the scene boundary shows "The lake couldn't load". It reproduces on the base commit (6d6e3d8) as well as this branch.
 
@@ -51,6 +61,26 @@ Because dev mode cannot load the scene, the run used the production bundle: `VIT
 
 Console in the preview session: 0 errors and 2 existing warnings (THREE.Clock deprecation; Rapier "deprecated parameters for the initialization function"). A favicon.ico 404 appears only in dev.
 
+## Runabout verification
+
+Run on commit 0ad59ae (Tasks 1 to 4), production bundle built with `VITE_GAME_DIAGNOSTICS=1`, one `npm run preview` on 127.0.0.1:4173, offline, Playwright Chromium 1280 x 720, synthetic `KeyboardEvent`s on `window`, telemetry from `movement-metrics`. The player's home is cabin 1 (spawn (55.4, 6.05, 63.8)); the runabout spawned at (3.7, 0.8, 44.875) beside the x = 0 dock.
+
+1. Parked. The boat is visible beside the dock, east side, in the lake (`captures/runabout-parked.png`). Walking up to it, the prompt "Drive the motorboat / W throttle . A/D steer . V step out" showed with the player at z 47.88 (3.0 m from the pivot at z 44.875, about 0.5 m from the stern edge); it did not show at z 49.38 (about 2.1 m from the stern edge). A parked boat is not solid for the player: the walker could stand inside the hull volume.
+2. Board and drive. V from the water boarded: vehicle "Motorboat", animation `Activity_Sit`, y 0.77. The hint reads "Motorboat / V near a bank to step out". W for 6 s reached 8.0 m/s (the cruise speed) at (3.7, 0.8, 10.9). Holding W and A then curved the boat to the left at 8 m/s. `captures/runabout-turning.png` shows the hull under way with the wheel turned; the camera is beside the boat, so the hands are only partly visible there. `captures/runabout-wheel-hands.png` is a closer view from above and behind, with the wheel turned and the driver's hand on the rim.
+3. Cockpit. Using only the existing camera (drag to orbit, mouse wheel to zoom in) the camera was orbited above and behind the boat and zoomed in (`captures/runabout-cockpit.png`): mahogany coaming, tufted seats, dashboard gauges and the driver in the right-hand seat.
+4. Dock collision at full throttle. Held at 8.0 m/s, the boat's path went from (-5.22, 49.12) to a stop at (-4.43, 50.66), heading 0.45 rad, beside the west side of the dock with the speed 0 within one telemetry sample; the hull did not enter the dock (`captures/runabout-dock-stop.png`). In an earlier approach the boat stopped at (0.7, 42.5) heading toward +z and could be reversed away. Caveat: both stops were from approaches that met the dock's side and pilings at a shallow angle, not a head-on hit on the dock's end (my steering loop overshot and swung wide).
+5. Exits. V at the dock stop stepped onto the deck at (-0.73, 1.98, 48.88), grounded. V at a bank stop at (22.81, 0.8, 25.48) put the driver at (25.53, 0.82, 30.13), standing grounded in shallow water (about 5 m from the pivot, so a wade-ashore candidate). Re-boarding from the dock deck and from the shallows worked once the player was within `BOAT_BOARD_DISTANCE` of the hull edge (it did nothing at about 1.75 m). V mid-lake at (2.1, -5.6) and 8 m/s: the driver swims beside the boat (`Swim_Idle`, y 0.53, vehicle null) with the "Drive the motorboat" prompt (`captures/runabout-swim-exit.png`). R then returned the player to (55.38, 6.05, 63.79); walking back, V boarded the boat at its dock spawn (3.7, 0.77, 44.88).
+6. Dusk. With `?time=19.5` the in-game clock showed 19:30 and the lake, shore and hull were in dusk light with the boat still reading clearly (`captures/runabout-dusk.png`).
+7. Console: 0 errors apart from the favicon.ico 404, and 2 warnings (THREE.Clock deprecation; Rapier deprecated initialization parameters), across the whole session including the reload for dusk.
+8. Frame time (`requestAnimationFrame` deltas over 3 s, 1280 x 720). The display ran at 120 Hz, so every run is vsync-bound at 8.33 ms and the numbers cannot separate the boat's cost: boat on screen, parked at the dock, median 8.2 / mean 8.33 ms (three 3 s runs, mean 8.33 each; p95 9.1 to 9.3); boat off screen at the same spot, (two runs) median 8.2 / mean 8.34 and 8.33 ms (p95 9.2); driving at 8 m/s, median 8.1 / mean 8.34 ms (p95 10.0, max 11.0). No frame dropped below 120 Hz in any run. Headroom beyond 120 Hz was not measured.
+
+Issues observed (not fixed, no source changed in this task):
+
+- Hull collision can wedge the boat against the dock. After the boat stopped alongside it, W alone did not free it; reverse with a steer (S + A/D) was needed, because the boat turns only while moving. Twice an automated W-only loop left the boat stuck until reversed.
+- The boat could not be reversed out in the first S hold after one bank stop (it moved only 0.3 m in 3 s); a later S hold worked normally, so this may be input timing from my synthetic keys, not a bug.
+- The parked boat does not block the player (see item 1).
+- The boarding prompt appears only close to the hull; at 2.1 m from the edge it was not shown.
+
 ## Observed issues
 
 - Fixed during verification: the boat could cross the shoreline at full throttle and strand the player in terrain (fix 48e95a5).
@@ -65,5 +95,17 @@ Console in the preview session: 0 errors and 2 existing warnings (THREE.Clock de
 - `captures/boat-swim-exit.png`: driver swimming beside the boat after a mid-lake exit, with the re-board prompt.
 - `captures/boat-north-shore.png`: boat stopped in the shallows off the north shore after the 651 m crossing.
 - `captures/boat-north-shore-exit.png`: driver in the water beside the boat after V at the north-shore stop, with the re-board prompt.
+
+Runabout captures (all 1280 x 720, taken for the runabout verification above):
+
+- `captures/runabout-parked.png`: the runabout parked beside the dock.
+- `captures/runabout-turning.png`: under way, wheel turned, wake ring.
+- `captures/runabout-wheel-hands.png`: wheel turned with the driver's hand on the rim, from above and behind.
+- `captures/runabout-cockpit.png`: cockpit, high and close with the existing camera zoomed in.
+- `captures/runabout-dock-stop.png`: the boat stopped beside the dock after full throttle, bow short of the piling.
+- `captures/runabout-swim-exit.png`: driver swimming beside the boat after a mid-lake exit, with the boarding prompt.
+- `captures/runabout-dusk.png`: the boat at 19:30 (`?time=19.5`).
+
+The earlier `captures/boat-*.png` images show the Phase 1 placeholder boat.
 
 All captures were taken offline, so the header shows "Offline" and a "Room server is not configured" notice.
