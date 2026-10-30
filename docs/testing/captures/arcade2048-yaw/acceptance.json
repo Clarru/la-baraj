@@ -1,0 +1,30 @@
+{
+  "candidate": "54da44136ecb9083e05607abb47bea2267a2672c",
+  "yawDegrees": 45,
+  "selections": [
+    {
+      "approach": 0,
+      "selected": 0
+    },
+    {
+      "approach": 1,
+      "selected": 1
+    },
+    {
+      "approach": 2,
+      "selected": 2
+    }
+  ],
+  "pointerMoveAccepted": true,
+  "allClaimsReleased": true,
+  "frontViewConfirmed": true,
+  "focusedViewSquare": true,
+  "exitHeadingRetained": true,
+  "walkIntoTurnedCabinet": "visual collision confirmation; no numeric body trace",
+  "consoleErrors": [],
+  "unrun": [
+    "new two-player occupied-nearest browser test (one-tab slot)",
+    "legacy browser fallback (unit/source covered)",
+    "numerical collision/camera trace"
+  ]
+}
