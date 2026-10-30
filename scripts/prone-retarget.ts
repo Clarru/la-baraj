@@ -5,6 +5,7 @@ export const BELLY_PRONE_DURATION = 1.2;
 
 type PoseOptions = {
   sampleTime?: number;
+  openHandSource?: THREE.AnimationClip;
   duration?: number;
   /** Presentation lift used by the land visual root; normalizes the lowest vertex to floor. */
   groundLift?: number;
@@ -96,6 +97,7 @@ function solveTwoBone(
   endpoint: THREE.Object3D,
   target: THREE.Vector3,
   pole: THREE.Vector3,
+  bendY?: number,
 ) {
   const start = upper.getWorldPosition(new THREE.Vector3());
   const middle = lower.getWorldPosition(new THREE.Vector3());
@@ -125,12 +127,37 @@ function solveTwoBone(
     .clone()
     .addScaledVector(direction, along)
     .addScaledVector(poleDirection, height);
+  if (bendY !== undefined && height > 1e-5) {
+    const center = start.clone().addScaledVector(direction, along);
+    const vertical = new THREE.Vector3(0, 1, 0).addScaledVector(
+      direction,
+      -direction.y,
+    );
+    if (vertical.lengthSq() > 1e-8) {
+      vertical.normalize();
+      const lateral = direction.clone().cross(vertical).normalize();
+      const cosine = THREE.MathUtils.clamp(
+        (bendY - center.y) / (height * vertical.y),
+        -1,
+        1,
+      );
+      const sine = Math.sqrt(Math.max(0, 1 - cosine * cosine));
+      const a = center
+        .clone()
+        .addScaledVector(vertical, height * cosine)
+        .addScaledVector(lateral, height * sine);
+      const b = center
+        .clone()
+        .addScaledVector(vertical, height * cosine)
+        .addScaledVector(lateral, -height * sine);
+      bend.copy(a.distanceToSquared(pole) < b.distanceToSquared(pole) ? a : b);
+    }
+  }
   aimBone(upper, lower, bend);
   aimBone(lower, endpoint, reachable);
 }
 
-function alignHandForGroundBrace(scene: THREE.Object3D, side: -1 | 1) {
-  const suffix = side < 0 ? "l" : "r";
+function alignHandForGroundBrace(scene: THREE.Object3D, suffix: "l" | "r") {
   const hand = scene.getObjectByName(`hand_${suffix}`);
   const middle = scene.getObjectByName(`middle_01_${suffix}`);
   const index = scene.getObjectByName(`index_01_${suffix}`);
@@ -148,11 +175,7 @@ function alignHandForGroundBrace(scene: THREE.Object3D, side: -1 | 1) {
   across.addScaledVector(finger, -across.dot(finger)).normalize();
   const normal = finger.clone().cross(across).normalize();
   const targetFinger = new THREE.Vector3(0, 0, 1);
-  const targetAcross = new THREE.Vector3(
-    across.dot(new THREE.Vector3(1, 0, 0)) < 0 ? -1 : 1,
-    0,
-    0,
-  );
+  const targetAcross = new THREE.Vector3(suffix === "l" ? -1 : 1, 0, 0);
   const targetNormal = targetFinger.clone().cross(targetAcross).normalize();
   const currentBasis = new THREE.Matrix4().makeBasis(across, normal, finger);
   const targetBasis = new THREE.Matrix4().makeBasis(
@@ -166,18 +189,6 @@ function alignHandForGroundBrace(scene: THREE.Object3D, side: -1 | 1) {
     .multiply(hand.getWorldQuaternion(new THREE.Quaternion()))
     .normalize();
   setWorldRotation(hand, desired);
-}
-
-function captureBoneQuaternions(
-  clip: THREE.AnimationClip,
-  scene: THREE.Object3D,
-  bones: string[],
-) {
-  for (const name of bones) {
-    const bone = scene.getObjectByName(name);
-    if (bone)
-      replaceTrackValue(clip, `${name}.quaternion`, bone.quaternion.toArray());
-  }
 }
 
 function eyesCentroid(scene: THREE.Object3D) {
@@ -194,7 +205,11 @@ function eyesCentroid(scene: THREE.Object3D) {
   return centroid.multiplyScalar(1 / Math.max(1, positions.count));
 }
 
-function applyBellySupportIK(scene: THREE.Object3D, stroke = 0) {
+function applyBellySupportIK(
+  scene: THREE.Object3D,
+  stroke = 0,
+  groundY = -0.46,
+) {
   const pelvis = scene.getObjectByName("pelvis");
   const head = scene.getObjectByName("Head");
   if (!pelvis || !head) return;
@@ -217,8 +232,8 @@ function applyBellySupportIK(scene: THREE.Object3D, stroke = 0) {
   setWorldRotation(head, headCorrection.multiply(headRotation));
 
   const arms = [
-    { side: -1, upper: "upperarm_l", lower: "lowerarm_l", hand: "hand_l" },
-    { side: 1, upper: "upperarm_r", lower: "lowerarm_r", hand: "hand_r" },
+    { side: 1, upper: "upperarm_l", lower: "lowerarm_l", hand: "hand_l" },
+    { side: -1, upper: "upperarm_r", lower: "lowerarm_r", hand: "hand_r" },
   ];
   for (const arm of arms) {
     const upper = scene.getObjectByName(arm.upper);
@@ -227,18 +242,60 @@ function applyBellySupportIK(scene: THREE.Object3D, stroke = 0) {
     if (!upper || !lower || !hand) continue;
     const target = pelvisPosition
       .clone()
-      .addScaledVector(forward, 0.66 + arm.side * stroke * 0.1)
+      .addScaledVector(forward, 0.68 + arm.side * stroke * 0.12)
       .addScaledVector(right, arm.side * 0.24)
-      .addScaledVector(up, -0.05);
+      .setY(groundY + 0.04);
     const pole = pelvisPosition
       .clone()
-      .addScaledVector(forward, 0.38)
+      .addScaledVector(forward, 0.42)
       .addScaledVector(right, arm.side * 0.4)
-      .addScaledVector(up, -0.04);
-    solveTwoBone(upper, lower, hand, target, pole);
+      .setY(groundY + 0.12);
+    let elbowY = groundY + 0.08;
+    for (let attempt = 0; attempt < 5; attempt++) {
+      solveTwoBone(upper, lower, hand, target, pole, elbowY);
+      scene.updateMatrixWorld(true);
+      const sleeve = scene.getObjectByName("Male_Peasant_Arms_1");
+      if (!(sleeve instanceof THREE.SkinnedMesh)) break;
+      const vertex = new THREE.Vector3();
+      let minY = Infinity;
+      for (
+        let index = 0;
+        index < sleeve.geometry.attributes.position.count;
+        index++
+      ) {
+        sleeve.getVertexPosition(index, vertex);
+        sleeve.localToWorld(vertex);
+        if ((vertex.x - pelvisPosition.x) * arm.side > 0)
+          minY = Math.min(minY, vertex.y);
+      }
+      if (minY >= groundY + 0.004) break;
+      elbowY += groundY + 0.004 - minY;
+    }
   }
-  alignHandForGroundBrace(scene, -1);
-  alignHandForGroundBrace(scene, 1);
+  alignHandForGroundBrace(scene, "l");
+  alignHandForGroundBrace(scene, "r");
+  for (const side of ["l", "r"]) {
+    // The thumb pad also rests in the palm plane rather than pointing into the floor.
+    const direction = new THREE.Vector3(
+      side === "l" ? -0.5 : 0.5,
+      0,
+      0.86,
+    ).normalize();
+    for (const [name, childName] of [
+      ["01", "02"],
+      ["02", "03"],
+      ["03", "04_leaf"],
+    ]) {
+      const thumb = scene.getObjectByName(`thumb_${name}_${side}`);
+      const child = scene.getObjectByName(`thumb_${childName}_${side}`);
+      if (thumb && child)
+        aimBone(
+          thumb,
+          child,
+          thumb.getWorldPosition(new THREE.Vector3()).add(direction),
+        );
+    }
+  }
 }
 
 /** Keep toes extending away from the hips while removing the source toe-down tilt. */
@@ -322,6 +379,25 @@ export function createBellyProneClip(
     Math.min(source.duration, options.sampleTime ?? 0),
   );
   const duration = options.duration ?? BELLY_PRONE_DURATION;
+  const handBones = ["l", "r"].flatMap((side) =>
+    ["index", "middle", "ring", "pinky", "thumb"].flatMap((finger) =>
+      ["01", "02", "03"].map((joint) => `${finger}_${joint}_${side}`),
+    ),
+  );
+  const openHands = new Map(
+    handBones.map((name) => {
+      const track = options.openHandSource?.tracks.find(
+        (track) => track.name === `${name}.quaternion`,
+      );
+      if (!track) throw new Error(`Open-hand reference missing ${name}`);
+      return [
+        name,
+        new THREE.Quaternion().fromArray(
+          track.InterpolantFactoryMethodLinear().evaluate(0),
+        ),
+      ];
+    }),
+  );
   const clip = sampledClip(source, sampleTime, duration);
   const mixer = new THREE.AnimationMixer(scene);
   const action = mixer.clipAction(clip).play();
@@ -378,46 +454,36 @@ export function createBellyProneClip(
   replaceTrackValue(clip, "root.position", localPosition.toArray());
   replaceTrackValue(clip, "root.quaternion", localRotation.toArray());
 
-  // The supine source carries its toes downward. Correct only the foot/ball
-  // chain after the body roll, keeping the leg and ankle shape intact.
   const footPose = evaluateClip(scene, clip);
   levelFootToLongitudinalAxis(scene, clip, "foot_l", "ball_l", longitudinal);
   levelFootToLongitudinalAxis(scene, clip, "foot_r", "ball_r", longitudinal);
-  applyBellySupportIK(scene);
-  captureBoneQuaternions(clip, scene, [
-    "Head",
-    "upperarm_l",
-    "lowerarm_l",
-    "hand_l",
-    "upperarm_r",
-    "lowerarm_r",
-    "hand_r",
-  ]);
   footPose.dispose();
 
-  // Evaluate the actual skinned vertices once, then move the root in world Y
-  // so the existing presentation lift puts the lowest vertex on the floor.
-  const normalizeMixer = new THREE.AnimationMixer(scene);
-  const normalizeAction = normalizeMixer.clipAction(clip).play();
-  normalizeMixer.update(1e-4);
-  scene.updateMatrixWorld(true);
-  const minY = lowestSkinnedVertexY(scene);
-  const desiredRawMinY = -(options.groundLift ?? 0.46);
-  if (Number.isFinite(minY) && Math.abs(minY - desiredRawMinY) > 1e-5) {
-    const rootPositionTrack = clip.tracks.find(
-      (track) => track.name === "root.position",
+  const pose = evaluateClip(scene, clip);
+  const groundLift = options.groundLift ?? 0.46;
+  normalizeCurrentSceneToGround(scene, groundLift);
+  // A slight downward chest pitch settles the upper torso instead of arching above the floor.
+  const spine = scene.getObjectByName("spine_01");
+  if (spine)
+    setWorldRotation(
+      spine,
+      spine
+        .getWorldQuaternion(new THREE.Quaternion())
+        .premultiply(
+          new THREE.Quaternion().setFromAxisAngle(
+            new THREE.Vector3(1, 0, 0),
+            0.16,
+          ),
+        ),
     );
-    if (rootPositionTrack) {
-      const parentInverseMatrix = parent.matrixWorld.clone().invert();
-      const shiftedLocal = root
-        .getWorldPosition(new THREE.Vector3())
-        .add(new THREE.Vector3(0, desiredRawMinY - minY, 0))
-        .applyMatrix4(parentInverseMatrix);
-      replaceTrackValue(clip, "root.position", shiftedLocal.toArray());
-    }
-  }
-  normalizeAction.stop();
-  normalizeMixer.uncacheClip(clip);
+  for (const [name, rotation] of openHands)
+    scene.getObjectByName(name)!.quaternion.copy(rotation);
+  applyBellyStrokeIK(scene, 0, -groundLift);
+  scene.updateMatrixWorld(true);
+  normalizeCurrentSceneToGround(scene, groundLift);
+  for (const track of clip.tracks)
+    replaceTrackValue(clip, track.name, readTrackValue(scene, track));
+  pose.dispose();
 
   action.stop();
   mixer.uncacheClip(clip);
@@ -437,8 +503,12 @@ function readTrackValue(scene: THREE.Object3D, track: THREE.KeyframeTrack) {
     : Array.from(track.values.slice(0, track.getValueSize()));
 }
 
-function applyBellyStrokeIK(scene: THREE.Object3D, stroke: number) {
-  applyBellySupportIK(scene, stroke);
+function applyBellyStrokeIK(
+  scene: THREE.Object3D,
+  stroke: number,
+  groundY = -0.46,
+) {
+  applyBellySupportIK(scene, stroke, groundY);
   const pelvis = scene.getObjectByName("pelvis");
   if (!pelvis) return;
   const pelvisPosition = pelvis.getWorldPosition(new THREE.Vector3());
@@ -446,21 +516,30 @@ function applyBellyStrokeIK(scene: THREE.Object3D, stroke: number) {
   const right = new THREE.Vector3(1, 0, 0);
   const up = new THREE.Vector3(0, 1, 0);
   for (const side of [-1, 1]) {
-    const thigh = scene.getObjectByName(`thigh_${side < 0 ? "l" : "r"}`);
-    const calf = scene.getObjectByName(`calf_${side < 0 ? "l" : "r"}`);
-    const foot = scene.getObjectByName(`foot_${side < 0 ? "l" : "r"}`);
+    const thigh = scene.getObjectByName(`thigh_${side > 0 ? "l" : "r"}`);
+    const calf = scene.getObjectByName(`calf_${side > 0 ? "l" : "r"}`);
+    const foot = scene.getObjectByName(`foot_${side > 0 ? "l" : "r"}`);
     if (!thigh || !calf || !foot) continue;
     const target = pelvisPosition
       .clone()
-      .addScaledVector(forward, -0.66 + side * stroke * 0.05)
+      .addScaledVector(forward, -0.79 + side * stroke * 0.025)
       .addScaledVector(right, side * 0.12)
-      .addScaledVector(up, 0.025);
+      .setY(groundY + 0.1);
     const pole = pelvisPosition
       .clone()
-      .addScaledVector(forward, -0.25)
-      .addScaledVector(right, side * 0.38)
-      .addScaledVector(up, 0.01);
-    solveTwoBone(thigh, calf, foot, target, pole);
+      .addScaledVector(forward, -0.4)
+      .addScaledVector(right, side * 0.16)
+      .setY(groundY + 0.08);
+    solveTwoBone(thigh, calf, foot, target, pole, groundY + 0.1);
+    const ball = scene.getObjectByName(`ball_${side > 0 ? "l" : "r"}`);
+    if (ball)
+      aimBone(
+        foot,
+        ball,
+        foot
+          .getWorldPosition(new THREE.Vector3())
+          .add(new THREE.Vector3(0, 0, -1)),
+      );
   }
 }
 
@@ -470,7 +549,10 @@ export function createBellyProneCrawlClip(
   idleClip: THREE.AnimationClip,
   duration = 2,
 ) {
-  const times = [0, duration * 0.25, duration * 0.5, duration * 0.75, duration];
+  const times = Array.from(
+    { length: 17 },
+    (_, index) => (duration * index) / 16,
+  );
   const mixer = new THREE.AnimationMixer(scene);
   const action = mixer.clipAction(idleClip).play();
   const frames: number[][] = [];
@@ -478,8 +560,10 @@ export function createBellyProneCrawlClip(
     action.reset().play();
     mixer.update(1e-4);
     scene.updateMatrixWorld(true);
-    applyBellyStrokeIK(scene, index % 2 ? 1 : -1);
-    normalizeCurrentSceneToGround(scene, 0.46);
+    applyBellyStrokeIK(
+      scene,
+      Math.sin((times[index] / duration) * Math.PI * 2),
+    );
     scene.updateMatrixWorld(true);
     idleClip.tracks.forEach((track, trackIndex) => {
       const value = readTrackValue(scene, track);
@@ -494,5 +578,9 @@ export function createBellyProneCrawlClip(
   });
   action.stop();
   mixer.uncacheClip(idleClip);
-  return new THREE.AnimationClip("Prone_Belly_Crawl", duration, tracks);
+  return new THREE.AnimationClip(
+    "Prone_Belly_Crawl",
+    duration,
+    tracks,
+  ).optimize();
 }
