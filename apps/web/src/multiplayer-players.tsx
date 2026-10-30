@@ -1,7 +1,9 @@
+import { SOCIAL_WAVE_CLIP_NAME } from "./social-wave";
 import { remoteCruceView, type RemoteCardRoom } from "./remote-cruce";
 import { useCruceCharacter } from "./use-cruce-character";
 import { cruceSeatSide } from "../../../packages/shared/cruce-station";
 import {
+  Suspense,
   useEffect,
   useMemo,
   useRef,
@@ -30,7 +32,13 @@ import type { MultiplayerRoom } from "./multiplayer";
 import { createTableReactionRig } from "./table-reactions";
 import { planesSeatSide } from "../../../packages/shared/planes-station";
 import { SwimWake } from "./SwimWake";
+import { BoatSpray } from "./boat-spray.tsx";
+import { Boat, type BoatHandle } from "./boat";
+import { createBoatRiderRig } from "./boat-rider";
+import { BOAT_DRIVER_OFFSET_VECTOR } from "./boat-geometry";
+import { BOAT_TUNING, boatWheelTarget, inferBoatTurnRate } from "./boat-motion";
 import { AFK_AFTER_MS } from "../../../packages/shared/protocol";
+import { postureFromAnimation, stanceBaseAnimation } from "./stance-motion";
 
 // Only the isolated local browser lab may shorten the visual timeout for QA.
 const displayAfkAfter =
@@ -107,6 +115,7 @@ function RemoteAvatarRig({ id, room }: { id: string; room: RemoteCardRoom }) {
   const helpers = useRef<{
     rider: ReturnType<typeof createScooterRiderRig>;
     activity: ReturnType<typeof createCharacterActivityRig>;
+    boatRider: ReturnType<typeof createBoatRiderRig>;
   } | null>(null);
   const root = useRef<THREE.Group>(null),
     scooterGroup = useRef<THREE.Group>(null),
@@ -114,13 +123,29 @@ function RemoteAvatarRig({ id, room }: { id: string; room: RemoteCardRoom }) {
   const [hasScooter, setHasScooter] = useState(false);
   const [swimming, setSwimming] = useState(false);
   const swimmingRef = useRef(false);
+  const boat = useRef<BoatHandle>(null);
+  const [hasBoat, setHasBoat] = useState(false);
+  const [boating, setBoating] = useState(false);
+  const boatingRef = useRef(false);
+  const boatState = useRef({ previousYaw: 0, wheelAngle: 0, lean: 0 });
+  // The jet stream sizes itself from the pose speed alone (no protocol change).
+  const remoteBoatSpeed = useMemo(
+    () => () => room.remotes.get(id)?.player.speed ?? 0,
+    [room, id],
+  );
+  const gripLeft = useMemo(() => new THREE.Vector3(), []);
+  const gripRight = useMemo(() => new THREE.Vector3(), []);
+  const wheelNormal = useMemo(() => new THREE.Vector3(), []);
+  const wheelHub = useMemo(() => new THREE.Vector3(), []);
   const scooterMounted = useRef(false);
   const target = useMemo(() => new THREE.Vector3(), []);
+  const wasWaving = useRef(false);
   const previousAnimation = useRef(""),
     previousActivityAt = useRef(-1),
     previousGesture = useRef<string | null>(null),
     wasRiding = useRef(false),
     initialized = useRef(false);
+  const badgeAnchor = useRef<THREE.Group>(null);
   const badge = useRef<HTMLSpanElement>(null);
   const stars = useRef<HTMLSpanElement>(null);
   const afk = useRef<HTMLSpanElement>(null);
@@ -135,6 +160,7 @@ function RemoteAvatarRig({ id, room }: { id: string; room: RemoteCardRoom }) {
         animations.find((clip) => clip.name === "Idle_Neutral"),
       ),
       activity: createCharacterActivityRig(object),
+      boatRider: createBoatRiderRig(object),
     };
     helpers.current = runtime;
     return () => {
@@ -143,6 +169,7 @@ function RemoteAvatarRig({ id, room }: { id: string; room: RemoteCardRoom }) {
       disposeCharacterSkeletons(object);
       runtime.rider.dispose();
       runtime.activity.dispose();
+      runtime.boatRider.dispose();
       helpers.current = null;
     };
   }, [rig, object, animations]);
@@ -173,11 +200,38 @@ function RemoteAvatarRig({ id, room }: { id: string; room: RemoteCardRoom }) {
     const player = remote.player,
       dt = Math.min(delta, 0.1),
       riding = player.vehicle === "scooter";
+    const stance = postureFromAnimation(player.posture, player.animation);
+    if (badgeAnchor.current) {
+      const height =
+        stance === "prone" ? 0.7 : stance === "crouching" ? 1.55 : 2.15;
+      badgeAnchor.current.position.y = THREE.MathUtils.damp(
+        badgeAnchor.current.position.y,
+        height,
+        12,
+        dt,
+      );
+    }
     const nowSwimming =
       player.animation === "Swim_Forward" || player.animation === "Swim_Idle";
     if (swimmingRef.current !== nowSwimming) {
       swimmingRef.current = nowSwimming;
       setSwimming(nowSwimming);
+    }
+    const nowBoating = player.vehicle === "boat";
+    if (boatingRef.current !== nowBoating) {
+      boatingRef.current = nowBoating;
+      setBoating(nowBoating);
+      if (nowBoating) {
+        setHasBoat(true);
+        boatState.current = {
+          previousYaw: NaN, // adopted after this frame's yaw smoothing
+          wheelAngle: 0,
+          lean: 0,
+        };
+      } else {
+        helpers.current?.boatRider.reset();
+        object.position.set(0, 0, 0);
+      }
     }
     target.fromArray(player.position);
     // Presence still arrives; distant rigs need neither bone/IK updates nor badges.
@@ -213,16 +267,42 @@ function RemoteAvatarRig({ id, room }: { id: string; room: RemoteCardRoom }) {
         player.jumpPhase as JumpPhase,
         player.animation.startsWith("Jump_Run") ? "run" : "walk",
       );
+    const proneAnimation = stanceBaseAnimation(
+      stance,
+      (player.speed ?? 0) > 0.3,
+    );
     const config = activity ?? jump;
     const combatRoom = "stunned" in room ? (room as MultiplayerRoom) : null;
     const stunned = combatRoom?.stunned(id) ?? false;
     const punching = combatRoom?.punching(id) ?? false;
     if (stars.current) stars.current.style.display = stunned ? "" : "none";
+    const waving =
+      player.animation === SOCIAL_WAVE_CLIP_NAME &&
+      !stunned &&
+      !punching &&
+      stance === "standing" &&
+      player.activity === "none" &&
+      !riding &&
+      !nowSwimming;
+    const waveAction = rig.actions.get(SOCIAL_WAVE_CLIP_NAME);
+    if (waving && !wasWaving.current && waveAction) {
+      waveAction.reset().setLoop(THREE.LoopOnce, 1);
+      waveAction.clampWhenFinished = true;
+      waveAction.setEffectiveWeight(1).fadeIn(0.12).play();
+    } else if (!waving && wasWaving.current) waveAction?.fadeOut(0.12);
+    wasWaving.current = waving;
     const chosen = stunned
       ? "Punch_Hit"
       : punching
         ? "Punch_Jab"
-        : player.animation;
+        : proneAnimation &&
+            player.activity === "none" &&
+            !riding &&
+            !nowSwimming
+          ? proneAnimation
+          : waving
+            ? "Idle_Neutral"
+            : player.animation;
     const next = rig.actions.has(chosen) ? chosen : "Idle_Neutral";
     if (
       next !== previousAnimation.current ||
@@ -273,6 +353,39 @@ function RemoteAvatarRig({ id, room }: { id: string; room: RemoteCardRoom }) {
       previousGesture.current = gesture;
     }
     rig.mixer.update(dt);
+    if (nowBoating) {
+      const state = boatState.current,
+        yaw = group.rotation.y;
+      if (!Number.isFinite(state.previousYaw)) state.previousYaw = yaw;
+      if (Number.isFinite(yaw) && dt > 0) {
+        const turnRate = inferBoatTurnRate(state.previousYaw, yaw, dt);
+        state.wheelAngle +=
+          (boatWheelTarget(turnRate) - state.wheelAngle) *
+          (1 - Math.exp(-10 * dt));
+        state.lean +=
+          (THREE.MathUtils.clamp(
+            turnRate * Math.abs(player.speed ?? 0) * 0.01,
+            -BOAT_TUNING.leanMax,
+            BOAT_TUNING.leanMax,
+          ) -
+            state.lean) *
+          (1 - Math.exp(-4 * dt));
+        state.previousYaw = yaw;
+      }
+      const handle = boat.current;
+      if (handle) {
+        handle.update({ wheelAngle: state.wheelAngle, lean: state.lean });
+        handle.driverSeatLocal(object.position).add(BOAT_DRIVER_OFFSET_VECTOR);
+        handle.gripWorldPosition("left", gripLeft);
+        handle.gripWorldPosition("right", gripRight);
+        helpers.current?.boatRider.update({
+          left: gripLeft,
+          right: gripRight,
+          wheelNormal: handle.wheelNormalWorld(wheelNormal),
+          hub: handle.wheelHubWorld(wheelHub),
+        });
+      }
+    }
     helpers.current?.activity.update(
       { kind: player.activity as ActivityKind, startedAt: remote.activityAt },
       (performance.now() - remote.activityAt) / 1000,
@@ -307,51 +420,58 @@ function RemoteAvatarRig({ id, room }: { id: string; room: RemoteCardRoom }) {
     <group ref={root} name={`Online player ${id}`}>
       <primitive object={object} dispose={null} />
       {swimming && <SwimWake />}
+      {boating && <BoatSpray speed={remoteBoatSpeed} />}
+      {hasBoat && (
+        <Suspense fallback={null}>
+          <Boat ref={boat} visible={boating} detail="lod" />
+        </Suspense>
+      )}
       {hasScooter && (
         <group ref={scooterGroup}>
           <RemoteScooter ref={scooter} />
         </group>
       )}
-      <Html
-        center
-        position={[0, 2.15, 0]}
-        distanceFactor={
-          planesSeatSide(player?.seatId) !== null ||
-          cruceSeatSide(player?.seatId) !== null
-            ? 5
-            : 12
-        }
-        zIndexRange={[5, 0]}
-        style={{ pointerEvents: "none" }}
-      >
-        <span
-          ref={chatBubble}
-          className="bubble-chat bubble-chat-remote"
-          style={{ display: "none" }}
-          aria-label="Player chat"
+      <group ref={badgeAnchor} position={[0, 2.15, 0]}>
+        <Html
+          center
+          distanceFactor={
+            planesSeatSide(player?.seatId) !== null ||
+            cruceSeatSide(player?.seatId) !== null
+              ? 5
+              : 12
+          }
+          zIndexRange={[5, 0]}
+          style={{ pointerEvents: "none" }}
         >
-          <span ref={chatMessage} className="bubble-chat-message" />
-        </span>
-        <span
-          ref={afk}
-          className="multiplayer-afk"
-          style={{ display: "none" }}
-          aria-label="Away from keyboard"
-        >
-          AFK
-        </span>
-        <span
-          ref={stars}
-          className="stun-stars"
-          style={{ display: "none" }}
-          aria-label="Stunned"
-        >
-          ✦ ★ ✦
-        </span>
-        <span ref={badge} className="multiplayer-name" data-player-id={id}>
-          {player?.nickname ?? "Friend"}
-        </span>
-      </Html>
+          <span
+            ref={chatBubble}
+            className="bubble-chat bubble-chat-remote"
+            style={{ display: "none" }}
+            aria-label="Player chat"
+          >
+            <span ref={chatMessage} className="bubble-chat-message" />
+          </span>
+          <span
+            ref={afk}
+            className="multiplayer-afk"
+            style={{ display: "none" }}
+            aria-label="Away from keyboard"
+          >
+            AFK
+          </span>
+          <span
+            ref={stars}
+            className="stun-stars"
+            style={{ display: "none" }}
+            aria-label="Stunned"
+          >
+            ✦ ★ ✦
+          </span>
+          <span ref={badge} className="multiplayer-name" data-player-id={id}>
+            {player?.nickname ?? "Friend"}
+          </span>
+        </Html>
+      </group>
     </group>
   );
 }

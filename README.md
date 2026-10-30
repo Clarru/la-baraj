@@ -57,7 +57,7 @@ The frontend is deployed on Vercel and multiplayer runs on the Cloudflare Worker
 
 Geographic inputs and generated previews live under `assets/geography/`. See their data license before redistribution. Buildings and game objects are separate from the source geography.
 
-Owner-playtest fixes: the outfit meshes are rebound to the animation skeleton, a single terrain mesh supplies visible ground and collision, model yaw follows travel without controller double rotation, and a physical shoreline boundary replaces the water-entry reset. Seven regression checks cover geography, asset integrity and collision.
+Owner-playtest fixes: the outfit meshes are rebound to the animation skeleton, a single terrain mesh supplies visible ground and collision, model yaw follows travel without controller double rotation, and the water-entry reset was replaced, first by a shoreline boundary and now by surface swimming with no collision wall (see docs/swimming). Seven regression checks cover geography, asset integrity and collision.
 
 
 The current house library follows the [generated cabin reference sheet](docs/art-direction/cabin-reference-grid.png), replacing the rejected experimental house assemblies. Three complete Blender models supply the timber veranda cabin, A-frame with dormer, and sage cabin with offset porch. The reference prompt and source render are in `docs/art-direction/`; edit `assets/blender/Reference_Cabin_Library.blend` or regenerate with `scripts/build-reference-cabins.py` and `scripts/optimize-cabins.mjs`.

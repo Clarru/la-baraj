@@ -48,6 +48,56 @@ describe("approved character resource reuse", () => {
       mixer.stopAllAction();
     }
   });
+  it("loads authored crouch poses with lowered hips and grounded feet", async () => {
+    const { scene, animations } = await loadRig(
+      new URL("../public/assets/optimized/Lakeside_Man.glb", import.meta.url)
+        .pathname,
+    );
+    const json = readFileSync(
+      new URL(
+        "../public/assets/animations/character-actions.json",
+        import.meta.url,
+      ),
+      "utf8",
+    );
+    const clips = characterClips(animations, json);
+    expect(clips.find((clip) => clip.name === "Crouch_Idle")).toBeDefined();
+    expect(clips.find((clip) => clip.name === "Crouch_Walk")).toBeDefined();
+    const mixer = new THREE.AnimationMixer(scene);
+    const idle = mixer.clipAction(
+      clips.find((clip) => clip.name === "Idle_Neutral")!,
+    );
+    idle.play();
+    mixer.setTime(0.5);
+    scene.updateMatrixWorld(true);
+    const standingHip = scene
+      .getObjectByName("pelvis")!
+      .getWorldPosition(new THREE.Vector3()).y;
+    mixer.stopAllAction();
+    mixer.clipAction(clips.find((clip) => clip.name === "Crouch_Idle")!).play();
+    mixer.setTime(0.5);
+    scene.updateMatrixWorld(true);
+    expect(
+      scene.getObjectByName("pelvis")!.getWorldPosition(new THREE.Vector3()).y,
+    ).toBeLessThan(standingHip - 0.2);
+    // One authored heel lifts while the toe stays planted. Foot-joint height
+    // isn't the sole height; inspect the actual deformed boot/body vertices.
+    let lowestVertex = Infinity;
+    const vertex = new THREE.Vector3();
+    scene.traverse((node: THREE.Object3D) => {
+      if (!(node instanceof THREE.SkinnedMesh)) return;
+      node.skeleton.update();
+      for (let i = 0; i < node.geometry.getAttribute("position").count; i++) {
+        node.getVertexPosition(i, vertex).applyMatrix4(node.matrixWorld);
+        lowestVertex = Math.min(lowestVertex, vertex.y);
+      }
+    });
+    expect(lowestVertex).toBeGreaterThan(-0.015);
+    expect(lowestVertex).toBeLessThan(0.015);
+    mixer.stopAllAction();
+    expect(clips.find((clip) => clip.name === "Prone_Idle")).toBeDefined();
+    expect(clips.find((clip) => clip.name === "Prone_Crawl")).toBeDefined();
+  });
   it("shares equivalent skeletons within one avatar, never between players, preserving bind and animated vertices", async () => {
     const { scene, animations } = await loadRig(
       new URL("../public/assets/optimized/Lakeside_Man.glb", import.meta.url)

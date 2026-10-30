@@ -63,7 +63,8 @@ One identity has one active avatar. A second tab offers a session takeover inste
 | Jump | Space | Small traversable obstacles |
 | Sprint | Shift | Disabled while carrying the trophy |
 | Interact | E | Contextual pick up, place, fish, inspect or enter |
-| Punch | Left mouse button | Only when the game has input focus |
+| Crouch / prone | C / Z | Toggle lowered posture; return to standing when clear |
+| Punch | P / stationary middle click | Standing on the ground with game input focus |
 | Drop | Q | Place carried contested object at a valid nearby point |
 | Chat | Enter | Open/send chat; typing disables game controls |
 | Pause | Esc | Settings, help, recovery code, leave |
@@ -123,13 +124,32 @@ An optional peaceful state is available after entry. It prevents attacking, bein
 
 ### 7.5 Lake edges and chat
 
-In v1, falling into deep water gives a splash and a quick return to the nearest valid shore recovery point. Drop/reset the trophy as above. Swimming, diving and boats are later features.
+In v1, falling into deep water gives a splash and a quick return to the nearest valid shore recovery point. Drop/reset the trophy as above. Surface swimming has since replaced the shore reset (see docs/swimming); boats follow section 7.6. Diving remains a later feature.
 
 Include global text chat, readable player names, mute, and a small online roster. Keep a short in-memory chat buffer; full transcripts are not persistent game progress. Add basic message length/rate limits and owner kick/ban controls. The owner is a separately provisioned role, never selected by an ordinary client message.
 
+### 7.6 Boats, confirmed 29 October 2026
+
+Small motorboats let players cross Lake Cinciș. A player walks up to a boat at either southern dock, presses V and takes the driver's seat behind a steering wheel; the camera follows as on foot. W opens the throttle, S slows and reverses gently, and A/D turn the wheel. The boat turns only while moving. The wheel's rotation follows the boat's actual turn rate, the driver's hands stay on its grips and the hull leans slightly into turns, so steering reads clearly to the driver and to watching friends. Initial tuning: about 8 m/s cruise, a long coast when the throttle is released, and a slower turn than the scooter.
+
+Boats float at the lake surface and stop on shallows, banks and dock pilings; they cannot leave the water. V near any bank or dock steps the driver out onto land, so the whole lake is reachable. Stepping out mid-lake puts the player into surface swimming beside the floating boat. Boats are stylized, not simulated: they use the same float as swimming, not rigid-body hydrodynamics.
+
+Boating is a leisure activity. Boarding drops any contested cargo as entering water does, and seated drivers cannot punch or be punched.
+
+Release phases:
+
+1. **Personal boat.** Each player uses their own boat, shown to others through their existing pose as `vehicle: "boat"`. No new messages or server storage. A boat left away from the docks is visible only to its player, as with the scooter.
+2. **Shared dock boats.** The driver's seat becomes an exclusive seat claimed through the existing seat protocol. A released boat returns to its dock.
+3. **Passengers.** Additional seats ride at fixed offsets from the driver. Boarding and leaving happen at docks.
+4. **Fishing trips and mooring.** Fishing from a boat, mooring at docks and optionally saving where a boat was left, written only on release.
+
+The boat model is original, built in code like the QuickVolt scooter, with the steering wheel, grips, seat and motor as separate named parts. Provenance follows the existing asset rules.
+
+Acceptance for phase 1: a player can take a boat from either dock, cross to the north shore, step onto the bank and return without falling through terrain or getting stuck. The wheel and hands visibly follow each turn. Friends see the boat, its driver and its wake. Stepping out mid-lake starts swimming. Pose traffic stays within the existing per-player limits.
+
 ## 8. Later releases
 
-In order of likely usefulness: salvage deliveries and cooperative carrying; a dock obstacle course; occasional wash-up events; richer cabin decoration; deeper collections and trading; swimming and boats if the base game warrants them.
+In order of likely usefulness: salvage deliveries and cooperative carrying; a dock obstacle course; occasional wash-up events; richer cabin decoration; deeper collections and trading; shared and passenger boats (section 7.6, phases 2–4) and lake events reachable only by boat.
 
 Do not schedule all of these into v1. AI NPCs, realistic vehicles, shared rigid-body physics, realistic hydrology, seamless large-world streaming and full reproduction of real houses are outside the first release.
 

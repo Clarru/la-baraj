@@ -29,6 +29,10 @@ import { Settlement } from "./settlement";
 import { WorldActivities, type ActivityPrompt } from "./activities";
 import { SceneLoading } from "./SceneLoading";
 import { ParkedScooter } from "./scooter";
+import { ParkedBoat } from "./boat";
+import { RUNABOUT_IDS } from "./boat-geometry";
+import { assetUrl } from "./assets";
+import { useGLTF } from "@react-three/drei";
 import { SeatingMetrics } from "./SeatingMetrics";
 import { CabinInterior } from "./CabinInterior";
 import { CabinAccess } from "./CabinAccess";
@@ -64,6 +68,10 @@ import {
   DeveloperTools,
   type RenderSample,
 } from "./DeveloperTools";
+
+// Fetch both runabouts with the scene; the boat itself never blocks the world.
+useGLTF.preload(assetUrl(RUNABOUT_IDS.full));
+useGLTF.preload(assetUrl(RUNABOUT_IDS.lod));
 
 class SceneBoundary extends Component<
   { children: ReactNode },
@@ -102,7 +110,7 @@ export default function Game({ initialName }: { initialName: string }) {
   const [room] = useState<MultiplayerRoom>(() =>
     planesLab
       ? new LocalPlanesRoom(initialName)
-      : localWorldEnabled()
+      : !performanceLab && localWorldEnabled()
         ? new LocalWorldRoom(initialName)
         : new MultiplayerRoom(initialName),
   );
@@ -153,6 +161,7 @@ export default function Game({ initialName }: { initialName: string }) {
   const [resetKey, setResetKey] = useState(0),
     [ready, setReady] = useState(false);
   const [panel, setPanel] = useState<GamePanel>(null);
+  const [waveRequest, setWaveRequest] = useState(0);
   const [chatMode, setChatMode] = useState<"closed" | "editing" | "display">(
     "closed",
   );
@@ -206,6 +215,20 @@ export default function Game({ initialName }: { initialName: string }) {
     previousVehicleMounted.current = vehicleMounted;
     if (!vehicleMounted) setVehicleHintUntil(0);
   }, [vehicleMounted]);
+  const [boatMounted, setBoatMounted] = useState(false),
+    [boatNear, setBoatNear] = useState(false);
+  const [boatHintUntil, setBoatHintUntil] = useState(0);
+  const previousBoatMounted = useRef(false);
+  useEffect(() => {
+    if (boatMounted && !previousBoatMounted.current) {
+      setBoatHintUntil(Date.now() + 4500);
+      const timer = setTimeout(() => setBoatHintUntil(0), 4500);
+      previousBoatMounted.current = true;
+      return () => clearTimeout(timer);
+    }
+    previousBoatMounted.current = boatMounted;
+    if (!boatMounted) setBoatHintUntil(0);
+  }, [boatMounted]);
   const [interiorIndex, setInteriorIndex] = useState<number | null>(null);
   const [focusedCabinIndex, setFocusedCabinIndex] = useState(homeIndex);
   const [doorTransition, setDoorTransition] = useState(false),
@@ -214,6 +237,8 @@ export default function Game({ initialName }: { initialName: string }) {
   const [navigation] = useState(() =>
     createNavigationFeed({ x: 45, z: 27, heading: 0 }),
   );
+  const [waveAvailable, setWaveAvailable] = useState(false);
+  const waveAvailability = useRef(false);
   const fireOutput = useRef<HTMLOutputElement>(null),
     motionOutput = useRef<HTMLOutputElement>(null);
   const updateFireMetrics = useCallback((sample: unknown) => {
@@ -221,6 +246,11 @@ export default function Game({ initialName }: { initialName: string }) {
   }, []);
   const updateMotion = useCallback(
     (sample: Record<string, unknown>) => {
+      const available = sample.canWave === true;
+      if (available !== waveAvailability.current) {
+        waveAvailability.current = available;
+        setWaveAvailable(available);
+      }
       room.publishMotion(sample);
       motionOutput.current?.setAttribute("data-motion", JSON.stringify(sample));
       if (Array.isArray(sample.position) && Array.isArray(sample.facing)) {
@@ -449,10 +479,28 @@ export default function Game({ initialName }: { initialName: string }) {
               key: "V",
             }
           : null
-        : (activityPrompt ??
-          (scooterNear
-            ? { main: "Ride QuickVolt 9", detail: "Electric scooter", key: "V" }
-            : null));
+        : boatMounted
+          ? boatHintUntil > 0
+            ? {
+                main: "Motorboat",
+                detail: "V near a bank to step out",
+                key: "V",
+              }
+            : null
+          : (activityPrompt ??
+            (boatNear
+              ? {
+                  main: "Drive the motorboat",
+                  detail: "W throttle · A/D steer · V step out",
+                  key: "V",
+                }
+              : scooterNear
+                ? {
+                    main: "Ride QuickVolt 9",
+                    detail: "Electric scooter",
+                    key: "V",
+                  }
+                : null));
   const menuHomeIndex =
     roomView.homeIndex ?? (roomView.status === "offline" ? homeIndex : null);
   return (
@@ -529,10 +577,13 @@ export default function Game({ initialName }: { initialName: string }) {
                     planesOpen ||
                     chatOpen
                   }
+                  waveRequest={waveRequest}
                   onMove={ignoreMovement}
                   onMotion={updateMotion}
                   onVehicleChange={setVehicleMounted}
                   onVehicleHint={setScooterNear}
+                  onBoatChange={setBoatMounted}
+                  onBoatHint={setBoatNear}
                   indoors={interiorIndex !== null}
                   doorTransition={doorTransition}
                 />
@@ -552,6 +603,11 @@ export default function Game({ initialName }: { initialName: string }) {
                   <PerformanceScene scenario={performanceScenario} />
                 )}
                 {hasHome && <ParkedScooter mounted={vehicleMounted} />}
+                {hasHome && (
+                  <Suspense fallback={null}>
+                    <ParkedBoat mounted={boatMounted} />
+                  </Suspense>
+                )}
                 <WorldActivities
                   room={room}
                   onFireMetrics={
@@ -732,6 +788,19 @@ export default function Game({ initialName }: { initialName: string }) {
               onRename={(name) => room.rename(name)}
               onControls={() => setPanel("controls")}
               onHome={lookHome}
+              canWave={
+                !activityBusy &&
+                !vehicleMounted &&
+                !doorTransition &&
+                !planesOpen &&
+                !cruceOpen &&
+                waveAvailable
+              }
+              onWave={() => {
+                setMode("walk");
+                setPanel(null);
+                setWaveRequest((n) => n + 1);
+              }}
               onReset={resetHome}
               onClose={() => setPanel(null)}
             />

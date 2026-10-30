@@ -238,3 +238,8 @@ export function currentLighting(evening = false, forceDay = false) {
   }
   return cached;
 }
+
+/** The sample the world last rendered with, without resampling (and so without moving the cache). */
+export function lastLighting(): Lighting {
+  return cached ?? currentLighting();
+}

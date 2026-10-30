@@ -52,6 +52,8 @@ async function main() {
     Swim_Idle_Loop: "Swim_Idle",
     Punch_Jab: "Punch_Jab",
     Hit_Head: "Punch_Hit",
+    Crouch_Idle_Loop: "Crouch_Idle",
+    Crouch_Fwd_Loop: "Crouch_Walk",
   };
   const clips = source.animations
     .filter((clip) => wanted[clip.name])
@@ -89,6 +91,16 @@ async function main() {
         source.animations.find((clip) => clip.name === "Idle_Loop"),
       ),
     ),
+  );
+  // These clips are baked against the dressed target rig, not the source body.
+  const prone = JSON.parse(
+    fs.readFileSync("assets/character-source/prone-retarget.json", "utf8"),
+  );
+  clips.push(
+    ...prone.clips.map((clip) => ({
+      ...clip,
+      name: clip.name.replace("Prone_Belly_", "Prone_"),
+    })),
   );
   fs.mkdirSync("apps/web/public/assets/animations", { recursive: true });
   const serialized = JSON.stringify(

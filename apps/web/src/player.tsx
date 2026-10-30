@@ -1,9 +1,22 @@
+import {
+  requestSocialWave,
+  socialWaveFinished,
+  SOCIAL_WAVE_CLIP_NAME,
+  type SocialWaveState,
+} from "./social-wave";
 import { takeCruceTestMove } from "./cruce-world-test";
 import { useCruceCharacter } from "./use-cruce-character";
 import { cruceSeatSide } from "../../../packages/shared/cruce-station";
 import { CRUCE_TABLE } from "../../../packages/shared/cruce-station";
 import type { CruceSeat } from "../../../packages/shared/cruce";
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useFrame, useLoader, useThree } from "@react-three/fiber";
 import { useGLTF, useAnimations, OrbitControls } from "@react-three/drei";
 import { Ecctrl, type EcctrlHandle } from "ecctrl";
@@ -33,6 +46,33 @@ import { terrainHeight, inWater, southShore, cabinSpots } from "./geography";
 import { getActivityPose } from "./activity-state";
 import { Scooter, type ScooterHandle } from "./scooter";
 import { createScooterRiderRig } from "./scooter-rider";
+import { Boat, type BoatHandle } from "./boat";
+import { BOAT_DRIVER_OFFSET_VECTOR } from "./boat-geometry";
+import { boatHullBlocked, boatTurnBlocked } from "./boat-collision";
+import { createBoatRiderRig } from "./boat-rider";
+import {
+  BOAT_TUNING,
+  advanceBoat,
+  boatVelocity,
+  createBoatMotionState,
+  reconcileBoatSpeed,
+} from "./boat-motion";
+import {
+  getBoatState,
+  mountBoat,
+  parkBoat,
+  resetBoatToDock,
+  updateBoatMotion,
+  vehicleOccupied,
+} from "./boat-state";
+import {
+  BOAT_BOARD_DISTANCE,
+  boatBlockedAhead,
+  boatExitCandidates,
+  canBoardBoat,
+  chooseBoatExit,
+  distanceToHull,
+} from "./boat-placement";
 import {
   getVehicleState,
   mountVehicle,
@@ -58,8 +98,10 @@ import {
   swimVelocity,
 } from "./swim-motion";
 import { SwimWake } from "./SwimWake";
+import { BoatSpray } from "./boat-spray.tsx";
 import { StunStars } from "./StunStars";
 import { bindCameraMouse } from "./camera-mouse";
+import { bindPunchPointer } from "./punch-input";
 import {
   activityAnimation,
   activityElapsed,
@@ -67,6 +109,17 @@ import {
   createCharacterActivityRig,
   localFacing,
 } from "./character-actions";
+import {
+  STANCE_METRICS,
+  stanceBaseAnimation,
+  stanceForToggle,
+  stanceRayOriginOffset,
+  stanceVisualLift,
+  type Stance,
+} from "./stance-motion";
+import { resizeStanceCollider, rotateProneCollider } from "./stance-physics";
+/** The local boat's jet stream follows the speed the frame loop publishes. */
+const localBoatSpeed = () => getBoatState().speed;
 export type ViewMode = "walk" | "overview" | "study" | "settlement" | "home";
 export const spawn = { x: 45, z: southShore(45) + 12 };
 export const playerPosition = new THREE.Vector3(
@@ -76,6 +129,8 @@ export const playerPosition = new THREE.Vector3(
 );
 /** Camera follows the interpolated render body, not the discrete physics step. */
 export const playerViewPosition = playerPosition.clone();
+/** Speech follows the camera/body anchor, with a lower offset while lying down. */
+export const playerBubbleAnchor = playerViewPosition.clone();
 export function Avatar({
   position,
   rotation = 0,
@@ -117,8 +172,11 @@ export function Player({
   onMotion,
   onVehicleChange,
   onVehicleHint,
+  onBoatChange,
+  onBoatHint,
   indoors = false,
   doorTransition = false,
+  waveRequest = 0,
 }: {
   homeIndex: number;
   mode: ViewMode;
@@ -128,17 +186,31 @@ export function Player({
   onMotion: (sample: Record<string, unknown>) => void;
   onVehicleChange?: (mounted: boolean) => void;
   onVehicleHint?: (near: boolean) => void;
+  onBoatChange?: (mounted: boolean) => void;
+  onBoatHint?: (near: boolean) => void;
   indoors?: boolean;
   doorTransition?: boolean;
+  waveRequest?: number;
 }) {
   const arrival = useMemo(() => homeSpawn(homeIndex), [homeIndex]);
   const controller = useRef<EcctrlHandle>(null);
   const doorArrival = useRef<ReturnType<typeof takeCabinTransfer>>(null);
   const doorArrivalStarted = useRef(0);
   const { world, rapier } = useRapier();
-  const camera = useThree((state) => state.camera);
+  const { camera, gl } = useThree();
   const visual = useRef<THREE.Group>(null);
   const keys = useRef(new Set<string>());
+  const waveQueued = useRef(false);
+  const waveState = useRef<SocialWaveState | null>(null);
+  const waveLastStarted = useRef(-Infinity);
+  const previousWaveRequest = useRef(waveRequest);
+  useEffect(() => {
+    if (waveRequest !== previousWaveRequest.current) waveQueued.current = true;
+    previousWaveRequest.current = waveRequest;
+  }, [waveRequest]);
+  const stanceRef = useRef<Stance>("standing");
+  const proneYaw = useRef(0);
+  const [stance, setStance] = useState<Stance>("standing");
   const moving = useRef(false);
   const [riding, setRiding] = useState(false);
   const [jumping, setJumping] = useState(false);
@@ -171,6 +243,16 @@ export function Player({
   const nearScooter = useRef(false),
     parkedGrounded = useRef(false);
   const rideForward = useMemo(() => new THREE.Vector3(), []);
+  // Motorboat: Ecctrl is disabled and the body is driven by boatVelocity.
+  const [boating, setBoating] = useState(false);
+  const boatMotion = useRef(createBoatMotionState(0)),
+    boat = useRef<BoatHandle>(null),
+    nearBoat = useRef(false);
+  const boatRider = useRef<ReturnType<typeof createBoatRiderRig> | null>(null);
+  const leftGrip = useMemo(() => new THREE.Vector3(), []),
+    rightGrip = useMemo(() => new THREE.Vector3(), []),
+    wheelNormal = useMemo(() => new THREE.Vector3(), []),
+    wheelHub = useMemo(() => new THREE.Vector3(), []);
 
   const animation = useRef("Idle_Neutral");
   const animationHistory = useRef<
@@ -182,6 +264,8 @@ export function Player({
   const gestureAnimation = useRef<string | null>(null);
   const facingParent = useMemo(() => new THREE.Quaternion(), []);
   const facingTarget = useMemo(() => new THREE.Quaternion(), []);
+  const proneFacing = useMemo(() => new THREE.Vector3(), []);
+  const proneOrientation = useMemo(() => new THREE.Quaternion(), []);
   const lastMovingAlignment = useRef<number | null>(null);
   const { scene, animations } = useGLTF(assetUrl("Lakeside_Man"));
   const object = useMemo(() => cloneCharacter(scene), [scene]);
@@ -228,8 +312,21 @@ export function Player({
     };
   }, [object, animations]);
   useEffect(() => {
+    const rig = createBoatRiderRig(object);
+    boatRider.current = rig;
+    return () => {
+      rig.dispose();
+      boatRider.current = null;
+      // The driver sits at the boat's seat; standing resumes at the visual origin.
+      object.position.set(0, 0, 0);
+    };
+  }, [object]);
+  useEffect(() => {
     onVehicleChange?.(riding);
   }, [riding, onVehicleChange]);
+  useEffect(() => {
+    onBoatChange?.(boating);
+  }, [boating, onBoatChange]);
   const floorAt = (x: number, z: number) => {
     const hit = world.castRay(
       new rapier.Ray({ x, y: 1000, z }, { x: 0, y: -1, z: 0 }),
@@ -245,6 +342,42 @@ export function Player({
     );
     return hit ? 1000 - hit.timeOfImpact : terrainHeight(x, z);
   };
+  /** Resize the actual Rapier collider while preserving the character's feet. */
+  const setPhysicalStance = useCallback(
+    (next: Stance, checkHeadroom = true) => {
+      const current = stanceRef.current;
+      if (current === next) return true;
+      const body = controller.current?.body;
+      const collider = controller.current?.collider;
+      if (!body || !collider || !collider.isValid()) return false;
+      // Growing back to standing (or crouching from prone) is only allowed
+      // when the full target capsule fits beneath the current ceiling.
+      const facing = visual.current
+        ? new THREE.Vector3(0, 0, 1).applyQuaternion(
+            visual.current.getWorldQuaternion(new THREE.Quaternion()),
+          )
+        : null;
+      const yaw = facing ? Math.atan2(facing.x, facing.z) : rideYaw.current;
+      if (
+        !resizeStanceCollider({
+          current,
+          next,
+          body,
+          collider,
+          world,
+          rapier,
+          checkHeadroom,
+          yaw,
+        })
+      )
+        return false;
+      if (next === "prone") proneYaw.current = yaw;
+      stanceRef.current = next;
+      setStance(next);
+      return true;
+    },
+    [rapier, world],
+  );
   useEffect(() => {
     const preventActionsWhileStunned = (event: KeyboardEvent) => {
       const room = currentMultiplayerRoom();
@@ -255,7 +388,12 @@ export function Player({
           ["INPUT", "TEXTAREA", "SELECT"].includes(event.target.tagName))
       )
         return;
-      if (["KeyE", "KeyF", "KeyV", "KeyQ", "Space"].includes(event.code)) {
+      if (event.ctrlKey || event.metaKey || event.altKey) return;
+      if (
+        ["KeyE", "KeyF", "KeyV", "KeyP", "KeyC", "KeyZ", "Space"].includes(
+          event.code,
+        )
+      ) {
         event.preventDefault();
         event.stopImmediatePropagation();
       }
@@ -265,6 +403,27 @@ export function Player({
       window.removeEventListener("keydown", preventActionsWhileStunned, true);
   }, []);
   useEffect(() => {
+    const punch = () => {
+      if (
+        mode !== "walk" ||
+        paused ||
+        indoors ||
+        swimmingRef.current ||
+        vehicleOccupied() ||
+        getActivityPose().kind !== "none" ||
+        stanceRef.current !== "standing" ||
+        !controller.current?.isOnGround
+      )
+        return;
+      const room = currentMultiplayerRoom();
+      if (!room || !visual.current || room.stunned(room.getSnapshot().selfId))
+        return;
+      const feet = visual.current.getWorldPosition(new THREE.Vector3());
+      const facing = new THREE.Vector3(0, 0, 1).applyQuaternion(
+        visual.current.getWorldQuaternion(new THREE.Quaternion()),
+      );
+      room.punch(feet.toArray(), Math.atan2(facing.x, facing.z));
+    };
     const down = (e: KeyboardEvent) => {
       if (
         e.target instanceof HTMLElement &&
@@ -272,9 +431,125 @@ export function Player({
           ["INPUT", "TEXTAREA", "SELECT"].includes(e.target.tagName))
       )
         return;
-      if (getVehicleState().mounted && ["KeyF", "KeyE"].includes(e.code)) {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      if (
+        e.code === "KeyG" &&
+        !e.repeat &&
+        !paused &&
+        mode === "walk" &&
+        !(
+          e.target instanceof HTMLElement &&
+          e.target.closest("button, a, [role=button], [role=dialog]")
+        )
+      ) {
+        waveQueued.current = true;
+        e.preventDefault();
+        return;
+      }
+      if (vehicleOccupied() && ["KeyF", "KeyE"].includes(e.code)) {
         e.preventDefault();
         e.stopImmediatePropagation();
+        return;
+      }
+      // Motorboat: V steps out toward the nearest bank, or boards when close.
+      if (
+        e.code === "KeyV" &&
+        !indoors &&
+        !e.repeat &&
+        mode === "walk" &&
+        !paused
+      ) {
+        const body = controller.current?.body;
+        const parked = getBoatState();
+        if (body && parked.mounted) {
+          e.preventDefault();
+          const pos = body.translation(),
+            yaw = boatMotion.current.yaw;
+          const exit = chooseBoatExit(
+            boatExitCandidates(pos.x, pos.z, yaw),
+            // The 3 m ray from here reaches LAKE_LEVEL - 0.75, below the wade depth.
+            (x, z) => scooterSupportHeight(world, x, z, pos.y + 1.5, body),
+          );
+          parkBoat([pos.x, LAKE_LEVEL, pos.z], yaw);
+          // A water exit lands at the surface; swim detection takes over next frame.
+          const [x, y, z] = exit.position;
+          body.setTranslation(
+            { x, y: exit.kind === "land" ? y + 0.95 : y, z },
+            true,
+          );
+          body.setLinvel({ x: 0, y: 0, z: 0 }, true);
+          body.setGravityScale(1, true);
+          boatRider.current?.reset();
+          object.position.set(0, 0, 0);
+          mixer.stopAllAction();
+          animation.current = "";
+          setBoating(false);
+          keys.current.clear();
+          jumpRequest.current = false;
+          jumpState.current = initialJumpMotion();
+          return;
+        }
+        if (
+          body &&
+          stanceRef.current === "standing" &&
+          canBoardBoat({
+            distance: distanceToHull(playerPosition.x, playerPosition.z, {
+              x: parked.parked[0],
+              z: parked.parked[2],
+              yaw: parked.yaw,
+            }),
+            scooterMounted: getVehicleState().mounted,
+            swimming: swimmingRef.current,
+            grounded:
+              Boolean(controller.current?.isOnGround) &&
+              jumpState.current.phase === "grounded",
+            indoors,
+            activity: getActivityPose().kind,
+            paused,
+          })
+        ) {
+          e.preventDefault();
+          boatMotion.current = createBoatMotionState(parked.yaw);
+          mountBoat();
+          body.setTranslation(
+            {
+              x: parked.parked[0],
+              y: LAKE_LEVEL + BOAT_TUNING.rideHeight,
+              z: parked.parked[2],
+            },
+            true,
+          );
+          body.setLinvel({ x: 0, y: 0, z: 0 }, true);
+          body.setGravityScale(0, true);
+          swimmingRef.current = false;
+          setSwimming(false);
+          setBoating(true);
+          keys.current.clear();
+          jumpRequest.current = false;
+          jumpState.current = initialJumpMotion();
+          return;
+        }
+      }
+      if (e.code === "KeyC" || e.code === "KeyZ") {
+        const room = currentMultiplayerRoom();
+        if (
+          e.repeat ||
+          !controller.current?.isOnGround ||
+          mode !== "walk" ||
+          paused ||
+          swimmingRef.current ||
+          vehicleOccupied() ||
+          getActivityPose().kind !== "none" ||
+          Boolean(room?.stunned(room.getSnapshot().selfId))
+        )
+          return;
+        e.preventDefault();
+        setPhysicalStance(
+          stanceForToggle(
+            stanceRef.current,
+            e.code === "KeyC" ? "crouch" : "prone",
+          ),
+        );
         return;
       }
       if (
@@ -284,7 +559,9 @@ export function Player({
         mode === "walk" &&
         !paused &&
         !swimmingRef.current &&
-        getActivityPose().kind === "none"
+        !getBoatState().mounted &&
+        getActivityPose().kind === "none" &&
+        stanceRef.current === "standing"
       ) {
         const body = controller.current?.body;
         if (!body || !controller.current?.isOnGround) return;
@@ -346,28 +623,19 @@ export function Player({
         return;
       }
       if (
-        e.code === "KeyQ" &&
+        e.code === "KeyP" &&
         !e.repeat &&
         mode === "walk" &&
         !paused &&
         !indoors &&
         !swimmingRef.current &&
         !getVehicleState().mounted &&
+        !getBoatState().mounted &&
         getActivityPose().kind === "none" &&
-        controller.current?.isOnGround
+        controller.current?.isOnGround &&
+        stanceRef.current === "standing"
       ) {
-        const room = currentMultiplayerRoom();
-        if (
-          room &&
-          visual.current &&
-          !room.stunned(room.getSnapshot().selfId)
-        ) {
-          const feet = visual.current.getWorldPosition(new THREE.Vector3());
-          const facing = new THREE.Vector3(0, 0, 1).applyQuaternion(
-            visual.current.getWorldQuaternion(new THREE.Quaternion()),
-          );
-          room.punch(feet.toArray(), Math.atan2(facing.x, facing.z));
-        }
+        punch();
         e.preventDefault();
         return;
       }
@@ -396,13 +664,20 @@ export function Player({
     window.addEventListener("keydown", down);
     window.addEventListener("keyup", up);
     window.addEventListener("blur", blur);
+    const unbindPunchPointer = bindPunchPointer(gl.domElement, punch);
     return () => {
       window.removeEventListener("keydown", down);
       window.removeEventListener("keyup", up);
       window.removeEventListener("blur", blur);
+      unbindPunchPointer();
     };
-  }, [mode, paused, mixer, indoors]);
+  }, [mode, paused, mixer, indoors, gl, setPhysicalStance]);
   useEffect(() => {
+    waveQueued.current = false;
+    waveState.current = null;
+    actions[SOCIAL_WAVE_CLIP_NAME]?.stop();
+    // A reset relocates to a known open spawn, so normalise the collider first.
+    setPhysicalStance("standing", false);
     controller.current?.body?.setTranslation(
       {
         x: arrival.position[0],
@@ -436,10 +711,14 @@ export function Player({
     jumpState.current = initialJumpMotion();
     setJumping(false);
     riderRig.current?.reset();
+    boatRider.current?.reset();
+    object.position.set(0, 0, 0);
     mixer.stopAllAction();
     animation.current = "";
     setRiding(false);
+    setBoating(false);
     parkVehicle(arrival.scooter, arrival.yaw);
+    resetBoatToDock(arrival.position[0]);
     parkedGrounded.current = false;
     onMotion({
       homeIndex,
@@ -451,13 +730,14 @@ export function Player({
       ],
       facing: [Math.sin(arrival.yaw), 0, Math.cos(arrival.yaw)],
       animation: "Idle_Neutral",
+      posture: "standing",
       activity: "none",
       velocity: [0, 0, 0],
       jumpPhase: "grounded",
       vehicle: null,
       grounded: true,
     });
-  }, [resetKey, arrival]);
+  }, [resetKey, arrival, setPhysicalStance]);
   useFrame((_, dt) => {
     const c = controller.current;
     if (!c || !c.body) return;
@@ -492,6 +772,9 @@ export function Player({
     }
     const transfer = doorArrival.current;
     if (transfer && (requestedTransfer || doorTransition)) {
+      // A departure under a low overhang must retain its lowered collider;
+      // normal clearance decides whether it can expand before the path starts.
+      setPhysicalStance("standing");
       c.body.setBodyType(rapier.RigidBodyType.KinematicPositionBased, true);
       const doorMotion = sampleCabinMotion(
         transfer,
@@ -547,6 +830,7 @@ export function Player({
         onMotion({
           ...doorMotion,
           homeIndex,
+          posture: stanceRef.current,
           animationHistory: animationHistory.current,
         });
       }
@@ -555,12 +839,15 @@ export function Player({
     if (doorArrival.current) {
       doorArrival.current = null;
       c.body.setBodyType(rapier.RigidBodyType.Dynamic, true);
+      // Check the verified destination before restoring standing clearance.
+      setPhysicalStance("standing");
       c.body.setLinvel({ x: 0, y: 0, z: 0 }, true);
       c.body.resetForces(true);
       c.body.resetTorques(true);
     }
     const k = keys.current;
     let mounted = getVehicleState().mounted;
+    const boatingNow = getBoatState().mounted;
     if (!mounted && !parkedGrounded.current) {
       const parked = getVehicleState().parked;
       parkVehicle(
@@ -655,7 +942,7 @@ export function Player({
       depth: LAKE_LEVEL - sample.ground,
       bodyY: p.y,
       indoors,
-      occupied: holding || mounted,
+      occupied: holding || mounted || boatingNow,
     });
     if (nowSwimming !== swimmingRef.current) {
       swimmingRef.current = nowSwimming;
@@ -664,6 +951,12 @@ export function Player({
       jumpState.current = initialJumpMotion();
       jumpRequest.current = false;
     }
+    // Activities and water own the full-body pose. Keep a lowered collider only
+    // when it is safe and meaningful; a blocked stand remains blocked overhead.
+    if (nowSwimming && stanceRef.current !== "standing")
+      setPhysicalStance("standing");
+    else if (holding && stanceRef.current !== "standing")
+      setPhysicalStance("standing");
     const steer =
       active && mounted
         ? scooterSteeringInput(
@@ -686,9 +979,86 @@ export function Player({
         c.body.setLinvel({ x: v.x * brake, y: v.y, z: v.z * brake }, true);
       }
     }
+    // Motorboat: commanded speed drops to what the hull achieved last step, so a
+    // bank stops it; the float holds ride height with no ground clamp.
+    if (boatingNow) {
+      const motion = boatMotion.current;
+      const v = c.body.linvel();
+      motion.speed = reconcileBoatSpeed(
+        motion.speed,
+        v.x * Math.sin(motion.yaw) + v.z * Math.cos(motion.yaw),
+      );
+      const throttle = active
+        ? Number(k.has("KeyW") || k.has("ArrowUp")) -
+          Number(k.has("KeyS") || k.has("ArrowDown"))
+        : 0;
+      advanceBoat(motion, {
+        throttle: throttle as -1 | 0 | 1,
+        steer: active
+          ? scooterSteeringInput(
+              k.has("KeyA") || k.has("ArrowLeft"),
+              k.has("KeyD") || k.has("ArrowRight"),
+            )
+          : 0,
+        dt,
+        // The character's run key boosts the boat while the throttle is forward.
+        boost: active && (k.has("ShiftLeft") || k.has("ShiftRight")),
+        canTurn: (fromYaw, toYaw) =>
+          !boatTurnBlocked(world, rapier, {
+            x: p.x,
+            z: p.z,
+            fromYaw,
+            toYaw,
+            exclude: c.body,
+          }),
+      });
+      // Shallows or land within the probe stop the hull before it can climb a
+      // bank; at rest the throttle picks the side, so a beached bow can reverse.
+      const heading =
+        Math.abs(motion.speed) > 1e-3
+          ? Math.sign(motion.speed)
+          : throttle < 0
+            ? -1
+            : 1;
+      if (boatBlockedAhead(p.x, p.z, motion.yaw, heading as 1 | -1))
+        motion.speed = 0;
+      c.body.setGravityScale(0, true);
+      const hullVelocity = boatVelocity({
+        yaw: motion.yaw,
+        speed: motion.speed,
+        velocityY: v.y,
+        bodyY: p.y,
+        time: performance.now() / 1000,
+        dt,
+      });
+      // Docks, pilings and banks stop the hull; next step reconcileBoatSpeed
+      // drops the commanded speed to the zero it achieved.
+      if (
+        boatHullBlocked(world, rapier, {
+          x: p.x,
+          z: p.z,
+          yaw: motion.yaw,
+          dx: hullVelocity.x * dt,
+          dz: hullVelocity.z * dt,
+          exclude: c.body,
+        })
+      ) {
+        hullVelocity.x = 0;
+        hullVelocity.z = 0;
+        motion.speed = 0;
+      }
+      c.body.setLinvel(hullVelocity, true);
+      updateBoatMotion(motion.yaw, motion.speed);
+    }
     const braking = mounted && (k.has("KeyS") || k.has("ArrowDown"));
+    const walkInput = active && !boatingNow;
     const jumpStarted =
-      active && !mounted && !nowSwimming && jumpRequest.current && c.isOnGround;
+      walkInput &&
+      stanceRef.current === "standing" &&
+      !mounted &&
+      !nowSwimming &&
+      jumpRequest.current &&
+      c.isOnGround;
     jumpRequest.current = false;
     jumpState.current = advanceJumpMotion(jumpState.current, {
       now: performance.now() / 1000,
@@ -696,7 +1066,12 @@ export function Player({
       verticalSpeed: c.currLinVel.y,
       horizontalSpeed: Math.hypot(c.currLinVel.x, c.currLinVel.z),
       jumpStarted,
-      disabled: holding || mounted || nowSwimming,
+      disabled:
+        holding ||
+        mounted ||
+        boatingNow ||
+        nowSwimming ||
+        stanceRef.current !== "standing",
     });
     const airborneJump =
       jumpState.current.phase === "takeoff" ||
@@ -704,28 +1079,36 @@ export function Player({
     if (airborneJump !== jumping) setJumping(airborneJump);
     c.setMovement({
       forward:
-        active &&
+        walkInput &&
         !nowSwimming &&
         !braking &&
         (k.has("KeyW") || k.has("ArrowUp")),
       backward:
-        active &&
+        walkInput &&
         !nowSwimming &&
         !mounted &&
         (k.has("KeyS") || k.has("ArrowDown")),
       leftward:
-        active &&
+        walkInput &&
         !nowSwimming &&
         !mounted &&
         (k.has("KeyA") || k.has("ArrowLeft")),
       rightward:
-        active &&
+        walkInput &&
         !nowSwimming &&
         !mounted &&
         (k.has("KeyD") || k.has("ArrowRight")),
       run:
-        active && !nowSwimming && (k.has("ShiftLeft") || k.has("ShiftRight")),
-      jump: active && !nowSwimming && !mounted && k.has("Space"),
+        walkInput &&
+        stanceRef.current === "standing" &&
+        !nowSwimming &&
+        (k.has("ShiftLeft") || k.has("ShiftRight")),
+      jump:
+        walkInput &&
+        stanceRef.current === "standing" &&
+        !nowSwimming &&
+        !mounted &&
+        k.has("Space"),
     });
     if (nowSwimming) {
       camera.getWorldDirection(swimForward);
@@ -757,7 +1140,7 @@ export function Player({
         true,
       );
     }
-    const velocity = nowSwimming ? c.body.linvel() : c.currLinVel;
+    const velocity = nowSwimming || boatingNow ? c.body.linvel() : c.currLinVel;
     playerPosition.set(p.x, p.y, p.z);
     if (
       !holding &&
@@ -796,40 +1179,91 @@ export function Player({
         : rayGroundY;
     if (visual.current) {
       visual.current.parent?.getWorldPosition(playerViewPosition);
-      const offset = nowSwimming
-        ? SWIM_OFFSET
-        : holding
-          ? -0.95 + activitySeatLift(pose, elapsed)
-          : c.isOnGround && groundY !== null && c.currLinVel.y < 0.8
-            ? groundY - playerViewPosition.y + 0.015
-            : -0.935;
+      const offset = boatingNow
+        ? LAKE_LEVEL - playerViewPosition.y
+        : nowSwimming
+          ? SWIM_OFFSET
+          : holding
+            ? -0.95 + activitySeatLift(pose, elapsed)
+            : c.isOnGround && groundY !== null && c.currLinVel.y < 0.8
+              ? groundY - playerViewPosition.y + 0.015
+              : -0.935;
+      const visualStance =
+        holding || nowSwimming || mounted || boatingNow
+          ? "standing"
+          : stanceRef.current;
+      const stanceOffset = offset + stanceVisualLift(visualStance);
       // A single sole offset through flight avoids a 13.5 cm takeoff/landing pop.
-      visual.current.position.y = holding
-        ? offset
-        : THREE.MathUtils.damp(
-            visual.current.position.y,
-            offset,
-            nowSwimming ? 9 : 30,
-            dt,
-          );
+      visual.current.position.y =
+        holding || boatingNow
+          ? offset
+          : THREE.MathUtils.damp(
+              visual.current.position.y,
+              stanceOffset,
+              nowSwimming ? 9 : 30,
+              dt,
+            );
     }
     const speed = holding ? 0 : Math.hypot(velocity.x, velocity.z);
+    const waveAvailable =
+      mode === "walk" &&
+      !holding &&
+      !stunned &&
+      !doorTransition &&
+      !nowSwimming &&
+      !mounted &&
+      !boatingNow &&
+      !punching &&
+      stanceRef.current === "standing" &&
+      c.isOnGround &&
+      speed < 0.2;
+    const waveEligible = waveAvailable && !paused;
+    const waveAction = actions[SOCIAL_WAVE_CLIP_NAME];
+    if (waveQueued.current) {
+      waveQueued.current = false;
+      if (!waveState.current && waveEligible) {
+        const request = requestSocialWave(
+          performance.now(),
+          waveLastStarted.current,
+        );
+        if (request && waveAction) {
+          waveState.current = request;
+          waveLastStarted.current = request.startedAt;
+          waveAction.reset().setLoop(THREE.LoopOnce, 1);
+          waveAction.clampWhenFinished = true;
+          waveAction.setEffectiveWeight(1).fadeIn(0.12).play();
+        }
+      }
+    }
+    if (
+      waveState.current &&
+      (!waveEligible ||
+        socialWaveFinished(waveState.current, performance.now()))
+    ) {
+      waveState.current = null;
+      waveAction?.fadeOut(0.12);
+    }
+
     const jumpClip = jumpAnimation(
         jumpState.current.phase,
         jumpState.current.style,
       ),
       clipConfig = activity ?? jumpClip;
+    const stanceAnimation = stanceBaseAnimation(stanceRef.current, speed > 0.3);
     const next =
       (stunned ? "Punch_Hit" : punching ? "Punch_Jab" : undefined) ??
       activity?.name ??
-      (nowSwimming
-        ? speed > 0.3
-          ? "Swim_Forward"
-          : "Swim_Idle"
-        : mounted
-          ? "Idle_Neutral"
-          : (jumpClip?.name ??
-            (speed > 0.3 ? (speed > 4 ? "Run" : "Walk") : "Idle_Neutral")));
+      (boatingNow
+        ? "Activity_Sit"
+        : nowSwimming
+          ? speed > 0.3
+            ? "Swim_Forward"
+            : "Swim_Idle"
+          : mounted
+            ? "Idle_Neutral"
+            : (stanceAnimation ??
+              jumpClip?.name ??
+              (speed > 0.3 ? (speed > 4 ? "Run" : "Walk") : "Idle_Neutral")));
     if (
       next !== animation.current ||
       (activity && lastActivityStart.current !== pose.startedAt)
@@ -873,17 +1307,48 @@ export function Player({
     if (visual.current) {
       const angle = holding
         ? pose.facing
-        : mounted
-          ? rideYaw.current
-          : speed > 0.3
-            ? Math.atan2(velocity.x, velocity.z)
-            : undefined;
+        : boatingNow
+          ? boatMotion.current.yaw
+          : mounted
+            ? rideYaw.current
+            : speed > 0.3
+              ? Math.atan2(velocity.x, velocity.z)
+              : undefined;
       if (angle !== undefined) {
         visual.current.parent?.getWorldQuaternion(facingParent);
         localFacing(angle, facingParent, facingTarget);
-        if (holding) visual.current.quaternion.copy(facingTarget);
+        if (holding || boatingNow) visual.current.quaternion.copy(facingTarget);
         else
           visual.current.quaternion.slerp(facingTarget, 1 - Math.exp(-12 * dt));
+      }
+    }
+    if (stanceRef.current === "prone" && visual.current) {
+      proneFacing
+        .set(0, 0, 1)
+        .applyQuaternion(visual.current.getWorldQuaternion(proneOrientation));
+      const yaw = Math.atan2(proneFacing.x, proneFacing.z);
+      const turn = Math.atan2(
+        Math.sin(yaw - proneYaw.current),
+        Math.cos(yaw - proneYaw.current),
+      );
+      // Translation is handled by Rapier. Only a changing footprint needs an
+      // extra overlap query; an idle prone avatar adds no query per frame.
+      if (Math.abs(turn) > 0.001) {
+        if (
+          rotateProneCollider({
+            body: c.body,
+            collider: c.collider,
+            world,
+            rapier,
+            yaw,
+          })
+        )
+          proneYaw.current = yaw;
+        else {
+          visual.current.parent?.getWorldQuaternion(facingParent);
+          localFacing(proneYaw.current, facingParent, facingTarget);
+          visual.current.quaternion.copy(facingTarget);
+        }
       }
     }
     const gesture =
@@ -902,6 +1367,15 @@ export function Player({
     if (visual.current?.parent)
       visual.current.parent.getWorldPosition(playerViewPosition);
     else playerViewPosition.copy(playerPosition);
+    playerBubbleAnchor.copy(playerViewPosition);
+    if (
+      stanceRef.current === "prone" &&
+      !holding &&
+      !nowSwimming &&
+      !mounted &&
+      !boatingNow
+    )
+      playerBubbleAnchor.y -= 0.4;
     activityRig.current?.update(pose, elapsed);
     const cardRoom = currentMultiplayerRoom();
     cruceCharacter.update(
@@ -930,6 +1404,20 @@ export function Player({
       });
       updateVehicleMotion(rideYaw.current, signedSpeed);
     }
+    // After the mixer: turn the wheel, then pin both hands to its grips.
+    if (boatingNow && boat.current) {
+      const { wheelAngle, lean } = boatMotion.current;
+      boat.current.update({ wheelAngle, lean });
+      boat.current
+        .driverSeatLocal(object.position)
+        .add(BOAT_DRIVER_OFFSET_VECTOR);
+      boatRider.current?.update({
+        left: boat.current.gripWorldPosition("left", leftGrip),
+        right: boat.current.gripWorldPosition("right", rightGrip),
+        wheelNormal: boat.current.wheelNormalWorld(wheelNormal),
+        hub: boat.current.wheelHubWorld(wheelHub),
+      });
+    }
     sampleClock.current += dt;
     if (sampleClock.current > 1 / 7 && visual.current) {
       sampleClock.current = 0;
@@ -942,9 +1430,11 @@ export function Player({
           (facing.x * velocity.x + facing.z * velocity.z) / speed;
       const near =
         !indoors &&
+        stanceRef.current === "standing" &&
         mode === "walk" &&
         !paused &&
         !mounted &&
+        !boatingNow &&
         !nowSwimming &&
         Math.hypot(
           p.x - getVehicleState().parked[0],
@@ -954,19 +1444,42 @@ export function Player({
         nearScooter.current = near;
         onVehicleHint?.(near);
       }
+      // Boarding is allowed from the water, so swimming still shows the hint.
+      const boatNear =
+        !indoors &&
+        mode === "walk" &&
+        !paused &&
+        !mounted &&
+        !boatingNow &&
+        stanceRef.current === "standing" &&
+        distanceToHull(p.x, p.z, {
+          x: getBoatState().parked[0],
+          z: getBoatState().parked[2],
+          yaw: getBoatState().yaw,
+        }) <= BOAT_BOARD_DISTANCE;
+      if (boatNear !== nearBoat.current) {
+        nearBoat.current = boatNear;
+        onBoatHint?.(boatNear);
+      }
       onMotion({
         homeIndex,
-        vehicle: mounted ? "QuickVolt 9" : null,
-        vehicleSpeed: mounted ? getVehicleState().speed : 0,
+        vehicle: boatingNow ? "Motorboat" : mounted ? "QuickVolt 9" : null,
+        vehicleSpeed: boatingNow
+          ? getBoatState().speed
+          : mounted
+            ? getVehicleState().speed
+            : 0,
         jumpPhase: jumpState.current.phase,
         jumpStyle: jumpState.current.style,
         animationHistory: animationHistory.current,
         position: [p.x, p.y, p.z],
         feet: feet.toArray(),
         contact: c.standPoint.toArray(),
-        grounded: holding || (!nowSwimming && c.isOnGround),
+        grounded: !boatingNow && (holding || (!nowSwimming && c.isOnGround)),
         activity: pose.kind,
-        animation: next,
+        canWave: waveAvailable,
+        animation: waveState.current ? SOCIAL_WAVE_CLIP_NAME : next,
+        posture: stanceRef.current,
         groundY,
         velocity: [velocity.x, velocity.y, velocity.z],
         facing: facing.toArray(),
@@ -994,7 +1507,7 @@ export function Player({
   return (
     <Ecctrl
       ref={controller}
-      enable={!swimming}
+      enable={!swimming && !boating}
       position={[
         arrival.position[0],
         arrival.position[1] + 0.98,
@@ -1003,26 +1516,33 @@ export function Player({
       enabledRotations={[false, false, false]}
       autoBalance={false}
       enableToggleRun={false}
-      capsuleHalfHeight={0.35}
-      capsuleRadius={0.3}
+      capsuleHalfHeight={STANCE_METRICS.standing.capsuleHalfHeight}
+      capsuleRadius={STANCE_METRICS.standing.capsuleRadius}
       ccd
       useCustomForward={riding}
-      maxWalkVel={riding ? scooterSpeed.cruise : 3.8}
-      maxRunVel={riding ? scooterSpeed.boost : 6.5}
+      maxWalkVel={
+        riding ? scooterSpeed.cruise : STANCE_METRICS[stance].walkSpeed
+      }
+      maxRunVel={riding ? scooterSpeed.boost : STANCE_METRICS[stance].runSpeed}
       jumpVel={7.4}
       friction={1.2}
       restitution={0}
       slideGripFactor={1.1}
       decDeltaTime={0.3}
       slopeMaxAngle={Math.PI * 0.4}
-      rayRadius={0.22}
+      rayRadius={STANCE_METRICS[stance].rayRadius}
+      rayOriginOffest={stanceRayOriginOffset(stance)}
       rayHitForgiveness={jumping ? 0.05 : 0.28}
-      floatHeight={0.3}
+      floatHeight={STANCE_METRICS[stance].floatHeight}
     >
       <group ref={visual} position={[0, -0.9, 0]}>
         <primitive object={object} dispose={null} />
         <StunStars room={currentMultiplayerRoom()} />
         <Scooter ref={scooter} visible={riding} />
+        <Suspense fallback={null}>
+          <Boat ref={boat} visible={boating} />
+        </Suspense>
+        {boating && <BoatSpray speed={localBoatSpeed} />}
       </group>
       {swimming && <SwimWake />}
     </Ecctrl>

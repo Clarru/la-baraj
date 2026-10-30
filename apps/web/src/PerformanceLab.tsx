@@ -14,7 +14,7 @@ import { terrainHeight, settlementRoadZ } from "./geography";
 import * as THREE from "three";
 
 export type PerformanceScenario =
-  "solo" | "village" | "crowd" | "riders" | "distant" | "swimmers";
+  "solo" | "village" | "crowd" | "riders" | "distant" | "swimmers" | "postures";
 export const performanceLab =
   import.meta.env.VITE_PERFORMANCE_LAB === "1" &&
   ["127.0.0.1", "localhost"].includes(location.hostname);
@@ -55,6 +55,9 @@ export function PerformancePanel({
           <option value="village">50 cabins / solo</option>
           <option value="crowd">50 cabins / 49 nearby walkers</option>
           <option value="riders">50 cabins / 49 nearby scooter riders</option>
+          <option value="postures">
+            50 cabins / 49 mixed crouch and crawl poses
+          </option>
           <option value="swimmers">50 cabins / 49 swimmers</option>
           <option value="distant">50 cabins / 49 distant players</option>
         </select>
@@ -160,10 +163,23 @@ export function PerformanceScene({
             nickname: `Friend ${i + 1}`,
             position: [0, 0, 0],
             yaw: 0,
-            animation: scenario === "swimmers" ? "Swim_Forward" : "Walk",
+            animation:
+              scenario === "postures"
+                ? i % 2
+                  ? "Prone_Crawl"
+                  : "Crouch_Walk"
+                : scenario === "swimmers"
+                  ? "Swim_Forward"
+                  : "Walk",
+            posture:
+              scenario === "postures"
+                ? i % 2
+                  ? "prone"
+                  : "crouching"
+                : "standing",
             activity: "none",
             vehicle: scenario === "riders" ? "scooter" : "none",
-            speed: 3,
+            speed: scenario === "postures" ? (i % 2 ? 0.65 : 1.5) : 3,
             jumpPhase: "grounded",
           },
           receivedAt: 0,
@@ -188,7 +204,10 @@ export function PerformanceScene({
         Math.cos(angle) * radius;
       remote.player.position = [
         x,
-        scenario === "swimmers" ? 0.1 : terrainHeight(x, z),
+        scenario === "swimmers"
+          ? 0.1
+          : terrainHeight(x, z) +
+            (remote.player.posture === "prone" ? 0.46 : 0),
         z,
       ];
       remote.player.yaw = angle + Math.PI / 2;
