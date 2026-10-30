@@ -42,3 +42,10 @@ node --experimental-strip-types scripts/export-quickvolt.mjs
 The Blender script creates a new background process and writes only the scooter source and its preview. It does not open or modify the running Blender window or the house library.
 
 Validation: eight scooter contact, motion, dimensions, finite geometry, sharing, and steering-alignment tests pass. A targeted strict TypeScript check of the model, wrapper, state contract, and tests also passes.
+
+
+## Driving
+
+W accelerates forward; S brakes forward motion, then reverses at a 2.5m/s cap. W also brakes existing reverse travel before accelerating forward. Holding W+S holds the brake. A/D steer the handlebars; yaw reverses with signed travel, as it does on a reversing vehicle. Shift boosts only forward travel. The existing Ecctrl capsule/CCD and ground support handle movement in both directions; rider heading stays aligned to the scooter, and the wheels use signed speed.
+
+Reverse verification uses the existing real Player/Ecctrl/Rapier controller fixture on the shared listener. V mounted, then S travelled backward at -2.4999994m/s while the rider still faced the scooter's forward heading. Continued S against the solid test ceiling stopped at exactly the same position for two consecutive held-input intervals. W then recovered forward travel, S braked/reversed again, Shift+S stayed within the reverse cap, W+S stopped, reverse A steering changed heading in the opposite sense, and W recovered approximately +10m/s. V parked back to grounded standing. This exercises real controller collision and gear timing in addition to the pure control tests.

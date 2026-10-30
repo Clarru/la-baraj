@@ -269,8 +269,8 @@ export function ControlsHelp({
         it lingers for five seconds, or press Escape to close.
       </p>
       <p className="game-help-note">
-        On the scooter: W to accelerate, S to brake, A/D to steer, Shift to
-        boost.
+        On the scooter: W to accelerate, S to brake then reverse, A/D to steer,
+        Shift to boost.
       </p>
       <button className="game-back" onClick={onMenu}>
         <GameIcon name="back" size={23} />
