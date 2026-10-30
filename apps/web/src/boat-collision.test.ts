@@ -237,9 +237,9 @@ describe("boat steering clearance", () => {
     const { world, capsule } = scene();
     world.createCollider(
       RAPIER.ColliderDesc.cuboid(0.003, 0.65, 0.003).setTranslation(
-        0.054,
+        0.114,
         0.4,
-        bowExtent - 0.002,
+        bowExtent - 0.004,
       ),
     );
     world.step();
@@ -296,7 +296,7 @@ describe("boat steering clearance", () => {
     (sign) => {
       for (const z of [bowExtent - 0.01, -BOAT_DIMENSIONS.sternExtent + 0.05]) {
         const { world, capsule } = scene({
-          x: z > 0 ? sign * 0.18 : -sign * ((beam / 2) * 0.86 + 0.1),
+          x: z > 0 ? sign * 0.22 : -sign * ((beam / 2) * 0.86 + 0.1),
           y: 0.4,
           z,
         });

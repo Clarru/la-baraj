@@ -85,6 +85,7 @@ export function boatHullHit(
   if (!hit) return null;
   const length = Math.hypot(hit.normal1.x, hit.normal1.z);
   return {
+    collider: hit.collider,
     point: [hit.witness1.x, hit.witness1.z] as Vec2,
     normal:
       length > 0.1

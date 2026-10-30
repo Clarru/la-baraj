@@ -1594,6 +1594,12 @@ export function Player({
         ...(import.meta.env.DEV || import.meta.env.VITE_GAME_DIAGNOSTICS === "1"
           ? {
               pressedKeys: [...k],
+              movementActive: active,
+              movementMode: mode,
+              paused,
+              holding,
+              stunned,
+              frameDt: dt,
               boatRenderCorrection: boatingNow
                 ? [
                     boatRenderCorrection.current.x,

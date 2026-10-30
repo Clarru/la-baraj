@@ -7,6 +7,7 @@ import {
   boatContact,
   resolveBoatImpact,
   resolveBoatWallImpact,
+  sweepBoatImpact,
   solveBoatContactIsland,
   quantizeBoatPose,
   type BoatBody,
@@ -33,6 +34,16 @@ const angularMomentum = (b: BoatBody, position = b.position) =>
   MASS * (position[1] * b.velocity[0] - position[0] * b.velocity[1]) +
   INERTIA * (b.angularVelocity ?? 0);
 describe("surface rigid-body contacts", () => {
+  it("does not create a contact from shared forward travel when the relative gap stays clear", () => {
+    const a = boat(0, 0, 0, 3.2),
+      b = boat(0, 6.18, 0, 3.15);
+    expect(
+      sweepBoatImpact(a, { ...a, position: [0, 0.48] }, b, {
+        ...b,
+        position: [0, 6.6525],
+      }),
+    ).toBeNull();
+  });
   it("centred head-on contact sheds speed without inventing sideways motion or spin", () => {
     const a = boat(0, 0, 0, 8),
       b = boat(0, 7, 0, -8, Math.PI),
@@ -41,6 +52,23 @@ describe("surface rigid-body contacts", () => {
       expect(Math.abs(result.velocity[1])).toBeLessThan(0.5);
       expect(result.velocity[0]).toBeCloseTo(0, 8);
       expect(result.angularVelocity).toBeCloseTo(0, 8);
+    }
+  });
+  it("a network-rounded opposing heading still produces a centred head-on stop", () => {
+    const a = boat(0, 0, 0, 3),
+      b = boat(0, 8, 0, -3, 3.141);
+    const result = solveBoatContactIsland(
+      [a, b],
+      [
+        { ...a, position: [0, 0.6] },
+        { ...b, position: [0, 7.4] },
+      ],
+      0.2,
+      0,
+    );
+    for (const body of result.bodies) {
+      expect(Math.abs(body.velocity[1])).toBeLessThan(0.3);
+      expect(Math.abs(body.angularVelocity ?? 0)).toBeLessThan(0.01);
     }
   });
   it("a centred rear contact transfers momentum without spinning either boat", () => {
@@ -132,6 +160,53 @@ describe("surface rigid-body contacts", () => {
       for (let j = i + 1; j < 3; j++)
         expect(boatContact(result.bodies[i], result.bodies[j])).toBeNull();
   });
+  it("brakes at the last checked state when the continuous-event cap is reached", () => {
+    const from = [boat(0, 0, 0, 12.8), boat(0, 6.3), boat(0, 12.6)];
+    const to = from.map((b, i) =>
+      i === 0 ? { ...b, position: [0, 2.56] as [number, number] } : b,
+    );
+    const limited = solveBoatContactIsland(from, to, 0.2, 0, 1);
+    expect(limited.eventLimited).toBe(true);
+    expect(limited.budgetLimited).toBe(true);
+    expect(limited.eventsProcessed).toBe(1);
+    expect(limited.bodies[0].position[1]).toBeLessThan(to[0].position[1]);
+    for (const i of limited.changed) {
+      expect(limited.bodies[i].velocity).toEqual([0, 0]);
+      expect(limited.bodies[i].angularVelocity).toBe(0);
+    }
+    expect(limited.changed.has(2)).toBe(false);
+  });
+  it("a repeatedly driven packed island makes progress rather than starving on every packet", () => {
+    let bodies = Array.from({ length: 16 }, (_, i) =>
+      boat((i % 4) * 2.4, Math.floor(i / 4) * 6.3),
+    );
+    const start = bodies.reduce((s, b) => s + b.position[1], 0);
+    let limits = 0;
+    for (let tick = 0; tick < 60; tick++) {
+      const targets = bodies.map((b, i) => {
+        const velocity: [number, number] = [
+          b.velocity[0],
+          Math.min(8, b.velocity[1] + (i === 0 ? 0.36 : 0)),
+        ];
+        return {
+          ...b,
+          velocity,
+          angularVelocity: (b.angularVelocity ?? 0) * Math.exp(-0.45),
+          position: [
+            b.position[0] + velocity[0] * 0.15,
+            b.position[1] + velocity[1] * 0.15,
+          ] as [number, number],
+        };
+      });
+      const result = solveBoatContactIsland(bodies, targets, 0.15, 0);
+      if (result.budgetLimited) limits++;
+      bodies = result.bodies;
+    }
+    expect(
+      bodies.reduce((s, b) => s + b.position[1], 0) - start,
+    ).toBeGreaterThan(1);
+    expect(limits).toBeLessThan(10);
+  });
   it("does not add linear or rotational energy across varied contacts", () => {
     let seed = 17;
     const random = () => {
@@ -195,6 +270,7 @@ describe("surface rigid-body contacts", () => {
     );
     const normal = solveBoatContactIsland(packed, to, 0.2, 0);
     expect(normal.budgetLimited).toBe(false);
+    expect(normal.changed.size).toBeLessThanOrEqual(12);
     expect(normal.workUnits).toBeLessThanOrEqual(BOAT_CONTACT_WORK_LIMIT);
     const pile = make(1.5, 3);
     pile[0].velocity = [3, 10];
@@ -207,6 +283,7 @@ describe("surface rigid-body contacts", () => {
       0,
     );
     expect(overloaded.budgetLimited).toBe(true);
+    expect(overloaded.changed.size).toBeLessThanOrEqual(12);
     expect(overloaded.workUnits).toBeLessThanOrEqual(BOAT_CONTACT_WORK_LIMIT);
     for (const i of overloaded.changed) {
       expect(overloaded.bodies[i].velocity).toEqual([0, 0]);

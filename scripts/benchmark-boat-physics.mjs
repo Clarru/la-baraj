@@ -219,6 +219,7 @@ report.constraints = {
   newVisibleMeshes: 0,
   contactWorkLimit: modern.BOAT_CONTACT_WORK_LIMIT,
   maxContactIsland: modern.BOAT_MAX_CONTACT_ISLAND,
+  maxContinuousEvents: modern.BOAT_MAX_CONTACT_EVENTS,
 };
 const out = "docs/performance/results/boat-rigid-impacts-2026-10-30.json";
 await fs.mkdir(path.dirname(out), { recursive: true });

@@ -34,7 +34,8 @@ export const BOAT_HULL: readonly Vec2[] = [
   [h * 0.86, -BOAT_DIMENSIONS.sternExtent],
   [h, 0.35],
   [h * 0.53, 2.65],
-  [0, BOAT_DIMENSIONS.bowExtent],
+  [0.06, BOAT_DIMENSIONS.bowExtent],
+  [-0.06, BOAT_DIMENSIONS.bowExtent],
   [-h * 0.53, 2.65],
   [-h, 0.35],
 ];
@@ -77,6 +78,7 @@ export function boatHullPoints(
 type Contact = { normal: Vec2; penetration: number; points: Vec2[] };
 export const BOAT_CONTACT_WORK_LIMIT = 4096;
 export const BOAT_MAX_CONTACT_ISLAND = 12;
+export const BOAT_MAX_CONTACT_EVENTS = 32;
 type ContactBudget = { remaining: number; used: number; exhausted: boolean };
 function spend(budget: ContactBudget | undefined, units: number) {
   if (!budget) return true;
@@ -512,10 +514,17 @@ export function sweepBoatImpact(
   toB: BoatBody,
   budget?: ContactBudget,
 ) {
-  const travel = (a: BoatBody, b: BoatBody) =>
-    Math.hypot(b.position[0] - a.position[0], b.position[1] - a.position[1]) +
-    RADIUS * Math.abs(wrapBoatYaw(b.yaw - a.yaw));
-  const distance = travel(fromA, toA) + travel(fromB, toB),
+  // Common translation cannot close a gap. Inflating by both absolute
+  // journeys invents near-parallel contacts and can starve a contact island.
+  const relativeX =
+    toA.position[0] - fromA.position[0] - (toB.position[0] - fromB.position[0]);
+  const relativeZ =
+    toA.position[1] - fromA.position[1] - (toB.position[1] - fromB.position[1]);
+  const distance =
+      Math.hypot(relativeX, relativeZ) +
+      RADIUS *
+        (Math.abs(wrapBoatYaw(toA.yaw - fromA.yaw)) +
+          Math.abs(wrapBoatYaw(toB.yaw - fromB.yaw))),
     steps = Math.min(128, Math.max(1, Math.ceil(distance / 0.1))),
     padding = distance / (2 * steps);
   for (let i = 0; i <= steps; i++) {
@@ -535,7 +544,11 @@ export function solveBoatContactIsland(
   to: BoatBody[],
   seconds: number,
   driver: number,
+  eventLimit = BOAT_MAX_CONTACT_EVENTS,
 ) {
+  const maxEvents = Number.isFinite(eventLimit)
+    ? Math.max(1, Math.min(BOAT_MAX_CONTACT_EVENTS, Math.floor(eventLimit)))
+    : BOAT_MAX_CONTACT_EVENTS;
   let current = from.map((b) => ({ ...b })),
     targets = to.map((b) => ({ ...b })),
     remaining = seconds;
@@ -547,7 +560,8 @@ export function solveBoatContactIsland(
   const changed = new Set<number>(),
     active = new Set([driver]),
     ignored = new Set<string>();
-  for (let event = 0; event < 8 && remaining > 1e-6; event++) {
+  let eventsProcessed = 0;
+  for (let event = 0; event < maxEvents && remaining > 1e-6; event++) {
     let best: {
       i: number;
       j: number;
@@ -592,6 +606,11 @@ export function solveBoatContactIsland(
       }
     if (budget.exhausted || !best) break;
     const { i, j, hit } = best;
+    if (!active.has(j) && active.size >= BOAT_MAX_CONTACT_ISLAND) {
+      budget.exhausted = true;
+      break;
+    }
+    eventsProcessed++;
     current = current.map((b, k) =>
       interpolateBoat(b, targets[k], hit.fraction),
     );
@@ -608,6 +627,10 @@ export function solveBoatContactIsland(
         ignored.delete(key);
     ignored.add(`${Math.min(i, j)}:${Math.max(i, j)}`);
   }
+  // An event limit is also a safety limit: never integrate an unchecked
+  // remaining trajectory just because the loop counter ran out.
+  const eventLimited = eventsProcessed === maxEvents && remaining > 1e-6;
+  if (eventLimited) budget.exhausted = true;
   // Only contact islands need stabilization; distant/unrelated pairs do no work.
   if (changed.size)
     for (let pass = 0; pass < 6; pass++) {
@@ -661,5 +684,7 @@ export function solveBoatContactIsland(
     changed,
     workUnits: budget.used,
     budgetLimited: budget.exhausted,
+    eventsProcessed,
+    eventLimited,
   };
 }

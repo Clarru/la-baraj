@@ -5,6 +5,7 @@ import {
   advanceBoat,
   boatVelocity,
   createBoatMotionState,
+  setBoatVelocity,
 } from "../apps/web/src/boat-motion";
 import {
   RoomCore,
@@ -141,79 +142,112 @@ describe("shared boat authority", () => {
     expect(f.a.state!.player.position).toEqual([0, 0.05, 1.6]);
     expect(f.a.state!.player.boat!.position).toEqual([0, 1.6]);
   });
-  it("runs a rear-end push through both real physics bodies without launch or dismount", async () => {
-    await RAPIER.init();
-    const f = await fixture();
-    const runners = [f.a, f.b].map((client, i) => {
-      const world = new RAPIER.World({ x: 0, y: 0, z: 0 });
-      const body = world.createRigidBody(
-        RAPIER.RigidBodyDesc.dynamic().setTranslation(0, 0.8, i * 10),
-      );
-      world.createCollider(RAPIER.ColliderDesc.capsule(0.35, 0.3), body);
-      const motion = createBoatMotionState(0);
-      motion.speed = i === 0 ? 8 : 0;
-      return { client, world, body, motion, revision: 0 };
-    });
-    try {
-      const publish = async (r: (typeof runners)[number], now: number) => {
-        const p = r.body.translation(),
-          v = r.body.linvel();
-        await f.send(
-          r.client,
-          {
-            ...pose(p.z, v.z, 0, r.revision),
-            boat: { position: [p.x, p.z], yaw: 0, velocity: [v.x, v.z] },
-          },
-          now,
+  it.each([
+    { label: "legacy rear push", offset: 0, modern: false },
+    { label: "modern off-centre push", offset: 0.7, modern: true },
+  ])(
+    "runs $label through real physics bodies without launch, dismount or persistent braking",
+    async ({ offset, modern }) => {
+      await RAPIER.init();
+      const f = await fixture();
+      const runners = [f.a, f.b].map((client, i) => {
+        const world = new RAPIER.World({ x: 0, y: 0, z: 0 });
+        const body = world.createRigidBody(
+          RAPIER.RigidBodyDesc.dynamic().setTranslation(
+            i === 0 ? offset : 0,
+            0.8,
+            i * 10,
+          ),
         );
-      };
-      for (const r of runners) await publish(r, 0);
-      for (let frame = 1; frame <= 480; frame++) {
-        for (const [i, r] of runners.entries()) {
-          advanceBoat(r.motion, {
-            throttle: i === 0 && frame < 120 ? 1 : 0,
-            steer: 0,
-            dt: 1 / 60,
-          });
-          r.body.setLinvel(
-            boatVelocity({
-              yaw: 0,
-              speed: r.motion.speed,
-              driftX: r.motion.driftX,
-              driftZ: r.motion.driftZ,
-              velocityY: r.body.linvel().y,
-              bodyY: r.body.translation().y,
-              time: frame / 60,
-              dt: 1 / 60,
-            }),
-            true,
+        world.createCollider(RAPIER.ColliderDesc.capsule(0.35, 0.3), body);
+        const motion = createBoatMotionState(0);
+        motion.speed = i === 0 ? 8 : 0;
+        body.setLinvel({ x: 0, y: 0, z: motion.speed }, true);
+        return { client, world, body, motion, revision: 0 };
+      });
+      try {
+        const publish = async (r: (typeof runners)[number], now: number) => {
+          const p = r.body.translation(),
+            v = r.body.linvel();
+          await f.send(
+            r.client,
+            {
+              ...pose(p.z, v.z, 0, r.revision),
+              boat: {
+                position: [p.x, p.z],
+                yaw: r.motion.yaw,
+                velocity: [v.x, v.z],
+                ...(modern
+                  ? {
+                      angularVelocity: r.motion.turnRate,
+                      rudder: r.motion.steer,
+                    }
+                  : {}),
+              },
+            },
+            now,
           );
-          r.world.step();
-          expect(Math.abs(r.body.translation().y - 0.8)).toBeLessThan(0.08);
-          expect(
-            Math.hypot(r.body.linvel().x, r.body.linvel().z),
-          ).toBeLessThanOrEqual(12.8 + 0.001);
-        }
-        if (frame % 9 === 0)
-          for (const r of runners) await publish(r, (frame * 1000) / 60);
-        for (const r of runners) {
-          const impact = f.impacts(r.client).at(-1);
-          if (impact && impact.revision > r.revision) {
-            applyBoatBodyImpact(r.world, RAPIER, r.body, r.motion, impact.boat);
-            r.revision = impact.revision;
+        };
+        for (const r of runners) await publish(r, 0);
+        for (let frame = 1; frame <= 480; frame++) {
+          for (const [i, r] of runners.entries()) {
+            const achieved = r.body.linvel();
+            setBoatVelocity(r.motion, [achieved.x, achieved.z]);
+            advanceBoat(r.motion, {
+              throttle: i === 0 && (modern || frame < 120) ? 1 : 0,
+              steer: 0,
+              dt: 1 / 60,
+            });
+            r.body.setLinvel(
+              boatVelocity({
+                yaw: r.motion.yaw,
+                speed: r.motion.speed,
+                driftX: r.motion.driftX,
+                driftZ: r.motion.driftZ,
+                velocityY: r.body.linvel().y,
+                bodyY: r.body.translation().y,
+                time: frame / 60,
+                dt: 1 / 60,
+              }),
+              true,
+            );
+            r.world.step();
+            expect(Math.abs(r.body.translation().y - 0.8)).toBeLessThan(0.08);
+            expect(
+              Math.hypot(r.body.linvel().x, r.body.linvel().z),
+            ).toBeLessThanOrEqual(12.8 + 0.001);
+          }
+          if (frame % 9 === 0)
+            for (const r of runners) await publish(r, (frame * 1000) / 60);
+          for (const r of runners) {
+            const impact = f.impacts(r.client).at(-1);
+            if (impact && impact.revision > r.revision) {
+              applyBoatBodyImpact(
+                r.world,
+                RAPIER,
+                r.body,
+                r.motion,
+                impact.boat,
+              );
+              r.revision = impact.revision;
+            }
           }
         }
+        expect(runners[1].body.translation().z).toBeGreaterThan(20);
+        if (modern) {
+          expect(runners[0].motion.speed).toBeGreaterThan(3);
+          expect(Math.abs(runners[1].motion.yaw)).toBeGreaterThan(0.05);
+        }
+        for (const r of runners) {
+          expect(r.revision).toBeGreaterThan(0);
+          expect(r.client.closed).toBe(false);
+          expect(r.client.state!.player.vehicle).toBe("boat");
+        }
+      } finally {
+        for (const r of runners) r.world.free();
       }
-      expect(runners[1].body.translation().z).toBeGreaterThan(20);
-      for (const r of runners) {
-        expect(r.revision).toBeGreaterThan(0);
-        expect(r.client.closed).toBe(false);
-        expect(r.client.state!.player.vehicle).toBe("boat");
-      }
-    } finally {
-      for (const r of runners) r.world.free();
-    }
-  });
+    },
+  );
   it("sends equal, damped head-on results to drivers and observer without changing height", async () => {
     const f = await fixture();
     await f.send(f.a, pose(0, 8), 0);

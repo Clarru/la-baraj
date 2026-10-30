@@ -55,20 +55,23 @@ hulls cover angular sweeps without rebuilding a convex hull each frame.
 
 The pose interval remains 120 ms minimum. A correction is sent once per affected
 owner, after solving, rather than for each manifold iteration. Contact processing
-is capped at 4,096 work units, eight continuous contact events and 12 affected
+is capped at 4,096 work units, 32 continuous contact events and 12 affected
 boats per packet. Invalid overlap piles brake at the last safe state when the
-budget is exhausted. Normal packed 50-boat coverage does not enter that fallback.
+work, island or event budget is exhausted. Swept padding uses relative travel, so
+common forward travel cannot invent contacts. The bow has a 12 cm flat contact
+face to avoid quantized opposite headings behaving like infinitely sharp points.
+Normal packed 50-boat coverage does not enter that fallback.
 
 Node 24 on the measured Apple machine (five-trial medians, microseconds/call):
 
 | Kernel | Before | After |
 | --- | ---: | ---: |
-| Swept two-boat contact | about 1.7 | 5.2 |
-| 50-boat scan, one contact | about 1.7 | 15.7 |
-| Packed 50-boat contact island | first-pair model only | 882 |
-| Invalid overlapping 50-boat pile | not equivalent | 2,219, bounded fallback |
-| Rapier world shape cast | 3.18 | 7.03 |
-| New conservative angular query | — | 4.66 |
+| Swept two-boat contact | 1.34 | 4.92 |
+| 50-boat scan, one contact | 1.71 | 13.78 |
+| Packed 50-boat contact island | first-pair model only | 1,765 |
+| Invalid overlapping 50-boat pile | not equivalent | 1,657, bounded fallback |
+| Rapier world shape cast | 1.97 | 4.68 |
+| New conservative angular query | — | 3.17 |
 
 Representative full pose packet averages before/after: moored 273/255 bytes,
 straight 282/279, turning 321/308, post-impact 321/297. The largest sampled
