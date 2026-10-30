@@ -4,6 +4,7 @@ import {
   useRef,
   useState,
   type RefObject,
+  type CSSProperties,
 } from "react";
 import {
   otherSide,
@@ -12,21 +13,31 @@ import {
   type Side,
 } from "../../../packages/shared/planes";
 
-export const SHOT_DURATION = 720;
+export const SHOT_DURATION = 1200;
+export const COCKPIT_SHOT_DURATION = 1850;
 export const REDUCED_SHOT_DURATION = 180;
 export type PresentedShot = {
-  id: number;
+  id: string;
   round: number;
   you: Side;
+  side: Side;
+  index: number;
   incoming: boolean;
   shot: Shot;
 };
+export function shotDuration(shot: Shot, reduced = false) {
+  return reduced
+    ? REDUCED_SHOT_DURATION
+    : shot.result === "head"
+      ? COCKPIT_SHOT_DURATION
+      : SHOT_DURATION;
+}
 
-/** Animate one newly accepted shot, never a joined/resumed history snapshot. */
-export function newPresentedShot(
+/** Recover the alternating order even when React receives several accepted shots together. */
+export function newPresentedShots(
   previous: PlanesView | null,
   next: PlanesView | null,
-): PresentedShot | null {
+): PresentedShot[] {
   if (
     !previous ||
     !next ||
@@ -35,30 +46,33 @@ export function newPresentedShot(
     next.you === null ||
     previous.you !== next.you ||
     previous.round !== next.round ||
+    previous.turn === null ||
     !next.event ||
     next.event.id === previous.event?.id ||
     (next.phase === "finished" && next.reason !== "fleet")
   )
-    return null;
-  const changes = next.shots.map(
-    (shots, side) => shots.length - previous.shots[side].length,
-  );
-  const side =
-    changes[0] === 1 && changes[1] === 0
-      ? 0
-      : changes[1] === 1 && changes[0] === 0
-        ? 1
-        : null;
-  if (side === null || previous.turn !== side) return null;
-  const shot = next.shots[side].at(-1)!;
-  if (shot.result !== next.event.result) return null;
-  return {
-    id: next.event.id,
-    round: next.round,
-    you: next.you,
-    incoming: side === otherSide(next.you),
-    shot,
-  };
+    return [];
+  const positions = previous.shots.map((shots) => shots.length);
+  if (positions.some((length, side) => next.shots[side].length < length))
+    return [];
+  const added: PresentedShot[] = [];
+  let side: Side = previous.turn;
+  while (positions.some((length, side) => length < next.shots[side].length)) {
+    const index = positions[side]++;
+    const shot = next.shots[side][index];
+    if (!shot) return []; // Not a legal alternating extension of the observed match.
+    added.push({
+      id: `${side}:${index}`,
+      round: next.round,
+      you: next.you,
+      side,
+      index,
+      incoming: side === otherSide(next.you),
+      shot,
+    });
+    side = otherSide(side);
+  }
+  return added.at(-1)?.shot.result === next.event.result ? added : [];
 }
 
 export function usePresentedShot(
@@ -68,30 +82,29 @@ export function usePresentedShot(
 ) {
   const previous = useRef(view);
   const wasVisible = useRef(connected && open);
-  const [active, setActive] = useState<PresentedShot | null>(null);
+  const [items, setItems] = useState<PresentedShot[]>([]);
   const [reduced, setReduced] = useState(
     () =>
       typeof matchMedia !== "undefined" &&
       matchMedia("(prefers-reduced-motion: reduce)").matches,
   );
   const visible = connected && open;
-  const candidate =
+  const added =
     visible && wasVisible.current
-      ? newPresentedShot(previous.current, view)
-      : null;
+      ? newPresentedShots(previous.current, view)
+      : [];
   const sameContext =
-    active?.round === view?.round &&
-    active?.you === view?.you &&
+    items[0]?.round === view?.round &&
+    items[0]?.you === view?.you &&
     (view?.phase === "playing" ||
       (view?.phase === "finished" && view.reason === "fleet"));
-  const presentation = visible
-    ? (candidate ?? (sameContext ? active : null))
-    : null;
+  const queue = visible ? [...(sameContext ? items : []), ...added] : [];
+  const active = items[0];
   useLayoutEffect(() => {
     previous.current = view;
     wasVisible.current = visible;
-    if (!visible || !sameContext) setActive(candidate);
-    else if (candidate) setActive(candidate);
+    if (!visible || !sameContext) setItems(added);
+    else if (added.length) setItems((current) => [...current, ...added]);
   }, [view, visible]);
   useEffect(() => {
     const media = matchMedia("(prefers-reduced-motion: reduce)");
@@ -103,12 +116,88 @@ export function usePresentedShot(
   useEffect(() => {
     if (!active) return;
     const timeout = setTimeout(
-      () => setActive(null),
-      reduced ? REDUCED_SHOT_DURATION : SHOT_DURATION,
+      () =>
+        setItems((current) =>
+          current[0] === active ? current.slice(1) : current,
+        ),
+      shotDuration(active.shot, reduced),
     );
     return () => clearTimeout(timeout);
   }, [active, reduced]);
-  return presentation;
+  return { presentation: queue[0] ?? null, waiting: queue.slice(1) };
+}
+
+export const ROUND_RESULT_DURATION = 3000;
+export function useRoundResult(
+  view: PlanesView | null,
+  connected: boolean,
+  open: boolean,
+  presenting: boolean,
+) {
+  const key =
+    view?.phase === "finished" && view.winner !== null
+      ? `${view.round}:${view.winner}:${view.reason}`
+      : null;
+  // Opening an already finished match does not replay a historical victory.
+  const acknowledged = useRef(key);
+  const observedPlaying = useRef(
+    connected && open && view?.phase === "playing"
+      ? { round: view.round, you: view.you }
+      : null,
+  );
+  const sameObservedMatch =
+    observedPlaying.current !== null &&
+    observedPlaying.current.round === view?.round &&
+    observedPlaying.current.you === view?.you;
+  const [active, setActive] = useState<{
+    key: string;
+    remaining: number;
+  } | null>(null);
+  const starting =
+    key !== null &&
+    connected &&
+    open &&
+    !presenting &&
+    sameObservedMatch &&
+    acknowledged.current !== key;
+  useLayoutEffect(() => {
+    if (!view || !connected || !open) {
+      observedPlaying.current = null;
+      acknowledged.current = key;
+      setActive(null);
+    } else if (view.phase === "playing") {
+      observedPlaying.current = { round: view.round, you: view.you };
+      acknowledged.current = null;
+      setActive(null);
+    } else if (!key || !sameObservedMatch) {
+      observedPlaying.current = null;
+      acknowledged.current = key;
+      setActive(null);
+    } else if (!presenting && acknowledged.current !== key) {
+      acknowledged.current = key;
+      setActive({ key, remaining: 3 });
+    }
+  }, [view, key, connected, open, presenting]);
+  useEffect(() => {
+    if (!active) return;
+    const timer = setInterval(
+      () =>
+        setActive((current) =>
+          current && current.remaining > 1
+            ? { ...current, remaining: current.remaining - 1 }
+            : null,
+        ),
+      1000,
+    );
+    return () => clearInterval(timer);
+  }, [active?.key]);
+  return connected && open && key && sameObservedMatch
+    ? active?.key === key
+      ? active.remaining
+      : starting
+        ? 3
+        : null
+    : null;
 }
 
 type Geometry = {
@@ -167,16 +256,38 @@ export function PlanesShot({
   const { width, height, path, x, y, radius } = geometry;
   return (
     <svg
-      className={`planes-shot planes-shot--${presentation.shot.result}`}
+      className={`planes-shot planes-shot--${presentation.shot.result} planes-side-${presentation.side}`}
       viewBox={`0 0 ${width} ${height}`}
       aria-hidden="true"
+      data-shot-id={presentation.id}
     >
       <path className="planes-shot-trail" d={path} pathLength="1" />
       <path className="planes-shot-core" d={path} pathLength="1" />
       <g transform={`translate(${x} ${y})`}>
         <circle className="planes-shot-impact" r={radius} />
         <circle className="planes-shot-contact" r="3" />
-        {presentation.shot.result !== "miss" && (
+        {presentation.shot.result === "head" && (
+          <g
+            className="planes-shot-explosion"
+            style={{ "--burst-distance": `${radius * 3}px` } as CSSProperties}
+          >
+            <circle className="planes-explosion-flash" r={radius * 1.1} />
+            <circle className="planes-explosion-ring" r={radius} />
+            <circle
+              className="planes-explosion-ring planes-explosion-ring--late"
+              r={radius * 0.7}
+            />
+            {Array.from({ length: 12 }, (_, i) => (
+              <g key={i} transform={`rotate(${i * 30})`}>
+                <path
+                  className={`planes-explosion-debris planes-explosion-debris--${i % 3}`}
+                  d={`M-1 ${-radius * 0.5}l2 -${radius * 0.35}`}
+                />
+              </g>
+            ))}
+          </g>
+        )}
+        {presentation.shot.result === "body" && (
           <g className="planes-shot-sparks">
             {[0, 60, 120, 180, 240, 300].map((angle) => (
               <path

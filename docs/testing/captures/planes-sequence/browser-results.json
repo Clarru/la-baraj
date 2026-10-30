@@ -1,0 +1,94 @@
+{
+  "queue-samples": [
+    {
+      "ms": 276,
+      "disabled": 100,
+      "revision": "Revision 4 \u00b7 Your turn",
+      "shot": "1:0"
+    },
+    {
+      "ms": 1251,
+      "disabled": 100,
+      "revision": "Revision 4 \u00b7 Your turn",
+      "shot": "0:0"
+    },
+    {
+      "ms": 2439,
+      "disabled": 100,
+      "revision": "Revision 4 \u00b7 Your turn",
+      "shot": "1:1"
+    },
+    {
+      "ms": 3636,
+      "disabled": 1,
+      "revision": "Revision 4 \u00b7 Your turn",
+      "shot": null
+    }
+  ],
+  "countdown-samples": [
+    {
+      "ms": 59,
+      "count": "3",
+      "hidden": false,
+      "readyDisabled": true
+    },
+    {
+      "ms": 767,
+      "count": "2",
+      "hidden": false,
+      "readyDisabled": true
+    },
+    {
+      "ms": 1773,
+      "count": "1",
+      "hidden": false,
+      "readyDisabled": true
+    },
+    {
+      "ms": 2782,
+      "count": null,
+      "hidden": false,
+      "readyDisabled": false
+    }
+  ],
+  "winning-queue-samples": [
+    {
+      "ms": 288,
+      "count": null,
+      "shot": "0:1",
+      "winner": null
+    },
+    {
+      "ms": 824,
+      "count": null,
+      "shot": "1:2",
+      "winner": null
+    },
+    {
+      "ms": 2697,
+      "count": "3",
+      "shot": null,
+      "winner": "Robin wins!"
+    }
+  ],
+  "finalConfirmation": {
+    "runtimeHead": "e2b22f70da2679f437e7a5d777916a98bb5bbd61",
+    "historicalNullToFinishedOverlays": 0,
+    "historicalRematchEnabled": true,
+    "liveWinner": "Claudiu wins!",
+    "liveCountdownStartsAt": 3,
+    "narrowViewport": [
+      391,
+      844
+    ],
+    "rematchWidth": 316,
+    "horizontalOverflow": false,
+    "browserWarningsErrors": [],
+    "clickSpam": {
+      "physicalClicks": 5,
+      "observedAtMs": 446,
+      "unchangedRevision": 2,
+      "unchangedShot": "1:0"
+    }
+  }
+}

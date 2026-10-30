@@ -54,6 +54,7 @@ import { ControlsHelp, GameHeader, GameMenu } from "./GameMenu";
 import { captureGameKey, type GamePanel } from "./game-input";
 import { planesSeatSide } from "../../../packages/shared/planes-station";
 import { requestTableStand } from "./planes-activity";
+import { blockPlanesResultExit } from "./planes-input";
 import { PlanesEntry } from "./PlanesEntry";
 import { planesLab, LocalPlanesRoom, PlanesLabControls } from "./PlanesLab";
 import {
@@ -285,6 +286,7 @@ export default function Game({ initialName }: { initialName: string }) {
   }, []);
   useEffect(() => {
     const capture = (event: KeyboardEvent) => {
+      if (blockPlanesResultExit(event, planesOpen && panel === null)) return;
       if (
         (cruceOpen || ownCruceSeat !== null) &&
         event.repeat &&
