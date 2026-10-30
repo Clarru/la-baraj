@@ -1,14 +1,14 @@
 # 2048 extension documentation review
 
-This is the fresh in-thread documenter pass required by Impeccable. The named documenter subagent was unavailable, so the degraded documenter contract was executed inline. The pass records the shipped extension and preserves the incumbent global system; it does not make new product or design decisions.
+This is a fresh independent documentation-subagent pass required by Impeccable. The named documenter role was unavailable, so Impeccable's degraded/fallback documenter contract was used for this pass. It records the shipped extension and preserves the incumbent global system; it does not make new product or design decisions.
 
 ## Scope and source of truth
 
-The requested ordinary extension is the original La Baraj 2048 cabinet: an upright timber/iron/forest-green PBR prop with a real mesh screen, a playable 4×4 board, a personal persistent game per cabin owner, and a derived global top-ten board. The direction and acceptance contract is [`arcade2048.md`](../../.impeccable/briefs/arcade2048.md). The finalized local extension is summarized in [`arcade/README.md`](../../experiments/asset-skill-lab/arcade/README.md), and the reusable transfer lessons are in [`interactive-props.md`](../../.agents/skills/la-baraj-3d-assets/references/interactive-props.md).
+The requested ordinary extension is the original La Baraj 2048 cabinet: an upright timber/iron/forest-green PBR prop with a real mesh screen, a playable 4×4 board, a personal persistent game per cabin owner, and a derived global top-ten board. The direction and acceptance contract is [`arcade2048.md`](../briefs/arcade2048.md). The finalized local extension is summarized in [`arcade/README.md`](../../experiments/asset-skill-lab/arcade/README.md), and the reusable transfer lessons are in [`interactive-props.md`](../../.agents/skills/la-baraj-3d-assets/references/interactive-props.md).
 
 Ground truth was read from the implementation, not inferred from the brief or images:
 
-- [`Arcade2048.tsx`](../../apps/web/src/Arcade2048.tsx) owns the GLB, named moving nodes, runtime CanvasTexture, pointer UV mapping, accessibility controls, focus behavior and local avatar visibility.
+- [`Arcade2048.tsx`](../../apps/web/src/Arcade2048.tsx) owns the GLB, named moving nodes, runtime CanvasTexture, pointer UV mapping, accessibility controls, focus behavior and local avatar visibility. The semantic `Joystick` node is now an exported parent hinge at y=0.967 m; its `JoystickHandle` child retains the mesh after quantization.
 - [`arcade2048-screen.ts`](../../apps/web/src/arcade2048-screen.ts) owns the 512×640 logical screen, color/font treatment, hit regions, 150 ms tile animation and terminal overlays.
 - [`use-arcade2048.ts`](../../apps/web/src/use-arcade2048.ts) owns resume, move throttling, pending/error state and action precedence.
 - [`arcade2048.ts`](../../apps/server/arcade2048.ts) owns server-side rules, random spawns, best-score persistence, request de-duplication and revision serialization.
@@ -19,7 +19,7 @@ The existing [`PRODUCT.md`](../../PRODUCT.md), [`DESIGN.md`](../../DESIGN.md), [
 
 ## Finalized extension
 
-The runtime asset is an original, authored cabinet rather than a reconstructed source mesh. The decoded measurements are approximately 0.760 × 0.724 × 1.913 m; the nominal contract is 0.76 × 0.72 × 1.92 m. The shipping GLB is 245,680 bytes, 7,082 triangles, five mesh objects and 13 primitives. Its four embedded PBR maps are no larger than 512×512. `Screen`, `Joystick`, `ButtonNew` and `ButtonScores` remain semantic runtime nodes. The screen UV uses the verified top-left origin; Three's `CanvasTexture` uses `flipY=false`, and pointer UVs are mapped directly to the logical canvas.
+The runtime asset is an original, authored cabinet rather than a reconstructed source mesh. The decoded measurements are approximately 0.760 × 0.724 × 1.913 m; the nominal contract is 0.76 × 0.72 × 1.92 m. The shipping GLB is 245,680 bytes, 7,082 triangles, five mesh objects and 13 primitives. Its four embedded PBR maps are no larger than 512×512. `Screen`, `Joystick`, `ButtonNew` and `ButtonScores` remain semantic runtime nodes. `Joystick` is the parent hinge with decoded translation y=0.967 m, while `JoystickHandle` is its mesh child; this preserves the intended pivot after quantization. The screen UV uses the verified top-left origin; Three's `CanvasTexture` uses `flipY=false`, and pointer UVs are mapped directly to the logical canvas.
 
 The screen is drawn by the runtime [`drawArcadeScreen`](../../apps/web/src/arcade2048-screen.ts) function onto a 768×960 canvas whose logical coordinate system is 512×640. It uses Bree Serif for the display/title voice and Alegreya Sans for utility labels, with warm paper, forest green, ochre/gold, terracotta and deep forest ink. The physical screen and the hidden semantic HTML controls use the same action set. There is no Undo control or parser action.
 
@@ -43,14 +43,20 @@ The evidence bundle at [`experiments/asset-skill-lab/arcade/`](../../experiments
 - [`focus/`](../../experiments/asset-skill-lab/arcade/focus/): runtime camera-FOV/distance projection studies at 1440×900 and 390×844. These test framing only.
 - [`contract.json`](../../experiments/asset-skill-lab/arcade/contract.json), [`optimization.json`](../../experiments/asset-skill-lab/arcade/optimization.json) and [`provenance.json`](../../experiments/asset-skill-lab/arcade/provenance.json): measured dimensions, limits, Meshopt/data preservation and provenance.
 
+The final export correction added 76 bytes to the shipping GLB (245,604 → 245,680) while retaining 7,082 triangles and the same static projection pixels. The independent decoded asset test now asserts the semantic `Joystick` parent translation at y=0.967 m and requires a mesh-bearing `JoystickHandle` child. The QA re-import remains a separate asset-evidence file with its QA-only screen image.
+
+Every relative link in this report was resolved from `.impeccable/review`: the sibling brief uses `../briefs/...`, while repository-root targets correctly use `../../...`.
+
 The reproducible asset path is [`reproduce.sh`](../../experiments/asset-skill-lab/arcade/reproduce.sh) from the repository root with `ASSET_LAB_BLENDER` and `ARCADE_QA_CANVAS_MODULE` supplied. It renders the Canvas output, builds the source cabinet, applies the paint material, optimizes and copies the GLB, re-imports a QA clone, creates projection studies and runs the focused asset/screen checks. It does not start a web or server process.
 
-This reviewer reran:
+The previous documentation pass reran:
 
 - the three focused frontend files: 7 tests passed;
 - `npm run test:protocol -- --run`: 10 files, 136 tests passed;
 - `npx tsc --noEmit`: passed;
 - `npm run server:check`: passed.
+
+The latest merged revision (`93e883b`, including export correction `32a179f`) additionally reports 393 frontend tests and 145 protocol tests, with both typechecks and the production build passing. This fresh documentation recheck did not rerun broad suites; it validated the changed export facts and report links only.
 
 No browser gameplay pass, keyboard/mouse acceptance against shared `http://127.0.0.1:4173/`, paired-player ranking check, FPS measurement, publication or deployment was run here. The shared preview remains owned by another chat. The images above must not be described as browser acceptance.
 
@@ -59,7 +65,7 @@ No browser gameplay pass, keyboard/mouse acceptance against shared `http://127.0
 1. Keep static shell, screen, joystick and buttons as separately named runtime parts. A blanket join destroys interaction semantics and pivots.
 2. Reuse accepted trim/PBR data selectively. A small original painted-timber map solved the mottled green-iron failure while retaining shared normal and packed reflection information.
 3. Validate the exported glTF material and re-import it. Blender MixRGB intent is not proof of the runtime color factor.
-4. Test focused-camera clearance from the player's eye, including narrow aspect projections. The first joystick and marquee studies exposed visible overlaps that the orthographic turnaround alone did not catch.
+4. Test focused-camera clearance from the player's eye, including narrow aspect projections. The first joystick and marquee studies exposed visible overlaps that the orthographic turnaround alone did not catch. Preserve mechanism pivots as explicit semantic parent nodes when an optimizer or quantizer can recenter mesh nodes.
 5. Treat live display evidence and prop evidence as separate gates. A generated concept is not a playable screen; a Canvas capture is not browser input or network evidence.
 6. For Meshopt index validation, compare cyclic rotations lexicographically rather than using `indexOf(min)` or sorting triangle vertices. Preserve exact decoded attributes, winding and map pixels.
 7. Keep prop-only material clones and cache the material list; do not mutate the scene environment or global loader policy.

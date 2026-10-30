@@ -377,7 +377,8 @@ export function ArcadeAccessibility({
     >
       <p>
         Arrow keys or WASD move tiles. N starts a new game. L shows records.
-        Escape leaves the cabinet.
+        Enter or Space confirms a new game, continues a win, or returns from
+        records. Escape cancels or leaves the cabinet.
       </p>
       <p role="status" aria-live="polite">
         {controls.state.error ||

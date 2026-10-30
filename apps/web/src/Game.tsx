@@ -5,7 +5,7 @@ import {
   nearArcade,
 } from "./Arcade2048";
 import { useArcade2048 } from "./use-arcade2048";
-import type { ArcadeDirection } from "../../../packages/shared/arcade2048";
+import { captureArcadeKey } from "./arcade2048-input";
 import { reportClientDiagnostic } from "./client-diagnostics";
 import { cruceWorldLab } from "./cruce-world-test";
 import { CruceWorldLab } from "./CruceWorldLab";
@@ -319,42 +319,11 @@ export default function Game({ initialName }: { initialName: string }) {
   useEffect(() => {
     const capture = (event: KeyboardEvent) => {
       if (arcadeOpen) {
-        if (
-          event.ctrlKey ||
-          event.metaKey ||
-          event.altKey ||
-          event.code === "Tab"
-        )
-          return;
-        if (
-          (event.code === "Enter" || event.code === "Space") &&
-          event.target instanceof HTMLElement &&
-          event.target.closest("[data-arcade-controls]")
-        ) {
-          event.stopImmediatePropagation();
-          return;
-        }
-        event.preventDefault();
-        event.stopImmediatePropagation();
-        if (event.code === "Escape" && !event.repeat) {
-          if (arcade.state.page !== "board") arcade.action("back");
-          else closeArcade();
-          return;
-        }
-        const directions: Record<string, ArcadeDirection> = {
-          ArrowLeft: "left",
-          KeyA: "left",
-          ArrowRight: "right",
-          KeyD: "right",
-          ArrowUp: "up",
-          KeyW: "up",
-          ArrowDown: "down",
-          KeyS: "down",
-        };
-        if (directions[event.code]) arcade.move(directions[event.code]);
-        else if (event.code === "KeyN" && !event.repeat) arcade.action("new");
-        else if (event.code === "KeyL" && !event.repeat)
-          arcade.action("scores");
+        captureArcadeKey(event, arcade.state, {
+          move: arcade.move,
+          action: arcade.action,
+          leave: closeArcade,
+        });
         return;
       }
 

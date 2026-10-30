@@ -263,12 +263,12 @@ export function drawArcadeScreen(
       c,
       s.pending
         ? "Saving…"
-        : s.local
-          ? "Practice · Arrows / WASD"
-          : "Saved · Arrows / WASD",
+        : s.page === "leaders"
+          ? "Enter / Esc · Back to game"
+          : (s.local ? "Practice · " : "") + "Arrows / WASD · N new · L scores",
       40,
       616,
-      17,
+      16,
     );
     button(c, [382, 600, 90, 32], "Leave");
   } else text(c, footer, 256, 616, 17, INK, "center");
@@ -359,6 +359,19 @@ export function drawArcadeScreen(
       256,
       326,
       23,
+      INK,
+      "center",
+    );
+    text(
+      c,
+      s.page === "confirm"
+        ? "Enter / Space starts · Esc keeps this game"
+        : won
+          ? "Enter / Space to keep going"
+          : "Enter / Space for a new game",
+      256,
+      352,
+      16,
       INK,
       "center",
     );
