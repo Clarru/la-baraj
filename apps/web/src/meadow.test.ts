@@ -112,7 +112,10 @@ describe("density and geometry", () => {
     const n = g.attributes.normal; for (let i = 0; i < n.count; i++) expect(n.getY(i)).toBeGreaterThan(0.7);
     const fuv = f.attributes.uv, fx = new Set<number>(); let fMaxY = 0;
     for (let i = 0; i < fuv.count; i++) { fx.add(fuv.getX(i)); fMaxY = Math.max(fMaxY, fuv.getY(i)); }
-    expect([...fx].sort()).toEqual([0, 0.5, 1]); expect(fMaxY).toBe(1);
+    expect([...fx].sort()).toEqual([0, 1]); expect(fMaxY).toBe(1);
+    f.computeBoundingBox();
+    expect(f.boundingBox!.max.y).toBeLessThanOrEqual(0.26); expect(f.boundingBox!.max.y).toBeGreaterThanOrEqual(0.2);
+    expect(FLOWER_COLOURS).toHaveLength(5); expect(FLOWER_COLOURS).toContain("#c8402f");
   });
   it("gives each material kind its own program key and shared uniforms", () => {
     const a = meadowMaterial("grass"), b = meadowMaterial("flower");

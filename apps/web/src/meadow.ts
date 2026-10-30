@@ -99,7 +99,7 @@ export type ChunkSample = {
   flowers: Float32Array;
   flowerCount: number;
 };
-export const FLOWER_COLOURS: readonly string[] = ["#f3e5c9", "#7e648d", "#a8622b", "#d8b85a"];
+export const FLOWER_COLOURS: readonly string[] = ["#f4f1e6", "#e8c23a", "#7a6fb5", "#c8402f", "#d987a8"];
 
 function hashString(s: string): number {
   let h = 2166136261;
@@ -208,12 +208,9 @@ export function finishChunk(build: ChunkBuild): ChunkSample {
       for (let t = 0; t < fn && flowerCount < settings.flowersPerChunk; t++) {
         const u = random(), v = random();
         const x = cx + u * step, z = cz + v * step;
-        const yaw = random() * Math.PI * 2, scale = 0.7 + 0.6 * random(), rnd = random(), other = random();
+        const yaw = random() * Math.PI * 2, scale = 0.8 + 0.5 * random(), rnd = random(), other = random();
         const altColour = random();
-        const clusterRoll = random();
-        // Fixed draw budget for up to two cluster blooms, so the stream does not depend on branches.
-        const cl = [0, 1].map(() => ({ ang: random() * Math.PI * 2, dist: 0.08 + 0.22 * random(), yaw: random() * Math.PI * 2, scale: 0.5 + 0.15 * random(), rnd: random() }));
-        const extra = 1 + Math.floor(random() * 2);
+        // Every candidate consumes a fixed 7 random() draws (u, v, yaw, scale, rnd, other, altColour), all before the patch test, so the stream never depends on branches.
         if (flowerPatch(x, z) <= 0.5) continue;
         const dominant = Math.floor(hash2(Math.floor(x / 12), Math.floor(z / 12)) * FLOWER_COLOURS.length) % FLOWER_COLOURS.length;
         const colour = other < 0.2 ? Math.floor(altColour * FLOWER_COLOURS.length) : dominant;
@@ -225,22 +222,6 @@ export function finishChunk(build: ChunkBuild): ChunkSample {
         flowers[o + 4] = scale;
         flowers[o + 5] = rnd;
         flowers[o + 6] = colour;
-        if (clusterRoll < 0.35) {
-          for (let e = 0; e < extra && flowerCount < settings.flowersPerChunk; e++) {
-            const c = cl[e];
-            // Clamp to the validated cell so cluster blooms never leave known-good ground.
-            const cu = Math.min(1, Math.max(0, u + (Math.cos(c.ang) * c.dist) / step));
-            const cv = Math.min(1, Math.max(0, v + (Math.sin(c.ang) * c.dist) / step));
-            const q2 = flowerCount++ * 7;
-            flowers[q2] = cx + cu * step;
-            flowers[q2 + 1] = heightAt(cu, cv);
-            flowers[q2 + 2] = cz + cv * step;
-            flowers[q2 + 3] = c.yaw;
-            flowers[q2 + 4] = c.scale;
-            flowers[q2 + 5] = c.rnd;
-            flowers[q2 + 6] = colour;
-          }
-        }
       }
     }
   }
@@ -300,13 +281,12 @@ export function tuftGeometry(): THREE.BufferGeometry {
 
 export function flowerGeometry(): THREE.BufferGeometry {
   const tris: Parameters<typeof build>[0] = [];
-  const top = 0.4, stem = top, sw = 0.014;
-  // uv.y is the height fraction; petals tilt above the stem top, so clamp to keep it within [0, 1].
-  const mk = (x: number, y: number, z: number, m: number): Vert => ({ p: [x, y, z], uv: [m, Math.min(1, y / top)] });
+  const top = 0.22;
+  const mk = (x: number, y: number, z: number, m: number): Vert => ({ p: [x, y, z], uv: [m, Math.min(1, Math.max(0, y / top))] });
   const orient = (a: Vert, b: Vert, c: Vert): [number, number, number] => {
     const u = [b.p[0] - a.p[0], b.p[1] - a.p[1], b.p[2] - a.p[2]];
     const w = [c.p[0] - a.p[0], c.p[1] - a.p[1], c.p[2] - a.p[2]];
-    let nx = u[1] * w[2] - u[2] * w[1], ny = u[2] * w[0] - u[0] * w[2], nz = u[0] * w[1] - u[1] * w[0];
+    const nx = u[1] * w[2] - u[2] * w[1], ny = u[2] * w[0] - u[0] * w[2], nz = u[0] * w[1] - u[1] * w[0];
     const len = Math.hypot(nx, ny, nz) || 1;
     const sign = ny < 0 ? -1 : 1;
     return [(nx / len) * sign, (ny / len) * sign, (nz / len) * sign];
@@ -316,48 +296,34 @@ export function flowerGeometry(): THREE.BufferGeometry {
     const n = orient(bl, br, tl);
     tris.push({ v: [bl, br, tl], n }, { v: [br, tr, tl], n });
   };
-  for (const [ax, az] of [[1, 0], [0, 1]]) {
-    const n = softNormal(-az, ax);
-    const a = mk(-ax * sw, 0, -az * sw, 0), b = mk(ax * sw, 0, az * sw, 0), c = mk(-ax * sw, stem, -az * sw, 0), d = mk(ax * sw, stem, az * sw, 0);
-    tris.push({ v: [a, b, c], n }, { v: [b, d, c], n });
-  }
-  // Leaves: opposite sides, ~35 degrees above horizontal.
-  const tilt = (35 * Math.PI) / 180, leafLen = 0.07, leafW = 0.03;
-  [[0.14, 0], [0.24, Math.PI]].forEach(([y, yaw], idx) => {
-    const a = yaw + idx * 0.5;
-    const dx = Math.cos(a), dz = Math.sin(a), px = -dz, pz = dx;
-    const hx = Math.cos(tilt) * leafLen, hy = Math.sin(tilt) * leafLen;
+  // Leafy base: 3 leaves at 120 degree steps, 0.13 long x 0.05 wide, y 0.01 -> 0.06 (~22 degrees up).
+  const leafLen = 0.13, leafW = 0.05, leafRise = 0.05, leafRun = Math.sqrt(leafLen * leafLen - leafRise * leafRise);
+  for (let k = 0; k < 3; k++) {
+    const a = (k / 3) * Math.PI * 2;
+    const dx = Math.cos(a), dz = Math.sin(a), px = -dz, pz = dx, hw = leafW / 2;
     quad(
-      mk(dx * sw - px * leafW / 2, y, dz * sw - pz * leafW / 2, 0),
-      mk(dx * sw + px * leafW / 2, y, dz * sw + pz * leafW / 2, 0),
-      mk(dx * (sw + hx) - px * leafW / 2, y + hy, dz * (sw + hx) - pz * leafW / 2, 0),
-      mk(dx * (sw + hx) + px * leafW / 2, y + hy, dz * (sw + hx) + pz * leafW / 2, 0),
+      mk(-px * hw, 0.01, -pz * hw, 0), mk(px * hw, 0.01, pz * hw, 0),
+      mk(dx * leafRun - px * hw, 0.01 + leafRise, dz * leafRun - pz * hw, 0), mk(dx * leafRun + px * hw, 0.01 + leafRise, dz * leafRun + pz * hw, 0),
     );
+  }
+  // Blooms: two crossed quads (0.075 square, 30 degrees off horizontal, opposite tilts) at staggered heights.
+  const heights = [0.14, 0.17, 0.2, 0.16, 0.22], radii = [0.05, 0.07, 0.04, 0.08, 0.06];
+  const size = 0.075, tilt = (30 * Math.PI) / 180, half = size / 2;
+  heights.forEach((cy, b) => {
+    const yaw = (b * 72 * Math.PI) / 180, r = radii[b];
+    const cx = Math.cos(yaw) * r, cz = Math.sin(yaw) * r;
+    for (let q = 0; q < 2; q++) {
+      const ra = yaw + (q * Math.PI) / 2;
+      const wx = Math.cos(ra), wz = Math.sin(ra); // width axis
+      const dx = -wz, dz = wx; // depth axis, tilted up/down by sign
+      const sign = q === 0 ? 1 : -1;
+      const ox = dx * Math.cos(tilt) * half, oz = dz * Math.cos(tilt) * half, oy = sign * Math.sin(tilt) * half;
+      quad(
+        mk(cx - wx * half - ox, cy - oy, cz - wz * half - oz, 1), mk(cx + wx * half - ox, cy - oy, cz + wz * half - oz, 1),
+        mk(cx - wx * half + ox, cy + oy, cz - wz * half + oz, 1), mk(cx + wx * half + ox, cy + oy, cz + wz * half + oz, 1),
+      );
+    }
   });
-  // Centre disc: hexagon fan.
-  const cy = top + 0.002, cr = 0.022;
-  const hub = mk(0, cy, 0, 0.5);
-  const hex = (k: number) => {
-    const a = (k / 6) * Math.PI * 2;
-    return mk(Math.cos(a) * cr, cy, Math.sin(a) * cr, 0.5);
-  };
-  for (let k = 0; k < 6; k++) {
-    const r0 = hex(k), r1 = hex(k + 1);
-    tris.push({ v: [hub, r0, r1], n: orient(hub, r0, r1) });
-  }
-  // Petals: radiate from 0.02 to 0.095, tilted ~12 degrees up, tapering 0.038 -> 0.028.
-  const pt = (12 * Math.PI) / 180, r0 = 0.02, span = 0.075;
-  const rOut = r0 + Math.cos(pt) * span, yOut = top + Math.sin(pt) * span;
-  for (let k = 0; k < 6; k++) {
-    const a = (k / 6) * Math.PI * 2 + 0.26;
-    const dx = Math.cos(a), dz = Math.sin(a), px = -dz, pz = dx;
-    quad(
-      mk(dx * r0 - px * 0.019, top, dz * r0 - pz * 0.019, 1),
-      mk(dx * r0 + px * 0.019, top, dz * r0 + pz * 0.019, 1),
-      mk(dx * rOut - px * 0.014, yOut, dz * rOut - pz * 0.014, 1),
-      mk(dx * rOut + px * 0.014, yOut, dz * rOut + pz * 0.014, 1),
-    );
-  }
   return build(tris);
 }
 
@@ -421,7 +387,7 @@ nonPerturbedNormal = normal;`,
         `#include <color_fragment>\n${
           kind === "grass"
             ? "diffuseColor.rgb *= mix(0.55, 0.98, vMeadow.x);"
-            : "diffuseColor.rgb = mix(mix(vec3(0.30, 0.42, 0.22), vec3(0.95, 0.82, 0.38), step(0.25, vMeadow.x)), diffuseColor.rgb, step(0.75, vMeadow.x));"
+            : "diffuseColor.rgb = mix(vec3(0.30, 0.44, 0.22), diffuseColor.rgb * 1.15, step(0.5, vMeadow.x));"
         }`,
       );
   };
