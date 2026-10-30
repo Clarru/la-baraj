@@ -477,7 +477,8 @@ export class CruceTable {
           "Masa s-a actualizat între timp. Încearcă din nou.",
         );
       const r = structuredClone(this.state),
-        g = r.game;
+        g = r.game,
+        actingMember = r.members[seat]!;
       if (r.deadline !== null && r.deadline <= now)
         throw new CruceError("Timpul a expirat. Așteptăm actualizarea mesei.");
       if (action.kind === "configure") {
@@ -491,10 +492,27 @@ export class CruceTable {
         if (!validCruceSettings(action.settings))
           throw new CruceError("Alege o configurație validă pentru partidă.");
         const active = activeCruceSeats(action.settings.mode);
-        if (r.members.some((m, i) => m && !active.includes(i as CruceSeat)))
+        if (r.members.filter(Boolean).length > active.length)
           throw new CruceError(
-            "Pentru această variantă, locurile care nu se folosesc trebuie eliberate. Schimbați locurile înainte de a aplica regulile.",
+            `Sunt ${r.members.filter(Boolean).length} jucători la masă. Varianta aleasă acceptă ${active.length}; alege o variantă cu suficiente locuri.`,
           );
+        const placed: (Member | null)[] = [null, null, null, null];
+        r.members.forEach((member, index) => {
+          if (member && active.includes(index as CruceSeat))
+            placed[index] = member;
+        });
+        r.members.forEach((member, index) => {
+          if (!member || active.includes(index as CruceSeat)) return;
+          const free = active.filter((seat) => !placed[seat]);
+          free.sort(
+            (a, b) =>
+              Math.min(Math.abs(a - index), 4 - Math.abs(a - index)) -
+              Math.min(Math.abs(b - index), 4 - Math.abs(b - index)),
+          );
+          placed[free[0]] = member;
+        });
+        r.members = placed;
+        r.deadline = null;
         r.readySince = this.state.revision + 1;
         r.game = freshCruce(action.settings);
         r.members.forEach((m) => {
@@ -539,10 +557,7 @@ export class CruceTable {
           r.readySince = this.state.revision + 1;
         this.clock(r, now);
       }
-      r.members[seat]!.requests = [
-        ...r.members[seat]!.requests,
-        requestId,
-      ].slice(-32);
+      actingMember.requests = [...actingMember.requests, requestId].slice(-32);
       await this.commit(r);
     });
   }

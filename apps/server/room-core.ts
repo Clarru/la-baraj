@@ -215,6 +215,27 @@ export class RoomCore {
       const cruceSeat = cruceSeatSide(c.state!.player.seatId);
       const side = planesSeatSide(c.state!.player.seatId),
         actor = this.tableActor(c);
+      const actualCruce = actor ? this.cruce.sideFor(actor) : null;
+      if (
+        cruceSeat !== null &&
+        actualCruce !== null &&
+        actualCruce !== cruceSeat
+      ) {
+        c.setState({
+          ...c.state!,
+          player: {
+            ...c.state!.player,
+            ...cruceSeatPose(actualCruce),
+            seatId: CRUCE_SEATS[actualCruce],
+            activity: "sit",
+            animation: "Activity_Sit",
+            posture: "standing",
+          },
+        });
+        changed = true;
+        this.broadcast({ type: "pose", player: c.state!.player }, c);
+        continue;
+      }
       if (
         (side !== null && (!actor || this.planes.sideFor(actor) !== side)) ||
         (cruceSeat !== null &&
@@ -450,6 +471,21 @@ export class RoomCore {
         player.speed =
           player.boat.velocity[0] * Math.sin(player.yaw) +
           player.boat.velocity[1] * Math.cos(player.yaw);
+      }
+      // A pose queued before an automatic reseat cannot move the actor back.
+      const tableActor = this.tableActor(connection);
+      const tableSeat = tableActor ? this.cruce.sideFor(tableActor) : null;
+      if (tableSeat !== null) {
+        Object.assign(player, cruceSeatPose(tableSeat));
+        player.seatId = CRUCE_SEATS[tableSeat];
+        player.vehicle = "none";
+        if (player.boat) player.boat = { ...player.boat, velocity: [0, 0] };
+        player.speed = 0;
+        player.posture = "standing";
+        if (!["sit", "sit-down", "stand-up"].includes(player.activity)) {
+          player.activity = "sit";
+          player.animation = "Activity_Sit";
+        }
       }
       connection.setState({ ...current, pose, player, boatPoseAt: now });
       resolveRoomBoatCollision(connection, current, this.active(), now);

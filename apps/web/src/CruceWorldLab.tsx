@@ -30,6 +30,7 @@ type Peer = {
 };
 export function CruceWorldLab({ room }: { room: MultiplayerRoom }) {
   const [toolsVisible, setToolsVisible] = useState(true);
+  const [testSeat, setTestSeat] = useState<CruceSeat>(0);
   const [contacts, setContacts] = useState("[]");
   useEffect(() => {
     const timer = setInterval(
@@ -206,12 +207,29 @@ export function CruceWorldLab({ room }: { room: MultiplayerRoom }) {
       >
         {contacts}
       </output>
+      <label>
+        Loc de test
+        <select
+          value={testSeat}
+          onChange={(e) => setTestSeat(Number(e.target.value) as CruceSeat)}
+        >
+          {["sud", "vest", "nord", "est"].map((label, index) => (
+            <option key={label} value={index}>
+              {label}
+            </option>
+          ))}
+        </select>
+      </label>
       <button
         onClick={() =>
           requestCruceTestMove([
-            CRUCE_TABLE.x,
+            CRUCE_TABLE.x -
+              Math.sin((testSeat * Math.PI) / 2) *
+                (CRUCE_TABLE.benchRadius + 0.85),
             CRUCE_TABLE.ground,
-            CRUCE_TABLE.z + 2.45,
+            CRUCE_TABLE.z +
+              Math.cos((testSeat * Math.PI) / 2) *
+                (CRUCE_TABLE.benchRadius + 0.85),
           ])
         }
       >

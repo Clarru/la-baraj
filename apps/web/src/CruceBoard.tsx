@@ -201,13 +201,9 @@ export default function CruceBoard({
     ),
   ];
   const lobby = v ? cruceLobby(v) : null;
-  const incompatibleSeats = v
-    ? v.players.flatMap((p, s) =>
-        p && !activeCruceSeats(draft.mode).includes(s as CruceSeat)
-          ? [p.name]
-          : [],
-      )
-    : [];
+  const tooManyPlayers = Boolean(
+    v && v.players.filter(Boolean).length > activeCruceSeats(draft.mode).length,
+  );
   const requestLeave = () => {
     if (v && !["lobby", "finished", "round-end"].includes(v.phase))
       setConfirmLeave(true);
@@ -612,7 +608,7 @@ export default function CruceBoard({
                           disabled ||
                           JSON.stringify(draft) ===
                             JSON.stringify(v.settings) ||
-                          incompatibleSeats.length > 0
+                          tooManyPlayers
                         }
                         onClick={() =>
                           void act({ kind: "configure", settings: draft })
@@ -623,19 +619,20 @@ export default function CruceBoard({
                     )}
                   </div>
                 )}
-                {between && you === v.host && incompatibleSeats.length > 0 && (
+                {between && you === v.host && tooManyPlayers && (
                   <p className="cruce-settings-help" role="status">
-                    Pentru varianta aleasă trebuie să schimbe locul:{" "}
-                    {incompatibleSeats.join(", ")}. În 2 se folosesc locurile
-                    spre mal și spre lac; în 3 rămâne liber locul din dreapta.
+                    Sunt {v.players.filter(Boolean).length} jucători la masă.
+                    Varianta aleasă acceptă{" "}
+                    {activeCruceSeats(draft.mode).length}; alege o variantă cu
+                    suficiente locuri.
                   </p>
                 )}
                 {between &&
                   you === v.host &&
                   JSON.stringify(draft) !== JSON.stringify(v.settings) && (
                     <p className="cruce-settings-help">
-                      Aplică regulile înainte să apeși „Pregătit”. Toți
-                      jucătorii vor confirma din nou.
+                      Aplică regulile. Locurile se aranjează automat pentru
+                      varianta aleasă, apoi toți jucătorii confirmă din nou.
                     </p>
                   )}
                 {(v.phase === "round-end" ||
