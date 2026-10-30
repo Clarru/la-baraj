@@ -1,5 +1,47 @@
 import type { Lighting } from "./day-night";
 import { lightingAt } from "./day-night";
+import { BOAT_HULL } from "../../../packages/shared/boats";
+export type WakeMotion = {
+  x: number;
+  z: number;
+  yaw: number;
+  propeller: boolean;
+};
+/** The wake leaves the trailing hull edge and follows travel, not collision yaw. */
+export function wakeMotion(
+  vx: number,
+  vz: number,
+  target: WakeMotion = { x: 0, z: 0, yaw: 0, propeller: false },
+): WakeMotion {
+  const speed = Math.hypot(vx, vz);
+  if (!Number.isFinite(speed) || speed < 0.1) {
+    target.x = target.z = target.yaw = 0;
+    target.propeller = false;
+    return target;
+  }
+  let support = Infinity,
+    x = 0,
+    z = 0,
+    count = 0;
+  for (const p of BOAT_HULL) {
+    const d = p[0] * vx + p[1] * vz;
+    if (d < support - 1e-6) {
+      support = d;
+      x = p[0];
+      z = p[1];
+      count = 1;
+    } else if (Math.abs(d - support) < 1e-6) {
+      x += p[0];
+      z += p[1];
+      count++;
+    }
+  }
+  target.x = x / count;
+  target.z = z / count;
+  target.yaw = Math.atan2(vx, vz);
+  target.propeller = vz > SPRAY_MIN_SPEED;
+  return target;
+}
 
 /** Below this |speed| (m/s) the jet stream is gone. */
 export const SPRAY_MIN_SPEED = 0.5;

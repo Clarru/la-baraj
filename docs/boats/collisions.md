@@ -5,9 +5,13 @@
 Boat impacts stay horizontal. Equal-mass occupied boats exchange momentum with
 very little rebound (restitution 0.05). A rear impact pushes the boat ahead; a
 head-on impact stops most forward motion; glancing hits retain tangential travel
-with modest friction. Lateral motion decays through water drag. An unoccupied
+with modest friction. Contact-point impulses also transfer yaw momentum; centred
+hits do not invent spin. Lateral and angular motion decay through water drag. An unoccupied
 boat is moored: it is visible and solid, but cannot be sent drifting by a passerby.
 There is no damage, forced dismount, vertical impulse or jump.
+
+See [surface rigid-body details and measurements](rigid-impacts.md) for the
+contact manifold, inertia, compatibility and resource budget.
 
 ## Shared outcome
 
@@ -25,7 +29,7 @@ the physical boat coordinates, rather than the visual feet that can lag the
 physics body by a rendered frame. These details prevent repeated rear contact
 from rewinding boats and making a push appear sticky.
 
-The hull is the same oriented rectangle used by local world collision. Swept
+The hull is the same tapered convex waterline footprint used by local world collision. Swept
 tests include translation and heading changes, with bounded substeps. Contact
 separation and velocities are bounded. Clients preserve their current body
 height when applying a correction and check world obstacles before translating.

@@ -1,32 +1,117 @@
 import type RAPIER from "@dimforge/rapier3d-compat";
-import { BOAT_DIMENSIONS } from "./boat-geometry";
+import {
+  BOAT_HULL,
+  boatHullPoints,
+  resolveBoatWallImpact,
+  type BoatPose,
+  type Vec2,
+} from "../../../packages/shared/boats";
 import { LAKE_LEVEL } from "./swim-motion";
 import { applyBoatImpact, type BoatMotionState } from "./boat-motion";
-import type { BoatPose } from "../../../packages/shared/boats";
-
-const { beam, bowExtent, sternExtent } = BOAT_DIMENSIONS;
-/** Hull box: full beam and length, 0.7 m tall (world y 0.10..0.80, clearing the 0.65..0.89 dock deck slab), riding above the lakebed. */
-const HALF_EXTENTS = { x: beam / 2, y: 0.35, z: (bowExtent + sternExtent) / 2 };
-/** The hull midpoint lies this far forward of the pivot (the boat origin). */
-const CENTRE_FORWARD = (bowExtent - sternExtent) / 2;
-/** Box centre height: its 0.05 m underside clears a deep lakebed, so open water never drags. */
-const CENTRE_Y = LAKE_LEVEL + 0.4;
-/** Extra distance swept past this frame's motion, so the hull stops short of contact. */
-const LOOK_AHEAD = 0.3;
-/** Limit each conservative angular sweep to about one degree. */
-const TURN_STEP = 0.02;
-const HULL_RADIUS = Math.hypot(beam / 2, Math.max(bowExtent, sternExtent));
-// Other boats use the shared room response, rather than an infinite-mass
-// local stop. Their moored colliders remain solid to walking/swimming players.
+const CENTRE_Y = LAKE_LEVEL + 0.4,
+  LOOK_AHEAD = 0.06,
+  TURN_STEP = 0.02;
+const RADIUS = Math.max(...BOAT_HULL.map((p) => Math.hypot(...p)));
 const worldObstacle = (c: RAPIER.Collider) =>
   !(c.parent()?.userData as { remoteBoat?: boolean } | undefined)?.remoteBoat;
-
-/**
- * Test the complete bow/stern sweep before accepting a new heading. Each
- * midpoint box is expanded by the furthest any hull point can travel during
- * that angular interval, covering thin obstacles between the sampled poses.
- * Translation is checked separately, after the heading has been accepted.
- */
+/** Triangulated convex prism; explicit indices avoid rebuilding a convex hull per query. */
+export function boatPrism(padding = 0, centreY = 0) {
+  const points = boatHullPoints({ position: [0, 0], yaw: 0 }, padding),
+    n = points.length;
+  const vertices = new Float32Array(n * 6),
+    indices: number[] = [];
+  for (let layer = 0; layer < 2; layer++)
+    for (let i = 0; i < n; i++)
+      vertices.set(
+        [points[i][0], centreY + (layer === 0 ? -0.35 : 0.35), points[i][1]],
+        (layer * n + i) * 3,
+      );
+  for (let i = 1; i < n - 1; i++)
+    indices.push(0, i, i + 1, n, n + i + 1, n + i);
+  for (let i = 0; i < n; i++) {
+    const j = (i + 1) % n;
+    indices.push(i, n + i, j, n + i, n + j, j);
+  }
+  return { vertices, indices: new Uint32Array(indices) };
+}
+export const PARKED_BOAT_VERTICES = boatPrism(0, 0.4).vertices;
+/** Disabled remote bodies can retain Rapier contact candidates. Mask the hull
+ * explicitly so occupied boats receive only the server's boat response. */
+export function setRemoteBoatCollision(
+  body: RAPIER.RigidBody,
+  enabled: boolean,
+) {
+  for (let i = 0; i < body.numColliders(); i++)
+    body.collider(i).setCollisionGroups(enabled ? 0xffffffff : 0);
+  body.setEnabled(enabled);
+}
+const base = boatPrism();
+const shapes = new WeakMap<object, Map<number, RAPIER.ConvexPolyhedron>>();
+function hull(rapier: typeof RAPIER, padding = 0) {
+  const key = Math.ceil(padding / 0.002) * 0.002; // round upward: still conservative
+  let cache = shapes.get(rapier);
+  if (!cache) {
+    cache = new Map();
+    shapes.set(rapier, cache);
+  }
+  let shape = cache.get(key);
+  if (!shape) {
+    const p = key ? boatPrism(key) : base;
+    shape = new rapier.ConvexPolyhedron(p.vertices, p.indices);
+    cache.set(key, shape);
+  }
+  return shape;
+}
+type Query = {
+  x: number;
+  z: number;
+  yaw: number;
+  dx: number;
+  dz: number;
+  exclude: RAPIER.RigidBody;
+};
+export function boatHullHit(
+  world: RAPIER.World,
+  rapier: typeof RAPIER,
+  input: Query,
+) {
+  const { x, z, yaw, dx, dz, exclude } = input,
+    distance = Math.hypot(dx, dz);
+  if (!(distance > 1e-6) || ![x, z, yaw].every(Number.isFinite)) return null;
+  const hit = world.castShape(
+    { x, y: CENTRE_Y, z },
+    { x: 0, y: Math.sin(yaw / 2), z: 0, w: Math.cos(yaw / 2) },
+    { x: dx / distance, y: 0, z: dz / distance },
+    hull(rapier),
+    0,
+    distance + LOOK_AHEAD,
+    false,
+    rapier.QueryFilterFlags.EXCLUDE_SENSORS,
+    undefined,
+    undefined,
+    exclude,
+    worldObstacle,
+  );
+  if (!hit) return null;
+  const length = Math.hypot(hit.normal1.x, hit.normal1.z);
+  return {
+    collider: hit.collider,
+    point: [hit.witness1.x, hit.witness1.z] as Vec2,
+    normal:
+      length > 0.1
+        ? ([-hit.normal1.x / length, -hit.normal1.z / length] as Vec2)
+        : null,
+    distance: hit.time_of_impact,
+  };
+}
+export function boatHullBlocked(
+  world: RAPIER.World,
+  rapier: typeof RAPIER,
+  input: Query,
+) {
+  return boatHullHit(world, rapier, input) !== null;
+}
+/** Full angular sweep: padded midpoint hulls conservatively cover every interval. */
 export function boatTurnBlocked(
   world: RAPIER.World,
   rapier: typeof RAPIER,
@@ -37,7 +122,7 @@ export function boatTurnBlocked(
     toYaw: number;
     exclude: RAPIER.RigidBody;
   },
-): boolean {
+) {
   const { x, z, fromYaw, toYaw, exclude } = input;
   if (![x, z, fromYaw, toYaw].every(Number.isFinite)) return true;
   const delta = Math.atan2(
@@ -45,23 +130,15 @@ export function boatTurnBlocked(
     Math.cos(toYaw - fromYaw),
   );
   if (delta === 0) return false;
-  const steps = Math.ceil(Math.abs(delta) / TURN_STEP);
-  const step = delta / steps;
-  const padding = 2 * HULL_RADIUS * Math.sin(Math.abs(step) / 4);
-  const shape = new rapier.Cuboid(
-    HALF_EXTENTS.x + padding,
-    HALF_EXTENTS.y,
-    HALF_EXTENTS.z + padding,
-  );
+  const steps = Math.ceil(Math.abs(delta) / TURN_STEP),
+    step = delta / steps,
+    padding = 2 * RADIUS * Math.sin(Math.abs(step) / 4),
+    shape = hull(rapier, padding);
   for (let i = 0; i < steps; i++) {
     const yaw = fromYaw + (i + 0.5) * step;
     if (
       world.intersectionWithShape(
-        {
-          x: x + Math.sin(yaw) * CENTRE_FORWARD,
-          y: CENTRE_Y,
-          z: z + Math.cos(yaw) * CENTRE_FORWARD,
-        },
+        { x, y: CENTRE_Y, z },
         { x: 0, y: Math.sin(yaw / 2), z: 0, w: Math.cos(yaw / 2) },
         shape,
         rapier.QueryFilterFlags.EXCLUDE_SENSORS,
@@ -75,51 +152,31 @@ export function boatTurnBlocked(
   }
   return false;
 }
-
-/**
- * Whether the driven hull at pivot (x, z) facing yaw would hit a solid collider
- * (dock, piling, terrain) moving by (dx, dz) this frame. The driver's own body
- * (`exclude`) and sensors never block.
- */
-export function boatHullBlocked(
-  world: RAPIER.World,
-  rapier: typeof RAPIER,
-  input: {
-    x: number;
-    z: number;
-    yaw: number;
-    dx: number;
-    dz: number;
-    exclude: RAPIER.RigidBody;
-  },
-): boolean {
-  const { x, z, yaw, dx, dz, exclude } = input;
-  const distance = Math.hypot(dx, dz);
-  if (!(distance > 1e-6) || ![x, z, yaw].every(Number.isFinite)) return false;
-  const forwardX = Math.sin(yaw),
-    forwardZ = Math.cos(yaw);
-  const hit = world.castShape(
+/** Same contact-point response against a dock/piling, with no vertical impulse. */
+export function applyBoatWorldImpact(
+  motion: BoatMotionState,
+  position: Vec2,
+  point: Vec2,
+  normal: Vec2,
+) {
+  const result = resolveBoatWallImpact(
     {
-      x: x + forwardX * CENTRE_FORWARD,
-      y: CENTRE_Y,
-      z: z + forwardZ * CENTRE_FORWARD,
+      position,
+      yaw: motion.yaw,
+      velocity: [
+        Math.sin(motion.yaw) * motion.speed + motion.driftX,
+        Math.cos(motion.yaw) * motion.speed + motion.driftZ,
+      ],
+      angularVelocity: motion.turnRate,
+      rudder: motion.steer,
+      moored: false,
     },
-    { x: 0, y: Math.sin(yaw / 2), z: 0, w: Math.cos(yaw / 2) },
-    { x: dx / distance, y: 0, z: dz / distance },
-    new rapier.Cuboid(HALF_EXTENTS.x, HALF_EXTENTS.y, HALF_EXTENTS.z),
-    0,
-    distance + LOOK_AHEAD,
-    false,
-    rapier.QueryFilterFlags.EXCLUDE_SENSORS,
-    undefined,
-    undefined,
-    exclude,
-    worldObstacle,
+    point,
+    normal,
   );
-  return hit !== null;
+  applyBoatImpact(motion, result);
 }
-
-/** Apply only horizontal momentum; world obstacles take precedence over separation. */
+/** Physical server correction; shore geometry wins and y/vertical speed are preserved. */
 export function applyBoatBodyImpact(
   world: RAPIER.World,
   rapier: typeof RAPIER,
@@ -138,17 +195,19 @@ export function applyBoatBodyImpact(
     exclude: body,
   });
   if (!blocked) body.setTranslation({ x, y: p.y, z }, true);
-  const at = body.translation();
-  const yaw = boatTurnBlocked(world, rapier, {
-    x: at.x,
-    z: at.z,
-    fromYaw: motion.yaw,
-    toYaw: boat.yaw,
-    exclude: body,
-  })
-    ? motion.yaw
-    : boat.yaw;
-  applyBoatImpact(motion, { ...boat, yaw });
+  const at = body.translation(),
+    blockedTurn = boatTurnBlocked(world, rapier, {
+      x: at.x,
+      z: at.z,
+      fromYaw: motion.yaw,
+      toYaw: boat.yaw,
+      exclude: body,
+    });
+  applyBoatImpact(motion, {
+    ...boat,
+    yaw: blockedTurn ? motion.yaw : boat.yaw,
+    angularVelocity: blockedTurn ? 0 : boat.angularVelocity,
+  });
   const v = body.linvel();
   body.setLinvel(
     {

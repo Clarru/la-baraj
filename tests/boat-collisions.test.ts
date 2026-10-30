@@ -5,6 +5,7 @@ import {
   advanceBoat,
   boatVelocity,
   createBoatMotionState,
+  setBoatVelocity,
 } from "../apps/web/src/boat-motion";
 import {
   RoomCore,
@@ -71,10 +72,68 @@ const pose = (z: number, vz = 0, yaw = 0, revision = 0): PlayerPose => ({
   vehicle: "boat",
   posture: "standing",
   speed: vz,
-  boat: { position: [0, z], velocity: [0, vz], yaw },
+  boat: {
+    position: [0, z],
+    velocity: [0, vz],
+    yaw,
+    angularVelocity: 0,
+    rudder: 0,
+  },
   boatImpactRevision: revision,
 });
 describe("shared boat authority", () => {
+  it("uses physical yaw rather than a smoothed visual facing and preserves rotational state", async () => {
+    const f = await fixture(),
+      packet = pose(0, 0);
+    packet.yaw = 0.4;
+    packet.boat!.yaw = 0.2;
+    packet.boat!.angularVelocity = 0.3;
+    packet.boat!.rudder = 0.5;
+    await f.send(f.a, packet, 0);
+    expect(f.a.state!.player.yaw).toBeCloseTo(0.2);
+    expect(f.a.state!.player.boat).toMatchObject({
+      angularVelocity: 0.3,
+      rudder: 0.5,
+    });
+  });
+  it("sends contact-point yaw to modern drivers while keeping an older driver rotation locked", async () => {
+    const f = await fixture();
+    const first = pose(0, 8);
+    first.position[0] = 0.7;
+    first.boat!.position[0] = 0.7;
+    await f.send(f.a, first, 0);
+    await f.send(f.b, pose(7), 0);
+    const next = {
+      ...first,
+      position: [0.7, 0.05, 1.6] as [number, number, number],
+      boat: { ...first.boat!, position: [0.7, 1.6] as [number, number] },
+    };
+    await f.send(f.a, next, 200);
+    expect(
+      Math.abs(f.impacts(f.b).at(-1)!.boat.angularVelocity!),
+    ).toBeGreaterThan(0.05);
+    const legacy = await fixture();
+    const old = pose(7);
+    delete old.boat!.angularVelocity;
+    delete old.boat!.rudder;
+    await legacy.send(legacy.a, first, 0);
+    await legacy.send(legacy.b, old, 0);
+    await legacy.send(legacy.a, next, 200);
+    expect(
+      legacy.impacts(legacy.b).at(-1)!.boat.angularVelocity,
+    ).toBeUndefined();
+    expect(legacy.b.closed).toBe(false);
+  });
+  it("propagates a collision into a third occupied boat with one final correction per owner", async () => {
+    const f = await fixture();
+    await f.send(f.a, pose(0, 8), 0);
+    await f.send(f.b, pose(6.4), 0);
+    await f.send(f.observer, pose(12.8), 0);
+    await f.send(f.a, pose(1.6, 8), 200);
+    for (const c of [f.a, f.b, f.observer])
+      expect(f.impacts(c)).toHaveLength(1);
+    expect(f.impacts(f.observer)[0].boat.velocity[1]).toBeGreaterThan(1);
+  });
   it("uses the physical boat position instead of lagged visual feet for collision state", async () => {
     const f = await fixture();
     const packet = pose(1.6, 8);
@@ -83,79 +142,112 @@ describe("shared boat authority", () => {
     expect(f.a.state!.player.position).toEqual([0, 0.05, 1.6]);
     expect(f.a.state!.player.boat!.position).toEqual([0, 1.6]);
   });
-  it("runs a rear-end push through both real physics bodies without launch or dismount", async () => {
-    await RAPIER.init();
-    const f = await fixture();
-    const runners = [f.a, f.b].map((client, i) => {
-      const world = new RAPIER.World({ x: 0, y: 0, z: 0 });
-      const body = world.createRigidBody(
-        RAPIER.RigidBodyDesc.dynamic().setTranslation(0, 0.8, i * 10),
-      );
-      world.createCollider(RAPIER.ColliderDesc.capsule(0.35, 0.3), body);
-      const motion = createBoatMotionState(0);
-      motion.speed = i === 0 ? 8 : 0;
-      return { client, world, body, motion, revision: 0 };
-    });
-    try {
-      const publish = async (r: (typeof runners)[number], now: number) => {
-        const p = r.body.translation(),
-          v = r.body.linvel();
-        await f.send(
-          r.client,
-          {
-            ...pose(p.z, v.z, 0, r.revision),
-            boat: { position: [p.x, p.z], yaw: 0, velocity: [v.x, v.z] },
-          },
-          now,
+  it.each([
+    { label: "legacy rear push", offset: 0, modern: false },
+    { label: "modern off-centre push", offset: 0.7, modern: true },
+  ])(
+    "runs $label through real physics bodies without launch, dismount or persistent braking",
+    async ({ offset, modern }) => {
+      await RAPIER.init();
+      const f = await fixture();
+      const runners = [f.a, f.b].map((client, i) => {
+        const world = new RAPIER.World({ x: 0, y: 0, z: 0 });
+        const body = world.createRigidBody(
+          RAPIER.RigidBodyDesc.dynamic().setTranslation(
+            i === 0 ? offset : 0,
+            0.8,
+            i * 10,
+          ),
         );
-      };
-      for (const r of runners) await publish(r, 0);
-      for (let frame = 1; frame <= 480; frame++) {
-        for (const [i, r] of runners.entries()) {
-          advanceBoat(r.motion, {
-            throttle: i === 0 && frame < 120 ? 1 : 0,
-            steer: 0,
-            dt: 1 / 60,
-          });
-          r.body.setLinvel(
-            boatVelocity({
-              yaw: 0,
-              speed: r.motion.speed,
-              driftX: r.motion.driftX,
-              driftZ: r.motion.driftZ,
-              velocityY: r.body.linvel().y,
-              bodyY: r.body.translation().y,
-              time: frame / 60,
-              dt: 1 / 60,
-            }),
-            true,
+        world.createCollider(RAPIER.ColliderDesc.capsule(0.35, 0.3), body);
+        const motion = createBoatMotionState(0);
+        motion.speed = i === 0 ? 8 : 0;
+        body.setLinvel({ x: 0, y: 0, z: motion.speed }, true);
+        return { client, world, body, motion, revision: 0 };
+      });
+      try {
+        const publish = async (r: (typeof runners)[number], now: number) => {
+          const p = r.body.translation(),
+            v = r.body.linvel();
+          await f.send(
+            r.client,
+            {
+              ...pose(p.z, v.z, 0, r.revision),
+              boat: {
+                position: [p.x, p.z],
+                yaw: r.motion.yaw,
+                velocity: [v.x, v.z],
+                ...(modern
+                  ? {
+                      angularVelocity: r.motion.turnRate,
+                      rudder: r.motion.steer,
+                    }
+                  : {}),
+              },
+            },
+            now,
           );
-          r.world.step();
-          expect(Math.abs(r.body.translation().y - 0.8)).toBeLessThan(0.08);
-          expect(
-            Math.hypot(r.body.linvel().x, r.body.linvel().z),
-          ).toBeLessThanOrEqual(12.8 + 0.001);
-        }
-        if (frame % 9 === 0)
-          for (const r of runners) await publish(r, (frame * 1000) / 60);
-        for (const r of runners) {
-          const impact = f.impacts(r.client).at(-1);
-          if (impact && impact.revision > r.revision) {
-            applyBoatBodyImpact(r.world, RAPIER, r.body, r.motion, impact.boat);
-            r.revision = impact.revision;
+        };
+        for (const r of runners) await publish(r, 0);
+        for (let frame = 1; frame <= 480; frame++) {
+          for (const [i, r] of runners.entries()) {
+            const achieved = r.body.linvel();
+            setBoatVelocity(r.motion, [achieved.x, achieved.z]);
+            advanceBoat(r.motion, {
+              throttle: i === 0 && (modern || frame < 120) ? 1 : 0,
+              steer: 0,
+              dt: 1 / 60,
+            });
+            r.body.setLinvel(
+              boatVelocity({
+                yaw: r.motion.yaw,
+                speed: r.motion.speed,
+                driftX: r.motion.driftX,
+                driftZ: r.motion.driftZ,
+                velocityY: r.body.linvel().y,
+                bodyY: r.body.translation().y,
+                time: frame / 60,
+                dt: 1 / 60,
+              }),
+              true,
+            );
+            r.world.step();
+            expect(Math.abs(r.body.translation().y - 0.8)).toBeLessThan(0.08);
+            expect(
+              Math.hypot(r.body.linvel().x, r.body.linvel().z),
+            ).toBeLessThanOrEqual(12.8 + 0.001);
+          }
+          if (frame % 9 === 0)
+            for (const r of runners) await publish(r, (frame * 1000) / 60);
+          for (const r of runners) {
+            const impact = f.impacts(r.client).at(-1);
+            if (impact && impact.revision > r.revision) {
+              applyBoatBodyImpact(
+                r.world,
+                RAPIER,
+                r.body,
+                r.motion,
+                impact.boat,
+              );
+              r.revision = impact.revision;
+            }
           }
         }
+        expect(runners[1].body.translation().z).toBeGreaterThan(20);
+        if (modern) {
+          expect(runners[0].motion.speed).toBeGreaterThan(3);
+          expect(Math.abs(runners[1].motion.yaw)).toBeGreaterThan(0.05);
+        }
+        for (const r of runners) {
+          expect(r.revision).toBeGreaterThan(0);
+          expect(r.client.closed).toBe(false);
+          expect(r.client.state!.player.vehicle).toBe("boat");
+        }
+      } finally {
+        for (const r of runners) r.world.free();
       }
-      expect(runners[1].body.translation().z).toBeGreaterThan(20);
-      for (const r of runners) {
-        expect(r.revision).toBeGreaterThan(0);
-        expect(r.client.closed).toBe(false);
-        expect(r.client.state!.player.vehicle).toBe("boat");
-      }
-    } finally {
-      for (const r of runners) r.world.free();
-    }
-  });
+    },
+  );
   it("sends equal, damped head-on results to drivers and observer without changing height", async () => {
     const f = await fixture();
     await f.send(f.a, pose(0, 8), 0);
@@ -251,6 +343,9 @@ describe("shared boat authority", () => {
       { boat: { ...pose(0).boat, yaw: Infinity } },
       { boatImpactRevision: -1 },
       { boatImpactRevision: 1.5 },
+      { boat: { ...pose(0).boat, angularVelocity: 2 } },
+      { boat: { ...pose(0).boat, angularVelocity: NaN } },
+      { boat: { ...pose(0).boat, rudder: 1.01 } },
     ])
       expect(
         parseClientMessage(

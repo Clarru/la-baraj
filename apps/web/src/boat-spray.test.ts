@@ -1,11 +1,29 @@
 import { describe, expect, it } from "vitest";
 import { lightingAt } from "./day-night";
 import { BOAT_TUNING } from "./boat-motion";
-import { spraySize, sprayIntensity } from "./boat-spray.ts";
+import { spraySize, sprayIntensity, wakeMotion } from "./boat-spray.ts";
+import { BOAT_DIMENSIONS } from "./boat-geometry";
 
 const cruise = BOAT_TUNING.cruise;
 
 describe("boat jet stream", () => {
+  it("trails the correct edge while forward, reversing or sliding sideways", () => {
+    const forward = wakeMotion(0, 8);
+    expect(forward.x).toBe(0);
+    expect(forward.z).toBe(-BOAT_DIMENSIONS.sternExtent);
+    expect(forward.propeller).toBe(true);
+    const reverse = wakeMotion(0, -2);
+    expect(reverse.z).toBe(BOAT_DIMENSIONS.bowExtent);
+    expect(Math.abs(reverse.yaw)).toBe(Math.PI);
+    expect(reverse.propeller).toBe(false);
+    const sliding = wakeMotion(3, 0);
+    expect(sliding.x).toBeLessThan(0);
+    expect(sliding.yaw).toBe(Math.PI / 2);
+    expect(sliding.propeller).toBe(false);
+    const target = wakeMotion(0, 0);
+    expect(wakeMotion(NaN, 0, target)).toBe(target);
+    expect(target.propeller).toBe(false);
+  });
   it("shows nothing below 0.5 m/s", () => {
     for (const speed of [0, 0.2, 0.49, -0.3])
       expect(spraySize(speed, cruise)).toEqual({

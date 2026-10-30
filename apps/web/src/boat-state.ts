@@ -8,6 +8,8 @@ export type BoatState = {
   yaw: number;
   speed: number;
   velocity: [number, number];
+  angularVelocity: number;
+  rudder: number;
 };
 const spawn = boatDockSpawn(0);
 const state: BoatState = {
@@ -16,6 +18,8 @@ const state: BoatState = {
   yaw: spawn.yaw,
   speed: 0,
   velocity: [0, 0],
+  angularVelocity: 0,
+  rudder: 0,
 };
 let placementVersion = 0;
 const placementListeners = new Set<() => void>();
@@ -37,6 +41,8 @@ export function mountBoat(): void {
   state.mounted = true;
   state.speed = 0;
   state.velocity = [0, 0];
+  state.angularVelocity = 0;
+  state.rudder = 0;
   placementChanged();
 }
 export function parkBoat(
@@ -48,16 +54,22 @@ export function parkBoat(
   state.yaw = yaw;
   state.speed = 0;
   state.velocity = [0, 0];
+  state.angularVelocity = 0;
+  state.rudder = 0;
   placementChanged();
 }
 export function updateBoatMotion(
   yaw: number,
   speed: number,
   velocity: [number, number] = [Math.sin(yaw) * speed, Math.cos(yaw) * speed],
+  angularVelocity = 0,
+  rudder = 0,
 ): void {
   state.yaw = yaw;
   state.speed = speed;
   state.velocity = velocity;
+  state.angularVelocity = angularVelocity;
+  state.rudder = rudder;
 }
 /** Return the boat to the dock nearest the player's home. */
 export function resetBoatToDock(homeX: number, homeIndex?: number): void {
