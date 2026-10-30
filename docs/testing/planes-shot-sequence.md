@@ -12,6 +12,8 @@ The setup/rematch sidebar restores its missing scoped styles: distinct selected-
 
 ## Checks
 
-- Node24 TypeScript, production build and377 frontend tests pass.
+- Node24 TypeScript, production build and381 frontend tests pass.
 - DOM lifecycle tests cover thirty repeated clicks without resending/restarting, an incoming shot arriving during an outgoing flight, three coalesced accepted shots, queue completion before victory, cockpit duration, countdown3–2–1, historical/reconnect suppression and new-round cleanup.
 - Browser QA is reserved with the release owner and will be recorded before the PR is ready.
+
+The Game window-capture guard blocks only unmodified Escape/F while a visible board has countdown value1,2,or3. It does not suppress native Tab or browser modifier shortcuts and cannot remain locked on a false/hidden/stale result attribute. Boundary tests cover expiry/unmount. One full-suite run hit the existing weather-freshness timing test; its isolated rerun and the final full suite pass without weather-source changes.

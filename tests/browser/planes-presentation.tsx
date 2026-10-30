@@ -1,5 +1,6 @@
 /** Isolated visual fixture. The actual PlanesBoard and rules; no sockets or saved state. */
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { blockPlanesResultExit } from "../../apps/web/src/planes-input";
 import { createRoot } from "react-dom/client";
 import PlanesBoard from "../../apps/web/src/PlanesBoard";
 import {
@@ -56,6 +57,27 @@ function Review() {
     [open, setOpen] = useState(true),
     [connected, setConnected] = useState(true);
   const [result, setResult] = useState<Shot["result"]>("body");
+  useEffect(() => {
+    const capture = (event: KeyboardEvent) => {
+      if (blockPlanesResultExit(event, open)) return;
+      if (
+        !event.ctrlKey &&
+        !event.metaKey &&
+        !event.altKey &&
+        event.code === "Escape"
+      )
+        setOpen((current) => !current);
+      if (
+        !event.ctrlKey &&
+        !event.metaKey &&
+        !event.altKey &&
+        event.code === "KeyF"
+      )
+        setOpen(false);
+    };
+    window.addEventListener("keydown", capture, true);
+    return () => window.removeEventListener("keydown", capture, true);
+  }, [open]);
   function applyShot(
     before: PlanesView,
     side: 0 | 1,

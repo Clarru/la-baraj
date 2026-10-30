@@ -513,10 +513,7 @@ export default function PlanesBoard({
                   : "Arrange your planes, then get ready.";
   const keyboard = (event: KeyboardEvent) => {
     event.stopPropagation();
-    if (roundResult !== null) {
-      event.preventDefault();
-      return;
-    }
+    if (roundResult !== null) return;
     if (event.key === "Escape") {
       event.preventDefault();
       if (drag.current) cancelDrag();
