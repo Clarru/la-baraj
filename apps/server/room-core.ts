@@ -436,16 +436,16 @@ export class RoomCore {
         player.boat =
           player.vehicle === "boat"
             ? {
-                position: [player.position[0], player.position[2]],
+                position: player.boat.position,
                 yaw: player.yaw,
                 velocity: player.boat.velocity,
               }
             : { ...player.boat, velocity: [0, 0] };
       if (player.vehicle === "boat" && player.boat) {
         player.position = [
-          player.position[0],
+          player.boat.position[0],
           BOAT_WATERLINE,
-          player.position[2],
+          player.boat.position[1],
         ];
         player.speed =
           player.boat.velocity[0] * Math.sin(player.yaw) +

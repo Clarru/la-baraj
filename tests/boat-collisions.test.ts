@@ -75,6 +75,14 @@ const pose = (z: number, vz = 0, yaw = 0, revision = 0): PlayerPose => ({
   boatImpactRevision: revision,
 });
 describe("shared boat authority", () => {
+  it("uses the physical boat position instead of lagged visual feet for collision state", async () => {
+    const f = await fixture();
+    const packet = pose(1.6, 8);
+    packet.position = [0, 0.05, 1.4];
+    await f.send(f.a, packet, 0);
+    expect(f.a.state!.player.position).toEqual([0, 0.05, 1.6]);
+    expect(f.a.state!.player.boat!.position).toEqual([0, 1.6]);
+  });
   it("runs a rear-end push through both real physics bodies without launch or dismount", async () => {
     await RAPIER.init();
     const f = await fixture();
@@ -138,7 +146,7 @@ describe("shared boat authority", () => {
           }
         }
       }
-      expect(runners[1].body.translation().z).toBeGreaterThan(12);
+      expect(runners[1].body.translation().z).toBeGreaterThan(20);
       for (const r of runners) {
         expect(r.revision).toBeGreaterThan(0);
         expect(r.client.closed).toBe(false);

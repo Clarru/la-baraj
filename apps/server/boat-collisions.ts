@@ -58,6 +58,7 @@ export function resolveRoomBoatCollision(
   )
     return;
   const elapsed = now - previous.boatPoseAt;
+  const seconds = elapsed > 0 ? elapsed / 1000 : 0.15;
   const distance = Math.hypot(
     toA.position[0] - fromA.position[0],
     toA.position[1] - fromA.position[1],
@@ -98,6 +99,15 @@ export function resolveRoomBoatCollision(
         fromB.position[1] + fromB.velocity[1] * predict,
       ],
     };
+    // Align both trajectories to the same interval. Using B's last packet
+    // as an interval start can repeatedly rewind two boats moving together.
+    const alignedB: BoatBody = {
+      ...fromB,
+      position: [
+        toB.position[0] - (fromB.moored ? 0 : fromB.velocity[0] * seconds),
+        toB.position[1] - (fromB.moored ? 0 : fromB.velocity[1] * seconds),
+      ],
+    };
     if (
       Math.hypot(
         fromA.position[0] - fromB.position[0],
@@ -106,13 +116,24 @@ export function resolveRoomBoatCollision(
       9 + distance + BOAT_MAX_SPEED * predict
     )
       continue;
-    const hit = sweepBoatImpact(fromA, toA, fromB, toB);
+    const hit = sweepBoatImpact(fromA, toA, alignedB, toB);
     if (hit && (!best || hit.fraction < best.hit.fraction))
       best = { other, hit };
   }
   if (!best) return;
-  apply(driver, best.hit.a, now);
-  apply(best.other, best.hit.b, now);
+  const remaining = seconds * (1 - best.hit.fraction);
+  const finish = (boat: BoatBody): BoatBody =>
+    boat.moored
+      ? boat
+      : {
+          ...boat,
+          position: [
+            boat.position[0] + boat.velocity[0] * remaining,
+            boat.position[1] + boat.velocity[1] * remaining,
+          ],
+        };
+  apply(driver, finish(best.hit.a), now);
+  apply(best.other, finish(best.hit.b), now);
   // The initiating player's final pose is broadcast by RoomCore. Observers
   // receive the other participant's same authoritative result as well.
   const message = JSON.stringify({
