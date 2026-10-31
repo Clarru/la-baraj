@@ -1,3 +1,4 @@
+import { subscribeMobileActions, type ActionKey } from "./mobile-input";
 import { cruceSeatSide } from "../../../packages/shared/cruce-station";
 import {
   useCallback,
@@ -293,7 +294,7 @@ export function WorldActivities({
   }, [clear]);
 
   useEffect(() => {
-    const handle = (event: KeyboardEvent) => {
+    const handle = (event: ActionKey) => {
       const target = event.target;
       if (
         event.repeat ||
@@ -469,8 +470,12 @@ export function WorldActivities({
         } else startLighting(now);
       }
     };
+    const unbindMobile = subscribeMobileActions(handle);
     window.addEventListener("keydown", handle);
-    return () => window.removeEventListener("keydown", handle);
+    return () => {
+      unbindMobile();
+      window.removeEventListener("keydown", handle);
+    };
   }, [paused, commit, camera, lit, startLighting, clear, room, requestSeat]);
 
   useFrame((_, dt) => {

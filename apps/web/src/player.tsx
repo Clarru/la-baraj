@@ -1,3 +1,8 @@
+import {
+  subscribeMobileActions,
+  type ActionKey,
+  mobileKeyDown,
+} from "./mobile-input";
 import { arcadeExitCamera, arcadeFocusCamera } from "./arcade2048-camera";
 import {
   ARCADE_STATION,
@@ -451,7 +456,7 @@ export function Player({
       );
       room.punch(feet.toArray(), Math.atan2(facing.x, facing.z));
     };
-    const down = (e: KeyboardEvent) => {
+    const down = (e: ActionKey) => {
       if (
         e.target instanceof HTMLElement &&
         (e.target.isContentEditable ||
@@ -694,6 +699,10 @@ export function Player({
         keys.current.add(e.code);
       }
     };
+    const unbindMobile = subscribeMobileActions((event) => {
+      down(event);
+      keys.current.delete(event.code);
+    });
     const up = (e: KeyboardEvent) => keys.current.delete(e.code);
     const blur = () => keys.current.clear();
     window.addEventListener("keydown", down);
@@ -701,6 +710,7 @@ export function Player({
     window.addEventListener("blur", blur);
     const unbindPunchPointer = bindPunchPointer(gl.domElement, punch);
     return () => {
+      unbindMobile();
       window.removeEventListener("keydown", down);
       window.removeEventListener("keyup", up);
       window.removeEventListener("blur", blur);
@@ -973,7 +983,9 @@ export function Player({
       c.body.resetForces(true);
       c.body.resetTorques(true);
     }
-    const k = keys.current;
+    const k = {
+      has: (code: string) => keys.current.has(code) || mobileKeyDown(code),
+    };
     let mounted = getVehicleState().mounted;
     const boatingNow = getBoatState().mounted;
     if (!mounted && !parkedGrounded.current) {
@@ -1668,7 +1680,12 @@ export function Player({
         inWater: inWater(p.x, p.z),
         ...(import.meta.env.DEV || import.meta.env.VITE_GAME_DIAGNOSTICS === "1"
           ? {
-              pressedKeys: [...k],
+              pressedKeys: [
+                ...keys.current,
+                ...["KeyW", "KeyA", "KeyS", "KeyD", "ShiftLeft"].filter(
+                  mobileKeyDown,
+                ),
+              ],
               movementActive: active,
               controllerEnabled: !swimming && !boating,
               movementMode: mode,

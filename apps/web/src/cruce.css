@@ -1069,3 +1069,93 @@
     animation: none;
   }
 }
+/* Your hand remains beside the table in reading order on phones; scores follow. */
+@media (max-width: 999px) {
+  .cruce-board {
+    padding: env(safe-area-inset-top) env(safe-area-inset-right)
+      env(safe-area-inset-bottom) env(safe-area-inset-left);
+    overscroll-behavior-y: contain;
+  }
+  .cruce-hand-zone {
+    grid-row: 2;
+    min-width: 0;
+  }
+  .cruce-sidebar {
+    grid-row: 3;
+  }
+  .cruce-hand {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    touch-action: pan-x pan-y;
+    scroll-padding: 8px;
+    padding: 12px 4px;
+  }
+  .cruce-hand button {
+    flex: 0 0 76px;
+    min-width: 76px;
+  }
+  .cruce-hand .cruce-card {
+    width: 76px;
+    max-width: none;
+  }
+  .cruce-hand button > span:last-child {
+    font-size: 14px;
+  }
+  .cruce-hand button:active:not(:disabled) {
+    transform: translateY(-6px);
+  }
+  .cruce-exit {
+    max-height: calc(100dvh - 40px);
+    overflow-y: auto;
+  }
+}
+@media (pointer: coarse) and (orientation: landscape) and (max-height: 540px) {
+  .cruce-header {
+    padding-block: 8px;
+  }
+  .cruce-header h1 {
+    font-size: 24px;
+  }
+  .cruce-workspace {
+    grid-template-columns: minmax(260px, 1fr) minmax(240px, 1fr);
+    gap: 16px;
+    padding-top: 12px;
+  }
+  .cruce-table-stage,
+  .cruce-table-stage--no-hand {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+  }
+  .cruce-felt {
+    width: min(100cqw, 360px);
+  }
+  .cruce-hand-zone {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .cruce-sidebar {
+    grid-column: 2;
+    grid-row: 2;
+  }
+  .cruce-player {
+    font-size: 12px;
+    padding: 4px;
+    max-width: 28%;
+  }
+  .cruce-player strong {
+    font-size: 15px;
+  }
+  .cruce-player--1 {
+    top: 8px;
+    left: 4px;
+    transform: none;
+  }
+  .cruce-player--3 {
+    top: 8px;
+    right: 4px;
+    transform: none;
+  }
+  .cruce-player--0 {
+    max-width: 50%;
+  }
+}
