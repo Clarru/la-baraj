@@ -53,7 +53,7 @@ try {
   });
   const page = await context.newPage();
   const html =
-    '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><title>La Baraj controller QA</title><style>html,body,#root{margin:0;width:100%;height:100%;overflow:hidden;--font-body:Arial;--font-heading:Arial}' +
+    '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><title>La Baraj controller QA</title><style>html,body,#root{margin:0;width:100%;height:100%;overflow:hidden;--font-body:Arial;--font-heading:Arial}' +
     css +
     '</style></head><body><div id="root"></div><script>' +
     js.replaceAll("</script", "<\\/script") +
