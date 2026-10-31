@@ -14,6 +14,16 @@ The tool automates repeatable construction setup, export, validation and evidenc
 
 These instructions and the CLI must exist in the agent's checkout. While the feature is in a draft PR, it is available on `codex/asset-forge`; other worktrees receive it after the release owner integrates it and those worktrees synchronize normally. Do not copy another chat's working files over an occupied checkout.
 
+### Claude Code and other image-generation clients
+
+The root `CLAUDE.md` is a thin `@AGENTS.md` import. It shares one canonical instruction set and supports Claude Code sessions that do not load AGENTS directly. Current Claude Code can read AGENTS natively under documented version/settings conditions; the import is also an officially supported compatibility path. Use `/memory` or `/context` in Claude Code to confirm project instructions are loaded. See [Anthropic's instruction-file documentation](https://code.claude.com/docs/en/memory#share-one-file-with-other-coding-tools).
+
+Claude's image-understanding capability is separate from image generation. A Claude Code client can run this Node/Blender pipeline and inspect its render images, but a concept generator must be supplied by an available tool, script/API or MCP integration. `claude mcp list` and `/mcp` show configured MCP servers; other plugins or local scripts may supply generation too. The CLI cannot discover another person's client configuration or assume a provider/model. See [Anthropic's image capability explanation](https://support.claude.com/en/articles/9002504-can-claude-produce-images) and [MCP documentation](https://code.claude.com/docs/en/mcp).
+
+`prompt` is provider-neutral: use its exact text and all three actual reference images, not just their paths pasted into a text-only request. Preserve the fixed kit and inspect the result when changing providers; identical prompts/references do not establish identical style quality across models. Record the actual integration/provider/model in the retained concept request when available, or `unknown` if the tool does not expose it. Keep credentials out of provenance files.
+
+With no image generator, reuse an approved concept/model or a checked recipe and the existing style boards. No `concept.png` is required by build/check/render/review/pack. For a genuinely new design lacking an approved concept, report that the concept stage is unavailable and identify the result as a construction study; do not invent a generated sheet or claim a concept match. Any new generation integration needs its own configuration and verification; adding it is not part of this compatibility shim.
+
 ## Quick start
 
 Use Node 24 and the repository's `npm ci`. Install Blender separately if it is unavailable; the tool does not download software. Comparison sheets use Python 3 with Pillow.
@@ -105,7 +115,7 @@ Custom recipes are **trusted local Python**, not sandboxed uploads. Keep them se
 
 Joint checks cover declared contact locations and allowable recess depth; they do not infer every intended connection or certify arbitrary mesh topology. Choose probes that cross each likely seam, keep intentional plank recesses within their declared tolerance, and inspect the rendered joins. The corner-wrap and enclosure helpers independently assert closed manifold construction before bevel/export. Combining disconnected pieces into one Blender object is insufficient.
 
-The same three boards under `references/v1/` are supplied for every new item's ImageGen request. They transfer the family, finish and contact contrast rather than the requested object's silhouette. `prompt` only prepares the request; the coding agent calls ImageGen separately with those exact image paths. Changing the fixed kit requires an explicit new version and profile update. A placeholder brief is marked `readyForGeneration:false`.
+The same three boards under `references/v1/` are supplied for every new item's concept request. They transfer the family, finish and contact contrast rather than the requested object's silhouette. `prompt` only prepares the request; the coding agent uses an available generator separately with those exact image inputs. Changing the fixed kit requires an explicit new version and profile update. A placeholder brief is marked `readyForGeneration:false`.
 
 For an original prop, save the selected sheet as `<project>/concept.png` and its exact generation record as `concept-request.json`. They participate in build validity. The tool creates `comparison/concept-comparison.webp`, visibly distinguishing the generated concept from the real exported model. Its cameras may differ, so it produces no numerical style/similarity score.
 

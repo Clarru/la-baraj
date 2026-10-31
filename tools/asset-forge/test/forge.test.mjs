@@ -483,6 +483,23 @@ test("selected concepts and their exact generation records invalidate earlier bu
   }
 });
 
+test("concept requests do not assume a client-specific image tool or fabricate provider identity", async () => {
+  const dir = path.join(base, "provider-neutral");
+  await initProject(dir, "custom");
+  await fs.writeFile(
+    path.join(dir, "brief.md"),
+    "A small timber tackle box using existing family materials.",
+  );
+  const request = await imagegenRequest(dir);
+  assert.equal(request.generationPolicy.provider, null);
+  assert.equal(request.generationPolicy.model, null);
+  assert.equal(request.generationPolicy.optional, true);
+  assert.equal(request.generationPolicy.referenceImageCount, 3);
+  assert(!request.generation.includes("built-in image_gen"));
+  assert.match(request.generation, /actual image content/);
+  assert.match(request.generationPolicy.ifUnavailable, /without concept.png/);
+});
+
 test("a visually rejected technically valid build cannot be packaged", async () => {
   const f = await fixture();
   const review = await reviewProject(

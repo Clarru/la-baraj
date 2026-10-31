@@ -2,6 +2,10 @@
 
 31 October 2026. Developer tooling only: no game runtime assets, server, shared preview or production world changed.
 
+## Client/provider compatibility
+
+The prepared concept request is now provider-neutral and leaves an unknown provider/model unspecified. A thin root `CLAUDE.md` imports canonical `AGENTS.md`; no provider configuration or duplicate rule set was added. An actual no-generator Blender/review/package run reused the workbench recipe without `concept.png`: 604 triangles, 108,840 bytes and 12 passing probes. Thirty-nine tool tests pass. See [the compatibility evidence and limits](proof/provider-portability/README.md); no Claude model invocation or claim about the collaborator's installed tools was made.
+
 ## Improvements learned from the fresh-agent trial
 
 The tool now adds bounded export-level coplanar diagnostics, marked front/rear renders, automatic JSON/Markdown handoff reports and actionable runtime mismatch errors. The original trial is preserved. Its accepted export has 19 smaller hinge/underside overlaps; a separately refined version has zero findings within the advisory's scope while retaining 2,356 triangles and all 33 joint checks. Its 144,596-byte GLB stays within the same 180,000-byte limit.

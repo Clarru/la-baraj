@@ -200,7 +200,17 @@ export async function imagegenRequest(directory) {
       project.spec.budgets.triangles +
       ". Preserve clear component separation for later Blender reconstruction.",
     generation:
-      "Call the built-in image_gen tool with this prompt and these ordered local paths. This CLI does not invoke a paid provider or turn the image into a mesh.",
+      "Use an available image-generation tool, configured CLI/API, or MCP integration that accepts the prompt and all ordered reference images. Send the actual image content, not only filenames in text. This CLI prepares the request; it does not select a provider, invoke a service, or turn an image into a mesh.",
+    generationPolicy: {
+      optional: true,
+      provider: null,
+      model: null,
+      referenceImageCount: images.length,
+      provenance:
+        "Record the actual tool/provider/model in concept-request.json when known. If the backend model is not exposed, record unknown rather than guessing.",
+      ifUnavailable:
+        "Reuse an approved model, concept or recipe with the fixed style kit. Geometry, export, checks and renders remain usable without concept.png. For a novel design without an approved concept, record that concept generation is unavailable; do not claim a generated-reference comparison.",
+    },
   };
   await writeJson(path.join(project.dir, "imagegen-request.json"), request);
   return request;
