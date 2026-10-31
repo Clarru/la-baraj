@@ -149,7 +149,7 @@ export function MobileExperience({ children }: { children: ReactNode }) {
                   </button>
                 </>
               )}
-            <InstallInstructions />
+            {!immersive && <InstallInstructions />}
             <p className="mobile-note">
               Left thumb to move. Use the right stick to look around. Nearby
               objects show buttons you can tap.
@@ -164,6 +164,7 @@ export function MobileDisplayOptions() {
   const touch = useTouchDevice();
   const [message, setMessage] = useState("");
   if (!touch) return null;
+  const immersive = typeof document !== "undefined" && immersiveDisplay();
   return (
     <div className="mobile-display-options">
       <button
@@ -180,7 +181,7 @@ export function MobileDisplayOptions() {
         <Expand size={20} /> Fullscreen
       </button>
       {message && <p role="status">{message}</p>}
-      <InstallInstructions />
+      {!immersive && <InstallInstructions />}
     </div>
   );
 }

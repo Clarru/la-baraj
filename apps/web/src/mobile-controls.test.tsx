@@ -3,7 +3,7 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { MobileControls } from "./MobileControls";
-import { MobileExperience } from "./MobileExperience";
+import { MobileExperience, MobileDisplayOptions } from "./MobileExperience";
 import { installMobileDisplay, useMobileBlocked } from "./mobile-display";
 import { mobileKeyDown, subscribeMobileActions } from "./mobile-input";
 (
@@ -121,9 +121,12 @@ it.each([true, false])(
     try {
       await act(async () =>
         root.render(
-          <MobileExperience>
-            <div data-game>Game</div>
-          </MobileExperience>,
+          <>
+            <MobileExperience>
+              <div data-game>Game</div>
+            </MobileExperience>
+            <MobileDisplayOptions />
+          </>,
         ),
       );
       if (installed) {
@@ -134,10 +137,18 @@ it.each([true, false])(
           "This browser cannot open fullscreen",
         );
         expect(container.textContent).not.toContain("Play in this browser");
+        expect(container.querySelectorAll(".mobile-install")).toHaveLength(0);
+        expect(container.textContent).not.toContain(
+          "Add La Baraj to your Home Screen",
+        );
         await act(async () =>
           container.querySelector<HTMLButtonElement>(".mobile-start")!.click(),
         );
       } else {
+        expect(container.querySelectorAll(".mobile-install")).toHaveLength(2);
+        expect(container.textContent).toContain(
+          "Add La Baraj to your Home Screen",
+        );
         expect(container.textContent).toContain(
           "This browser cannot open fullscreen",
         );
@@ -149,6 +160,20 @@ it.each([true, false])(
       }
       expect(container.querySelector(".mobile-setup")).toBeNull();
       expect(container.querySelector("[data-game]")).not.toBeNull();
+      expect(
+        container.querySelectorAll(".mobile-display-options .mobile-install"),
+      ).toHaveLength(installed ? 0 : 1);
+      if (installed) {
+        await act(async () =>
+          container
+            .querySelector<HTMLButtonElement>(".mobile-display-options button")!
+            .click(),
+        );
+        expect(
+          container.querySelector(".mobile-display-options")?.textContent,
+        ).toContain("App view is active.");
+        expect(container.textContent).not.toContain("Fullscreen is on.");
+      }
     } finally {
       if (descriptor)
         Object.defineProperty(
