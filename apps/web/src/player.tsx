@@ -1,7 +1,11 @@
+import { applyMobileLook } from "./mobile-look";
+import { useTouchDevice } from "./mobile-device";
 import {
   subscribeMobileActions,
   type ActionKey,
   mobileKeyDown,
+  mobileMovement,
+  mobileLook,
 } from "./mobile-input";
 import { arcadeExitCamera, arcadeFocusCamera } from "./arcade2048-camera";
 import {
@@ -853,6 +857,7 @@ export function Player({
         jumpState.current = initialJumpMotion();
         setJumping(false);
         c.setMovement({
+          joystick: { x: 0, y: 0 },
           forward: false,
           backward: false,
           leftward: false,
@@ -935,6 +940,7 @@ export function Player({
       c.body.resetTorques(true);
       keys.current.clear();
       c.setMovement({
+        joystick: { x: 0, y: 0 },
         forward: false,
         backward: false,
         leftward: false,
@@ -1242,7 +1248,21 @@ export function Player({
       jumpState.current.phase === "takeoff" ||
       jumpState.current.phase === "airborne";
     if (airborneJump !== jumping) setJumping(airborneJump);
+    const keyboardWalking = [
+      "KeyW",
+      "KeyA",
+      "KeyS",
+      "KeyD",
+      "ArrowUp",
+      "ArrowDown",
+      "ArrowLeft",
+      "ArrowRight",
+    ].some((code) => keys.current.has(code));
     c.setMovement({
+      joystick:
+        walkInput && !nowSwimming && !mounted && !keyboardWalking
+          ? { x: mobileMovement.x, y: -mobileMovement.y }
+          : { x: 0, y: 0 },
       forward:
         walkInput &&
         !nowSwimming &&
@@ -1283,14 +1303,20 @@ export function Player({
       swimForward.y = 0;
       swimForward.normalize();
       swimRight.set(-swimForward.z, 0, swimForward.x);
-      const forward = active
-        ? Number(k.has("KeyW") || k.has("ArrowUp")) -
-          Number(k.has("KeyS") || k.has("ArrowDown"))
-        : 0;
-      const right = active
-        ? Number(k.has("KeyD") || k.has("ArrowRight")) -
-          Number(k.has("KeyA") || k.has("ArrowLeft"))
-        : 0;
+      const forward =
+        active && !keyboardWalking && (mobileMovement.x || mobileMovement.y)
+          ? -mobileMovement.y
+          : active
+            ? Number(k.has("KeyW") || k.has("ArrowUp")) -
+              Number(k.has("KeyS") || k.has("ArrowDown"))
+            : 0;
+      const right =
+        active && !keyboardWalking && (mobileMovement.x || mobileMovement.y)
+          ? mobileMovement.x
+          : active
+            ? Number(k.has("KeyD") || k.has("ArrowRight")) -
+              Number(k.has("KeyA") || k.has("ArrowLeft"))
+            : 0;
       swimDirection
         .copy(swimForward)
         .multiplyScalar(forward)
@@ -1677,6 +1703,9 @@ export function Player({
         inWater: inWater(p.x, p.z),
         ...(import.meta.env.DEV || import.meta.env.VITE_GAME_DIAGNOSTICS === "1"
           ? {
+              touchMovement: [mobileMovement.x, mobileMovement.y],
+              touchLook: [mobileLook.x, mobileLook.y],
+              cameraPosition: camera.position.toArray(),
               pressedKeys: [
                 ...keys.current,
                 ...["KeyW", "KeyA", "KeyS", "KeyD", "ShiftLeft"].filter(
@@ -1793,6 +1822,7 @@ export function CameraRig({
   tableSeat?: 0 | 1 | null;
   cardTableSeat?: CruceSeat | null;
 }) {
+  const touch = useTouchDevice();
   const controls = useRef<React.ComponentRef<typeof OrbitControls>>(null);
   const [cabinVariant, setCabinVariant] = useState(0);
   useEffect(() => {
@@ -1979,6 +2009,22 @@ export function CameraRig({
   ]);
   useFrame((_, dt) => {
     const c = controls.current;
+    if (
+      !touch ||
+      !c ||
+      transitioning ||
+      arcadeFocus ||
+      focusTransition ||
+      blend.current ||
+      tableSeat !== null ||
+      cardTableSeat !== null
+    )
+      return;
+    applyMobileLook(camera, c.target, mobileLook, dt);
+    c.update();
+  }, -3);
+  useFrame((_, dt) => {
+    const c = controls.current;
     if (!c) return;
     const transition = blend.current;
     if (transition) {
@@ -2034,7 +2080,10 @@ export function CameraRig({
         !focusTransition &&
         !priorArcade.current
       }
+      enableRotate={!touch}
+      enableZoom={!touch}
       enablePan={
+        !touch &&
         tableSeat === null &&
         cardTableSeat === null &&
         interiorIndex === null &&

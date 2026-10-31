@@ -13,9 +13,11 @@ const defaultGround = new THREE.Color("#7c8458");
 export function WorldLighting({
   evening,
   forceDay,
+  shadows = true,
 }: {
   evening: boolean;
   forceDay: boolean;
+  shadows?: boolean;
 }) {
   const sun = useRef<THREE.DirectionalLight>(null);
   const hemi = useRef<THREE.HemisphereLight>(null);
@@ -44,7 +46,7 @@ export function WorldLighting({
       sun.current.position.copy(light.sunDirection).multiplyScalar(150);
       sun.current.color.copy(light.colors.sun);
       sun.current.intensity = light.sunIntensity;
-      sun.current.castShadow = settings.light.shadows;
+      sun.current.castShadow = shadows && settings.light.shadows;
     }
     if (ambient.current) {
       ambient.current.intensity =
@@ -70,7 +72,7 @@ export function WorldLighting({
         ref={sun}
         position={[-80, 95, -110]}
         intensity={3.3}
-        castShadow
+        castShadow={shadows && (environmentTuning()?.light.shadows ?? true)}
         shadow-mapSize={[2048, 2048]}
         shadow-camera-left={-110}
         shadow-camera-right={110}

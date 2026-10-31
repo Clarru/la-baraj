@@ -136,6 +136,33 @@ ownership of future preview updates.
 This documentation update records the current localhost-first hold. Draft PR
 62 is not authorization to merge, deploy, or write production/backend state.
 
+
+## Mobile renderer compatibility candidate
+
+The local controller branch also integrates the frozen mobile runtime
+`44346d984e883817e921a550a2cc24015fee77cb` for the publisher’s next combined local
+build. This is a feature-branch merge and does not merge PR 62 into main.
+
+- Both the directional-light JSX and frame update combine the mobile quality
+  `shadows` limit with the local editor shadow setting. The editor cannot
+  re-enable expensive real-time shadows when mobile quality disables them.
+- Mobile retains its cached 32-pixel sky reflection and skips full-world mirror
+  rendering. The same shared lighting sample supplies sky/horizon reflection,
+  sun direction, sunlight color, and water color. Local wave speed, distortion,
+  and size controls remain active. Desktop retains the existing 20 Hz mirror
+  update path.
+- The only textual merge conflict was the lake-water uniform update tail;
+  resolution preserves both local distortion/size assignments and the mobile
+  reflection update. Game’s mobile frame driver, controlled DPR, touch controls,
+  and local editor pause/keyboard hooks are retained.
+- Node `24.22.2`: 91 test files / 539 tests pass, and TypeScript plus the
+  production build pass. A new cross-module regression proves that a custom
+  local palette updates the same cached mobile texture and that returning to
+  live restores its colors.
+- The controller UI and styling are unchanged, so the accepted control visual
+  cycle was not repeated. Shared preview publication remains with the integration
+  owner; this candidate did not write the shared `dist/`, main, or production.
+
 ## Design-system boundary
 
 The controller extends the existing game HUD with a compact dark Barlow outer

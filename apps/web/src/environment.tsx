@@ -1,3 +1,4 @@
+import { mobileWaterReflection } from "./mobile-water";
 import { currentLighting } from "./day-night";
 import { environmentDefaults, environmentTuning } from "./environment-tuning";
 import { memo, useEffect, useMemo } from "react";
@@ -198,14 +199,16 @@ function waterNormals() {
 export function LakeWater({
   evening,
   forceDay,
+  mobile = false,
 }: {
   evening: boolean;
   forceDay: boolean;
+  mobile?: boolean;
 }) {
   const water = useMemo(() => {
     const w = new Water(waterGeometry(), {
-      textureWidth: 512,
-      textureHeight: 512,
+      textureWidth: mobile ? 32 : 512,
+      textureHeight: mobile ? 32 : 512,
       waterNormals: waterNormals(),
       sunDirection: currentLighting(evening, forceDay).sunDirection.clone(),
       sunColor: "#fff1d7",
@@ -223,6 +226,35 @@ export function LakeWater({
         "vec3 outgoingLight = mix(albedo, waterColor * 1.3, 0.48);",
       )
       .replace("100.0, 2.0, 0.5", "240.0, 0.65, 0.5");
+    if (mobile) {
+      const light = currentLighting(evening, forceDay);
+      w.material.uniforms.mirrorSampler.value = mobileWaterReflection(
+        light.colors.sky,
+        light.colors.horizon,
+      );
+      w.material.uniforms.textureMatrix.value.set(
+        0,
+        0,
+        0,
+        0.5,
+        0,
+        0,
+        0,
+        0.5,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+      );
+      w.onBeforeRender = (_renderer, _scene, camera) => {
+        camera.getWorldPosition(w.material.uniforms.eye.value);
+      };
+      return w;
+    }
     // Waves still animate every frame. Re-render the reflected world at 20Hz,
     // rather than drawing all houses and players again at 120Hz.
     const reflect = w.onBeforeRender.bind(w);
@@ -234,7 +266,7 @@ export function LakeWater({
       reflect(...args);
     };
     return w;
-  }, []);
+  }, [mobile]);
   let lastLightingUpdate = -Infinity;
   useFrame((_, dt) => {
     const settings = environmentTuning() ?? environmentDefaults;
@@ -248,6 +280,7 @@ export function LakeWater({
     water.material.uniforms.waterColor.value.copy(light.colors.water);
     water.material.uniforms.distortionScale.value = settings.water.distortion;
     water.material.uniforms.size.value = settings.water.size;
+    if (mobile) mobileWaterReflection(light.colors.sky, light.colors.horizon);
   });
   return <primitive object={water} dispose={null} />;
 }

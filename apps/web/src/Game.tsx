@@ -1,3 +1,5 @@
+import { mobilePixelRatio } from "./mobile-frame-clock";
+import { MobileFrameDriver } from "./MobileFrameDriver";
 import { MobileArcade2048 } from "./MobileArcade2048";
 import { MobileControls } from "./MobileControls";
 import { useMobileBlocked } from "./mobile-display";
@@ -178,6 +180,11 @@ export default function Game({ initialName }: { initialName: string }) {
   const hasHome = roomView.status === "offline" || roomView.homeIndex !== null;
   const mobileBlocked = useMobileBlocked();
   const touch = useTouchDevice();
+  const [mobileDpr, setMobileDpr] = useState(() =>
+    typeof window === "undefined"
+      ? 0.9
+      : mobilePixelRatio(window.innerWidth, window.innerHeight),
+  );
   const [mode, setMode] = useState<ViewMode>("walk");
   const [flat, setFlat] = useState(false),
     [evening, setEvening] = useState(false),
@@ -638,23 +645,38 @@ export default function Game({ initialName }: { initialName: string }) {
       <SceneBoundary>
         <Suspense fallback={<SceneLoading />}>
           <Canvas
-            shadows="percentage"
-            dpr={performanceLab ? 1.5 : touch ? 1 : [1, 1.5]}
+            shadows={touch ? false : "percentage"}
+            frameloop={touch ? "never" : "always"}
+            dpr={performanceLab ? 1.5 : touch ? mobileDpr : [1, 1.5]}
             camera={{ position: [58, 35, 72], fov: 48, near: 0.1, far: 6000 }}
             gl={{
-              antialias: true,
-              powerPreference: "high-performance",
+              antialias: !touch,
+              powerPreference: touch ? "low-power" : "high-performance",
               toneMapping: THREE.ACESFilmicToneMapping,
               toneMappingExposure: 0.92,
             }}
           >
-            <WorldLighting evening={evening} forceDay={performanceLab} />
+            {touch && (
+              <MobileFrameDriver
+                onPixelRatio={setMobileDpr}
+                covered={mobileBlocked || arcadeOpen || cruceOpen || planesOpen}
+              />
+            )}
+            <WorldLighting
+              evening={evening}
+              forceDay={performanceLab}
+              shadows={!touch}
+            />
             <WorldBackdrop evening={evening} forceDay={performanceLab} />
             <Physics timeStep={1 / 60} gravity={[0, -12, 0]}>
               <group>
                 <Terrain />
                 <Roads />
-                <LakeWater evening={evening} forceDay={performanceLab} />
+                <LakeWater
+                  evening={evening}
+                  forceDay={performanceLab}
+                  mobile={touch}
+                />
                 <Vegetation flat={flat} />
                 <Meadow forceHigh={performanceLab} />
                 <Settlement

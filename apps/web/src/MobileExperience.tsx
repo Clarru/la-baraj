@@ -130,8 +130,8 @@ export function MobileExperience({ children }: { children: ReactNode }) {
             )}
             <InstallInstructions />
             <p className="mobile-note">
-              Left thumb to move. Drag the world to look around. Nearby objects
-              show buttons you can tap.
+              Left thumb to move. Use the right stick to look around. Nearby
+              objects show buttons you can tap.
             </p>
           </section>
         </main>

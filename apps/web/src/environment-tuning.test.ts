@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { currentLighting, lightingAt } from "./day-night";
+import { mobileWaterReflection } from "./mobile-water";
 import {
   environmentDefaults,
   environmentHour,
@@ -83,5 +84,30 @@ describe("local environment overrides", () => {
     expect(weatherLooks.storm.distortion).toBeGreaterThan(
       weatherLooks.clear.distortion,
     );
+  });
+  it("updates the cached mobile reflection from the same custom palette and restores live colors", () => {
+    const live = currentLighting(true);
+    const reflection = mobileWaterReflection(
+      live.colors.sky,
+      live.colors.horizon,
+    );
+    const before = Array.from(reflection.image.data as Uint8Array);
+    const edited = settings();
+    edited.enabled = true;
+    edited.palette.customColors = true;
+    edited.palette.sky = "#ffffff";
+    edited.palette.horizon = "#000000";
+    setEnvironmentTuning(edited);
+    const light = currentLighting(true);
+    expect(mobileWaterReflection(light.colors.sky, light.colors.horizon)).toBe(
+      reflection,
+    );
+    const data = reflection.image.data as Uint8Array;
+    expect(Array.from(data.slice(0, 4))).toEqual([0, 0, 0, 255]);
+    expect(Array.from(data.slice(-4))).toEqual([255, 255, 255, 255]);
+    setEnvironmentTuning(null);
+    const restored = currentLighting(true);
+    mobileWaterReflection(restored.colors.sky, restored.colors.horizon);
+    expect(Array.from(reflection.image.data as Uint8Array)).toEqual(before);
   });
 });
