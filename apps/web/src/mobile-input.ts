@@ -44,12 +44,6 @@ let x = 0,
   y = 0,
   running = false,
   jumpUntil = 0;
-export function joystickVector(dx: number, dy: number, radius = 48) {
-  const distance = Math.hypot(dx, dy);
-  if (distance < radius * 0.18) return { x: 0, y: 0 };
-  const scale = Math.min(1, radius / distance) / radius;
-  return { x: dx * scale, y: dy * scale };
-}
 export function setMobileMovement(nextX: number, nextY: number) {
   x = mobileMovement.x = nextX;
   y = mobileMovement.y = nextY;

@@ -30,5 +30,5 @@ export function createMobileFrameClock() {
   };
 }
 export function mobilePixelRatio(width: number, height: number) {
-  return Math.min(0.9, Math.sqrt(360000 / Math.max(1, width * height)));
+  return Math.min(1.25, Math.sqrt(520000 / Math.max(1, width * height)));
 }

@@ -1,13 +1,8 @@
-import {
-  useEffect,
-  useRef,
-  useState,
-  type PointerEvent as ReactPointerEvent,
-} from "react";
+import { bindMobileJoystick, preloadMobileJoysticks } from "./mobile-joystick";
+import { useEffect, useRef, useState } from "react";
 import { ArrowUp, Footprints, MessageCircle, X } from "lucide-react";
 import { useTouchDevice } from "./mobile-device";
 import {
-  joystickVector,
   performMobileAction,
   resetMobileInput,
   setMobileMovement,
@@ -27,92 +22,42 @@ function TouchStick({
   resetKey: string;
   onVector: (x: number, y: number) => void;
 }) {
-  const node = useRef<HTMLButtonElement>(null);
-  const contact = useRef<{
-    id: number;
-    x: number;
-    y: number;
-    radius: number;
-    travel: number;
-  } | null>(null);
-  const clear = () => {
-    const previous = contact.current;
-    contact.current = null;
-    onVector(0, 0);
-    node.current?.style.setProperty("--stick-x", "0px");
-    node.current?.style.setProperty("--stick-y", "0px");
-    if (previous && node.current?.hasPointerCapture?.(previous.id))
-      node.current.releasePointerCapture(previous.id);
-  };
+  const zone = useRef<HTMLDivElement>(null);
+  const [failed, setFailed] = useState(false);
+  const [ready, setReady] = useState(false);
   useEffect(() => {
-    const hidden = () => {
-      if (document.hidden) clear();
-    };
-    window.addEventListener("blur", clear);
-    window.addEventListener("orientationchange", clear);
-    document.addEventListener("visibilitychange", hidden);
+    let disposed = false,
+      cleanup: (() => void) | undefined;
+    const element = zone.current;
+    setFailed(false);
+    setReady(false);
+    void preloadMobileJoysticks()
+      .then(({ create }) => {
+        if (disposed || !element?.isConnected) return;
+        cleanup = bindMobileJoystick(element, create, onVector);
+        setReady(true);
+      })
+      .catch(() => {
+        if (!disposed) setFailed(true);
+      });
     return () => {
-      clear();
-      window.removeEventListener("blur", clear);
-      window.removeEventListener("orientationchange", clear);
-      document.removeEventListener("visibilitychange", hidden);
+      disposed = true;
+      cleanup?.();
     };
   }, [onVector, resetKey]);
-  const update = (event: ReactPointerEvent<HTMLButtonElement>) => {
-    const p = contact.current;
-    if (!p || p.id !== event.pointerId) return;
-    event.stopPropagation();
-    const vector = joystickVector(
-      event.clientX - p.x,
-      event.clientY - p.y,
-      p.radius,
-    );
-    onVector(vector.x, vector.y);
-    event.currentTarget.style.setProperty(
-      "--stick-x",
-      `${vector.x * p.travel}px`,
-    );
-    event.currentTarget.style.setProperty(
-      "--stick-y",
-      `${vector.y * p.travel}px`,
-    );
-  };
-  const stop = (event: ReactPointerEvent<HTMLButtonElement>) => {
-    event.stopPropagation();
-    if (contact.current?.id === event.pointerId) clear();
-  };
   return (
-    <button
-      ref={node}
-      className={`mobile-stick mobile-${kind}`}
-      aria-label={
-        kind === "move"
-          ? "Movement joystick: drag to walk or steer"
-          : "Look joystick: drag to look left, right, up or down"
-      }
-      onPointerDown={(event) => {
-        event.stopPropagation();
-        if (contact.current) return;
-        event.preventDefault();
-        const bounds = event.currentTarget.getBoundingClientRect();
-        contact.current = {
-          id: event.pointerId,
-          x: bounds.left + bounds.width / 2,
-          y: bounds.top + bounds.height / 2,
-          radius: bounds.width * 0.36,
-          travel: bounds.width * 0.28,
-        };
-        event.currentTarget.setPointerCapture(event.pointerId);
-        update(event);
-      }}
-      onPointerMove={update}
-      onPointerUp={stop}
-      onPointerCancel={stop}
-      onLostPointerCapture={stop}
+    <div
+      ref={zone}
+      className={`mobile-stick-zone mobile-${kind}${ready || failed ? " is-ready" : ""}`}
+      style={{ position: kind === "look" ? "absolute" : "relative" }}
+      role="group"
+      aria-label={`${label} joystick`}
     >
-      <span />
       <span className="mobile-stick-label">{label}</span>
-    </button>
+      {failed && (
+        <button onClick={() => location.reload()}>Reload controls</button>
+      )}
+    </div>
   );
 }
 
