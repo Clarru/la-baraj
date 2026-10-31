@@ -1,0 +1,183 @@
+{
+  "owner": {
+    "status": "online",
+    "selfId": "fb8acbd9-6cf8-47b5-8e9c-9433648578a7",
+    "stations": [
+      {
+        "id": 0,
+        "playerId": null,
+        "name": "",
+        "game": null,
+        "best": 0,
+        "direction": null
+      },
+      {
+        "id": 1,
+        "playerId": "fb8acbd9-6cf8-47b5-8e9c-9433648578a7",
+        "name": "Arcade player QA",
+        "game": {
+          "board": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            4,
+            0,
+            2,
+            0,
+            8,
+            2,
+            2,
+            0,
+            4
+          ],
+          "score": 24,
+          "moves": 9,
+          "revision": 10,
+          "continued": false
+        },
+        "best": 24,
+        "direction": "down"
+      },
+      {
+        "id": 2,
+        "playerId": null,
+        "name": "",
+        "game": null,
+        "best": 0,
+        "direction": null
+      }
+    ],
+    "privateGame": {
+      "board": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        0,
+        2,
+        0,
+        8,
+        2,
+        2,
+        0,
+        4
+      ],
+      "score": 24,
+      "moves": 9,
+      "revision": 10,
+      "continued": false
+    },
+    "blocked": false
+  },
+  "observerPrivate": {
+    "board": [
+      4,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      2,
+      0,
+      0,
+      0,
+      0,
+      2,
+      0,
+      0
+    ],
+    "score": 0,
+    "moves": 1,
+    "revision": 2,
+    "continued": false
+  },
+  "actualSpectator": {
+    "id": 1,
+    "visible": true,
+    "settled": true,
+    "board": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      4,
+      0,
+      2,
+      0,
+      8,
+      2,
+      2,
+      0,
+      4
+    ],
+    "faces": [
+      {
+        "value": 4,
+        "x": 415,
+        "y": -317
+      },
+      {
+        "value": 2,
+        "x": 203,
+        "y": -423
+      },
+      {
+        "value": 8,
+        "x": 415,
+        "y": -423
+      },
+      {
+        "value": 2,
+        "x": 97,
+        "y": -529
+      },
+      {
+        "value": 2,
+        "x": 203,
+        "y": -529
+      },
+      {
+        "value": 4,
+        "x": 415,
+        "y": -529
+      }
+    ],
+    "paint": [
+      "2048",
+      "LA BARAJ",
+      "SCORE",
+      "24",
+      "BEST",
+      "24",
+      "New game",
+      "Scores",
+      "Occupied · Arcade player QA"
+    ],
+    "instanceVersion": 14,
+    "drawn": true,
+    "peers": [
+      {
+        "id": "fb8acbd9-6cf8-47b5-8e9c-9433648578a7",
+        "position": [
+          -8.339,
+          0.932,
+          74.861
+        ],
+        "yaw": 3.137
+      }
+    ]
+  }
+}

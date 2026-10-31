@@ -1,0 +1,370 @@
+{
+  "owner": {
+    "status": "online",
+    "selfId": "fb8acbd9-6cf8-47b5-8e9c-9433648578a7",
+    "stations": [
+      {
+        "id": 0,
+        "playerId": null,
+        "name": "",
+        "game": null,
+        "best": 0,
+        "direction": null
+      },
+      {
+        "id": 1,
+        "playerId": null,
+        "name": "",
+        "game": null,
+        "best": 0,
+        "direction": null
+      },
+      {
+        "id": 2,
+        "playerId": "fb8acbd9-6cf8-47b5-8e9c-9433648578a7",
+        "name": "Arcade player QA",
+        "game": {
+          "board": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            2,
+            0,
+            4,
+            0,
+            0,
+            2,
+            8,
+            0,
+            0,
+            8,
+            2
+          ],
+          "score": 36,
+          "moves": 11,
+          "revision": 12,
+          "continued": false
+        },
+        "best": 36,
+        "direction": "right"
+      }
+    ],
+    "privateGame": {
+      "board": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        2,
+        0,
+        4,
+        0,
+        0,
+        2,
+        8,
+        0,
+        0,
+        8,
+        2
+      ],
+      "score": 36,
+      "moves": 11,
+      "revision": 12,
+      "continued": false
+    },
+    "blocked": false
+  },
+  "drawn": [
+    {
+      "id": 2,
+      "visible": true,
+      "settled": true,
+      "board": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        2,
+        0,
+        4,
+        0,
+        0,
+        2,
+        8,
+        0,
+        0,
+        8,
+        2
+      ],
+      "faces": [
+        {
+          "value": 2,
+          "x": 203,
+          "y": -317
+        },
+        {
+          "value": 4,
+          "x": 415,
+          "y": -317
+        },
+        {
+          "value": 2,
+          "x": 309,
+          "y": -423
+        },
+        {
+          "value": 8,
+          "x": 415,
+          "y": -423
+        },
+        {
+          "value": 8,
+          "x": 309,
+          "y": -529
+        },
+        {
+          "value": 2,
+          "x": 415,
+          "y": -529
+        }
+      ],
+      "paint": [
+        "2048",
+        "LA BARAJ",
+        "SCORE",
+        "36",
+        "BEST",
+        "36",
+        "New game",
+        "Scores",
+        "Occupied · Arcade player QA"
+      ],
+      "instanceVersion": 43,
+      "drawn": true,
+      "peers": [
+        {
+          "id": "fb8acbd9-6cf8-47b5-8e9c-9433648578a7",
+          "position": [
+            -8.339,
+            0.932,
+            74.861
+          ],
+          "yaw": 3.137
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "visible": true,
+      "settled": true,
+      "board": [
+        2,
+        4,
+        0,
+        0,
+        16,
+        0,
+        2,
+        4,
+        64,
+        32,
+        8,
+        0,
+        128,
+        2,
+        0,
+        0
+      ],
+      "faces": [
+        {
+          "value": 2,
+          "x": 97,
+          "y": -211
+        },
+        {
+          "value": 4,
+          "x": 203,
+          "y": -211
+        },
+        {
+          "value": 16,
+          "x": 97,
+          "y": -317
+        },
+        {
+          "value": 2,
+          "x": 309,
+          "y": -317
+        },
+        {
+          "value": 4,
+          "x": 415,
+          "y": -317
+        },
+        {
+          "value": 64,
+          "x": 97,
+          "y": -423
+        },
+        {
+          "value": 32,
+          "x": 203,
+          "y": -423
+        },
+        {
+          "value": 8,
+          "x": 309,
+          "y": -423
+        },
+        {
+          "value": 128,
+          "x": 97,
+          "y": -529
+        },
+        {
+          "value": 2,
+          "x": 203,
+          "y": -529
+        }
+      ],
+      "paint": [
+        "2048",
+        "LA BARAJ",
+        "SCORE",
+        "0",
+        "BEST",
+        "0",
+        "New game",
+        "Scores",
+        "E or click to play"
+      ],
+      "instanceVersion": 15,
+      "drawn": true,
+      "peers": [
+        {
+          "id": "fb8acbd9-6cf8-47b5-8e9c-9433648578a7",
+          "position": [
+            -8.339,
+            0.932,
+            74.861
+          ],
+          "yaw": 3.137
+        }
+      ]
+    },
+    {
+      "id": 0,
+      "visible": true,
+      "settled": true,
+      "board": [
+        2,
+        4,
+        0,
+        0,
+        16,
+        0,
+        2,
+        4,
+        64,
+        32,
+        8,
+        0,
+        128,
+        2,
+        0,
+        0
+      ],
+      "faces": [
+        {
+          "value": 2,
+          "x": 97,
+          "y": -211
+        },
+        {
+          "value": 4,
+          "x": 203,
+          "y": -211
+        },
+        {
+          "value": 16,
+          "x": 97,
+          "y": -317
+        },
+        {
+          "value": 2,
+          "x": 309,
+          "y": -317
+        },
+        {
+          "value": 4,
+          "x": 415,
+          "y": -317
+        },
+        {
+          "value": 64,
+          "x": 97,
+          "y": -423
+        },
+        {
+          "value": 32,
+          "x": 203,
+          "y": -423
+        },
+        {
+          "value": 8,
+          "x": 309,
+          "y": -423
+        },
+        {
+          "value": 128,
+          "x": 97,
+          "y": -529
+        },
+        {
+          "value": 2,
+          "x": 203,
+          "y": -529
+        }
+      ],
+      "paint": [
+        "2048",
+        "LA BARAJ",
+        "SCORE",
+        "0",
+        "BEST",
+        "0",
+        "New game",
+        "Scores",
+        "E or click to play"
+      ],
+      "instanceVersion": 1,
+      "drawn": true,
+      "peers": [
+        {
+          "id": "fb8acbd9-6cf8-47b5-8e9c-9433648578a7",
+          "position": [
+            -8.339,
+            0.932,
+            74.861
+          ],
+          "yaw": 3.137
+        }
+      ]
+    }
+  ],
+  "peer": {
+    "id": "fb8acbd9-6cf8-47b5-8e9c-9433648578a7",
+    "position": [
+      -8.339,
+      0.932,
+      74.861
+    ],
+    "yaw": 3.137
+  },
+  "claimed": 2,
+  "expectedFrontApproach": 1
+}

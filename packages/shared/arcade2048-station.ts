@@ -1,3 +1,4 @@
+import type { ArcadeStationView } from "./arcade2048";
 /** At the east edge of the gathering area, separate from both seated games. */
 export const ARCADE_STATION = {
   x: 12,
@@ -42,4 +43,33 @@ export function closestArcadeStation(
   return candidates.reduce((best, s) =>
     distance(s) < distance(best) ? s : best,
   );
+}
+
+/** A saved personal board does not confer control of a physical machine. */
+export function arcadeControlledStation(
+  selected: number | null,
+  selfId: string,
+  stations: readonly ArcadeStationView[],
+  supported: boolean,
+): number | null {
+  if (selected === null) return null;
+  if (selected === -1) return -1;
+  return supported &&
+    !!selfId &&
+    stations.some((s) => s.id === selected && s.playerId === selfId)
+    ? selected
+    : null;
+}
+
+/** Authored standing pad for a successfully claimed numbered machine. */
+export function arcadeStandingPoint(id: number | null) {
+  if (id === null) return null;
+  const station = arcadeStation(id);
+  if (!station) return null;
+  const yaw = arcadeStationYaw(id);
+  return {
+    x: station.x + Math.sin(yaw) * 1.2,
+    z: station.z + Math.cos(yaw) * 1.2,
+    yaw: Math.atan2(-Math.sin(yaw), -Math.cos(yaw)),
+  };
 }

@@ -1,0 +1,75 @@
+{
+  "candidate": "37be90b612ae22796440790d4e7c66ad5c58c451",
+  "normalDrawMatches": true,
+  "normalPaint": [
+    "2048",
+    "LA BARAJ",
+    "SCORE",
+    "24",
+    "BEST",
+    "24",
+    "New game",
+    "Scores",
+    "Occupied · Arcade player QA"
+  ],
+  "observerHadDifferentPersonalSave": true,
+  "crossClick": {
+    "claimed": 2,
+    "avatar": {
+      "id": "fb8acbd9-6cf8-47b5-8e9c-9433648578a7",
+      "position": [
+        -8.339,
+        0.932,
+        74.861
+      ],
+      "yaw": 3.137
+    },
+    "avatarFrontStation": 1
+  },
+  "lostClaim": {
+    "newOwner": "9cc94f30-e0b7-4f21-a668-516497a9a3d2",
+    "publicBoard": [
+      4,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      2,
+      0,
+      0,
+      0,
+      0,
+      2,
+      0,
+      0
+    ],
+    "actualDrawn": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      2,
+      0,
+      4,
+      0,
+      0,
+      2,
+      8,
+      0,
+      0,
+      8,
+      2
+    ],
+    "mismatch": true,
+    "oldControlsStillActive": true
+  },
+  "resume": {
+    "claimed0": true,
+    "gameExact": true
+  },
+  "noPerformanceClaim": true
+}
