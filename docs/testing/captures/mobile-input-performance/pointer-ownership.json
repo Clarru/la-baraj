@@ -1,0 +1,580 @@
+{
+  "scope": "Trusted Chromium CDP contacts correlated with actual pointer-up/cancel event targets, not payload assumptions; independent source unit coverage also retained",
+  "checks": [
+    {
+      "cycle": 0,
+      "actualFirstEndedPointer": {
+        "role": "look",
+        "id": 2,
+        "event": "pointerup"
+      },
+      "endedPad": [
+        0,
+        0
+      ],
+      "otherPadBefore": [
+        0,
+        0.8417508417508418
+      ],
+      "otherPadAfter": [
+        0,
+        0.8417508417508418
+      ],
+      "bothAfterFinalEnd": {
+        "move": [
+          0,
+          0
+        ],
+        "look": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "cycle": 1,
+      "actualFirstEndedPointer": {
+        "role": "move",
+        "id": 4,
+        "event": "pointerup"
+      },
+      "endedPad": [
+        0,
+        0
+      ],
+      "otherPadBefore": [
+        -0.7936507936507936,
+        0
+      ],
+      "otherPadAfter": [
+        -0.7936507936507936,
+        0
+      ],
+      "bothAfterFinalEnd": {
+        "move": [
+          0,
+          0
+        ],
+        "look": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "cycle": 2,
+      "actualFirstEndedPointer": {
+        "role": "look",
+        "id": 6,
+        "event": "pointerup"
+      },
+      "endedPad": [
+        0,
+        0
+      ],
+      "otherPadBefore": [
+        0,
+        0.8417508417508418
+      ],
+      "otherPadAfter": [
+        0,
+        0.8417508417508418
+      ],
+      "bothAfterFinalEnd": {
+        "move": [
+          0,
+          0
+        ],
+        "look": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "cycle": 3,
+      "actualFirstEndedPointer": {
+        "role": "move",
+        "id": 8,
+        "event": "pointerup"
+      },
+      "endedPad": [
+        0,
+        0
+      ],
+      "otherPadBefore": [
+        -0.7936507936507936,
+        0
+      ],
+      "otherPadAfter": [
+        -0.7936507936507936,
+        0
+      ],
+      "bothAfterFinalEnd": {
+        "move": [
+          0,
+          0
+        ],
+        "look": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "cycle": 4,
+      "actualFirstEndedPointer": {
+        "role": "look",
+        "id": 10,
+        "event": "pointerup"
+      },
+      "endedPad": [
+        0,
+        0
+      ],
+      "otherPadBefore": [
+        0,
+        0.8417508417508418
+      ],
+      "otherPadAfter": [
+        0,
+        0.8417508417508418
+      ],
+      "bothAfterFinalEnd": {
+        "move": [
+          0,
+          0
+        ],
+        "look": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "cycle": 5,
+      "actualFirstEndedPointer": {
+        "role": "move",
+        "id": 12,
+        "event": "pointerup"
+      },
+      "endedPad": [
+        0,
+        0
+      ],
+      "otherPadBefore": [
+        -0.7936507936507936,
+        0
+      ],
+      "otherPadAfter": [
+        -0.7936507936507936,
+        0
+      ],
+      "bothAfterFinalEnd": {
+        "move": [
+          0,
+          0
+        ],
+        "look": [
+          0,
+          0
+        ]
+      }
+    }
+  ],
+  "radiusFromBodyPlus065": {
+    "initial": 9.03119593409422,
+    "minDuring": 8.924247437637309,
+    "maxDuring": 9.141992003498993,
+    "note": "body telemetry and camera follow are sampled on adjacent physics steps; pure look unit tests assert exact radius and target invariance"
+  },
+  "trace": [
+    {
+      "type": "pointerdown",
+      "id": 1,
+      "target": "mobile-start",
+      "x": 196.5,
+      "y": 273.67999267578125
+    },
+    {
+      "type": "pointerup",
+      "id": 1,
+      "target": "mobile-start",
+      "x": 196.5,
+      "y": 273.67999267578125
+    },
+    {
+      "type": "pointerdown",
+      "id": 2,
+      "target": "mobile-stick mobile-look",
+      "x": 319,
+      "y": 778
+    },
+    {
+      "type": "pointerdown",
+      "id": 3,
+      "target": "mobile-stick mobile-move",
+      "x": 84,
+      "y": 768
+    },
+    {
+      "type": "pointerup",
+      "id": 2,
+      "target": "mobile-stick mobile-look",
+      "x": 351,
+      "y": 778
+    },
+    {
+      "type": "lostpointercapture",
+      "id": 2,
+      "target": "mobile-stick mobile-look",
+      "x": 351,
+      "y": 778
+    },
+    {
+      "type": "pointercancel",
+      "id": 3,
+      "target": "mobile-stick mobile-move",
+      "x": 84,
+      "y": 808
+    },
+    {
+      "type": "lostpointercapture",
+      "id": 3,
+      "target": "mobile-stick mobile-move",
+      "x": 84,
+      "y": 808
+    },
+    {
+      "type": "pointerdown",
+      "id": 4,
+      "target": "mobile-stick mobile-move",
+      "x": 84,
+      "y": 768
+    },
+    {
+      "type": "pointerdown",
+      "id": 5,
+      "target": "mobile-stick mobile-look",
+      "x": 319,
+      "y": 778
+    },
+    {
+      "type": "pointerup",
+      "id": 4,
+      "target": "mobile-stick mobile-move",
+      "x": 84,
+      "y": 728
+    },
+    {
+      "type": "lostpointercapture",
+      "id": 4,
+      "target": "mobile-stick mobile-move",
+      "x": 84,
+      "y": 728
+    },
+    {
+      "type": "pointerup",
+      "id": 5,
+      "target": "mobile-stick mobile-look",
+      "x": 287,
+      "y": 778
+    },
+    {
+      "type": "lostpointercapture",
+      "id": 5,
+      "target": "mobile-stick mobile-look",
+      "x": 287,
+      "y": 778
+    },
+    {
+      "type": "pointerdown",
+      "id": 6,
+      "target": "mobile-stick mobile-look",
+      "x": 319,
+      "y": 778
+    },
+    {
+      "type": "pointerdown",
+      "id": 7,
+      "target": "mobile-stick mobile-move",
+      "x": 84,
+      "y": 768
+    },
+    {
+      "type": "pointerup",
+      "id": 6,
+      "target": "mobile-stick mobile-look",
+      "x": 351,
+      "y": 778
+    },
+    {
+      "type": "lostpointercapture",
+      "id": 6,
+      "target": "mobile-stick mobile-look",
+      "x": 351,
+      "y": 778
+    },
+    {
+      "type": "pointerup",
+      "id": 7,
+      "target": "mobile-stick mobile-move",
+      "x": 84,
+      "y": 808
+    },
+    {
+      "type": "lostpointercapture",
+      "id": 7,
+      "target": "mobile-stick mobile-move",
+      "x": 84,
+      "y": 808
+    },
+    {
+      "type": "pointerdown",
+      "id": 8,
+      "target": "mobile-stick mobile-move",
+      "x": 84,
+      "y": 768
+    },
+    {
+      "type": "pointerdown",
+      "id": 9,
+      "target": "mobile-stick mobile-look",
+      "x": 319,
+      "y": 778
+    },
+    {
+      "type": "pointerup",
+      "id": 8,
+      "target": "mobile-stick mobile-move",
+      "x": 84,
+      "y": 728
+    },
+    {
+      "type": "lostpointercapture",
+      "id": 8,
+      "target": "mobile-stick mobile-move",
+      "x": 84,
+      "y": 728
+    },
+    {
+      "type": "pointercancel",
+      "id": 9,
+      "target": "mobile-stick mobile-look",
+      "x": 287,
+      "y": 778
+    },
+    {
+      "type": "lostpointercapture",
+      "id": 9,
+      "target": "mobile-stick mobile-look",
+      "x": 287,
+      "y": 778
+    },
+    {
+      "type": "pointerdown",
+      "id": 10,
+      "target": "mobile-stick mobile-look",
+      "x": 319,
+      "y": 778
+    },
+    {
+      "type": "pointerdown",
+      "id": 11,
+      "target": "mobile-stick mobile-move",
+      "x": 84,
+      "y": 768
+    },
+    {
+      "type": "pointerup",
+      "id": 10,
+      "target": "mobile-stick mobile-look",
+      "x": 351,
+      "y": 778
+    },
+    {
+      "type": "lostpointercapture",
+      "id": 10,
+      "target": "mobile-stick mobile-look",
+      "x": 351,
+      "y": 778
+    },
+    {
+      "type": "pointerup",
+      "id": 11,
+      "target": "mobile-stick mobile-move",
+      "x": 84,
+      "y": 808
+    },
+    {
+      "type": "lostpointercapture",
+      "id": 11,
+      "target": "mobile-stick mobile-move",
+      "x": 84,
+      "y": 808
+    },
+    {
+      "type": "pointerdown",
+      "id": 12,
+      "target": "mobile-stick mobile-move",
+      "x": 84,
+      "y": 768
+    },
+    {
+      "type": "pointerdown",
+      "id": 13,
+      "target": "mobile-stick mobile-look",
+      "x": 319,
+      "y": 778
+    },
+    {
+      "type": "pointerup",
+      "id": 12,
+      "target": "mobile-stick mobile-move",
+      "x": 84,
+      "y": 728
+    },
+    {
+      "type": "lostpointercapture",
+      "id": 12,
+      "target": "mobile-stick mobile-move",
+      "x": 84,
+      "y": 728
+    },
+    {
+      "type": "pointerup",
+      "id": 13,
+      "target": "mobile-stick mobile-look",
+      "x": 287,
+      "y": 778
+    },
+    {
+      "type": "lostpointercapture",
+      "id": 13,
+      "target": "mobile-stick mobile-look",
+      "x": 287,
+      "y": 778
+    },
+    {
+      "type": "pointerdown",
+      "id": 1,
+      "target": "SUMMARY",
+      "x": 335.6099853515625,
+      "y": 69
+    },
+    {
+      "type": "pointerup",
+      "id": 1,
+      "target": "SUMMARY",
+      "x": 335.6099853515625,
+      "y": 69
+    },
+    {
+      "type": "pointerdown",
+      "id": 1,
+      "target": "BUTTON",
+      "x": 277.70001220703125,
+      "y": 84
+    },
+    {
+      "type": "pointerup",
+      "id": 1,
+      "target": "BUTTON",
+      "x": 277.70001220703125,
+      "y": 84
+    },
+    {
+      "type": "pointerdown",
+      "id": 1,
+      "target": "BUTTON",
+      "x": 231.25999450683594,
+      "y": 122
+    },
+    {
+      "type": "pointerup",
+      "id": 1,
+      "target": "BUTTON",
+      "x": 231.25999450683594,
+      "y": 122
+    },
+    {
+      "type": "pointerdown",
+      "id": 14,
+      "target": "mobile-arcade-board",
+      "x": 304.79998779296875,
+      "y": 442.203125
+    },
+    {
+      "type": "pointerup",
+      "id": 14,
+      "target": "mobile-arcade-board",
+      "x": 88.19999694824219,
+      "y": 442.203125
+    },
+    {
+      "type": "lostpointercapture",
+      "id": 14,
+      "target": "mobile-arcade-board",
+      "x": 88.19999694824219,
+      "y": 442.203125
+    },
+    {
+      "type": "pointerdown",
+      "id": 1,
+      "target": "BUTTON",
+      "x": 324,
+      "y": 38
+    },
+    {
+      "type": "pointerup",
+      "id": 1,
+      "target": "BUTTON",
+      "x": 324,
+      "y": 38
+    },
+    {
+      "type": "pointerdown",
+      "id": 1,
+      "target": "BUTTON",
+      "x": 123.41999816894531,
+      "y": 162.5
+    },
+    {
+      "type": "pointerup",
+      "id": 1,
+      "target": "BUTTON",
+      "x": 123.41999816894531,
+      "y": 162.5
+    },
+    {
+      "type": "pointerdown",
+      "id": 1,
+      "target": "mobile-context",
+      "x": 324.4100036621094,
+      "y": 566
+    },
+    {
+      "type": "pointerup",
+      "id": 1,
+      "target": "mobile-context",
+      "x": 324.4100036621094,
+      "y": 566
+    },
+    {
+      "type": "pointerdown",
+      "id": 1,
+      "target": "BUTTON",
+      "x": 213.8800048828125,
+      "y": 78.58999633789062
+    },
+    {
+      "type": "pointerup",
+      "id": 1,
+      "target": "BUTTON",
+      "x": 213.8800048828125,
+      "y": 78.58999633789062
+    }
+  ],
+  "errors": [],
+  "networkWebSockets": []
+}

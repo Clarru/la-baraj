@@ -1,0 +1,243 @@
+{
+  "driver": "156.0.8078.79",
+  "results": [
+    {
+      "name": "2048 has no visible arrow controls",
+      "pass": true
+    },
+    {
+      "name": "bystander sees claimed standing alignment before/through opaque pause",
+      "pass": true,
+      "data": {
+        "id": "c58c26ea-38e3-4454-adfd-8c780f976e54",
+        "nickname": "Mobile QA",
+        "position": [
+          -10.151,
+          0.845,
+          74.649
+        ],
+        "yaw": -2.356,
+        "animation": "Idle_Neutral",
+        "activity": "none",
+        "vehicle": "none",
+        "homeIndex": 0,
+        "posture": "standing",
+        "speed": 0,
+        "jumpPhase": "grounded",
+        "boat": {
+          "position": [
+            3.7,
+            38.875
+          ],
+          "yaw": 3.141,
+          "velocity": [
+            0,
+            0
+          ]
+        },
+        "boatImpactRevision": 0,
+        "idleMs": 2353
+      }
+    },
+    {
+      "name": "paused player remains online",
+      "pass": true
+    },
+    {
+      "name": "opaque world actually suspended",
+      "pass": true
+    },
+    {
+      "name": "leave releases cabinet claim after suspended world",
+      "pass": true
+    },
+    {
+      "name": "saved private board restores after opaque suspend",
+      "pass": true
+    },
+    {
+      "name": "actual jump began at 30 synthetic callbacks/s",
+      "pass": true,
+      "data": [
+        {
+          "animation": "Idle_Neutral",
+          "at": 6007,
+          "y": 6.126649856567383
+        },
+        {
+          "animation": "Jump_Start",
+          "at": 6120.300000011921,
+          "y": 6.111238479614258
+        },
+        {
+          "animation": "Jump_Loop",
+          "at": 6351.300000011921,
+          "y": 7.4676432609558105
+        },
+        {
+          "animation": "Jump_Land",
+          "at": 6965.800000011921,
+          "y": 5.987613201141357
+        },
+        {
+          "animation": "Idle_Neutral",
+          "at": 7232.0999999940395,
+          "y": 6.107659816741943
+        }
+      ]
+    },
+    {
+      "name": "actual jump began at 60 synthetic callbacks/s",
+      "pass": true,
+      "data": [
+        {
+          "animation": "Idle_Neutral",
+          "at": 6035.600000023842,
+          "y": 6.126649856567383
+        },
+        {
+          "animation": "Jump_Start",
+          "at": 6134.600000023842,
+          "y": 6.113255023956299
+        },
+        {
+          "animation": "Jump_Loop",
+          "at": 6349.800000011921,
+          "y": 7.384986877441406
+        },
+        {
+          "animation": "Jump_Land",
+          "at": 6998.4000000059605,
+          "y": 6.018454551696777
+        },
+        {
+          "animation": "Idle_Neutral",
+          "at": 7249,
+          "y": 6.105767250061035
+        }
+      ]
+    },
+    {
+      "name": "actual jump began at 120 synthetic callbacks/s",
+      "pass": true,
+      "data": [
+        {
+          "animation": "Idle_Neutral",
+          "at": 5990.200000017881,
+          "y": 6.124331951141357
+        },
+        {
+          "animation": "Jump_Start",
+          "at": 6095,
+          "y": 6.111255645751953
+        },
+        {
+          "animation": "Jump_Loop",
+          "at": 6295.0999999940395,
+          "y": 7.295160293579102
+        },
+        {
+          "animation": "Jump_Land",
+          "at": 6957.5,
+          "y": 5.987825870513916
+        },
+        {
+          "animation": "Idle_Neutral",
+          "at": 7214.0999999940395,
+          "y": 6.107641696929932
+        }
+      ]
+    },
+    {
+      "name": "desktop has no touch pads",
+      "pass": true
+    },
+    {
+      "name": "desktop keyboard still moves",
+      "pass": true
+    },
+    {
+      "name": "desktop does not use mobile capped driver",
+      "pass": true
+    },
+    {
+      "name": "Run toggles at 30",
+      "pass": true
+    },
+    {
+      "name": "vehicle movement at 30",
+      "pass": true,
+      "data": {
+        "rate": 30,
+        "travel": 8.505095256665108,
+        "before": [
+          53.68601989746094,
+          5.957562446594238,
+          63.42878723144531
+        ],
+        "after": [
+          53.72840881347656,
+          4.756606101989746,
+          54.923797607421875
+        ]
+      }
+    },
+    {
+      "name": "vehicle park at 30",
+      "pass": true
+    },
+    {
+      "name": "Run toggles at 60",
+      "pass": true
+    },
+    {
+      "name": "vehicle movement at 60",
+      "pass": true,
+      "data": {
+        "rate": 60,
+        "travel": 8.006721816858883,
+        "before": [
+          53.68601989746094,
+          5.957289695739746,
+          63.42878723144531
+        ],
+        "after": [
+          53.72593688964844,
+          4.793200492858887,
+          55.42216491699219
+        ]
+      }
+    },
+    {
+      "name": "vehicle park at 60",
+      "pass": true
+    },
+    {
+      "name": "Run toggles at 120",
+      "pass": true
+    },
+    {
+      "name": "vehicle movement at 120",
+      "pass": true,
+      "data": {
+        "rate": 120,
+        "travel": 7.84062785412656,
+        "before": [
+          53.68601989746094,
+          5.957293510437012,
+          63.42878723144531
+        ],
+        "after": [
+          53.72511291503906,
+          4.8052263259887695,
+          55.5882568359375
+        ]
+      }
+    },
+    {
+      "name": "vehicle park at 120",
+      "pass": true
+    }
+  ],
+  "errors": []
+}
