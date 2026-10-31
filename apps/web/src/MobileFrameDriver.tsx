@@ -7,18 +7,23 @@ import {
 } from "./mobile-frame-clock";
 
 /** Mounted only for touch play. Transport and board UI keep their own clocks. */
-export function MobileFrameDriver({ covered }: { covered: boolean }) {
+export function MobileFrameDriver({
+  covered,
+  onPixelRatio,
+}: {
+  covered: boolean;
+  onPixelRatio: (ratio: number) => void;
+}) {
   const get = useThree((s) => s.get);
   const size = useThree((s) => s.size);
-  const setDpr = useThree((s) => s.setDpr);
   const clock = useMemo(createMobileFrameClock, []);
   const simulationTime = useRef(0);
   const work = useRef({ updates: 0, draws: 0, reportedAt: 0 });
   // A positive priority prevents R3F from drawing on every simulation step.
   useFrame(() => {}, 1);
   useEffect(() => {
-    setDpr(mobilePixelRatio(size.width, size.height));
-  }, [setDpr, size.width, size.height]);
+    onPixelRatio(mobilePixelRatio(size.width, size.height));
+  }, [onPixelRatio, size.width, size.height]);
   useEffect(() => {
     let frame = 0,
       disposed = false;

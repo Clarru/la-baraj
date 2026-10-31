@@ -39,6 +39,8 @@ Mobile 2048 now uses swipes only in its visible interface. Its direction buttons
 
 Frontend TypeScript and 533 tests pass, including independent two-contact arrival/release/cancel/third-finger handling; equal look rotation at 30/60/120 update rates with fixed orbit radius; 60 simulation / 30 draw budgets at 60/90/120/144 display rates; bounded catch-up and resume; pixel budget; and night/local-override reflection colors. Normal and isolated QA builds pass.
 
+An actual-Canvas lifecycle probe caught and corrected a further defect before shared QA: an imperative setDpr was overwritten by the Canvas prop during parent React updates. Game now owns the reported pixel ratio as state and feeds it back to Canvas. The reproducible `scripts/check-mobile-frame.mjs` probe rerenders the parent ten times per second: 393×852 stays at 353×766 drawing pixels, 844×390 at 759×351, and 1366×1024 at 692×519 (below 360k). Covered state stays stopped despite parent updates and resumes without replaying hidden time. See [lifecycle results](testing/captures/mobile-input-performance/frame-lifecycle.json).
+
 Actual-game before/after workload comparison, bystander claim/alignment during opaque suspension, timing invariance, Safari/WebKit/simulator checks and physical iPhone follow-up are still pending acceptance. No claim that phone heat is fixed is made by these source checks.
 
 The release owner coordinates all writes to the single 4173 preview. The baseline slot returned early with exactly six additions removed and every one of the 316 original path/size/SHA values restored. No extra game or backend listener was started.
