@@ -99,9 +99,9 @@ The following evidence was completed against the same coordinated
 - Browser acceptance used the single coordinated listener; no per-worktree
   server or backend test service was needed.
 
-Valid visual evidence is limited to
-`.impeccable/review/desktop.jpg` and `.impeccable/review/mobile.jpg`. Older raw
-captures with invalid padding are not acceptance evidence and must not be used.
+Valid visual evidence is stored at `.impeccable/review/desktop.jpg` and
+`.impeccable/review/mobile.jpg`. Earlier captures with browser padding were
+excluded from review and removed from this task’s local evidence.
 The finish review found no other material functional, accessibility, or
 viewport issues.
 
@@ -114,11 +114,24 @@ The existing regression coverage includes opt-in behavior, cache invalidation,
 restoration, timeline clock precedence, shared palette, manual sun direction,
 and crossed fog-slider bounds.
 
-One finish-review follow-up remains pending: the reviewer found a P2 because
-Barlow was referenced but not loaded in the editor. The parent change now adds
-lazy editor imports for Barlow Latin weights 400, 500, and 600. The post-change production build passed under Node `24.22.2`; the two replacement font views (desktop and mobile) remain pending after the mobile-profiling window; do not treat that font
-confirmation as complete until those checks pass. No other material issue was
-identified by the review.
+The only finish-review finding, a P2 for referenced but unloaded Barlow, is
+resolved. The editor now imports Latin weights 400, 500, and 600 lazily. The
+final Node `24.22.2` production build passed. Replacement desktop and narrow
+captures show readable Barlow framing and retain Dialkit’s native typography.
+Runtime computed framing is `Barlow, sans-serif`; the font set reports loaded,
+all three weight checks pass, and the supported browser asset inventory records
+all three generated WOFF2 resources. The browser inspection surface does not
+expose font-set iteration, so resource observations corroborate the checks.
+There were no console errors. The narrow reviewer verdict is **Ship**, with
+the sole P2 resolved and no further source change or recapture required.
+
+The integration owner published the font-synced candidate `b0214d5` at the normal
+local URL while keeping main and production on `8388736`. The font confirmation
+used those exact normal chunks through a temporary isolated alias. The owned
+QA tab was closed, its viewport reset, and only that authorized alias was
+removed after hash verification; all 329 normal files were verified unchanged.
+This records the publication state on October 31, 2026, rather than reserving
+ownership of future preview updates.
 
 This documentation update records the current localhost-first hold. Draft PR
 62 is not authorization to merge, deploy, or write production/backend state.
