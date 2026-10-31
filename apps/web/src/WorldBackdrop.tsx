@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { currentLighting } from "./day-night";
+import { environmentDefaults, environmentTuning } from "./environment-tuning";
 import * as THREE from "three";
 import { makeHorizonLand } from "./landscape-geometry";
 
@@ -61,7 +62,9 @@ uniform vec3 horizonColor;
 uniform vec3 lowerColor;
 uniform float cloudCover;
 uniform vec3 cloudColor;
-uniform float cloudTime;
+uniform vec2 cloudOffset;
+uniform float cloudScale;
+uniform float cloudOpacity;
 uniform sampler2D cloudNoise;
 varying vec3 skyDirection;
 void main(){
@@ -70,10 +73,10 @@ void main(){
   vec3 sky=mix(horizonColor,topColor,pow(clamp(height,0.0,1.0),0.55));
   sky=mix(sky,lowerColor,(1.0-smoothstep(-0.8,-0.04,height)));
   if (cloudCover > 0.02) {
-  vec2 cloudUV=direction.xz / max(0.24, height+0.3) * 2.1 + vec2(cloudTime*0.003,0.0);
+  vec2 cloudUV=direction.xz / max(0.24, height+0.3) * 2.1 * cloudScale + cloudOffset;
   float n=texture2D(cloudNoise,cloudUV*0.40).r;
   float cloud=smoothstep(0.90-cloudCover*0.55,1.13-cloudCover*0.55,n);
-  float cloudAlpha=cloud * smoothstep(0.03,0.22,height) * smoothstep(0.05,0.25,cloudCover) * 0.55;
+  float cloudAlpha=cloud * smoothstep(0.03,0.22,height) * smoothstep(0.05,0.25,cloudCover) * cloudOpacity;
   sky=mix(sky,cloudColor,cloudAlpha);
   }
   gl_FragColor=vec4(sky,1.0);
@@ -97,7 +100,9 @@ export function WorldBackdrop({
           lowerColor: { value: new THREE.Color("#aec5b5") },
           cloudCover: { value: 0 },
           cloudColor: { value: new THREE.Color("#e0e4e2") },
-          cloudTime: { value: 0 },
+          cloudOffset: { value: new THREE.Vector2() },
+          cloudScale: { value: 1 },
+          cloudOpacity: { value: 0.55 },
           cloudNoise: { value: cloudNoise },
         },
         vertexShader,
@@ -121,7 +126,12 @@ export function WorldBackdrop({
     [],
   );
   const last = useRef(-Infinity);
-  useFrame(() => {
+  useFrame((_, delta) => {
+    const settings = environmentTuning() ?? environmentDefaults;
+    sky.uniforms.cloudOffset.value.x +=
+      delta * settings.atmosphere.wind.x * 0.003;
+    sky.uniforms.cloudOffset.value.y +=
+      delta * settings.atmosphere.wind.y * 0.003;
     const now = performance.now();
     if (now - last.current < 250) return;
     last.current = now;
@@ -130,8 +140,9 @@ export function WorldBackdrop({
     sky.uniforms.horizonColor.value.copy(colors.horizon);
     sky.uniforms.lowerColor.value.copy(colors.fog);
     sky.uniforms.cloudCover.value = cloudCover;
+    sky.uniforms.cloudScale.value = settings.atmosphere.cloudScale;
+    sky.uniforms.cloudOpacity.value = settings.atmosphere.cloudOpacity;
     sky.uniforms.cloudColor.value.copy(colors.horizon).lerp(colors.hemi, 0.42);
-    sky.uniforms.cloudTime.value = now / 1000;
     land.color.copy(colors.land);
   });
   useEffect(

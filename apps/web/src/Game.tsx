@@ -39,6 +39,7 @@ import {
 import { Canvas, useFrame } from "@react-three/fiber";
 import { WorldBackdrop } from "./WorldBackdrop";
 import { WorldLighting } from "./WorldLighting";
+import { environmentLabEnabled } from "./environment-tuning";
 import { Physics } from "@react-three/rapier";
 import { GameIcon } from "./GameArt";
 import * as THREE from "three";
@@ -119,6 +120,7 @@ class SceneBoundary extends Component<
 const ignoreMovement = () => {};
 const CruceBoard = lazy(() => import("./CruceBoard"));
 const PlanesBoard = lazy(() => import("./PlanesBoard"));
+const EnvironmentLab = lazy(() => import("./EnvironmentLab"));
 function SceneReady({ onReady }: { onReady: () => void }) {
   const reported = useRef(false);
   useFrame(() => {
@@ -188,6 +190,7 @@ export default function Game({ initialName }: { initialName: string }) {
     [evening, setEvening] = useState(false),
     [crowd, setCrowd] = useState(false);
   const [metrics, setMetrics] = useState<RenderSample | null>(null);
+  const [environmentEditing, setEnvironmentEditing] = useState(false);
   const [resetKey, setResetKey] = useState(0),
     [ready, setReady] = useState(false);
   const [panel, setPanel] = useState<GamePanel>(null);
@@ -369,6 +372,12 @@ export default function Game({ initialName }: { initialName: string }) {
   }, []);
   useEffect(() => {
     const capture = (event: KeyboardEvent) => {
+      if (
+        environmentLabEnabled &&
+        event.target instanceof Element &&
+        event.target.closest(".environment-lab, .dialkit-root")
+      )
+        return;
       if (arcadeOpen) {
         if (!arcade.state.active && event.code === "Escape") {
           event.preventDefault();
@@ -696,6 +705,7 @@ export default function Game({ initialName }: { initialName: string }) {
                     resetKey={resetKey}
                     arcadeStationId={arcadeControlledId}
                     paused={
+                      environmentEditing ||
                       mobileBlocked ||
                       panel !== null ||
                       activityBusy ||
@@ -744,6 +754,7 @@ export default function Game({ initialName }: { initialName: string }) {
                   }
                   resetKey={homeResetKey}
                   paused={
+                    environmentEditing ||
                     mobileBlocked ||
                     !hasHome ||
                     arcadeOpen ||
@@ -800,9 +811,15 @@ export default function Game({ initialName }: { initialName: string }) {
       </SceneBoundary>
       {ready && (
         <div className="hud">
+          {environmentLabEnabled && (
+            <Suspense fallback={null}>
+              <EnvironmentLab onEditing={setEnvironmentEditing} />
+            </Suspense>
+          )}
           <MobileControls
             enabled={
               hasHome &&
+              !environmentEditing &&
               !mobileBlocked &&
               panel === null &&
               !arcadeOpen &&
@@ -939,6 +956,7 @@ export default function Game({ initialName }: { initialName: string }) {
             mode={import.meta.env.DEV ? mode : "walk"}
             resetKey={homeResetKey}
             paused={
+              environmentEditing ||
               mobileBlocked ||
               panel !== null ||
               cruceOpen ||
