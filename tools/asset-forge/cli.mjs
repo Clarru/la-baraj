@@ -8,6 +8,7 @@ import {
   reviewProject,
   packProject,
   doctor,
+  imagegenRequest,
 } from "./core.mjs";
 const help = {
   tool: "La Baraj Asset Forge",
@@ -17,10 +18,12 @@ const help = {
     init: "Create a new job: init <directory> --recipe lantern|crate|custom",
     build:
       "Build, lint and render: build <project> [--blender <executable>] [--draft]",
+    prompt:
+      "Assemble the fixed style kit and variable brief for ImageGen: prompt <project>",
     check: "Recompute technical checks: check <project>",
     status: "Read the current checked build: status <project>",
     review:
-      "After viewing QA images: review <project> --note <specific findings>",
+      "After viewing QA images: review <project> [--reject] --note <specific findings>",
     pack: "Package a current reviewed result: pack <project> --out <new directory>",
   },
   notes: [
@@ -47,6 +50,7 @@ try {
       out: { type: "string" },
       draft: { type: "boolean" },
       force: { type: "boolean" },
+      reject: { type: "boolean" },
       help: { type: "boolean" },
       json: { type: "boolean" },
     },
@@ -59,12 +63,13 @@ try {
   else {
     if (!project) throw new ForgeError("A project directory is required.");
     if (command === "init") result = await initProject(project, values.recipe);
+    else if (command === "prompt") result = await imagegenRequest(project);
     else if (command === "build") result = await buildProject(project, values);
     else if (command === "check" || command === "status") {
       result = await checkProject(project);
       if (!result.report.technicalPass) process.exitCode = 1;
     } else if (command === "review")
-      result = await reviewProject(project, values.note);
+      result = await reviewProject(project, values.note, !values.reject);
     else if (command === "pack") {
       if (!values.out)
         throw new ForgeError("--out must name a new package directory.");
@@ -79,7 +84,11 @@ try {
     JSON.stringify(
       {
         ok: false,
-        error: { code: error.code ?? "tool-error", message: error.message },
+        error: {
+          code: error.code ?? "tool-error",
+          message: error.message,
+          details: error.details,
+        },
       },
       null,
       2,

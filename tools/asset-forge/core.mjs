@@ -8,6 +8,7 @@ import sharp from "sharp";
 import { NodeIO } from "@gltf-transform/core";
 import { ALL_EXTENSIONS } from "@gltf-transform/extensions";
 import { MeshoptDecoder } from "meshoptimizer";
+import { Ray, Vector3, Matrix4 } from "three";
 import { getBounds } from "@gltf-transform/functions";
 
 export const ROOT = path.resolve(import.meta.dirname, "../..");
@@ -55,6 +56,27 @@ const inside = (root, file) => {
     !path.isAbsolute(relative)
   );
 };
+async function loadReferenceKit(style) {
+  const directory = path.join(TOOL, "references/v1"),
+    file = path.join(directory, "manifest.json");
+  if ((await fileHash(file)) !== style.referenceKit.manifestHash)
+    throw new ForgeError(
+      "Reference-kit manifest changed; create/review a new kit version.",
+      "style-mismatch",
+    );
+  const kit = await json(file);
+  const images = [];
+  for (const image of kit.images) {
+    const file = path.join(directory, image.file);
+    if (!inside(directory, file) || (await fileHash(file)) !== image.sha256)
+      throw new ForgeError(
+        "Fixed reference image changed: " + image.file,
+        "style-mismatch",
+      );
+    images.push({ ...image, path: file });
+  }
+  return { ...kit, images };
+}
 export async function profile() {
   return json(path.join(STYLE, "profile.json"));
 }
@@ -68,6 +90,7 @@ export function validateSpec(spec, style) {
     "budgets",
     "parameters",
     "requiredSockets",
+    "requiredJoints",
     "collision",
     "reference",
     "seed",
@@ -123,6 +146,20 @@ export function validateSpec(spec, style) {
   )
     throw new ForgeError("Invalid requiredSockets list.");
   if (
+    (spec.recipe === "custom" || spec.requiredJoints !== undefined) &&
+    (!Array.isArray(spec.requiredJoints) ||
+      spec.requiredJoints.length > 64 ||
+      new Set(spec.requiredJoints).size !== spec.requiredJoints.length ||
+      spec.requiredJoints.some(
+        (name) =>
+          typeof name !== "string" ||
+          !/^[A-Za-z][A-Za-z0-9_]{0,63}$/.test(name),
+      ))
+  )
+    throw new ForgeError(
+      "Custom jobs must declare requiredJoints (use [] only when no joined assembly needs checking).",
+    );
+  if (
     !["box", "none"].includes(spec.collision) ||
     !spec.parameters ||
     typeof spec.parameters !== "object" ||
@@ -135,6 +172,37 @@ export function validateSpec(spec, style) {
       "Golden recipes have fixed geometry; use a custom recipe for parameters.",
     );
   return spec;
+}
+export async function imagegenRequest(directory) {
+  const project = await loadProject(directory),
+    kit = project.kit,
+    template = await fs.readFile(
+      path.join(TOOL, "prompts/asset-reference-v1.txt"),
+      "utf8",
+    );
+  const images = kit.images;
+  const brief = await fs.readFile(path.join(project.dir, "brief.md"), "utf8");
+  const request = {
+    version: 1,
+    kit: kit.id,
+    kitVersion: kit.version,
+    fixedTemplateHash: digest(template),
+    readyForGeneration: !brief.includes("Describe the silhouette, components"),
+    referenceImages: images,
+    prompt:
+      template +
+      "\nOBJECT BRIEF (variable):\n" +
+      brief +
+      "\nIntended dimensions [width,height,depth] metres: " +
+      JSON.stringify(project.spec.dimensions) +
+      "\nStatic prop; geometry triangle ceiling: " +
+      project.spec.budgets.triangles +
+      ". Preserve clear component separation for later Blender reconstruction.",
+    generation:
+      "Call the built-in image_gen tool with this prompt and these ordered local paths. This CLI does not invoke a paid provider or turn the image into a mesh.",
+  };
+  await writeJson(path.join(project.dir, "imagegen-request.json"), request);
+  return request;
 }
 export async function initProject(directory, recipe = "custom") {
   const dir = path.resolve(directory),
@@ -162,6 +230,7 @@ export async function initProject(directory, recipe = "custom") {
       seed: 0,
       parameters: {},
       requiredSockets: preset.requiredSockets,
+      requiredJoints: [],
       collision: preset.collision,
       reference: preset.reference ? "repo:" + preset.reference : null,
     },
@@ -181,7 +250,13 @@ export async function initProject(directory, recipe = "custom") {
       path.join(TOOL, "blender/custom-template.py"),
       path.join(dir, "recipe.py"),
     );
-  return { project: dir, spec, commands: ["build", "check", "review", "pack"] };
+  await imagegenRequest(dir);
+  return {
+    project: dir,
+    spec,
+    imagegenRequest: path.join(dir, "imagegen-request.json"),
+    commands: ["prompt", "build", "check", "review", "pack"],
+  };
 }
 export async function loadProject(directory) {
   const dir = await fs.realpath(path.resolve(directory)),
@@ -205,7 +280,11 @@ export async function loadProject(directory) {
     if (spec.reference.startsWith("repo:") && !inside(ROOT, reference))
       throw new ForgeError("Reference escapes the repository.");
   }
-  return { dir, style, spec, reference };
+  const kit = await loadReferenceKit(style);
+  const concept = (await exists(path.join(dir, "concept.png")))
+    ? path.join(dir, "concept.png")
+    : null;
+  return { dir, style, spec, reference, kit, concept };
 }
 export async function inputFingerprint(project) {
   const { spec } = project;
@@ -216,11 +295,16 @@ export async function inputFingerprint(project) {
     "blender/parts.py",
     "blender/golden.py",
     "blender/render.py",
+    "blender/compare.py",
+    "blender/concept_compare.py",
     "styles/timber-iron-v1/profile.json",
     ...Object.keys(project.style.sourceTextures).map(
       (f) => "styles/timber-iron-v1/" + f,
     ),
   ];
+  files.push("prompts/asset-reference-v1.txt", "references/v1/manifest.json");
+  const kit = await json(path.join(TOOL, "references/v1/manifest.json"));
+  for (const image of kit.images) files.push("references/v1/" + image.file);
   const inputs = { spec, files: {} };
   for (const file of files)
     inputs.files["tool/" + file] = await fileHash(path.join(TOOL, file));
@@ -237,6 +321,12 @@ export async function inputFingerprint(project) {
   inputs.files["brief.md"] = await fileHash(path.join(project.dir, "brief.md"));
   if (project.reference)
     inputs.files.reference = await fileHash(project.reference);
+  if (project.concept)
+    inputs.files["concept.png"] = await fileHash(project.concept);
+  if (await exists(path.join(project.dir, "concept-request.json")))
+    inputs.files["concept-request.json"] = await fileHash(
+      path.join(project.dir, "concept-request.json"),
+    );
   return { hash: digest(JSON.stringify(stable(inputs))), inputs };
 }
 export async function blenderPath(explicit) {
@@ -349,7 +439,10 @@ export async function lintModel(file, spec, style, sockets = { sockets: {} }) {
         normal.getElementSize() !== 3
       )
         errors.push("Mapped PBR geometry requires UV0 and normals.");
-      if (uv) {
+      if (
+        uv &&
+        primitive.getMaterial()?.getName() !== "LaBaraj speaker cloth"
+      ) {
         const values = [];
         const timber = primitive.getMaterial()?.getName() === "LaBaraj timber";
         for (let i = 0; i < uv.getCount(); i++) {
@@ -415,22 +508,27 @@ export async function lintModel(file, spec, style, sockets = { sockets: {} }) {
       errors.push("Material tint drift: " + m.getName());
     if (m.getAlphaMode() !== "OPAQUE")
       errors.push("Transparent materials are outside this static profile.");
+    const settings = style.materialSettings?.[m.getName()];
     if (
-      m.getMetallicFactor() !== 1 ||
-      m.getRoughnessFactor() !== 1 ||
+      m.getMetallicFactor() !== (settings?.metallic ?? 1) ||
+      m.getRoughnessFactor() !== (settings?.roughness ?? 1) ||
       m.getNormalScale() !== 1
     )
       errors.push("PBR factor drift: " + m.getName());
+    const expectedMaps = settings?.maps ?? style.runtimeTextureHashes;
     for (const [role, texture] of [
       ["baseColor", m.getBaseColorTexture()],
       ["normal", m.getNormalTexture()],
       ["metallicRoughness", m.getMetallicRoughnessTexture()],
-    ])
-      if (
-        !texture ||
-        digest(texture.getImage()) !== style.runtimeTextureHashes[role]
-      )
-        errors.push("Missing or unapproved " + role + " atlas: " + m.getName());
+    ]) {
+      if (expectedMaps[role]) {
+        if (!texture || digest(texture.getImage()) !== expectedMaps[role])
+          errors.push(
+            "Missing or unapproved " + role + " atlas: " + m.getName(),
+          );
+      } else if (texture)
+        errors.push("Unexpected map for material: " + m.getName() + "/" + role);
+    }
     materials.push({
       name: m.getName(),
       baseColor: m.getBaseColorFactor(),
@@ -448,9 +546,112 @@ export async function lintModel(file, spec, style, sockets = { sockets: {} }) {
       p.some((n) => !Number.isFinite(n))
     )
       errors.push("Invalid socket " + name);
+  const surfaces = sockets.surfaceProbes ?? [],
+    required = style.recipes[spec.recipe]?.surfaceProbeCount ?? 0,
+    joints = sockets.joints ?? {};
+  if (required && surfaces.length !== required)
+    errors.push("Required sealed-surface probes missing.");
+  for (const name of spec.requiredJoints ?? [])
+    if (!Array.isArray(joints[name]) || joints[name].length !== 3)
+      errors.push("Missing three-direction joint contract: " + name);
+  for (const name of Object.keys(joints))
+    if (!(spec.requiredJoints ?? []).includes(name))
+      errors.push("Undeclared joint contract: " + name);
+  const probes = [
+    ...surfaces,
+    ...Object.entries(joints).flatMap(([joint, checks]) =>
+      Array.isArray(checks)
+        ? checks.map((probe) => ({ ...probe, name: joint + "/" + probe?.name }))
+        : [],
+    ),
+  ];
+  const surfaceResults = [];
+  if (
+    probes.length > 256 ||
+    new Set(probes.map((p) => p?.name)).size !== probes.length
+  )
+    errors.push("Invalid or duplicate sealed-surface probe list.");
+  if (probes.length) {
+    const trianglesWorld = [];
+    for (const node of root.listNodes())
+      for (const primitive of node.getMesh()?.listPrimitives() ?? []) {
+        const positions = primitive.getAttribute("POSITION"),
+          indices = primitive.getIndices()?.getArray(),
+          matrix = new Matrix4().fromArray(node.getWorldMatrix()),
+          vertices = [],
+          value = [];
+        if (!positions) continue;
+        for (let i = 0; i < positions.getCount(); i++) {
+          positions.getElement(i, value);
+          vertices.push(new Vector3(...value).applyMatrix4(matrix));
+        }
+        const count = indices?.length ?? vertices.length;
+        for (let i = 0; i < count; i += 3)
+          trianglesWorld.push([
+            vertices[indices ? indices[i] : i],
+            vertices[indices ? indices[i + 1] : i + 1],
+            vertices[indices ? indices[i + 2] : i + 2],
+          ]);
+      }
+    const hit = new Vector3();
+    for (const probe of probes.slice(0, 256)) {
+      if (
+        !probe ||
+        typeof probe.name !== "string" ||
+        !Array.isArray(probe.origin) ||
+        !Array.isArray(probe.direction) ||
+        probe.origin.length !== 3 ||
+        probe.direction.length !== 3 ||
+        [...probe.origin, ...probe.direction].some(
+          (n) => !Number.isFinite(n),
+        ) ||
+        !Number.isFinite(probe.maxDistance) ||
+        probe.maxDistance <= 0 ||
+        probe.maxDistance > 0.5
+      ) {
+        errors.push("Invalid sealed-surface probe.");
+        continue;
+      }
+      const origin = new Vector3(...probe.origin),
+        direction = new Vector3(...probe.direction);
+      if (direction.lengthSq() < 1e-10) {
+        errors.push("Invalid probe direction.");
+        continue;
+      }
+      const ray = new Ray(origin, direction.normalize());
+      let distance = Infinity;
+      for (const t of trianglesWorld)
+        if (ray.intersectTriangle(...t, false, hit))
+          distance = Math.min(distance, hit.distanceTo(origin));
+      const pass = distance <= probe.maxDistance;
+      surfaceResults.push({
+        name: probe.name,
+        pass,
+        distance: Number.isFinite(distance) ? distance : null,
+      });
+      if (!pass)
+        errors.push("Open/recessed surface exceeds solid depth: " + probe.name);
+    }
+  }
   return {
     technicalPass: errors.length === 0,
     errors,
+    surfaceResults,
+    jointResults: Object.fromEntries(
+      (spec.requiredJoints ?? []).map((name) => [
+        name,
+        {
+          pass:
+            Array.isArray(joints[name]) &&
+            joints[name].length === 3 &&
+            surfaceResults.filter((r) => r.name.startsWith(name + "/"))
+              .length === 3 &&
+            surfaceResults
+              .filter((r) => r.name.startsWith(name + "/"))
+              .every((r) => r.pass),
+        },
+      ]),
+    ),
     triangles,
     bytes,
     primitives,
@@ -522,7 +723,17 @@ export async function checkProject(directory) {
       "stale-build",
     );
   for (const [folder, views] of [
-    ["qa", ["front", "side", "rear", "three-quarter"]],
+    [
+      "qa",
+      [
+        "front",
+        "side",
+        "rear",
+        "three-quarter",
+        "diagnostic-clay",
+        "diagnostic-unlit",
+      ],
+    ],
     ["qa-light-90", ["three-quarter"]],
   ])
     for (const view of views) {
@@ -540,7 +751,7 @@ export async function checkProject(directory) {
     const review = await json(path.join(run.directory, "review.json"));
     reviewStatus =
       review.artifactHash === (await artifactDigest(run.directory))
-        ? "accepted"
+        ? (review.status ?? "accepted")
         : "stale";
   }
   return { ...run, report, reviewStatus };
@@ -584,9 +795,12 @@ export async function buildProject(directory, options = {}) {
         throw error;
     }
   }
+  const stages = [];
   const step = async (name, program, args) => {
     process.stderr.write(`[asset-forge] ${name}\n`);
+    const start = performance.now();
     await run(program, args, path.join(out, name + ".log"));
+    stages.push({ name, milliseconds: Math.round(performance.now() - start) });
   };
   await step("build", blender, [
     "--background",
@@ -620,12 +834,19 @@ export async function buildProject(directory, options = {}) {
     sockets,
   );
   await writeJson(path.join(out, "validation.json"), report);
-  if (!report.technicalPass)
-    throw new ForgeError(
+  if (!report.technicalPass) {
+    const error = new ForgeError(
       "Asset rejected: " + report.errors.join("; "),
       "asset-rejected",
       1,
     );
+    error.details = {
+      directory: out,
+      validation: path.join(out, "validation.json"),
+      errors: report.errors,
+    };
+    throw error;
+  }
   const resolution = options.draft ? 256 : project.style.qaResolution,
     framing = {
       framing: {
@@ -660,6 +881,7 @@ export async function buildProject(directory, options = {}) {
       "--views",
       views,
       "--masks",
+      ...(target === path.join(out, "qa") ? ["--diagnostics"] : []),
     ]);
   await render(path.join(out, "model.glb"), path.join(out, "qa"));
   await render(
@@ -677,11 +899,17 @@ export async function buildProject(directory, options = {}) {
       "three-quarter",
     );
     await step("compare", "python3", [
-      path.join(
-        ROOT,
-        ".agents/skills/la-baraj-3d-assets/scripts/compare_views.py",
-      ),
+      path.join(TOOL, "blender/compare.py"),
       path.join(out, "reference"),
+      path.join(out, "qa"),
+      path.join(out, "comparison"),
+    ]);
+  }
+  if (project.concept) {
+    await fs.copyFile(project.concept, path.join(out, "reference-concept.png"));
+    await step("concept-compare", "python3", [
+      path.join(TOOL, "blender/concept_compare.py"),
+      path.join(out, "reference-concept.png"),
       path.join(out, "qa"),
       path.join(out, "comparison"),
     ]);
@@ -694,12 +922,18 @@ export async function buildProject(directory, options = {}) {
     id: project.spec.id,
     style: project.style.id,
     styleVersion: project.style.version,
+    referenceKit: {
+      id: project.kit.id,
+      version: project.kit.version,
+      manifestHash: project.style.referenceKit.manifestHash,
+    },
     units: "metres",
     up: "+Y",
     forward: "+Z",
     pivot: "floor-center",
     inputHash: fingerprint.hash,
     inputs: fingerprint.inputs,
+    stages,
     modelHash: await fileHash(path.join(out, "model.glb")),
     report,
     collision:
@@ -734,6 +968,8 @@ export async function artifactDigest(directory) {
     "validation.json",
     "source.blend",
   ];
+  if (await exists(path.join(directory, "reference-concept.png")))
+    names.push("reference-concept.png");
   for (const dir of [
     "qa",
     "qa-light-90",
@@ -749,7 +985,7 @@ export async function artifactDigest(directory) {
     hashes[name] = await fileHash(path.join(directory, name));
   return digest(JSON.stringify(hashes));
 }
-export async function reviewProject(directory, note) {
+export async function reviewProject(directory, note, accepted = true) {
   if (typeof note !== "string" || note.trim().length < 12)
     throw new ForgeError(
       "Record a concrete visual-review note (at least12 characters).",
@@ -757,7 +993,7 @@ export async function reviewProject(directory, note) {
   const checked = await checkProject(directory);
   if (!checked.report.technicalPass)
     throw new ForgeError("Technical checks fail.", "asset-rejected", 1);
-  if (checked.manifest.draft)
+  if (accepted && checked.manifest.draft)
     throw new ForgeError(
       "Draft renders cannot be approved. Build without --draft.",
       "draft-build",
@@ -765,6 +1001,7 @@ export async function reviewProject(directory, note) {
   const review = {
     artifactHash: await artifactDigest(checked.directory),
     note: note.trim(),
+    status: accepted ? "accepted" : "rejected",
     reviewedAt: new Date().toISOString(),
     scope:
       "Visual review of retained views; collision and actual game performance still require integration checks.",
@@ -785,6 +1022,12 @@ export async function packProject(directory, destination) {
       );
     },
   );
+  if (review.status !== "accepted")
+    throw new ForgeError(
+      "Visual review rejected this asset; revise and rebuild.",
+      "review-rejected",
+      3,
+    );
   if (
     checked.manifest.draft ||
     review.artifactHash !== (await artifactDigest(checked.directory))
@@ -819,6 +1062,7 @@ export async function packProject(directory, destination) {
       id: m.id,
       style: m.style,
       styleVersion: m.styleVersion,
+      referenceKit: m.referenceKit,
       styleHash: digest(
         JSON.stringify(stable((await loadProject(directory)).style)),
       ),

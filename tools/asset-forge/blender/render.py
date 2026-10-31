@@ -22,6 +22,7 @@ def arguments():
     parser.add_argument("--masks", action="store_true")
     parser.add_argument("--views", default="front,side,rear,three-quarter")
     parser.add_argument("--key-angle", type=float, default=0)
+    parser.add_argument("--diagnostics", action="store_true")
     return parser.parse_args(sys.argv[sys.argv.index("--") + 1:])
 
 
@@ -113,6 +114,42 @@ def main():
         aim(camera, target)
         scene.render.filepath = str((args.output / f"{name}.png").resolve())
         bpy.ops.render.render(write_still=True)
+    if args.diagnostics:
+        # Same imported export, camera and lighting. No generated paintovers.
+        original_materials = {obj: list(obj.data.materials) for obj in objects}
+        clay = bpy.data.materials.new('QA geometry clay')
+        clay.use_nodes = True
+        clay_shader = clay.node_tree.nodes.get('Principled BSDF')
+        clay_shader.inputs['Base Color'].default_value = (.34, .34, .34, 1)
+        clay_shader.inputs['Roughness'].default_value = 1
+        unlit = {}
+        for obj, materials_before in original_materials.items():
+            for original in materials_before:
+                if original is None or original in unlit:
+                    continue
+                mat = original.copy()
+                mat.name = 'QA unlit ' + original.name
+                nodes = mat.node_tree.nodes
+                shader = next(n for n in nodes if n.type == 'BSDF_PRINCIPLED')
+                output = next(n for n in nodes if n.type == 'OUTPUT_MATERIAL')
+                emission = nodes.new('ShaderNodeEmission')
+                color = shader.inputs['Base Color']
+                emission.inputs['Color'].default_value = color.default_value
+                if color.is_linked:
+                    mat.node_tree.links.new(color.links[0].from_socket, emission.inputs['Color'])
+                mat.node_tree.links.new(emission.outputs[0], output.inputs['Surface'])
+                unlit[original] = mat
+        camera.location = target + Vector((4, -5, 3)) * span
+        aim(camera, target)
+        for label in ['clay', 'unlit']:
+            for obj, materials_before in original_materials.items():
+                for i, mat in enumerate(materials_before):
+                    obj.data.materials[i] = clay if label == 'clay' else unlit[mat]
+            scene.render.filepath = str((args.output / f'diagnostic-{label}.png').resolve())
+            bpy.ops.render.render(write_still=True)
+        for obj, materials_before in original_materials.items():
+            for i, mat in enumerate(materials_before):
+                obj.data.materials[i] = mat
     if args.masks:
         floor.hide_render = True
         scene.render.film_transparent = True
@@ -129,6 +166,7 @@ def main():
               "images": images, "blender_bounds": {"min": list(low), "max": list(high)},
               "blender_dimensions": list(dimensions), "framing": framing,
               "lighting":{"key_azimuth_degrees":args.key_angle},
+              "diagnostics": ['clay', 'unlit'] if args.diagnostics else [],
               "renderer": "Blender Cycles 24 samples AgX; imported exported GLB"}
     (args.output / "metrics.json").write_text(json.dumps(report, indent=2) + "\n")
     print("ASSET_REPORT " + json.dumps(report), flush=True)

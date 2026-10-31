@@ -19,6 +19,8 @@ Blender is discovered from `ASSET_FORGE_BLENDER`, the retained `ASSET_LAB_BLENDE
 
 `build` creates geometry, saves editable Blender source, exports and optimizes a GLB, checks it, renders front/side/rear/three-quarter views and a second lighting angle, and renders/composes a matched reference comparison when a reference GLB is supplied. No ImageGen or paid service is called. Existing validated artwork is reused.
 
+The default view set also contains `diagnostic-clay.png` (shape/contact lighting without textures) and `diagnostic-unlit.png` (base color without surface lighting). These are renders of the exported mesh, not generated paintovers. Stage timings and logs help distinguish geometry/export work from rendering cost.
+
 Read the returned JSON's `directory` and inspect its `qa/`, `qa-light-90/`, and `comparison/` images. Compare silhouette, components, negative space, grain direction, edge finish and lighting response. For example:
 
 ```sh
@@ -35,9 +37,11 @@ A developer or coding agent can make that review; the command is a recorded asse
 | --- | --- |
 | `doctor` | Local runtime, Blender, Pillow and available recipe information |
 | `init <new-directory> --recipe crate\|lantern\|custom` | `asset.json`, `brief.md`, and a custom recipe scaffold when needed |
+| `prompt <project>` | Fixed ordered style images, pinned template and the variable brief assembled into `imagegen-request.json` |
 | `build <project> [--draft] [--force]` | Isolated build, lints, normalized export, views, reference comparisons and manifest |
 | `check <project>` / `status <project>` | Recompute model checks; reject stale inputs or changed artifacts |
 | `review <project> --note ...` | Bind visual findings to the current full-resolution artifacts |
+| `review <project> --reject --note ...` | Record a visual rejection; packaging remains blocked |
 | `pack <project> --out <new-directory>` | New runtime package; refuses missing/stale review and existing destinations |
 
 All results are JSON. Progress goes to stderr; detailed process output stays in per-stage log files. Exit codes are 0 success, 1 process/asset failure, 2 invalid or stale input, and 3 missing/stale visual review. `--json` is accepted for agent callers; JSON is already the default. There are no prompts or TTY requirements.
@@ -51,6 +55,7 @@ The two golden recipes reproduce the measured lantern and crate. They are fixed 
 ```sh
 npm run asset -- init assets/authoring/workbench --recipe custom
 cp tools/asset-forge/examples/workbench.py assets/authoring/workbench/recipe.py
+cp tools/asset-forge/examples/workbench.json assets/authoring/workbench/asset.json
 npm run asset -- build assets/authoring/workbench
 ```
 
@@ -61,6 +66,7 @@ Implement `build(context)` in `recipe.py`:
 - `context.parts` supplies measured boxes, beams, bolts, profile extrusions, bands and chain links.
 - `context.material` supplies the approved mapped material; parts choose timber/metal regions through their strip argument.
 - `context.spec`, `context.parameters` and a seeded `context.random` expose the job contract.
+- `context.joints[name]` records three surface-depth probes for each critical connection declared in `asset.json`'s `requiredJoints`. Each probe has a unique `name`, `origin`, `direction` and `maxDistance` in metres/Blender coordinates. Multi-part custom assemblies without declared joints fail the build. The radio and workbench examples demonstrate the contract.
 - Author in metres, Blender +Z up, with the intended front along -Y. Return named socket positions in that same space. The tool converts the output to glTF +Y up/+Z front and centres the pivot on the floor.
 
 Custom recipes are **trusted local Python**, not sandboxed uploads. Keep them self-contained and deterministic. This tool must not be exposed to players or used as a public generation endpoint. ImageGen references or new geometry reasoning remain authoring work for the developer/agent; the tool automates the repeated construction setup, surface rules, export, checks and evidence.
@@ -75,6 +81,13 @@ Custom recipes are **trusted local Python**, not sandboxed uploads. Keep them se
 - Static geometry only: skins and animations fail this profile.
 - Matching input and artifact hashes before review and packaging; QA images at the declared resolution.
 - Exclusive new job/package paths, with no overwrite of an existing destination.
+- Required joint contracts, three probes per joint, checked by ray intersections against the actual decoded optimized geometry. Missing, duplicate or failed probes block technical acceptance. The measured crate additionally requires 72 panel-depth probes.
+
+Joint checks cover declared contact locations and allowable recess depth; they do not infer every intended connection or certify arbitrary mesh topology. Choose probes that cross each likely seam, keep intentional plank recesses within their declared tolerance, and inspect the rendered joins. The corner-wrap and enclosure helpers independently assert closed manifold construction before bevel/export. Combining disconnected pieces into one Blender object is insufficient.
+
+The same three boards under `references/v1/` are supplied for every new item's ImageGen request. They transfer the family, finish and contact contrast rather than the requested object's silhouette. `prompt` only prepares the request; the coding agent calls ImageGen separately with those exact image paths. Changing the fixed kit requires an explicit new version and profile update. A placeholder brief is marked `readyForGeneration:false`.
+
+For an original prop, save the selected sheet as `<project>/concept.png` and its exact generation record as `concept-request.json`. They participate in build validity. The tool creates `comparison/concept-comparison.webp`, visibly distinguishing the generated concept from the real exported model. Its cameras may differ, so it produces no numerical style/similarity score.
 
 The source atlas files live under `styles/`; they are authoring inputs and are not part of the game's public downloads. Golden geometry and construction helpers are pinned, attributed snapshots of our own retained study; the original experiments/skill scripts are untouched.
 
@@ -87,6 +100,8 @@ The package includes `model.glb`, `manifest.json`, sockets, validation and revie
 La Baraj can integrate the packaged GLB and manifest through an ordinary feature change. Runtime integration must preserve the profile's PBR maps/factors and test day/night reflections, collisions and interaction sockets. Do not remove global material clamps as a side effect of importing one prop.
 
 The three atlas images are identical across assets, but each GLB embeds them. Shared content identifiers support a future engine-side texture cache; this tool does **not** claim automatic cross-GLB GPU sharing, generated LODs, actual game FPS, visual 1:1 identity, or support for characters/vegetation/buildings. Those require their own validated profiles and scene tests.
+
+The radio also uses one original 64×64 matte speaker-cloth map (222 encoded bytes). Its distinct material rules are pinned separately; timber and iron retain their normal/roughness maps and original texture hashes. Authoring references and proof images are not game downloads.
 
 ## Tests
 

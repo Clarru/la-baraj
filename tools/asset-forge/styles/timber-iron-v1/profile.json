@@ -9,18 +9,9 @@
   "qaResolution": 512,
   "dimensionsTolerance": 0.01,
   "materialFactors": {
-    "LaBaraj iron": [
-      1,
-      1,
-      1,
-      1
-    ],
-    "LaBaraj timber": [
-      0.8,
-      0.8,
-      0.8,
-      1
-    ]
+    "LaBaraj iron": [1, 1, 1, 1],
+    "LaBaraj timber": [0.8, 0.8, 0.8, 1],
+    "LaBaraj speaker cloth": [1, 1, 1, 1]
   },
   "runtimeTextureHashes": {
     "baseColor": "c84b1005afe4c9d736bd961ecaddc513f07dec9a903ac870497e36fb0163c673",
@@ -30,15 +21,12 @@
   "sourceTextures": {
     "trim-base-color.png": "27d4a675b6ecb6ec05328a85c317036139192fdbc7b559fecbcaf4a2a1f80874",
     "trim-normal.png": "0996f44131c25af0362a43d21c547a2d0c320891be1b2c107090347614032b27",
-    "trim-metallic-roughness.png": "a8261cc06da7a9cc818a270d0f9cab2968ba33c28ce1bd5edc4007d5336e7323"
+    "trim-metallic-roughness.png": "a8261cc06da7a9cc818a270d0f9cab2968ba33c28ce1bd5edc4007d5336e7323",
+    "speaker-cloth.png": "bcf26d5cc5f928b7d12be4c2a7987c1cbbd14b0822977536c10c5a1d6bd7ea45"
   },
   "recipes": {
     "lantern": {
-      "dimensions": [
-        0.35734147,
-        1.33700764,
-        1.3023144
-      ],
+      "dimensions": [0.35734147, 1.33700764, 1.3023144],
       "budgets": {
         "triangles": 2822,
         "bytes": 176332,
@@ -46,18 +34,12 @@
         "textures": 3,
         "textureEdge": 512
       },
-      "requiredSockets": [
-        "WallMount"
-      ],
+      "requiredSockets": ["WallMount"],
       "collision": "none",
       "reference": "experiments/asset-skill-lab/references/lantern-original.glb"
     },
     "crate": {
-      "dimensions": [
-        0.84225857,
-        0.93092793,
-        0.90829331
-      ],
+      "dimensions": [0.84225857, 0.93092793, 0.90829331],
       "budgets": {
         "triangles": 1576,
         "bytes": 161276,
@@ -65,28 +47,37 @@
         "textures": 3,
         "textureEdge": 512
       },
-      "requiredSockets": [
-        "CarryGrip"
-      ],
+      "requiredSockets": ["CarryGrip"],
       "collision": "box",
-      "reference": "experiments/asset-skill-lab/references/crate-original.glb"
+      "reference": "experiments/asset-skill-lab/references/crate-original.glb",
+      "surfaceProbeCount": 72
     },
     "custom": {
-      "dimensions": [
-        1,
-        0.8,
-        0.6
-      ],
+      "dimensions": [1, 0.8, 0.6],
       "budgets": {
         "triangles": 3000,
         "bytes": 180000,
-        "primitives": 2,
-        "textures": 3,
+        "primitives": 3,
+        "textures": 4,
         "textureEdge": 512
       },
       "requiredSockets": [],
       "collision": "none",
       "reference": null
     }
-  }
+  },
+  "referenceKit": {
+    "id": "la-baraj-rustic-props-v1",
+    "manifestHash": "05a8955ba777576992fab88c4b879b2aa2dffab81e2f303674c0f0856f5acff6"
+  },
+  "materialSettings": {
+    "LaBaraj speaker cloth": {
+      "metallic": 0,
+      "roughness": 1,
+      "maps": {
+        "baseColor": "80821fc308a2079c11037e7ce632803850e912f651faf5f67afca0f1bce0503d"
+      }
+    }
+  },
+  "woodTexelDensityCustom": 480
 }

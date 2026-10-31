@@ -1,0 +1,325 @@
+{
+  "technicalPass": true,
+  "errors": [],
+  "surfaceResults": [
+    {
+      "name": "Housing_L_B/sample_0",
+      "pass": true,
+      "distance": 0.002497540962911826
+    },
+    {
+      "name": "Housing_L_B/sample_1",
+      "pass": true,
+      "distance": 0.002497540962911826
+    },
+    {
+      "name": "Housing_L_B/sample_2",
+      "pass": true,
+      "distance": 0.002497540962911826
+    },
+    {
+      "name": "Housing_L_T/sample_0",
+      "pass": true,
+      "distance": 0.002497540962911826
+    },
+    {
+      "name": "Housing_L_T/sample_1",
+      "pass": true,
+      "distance": 0.002497540962911826
+    },
+    {
+      "name": "Housing_L_T/sample_2",
+      "pass": true,
+      "distance": 0.002497540962911826
+    },
+    {
+      "name": "Housing_R_B/sample_0",
+      "pass": true,
+      "distance": 0.002497540962911826
+    },
+    {
+      "name": "Housing_R_B/sample_1",
+      "pass": true,
+      "distance": 0.002497540962911826
+    },
+    {
+      "name": "Housing_R_B/sample_2",
+      "pass": true,
+      "distance": 0.002497540962911826
+    },
+    {
+      "name": "Housing_R_T/sample_0",
+      "pass": true,
+      "distance": 0.002497540962911826
+    },
+    {
+      "name": "Housing_R_T/sample_1",
+      "pass": true,
+      "distance": 0.002497540962911826
+    },
+    {
+      "name": "Housing_R_T/sample_2",
+      "pass": true,
+      "distance": 0.002497540962911826
+    },
+    {
+      "name": "Corner_L_F_B/front-side",
+      "pass": true,
+      "distance": 0.004028042440903621
+    },
+    {
+      "name": "Corner_L_F_B/front-end",
+      "pass": true,
+      "distance": 0.004028307042641918
+    },
+    {
+      "name": "Corner_L_F_B/side-end",
+      "pass": true,
+      "distance": 0.00402835539659507
+    },
+    {
+      "name": "Corner_L_F_T/front-side",
+      "pass": true,
+      "distance": 0.004028042440903621
+    },
+    {
+      "name": "Corner_L_F_T/front-end",
+      "pass": true,
+      "distance": 0.004028673264952565
+    },
+    {
+      "name": "Corner_L_F_T/side-end",
+      "pass": true,
+      "distance": 0.00402872133108458
+    },
+    {
+      "name": "Corner_L_B_B/front-side",
+      "pass": true,
+      "distance": 0.004029714753928583
+    },
+    {
+      "name": "Corner_L_B_B/front-end",
+      "pass": true,
+      "distance": 0.004029991023828109
+    },
+    {
+      "name": "Corner_L_B_B/side-end",
+      "pass": true,
+      "distance": 0.00402835539659507
+    },
+    {
+      "name": "Corner_L_B_T/front-side",
+      "pass": true,
+      "distance": 0.004029714753928583
+    },
+    {
+      "name": "Corner_L_B_T/front-end",
+      "pass": true,
+      "distance": 0.004030349355367042
+    },
+    {
+      "name": "Corner_L_B_T/side-end",
+      "pass": true,
+      "distance": 0.00402872133108458
+    },
+    {
+      "name": "Corner_R_F_B/front-side",
+      "pass": true,
+      "distance": 0.004028042440903621
+    },
+    {
+      "name": "Corner_R_F_B/front-end",
+      "pass": true,
+      "distance": 0.004028307042641918
+    },
+    {
+      "name": "Corner_R_F_B/side-end",
+      "pass": true,
+      "distance": 0.00402835539659507
+    },
+    {
+      "name": "Corner_R_F_T/front-side",
+      "pass": true,
+      "distance": 0.004028042440903621
+    },
+    {
+      "name": "Corner_R_F_T/front-end",
+      "pass": true,
+      "distance": 0.004028673264952565
+    },
+    {
+      "name": "Corner_R_F_T/side-end",
+      "pass": true,
+      "distance": 0.00402872133108458
+    },
+    {
+      "name": "Corner_R_B_B/front-side",
+      "pass": true,
+      "distance": 0.004029714753928583
+    },
+    {
+      "name": "Corner_R_B_B/front-end",
+      "pass": true,
+      "distance": 0.004029991023828108
+    },
+    {
+      "name": "Corner_R_B_B/side-end",
+      "pass": true,
+      "distance": 0.00402835539659507
+    },
+    {
+      "name": "Corner_R_B_T/front-side",
+      "pass": true,
+      "distance": 0.004029714753928583
+    },
+    {
+      "name": "Corner_R_B_T/front-end",
+      "pass": true,
+      "distance": 0.004030349355367042
+    },
+    {
+      "name": "Corner_R_B_T/side-end",
+      "pass": true,
+      "distance": 0.00402872133108458
+    }
+  ],
+  "jointResults": {
+    "Corner_L_F_B": {
+      "pass": true
+    },
+    "Corner_L_F_T": {
+      "pass": true
+    },
+    "Corner_L_B_B": {
+      "pass": true
+    },
+    "Corner_L_B_T": {
+      "pass": true
+    },
+    "Corner_R_F_B": {
+      "pass": true
+    },
+    "Corner_R_F_T": {
+      "pass": true
+    },
+    "Corner_R_B_B": {
+      "pass": true
+    },
+    "Corner_R_B_T": {
+      "pass": true
+    },
+    "Housing_L_B": {
+      "pass": true
+    },
+    "Housing_L_T": {
+      "pass": true
+    },
+    "Housing_R_B": {
+      "pass": true
+    },
+    "Housing_R_T": {
+      "pass": true
+    }
+  },
+  "triangles": 2778,
+  "bytes": 155296,
+  "primitives": 3,
+  "dimensions": [
+    0.550000011920929,
+    0.4000076382973008,
+    0.24150517812183983
+  ],
+  "bounds": {
+    "min": [
+      -0.2750000059604645,
+      -0.000003822222014920884,
+      -0.12075258533562962
+    ],
+    "max": [
+      0.2750000059604645,
+      0.4000038160752859,
+      0.12075259278621021
+    ]
+  },
+  "textures": [
+    {
+      "name": "trim-normal",
+      "size": [
+        512,
+        512
+      ],
+      "sha256": "acf251b016592e376c74a488cb221ade7b23688b7933859614c6a363d2e4f82a",
+      "bytes": 55468
+    },
+    {
+      "name": "trim-base-color",
+      "size": [
+        512,
+        512
+      ],
+      "sha256": "c84b1005afe4c9d736bd961ecaddc513f07dec9a903ac870497e36fb0163c673",
+      "bytes": 19612
+    },
+    {
+      "name": "trim-metallic-roughness",
+      "size": [
+        512,
+        512
+      ],
+      "sha256": "18fe90c43eb6444f5ebd8d3fa9c9fd56937c267e500c0de26958a14b48341409",
+      "bytes": 15436
+    },
+    {
+      "name": "speaker-cloth",
+      "size": [
+        64,
+        64
+      ],
+      "sha256": "80821fc308a2079c11037e7ce632803850e912f651faf5f67afca0f1bce0503d",
+      "bytes": 222
+    }
+  ],
+  "materials": [
+    {
+      "name": "LaBaraj timber",
+      "baseColor": [
+        0.8,
+        0.8,
+        0.8,
+        1
+      ],
+      "normal": true,
+      "metallicRoughness": true
+    },
+    {
+      "name": "LaBaraj speaker cloth",
+      "baseColor": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "normal": false,
+      "metallicRoughness": false
+    },
+    {
+      "name": "LaBaraj iron",
+      "baseColor": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "normal": true,
+      "metallicRoughness": true
+    }
+  ],
+  "sockets": {
+    "CarryGrip": [
+      0,
+      0.3889999985694885,
+      -0.010749991983175278
+    ]
+  },
+  "runtimePerformance": "Not benchmarked; these are resource budgets, not FPS."
+}

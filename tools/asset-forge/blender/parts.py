@@ -42,10 +42,15 @@ def uv_map(obj, strip=0, grain_axis=2, highlight=False, compact=False):
     spans = [max(high[i] - low[i], 1e-8) for i in range(3)]
     rng = random.Random(obj.name)
     phase_u, phase_v = rng.uniform(0,.085), rng.uniform(0,.28)
+    density=obj.data.materials[0].get('forge_texel_density',None) if obj.data.materials else None
     for face in mesh.polygons:
+        face_low=[min(mesh.vertices[i].co[j] for i in face.vertices) for j in range(3)]
+        face_high=[max(mesh.vertices[i].co[j] for i in face.vertices) for j in range(3)]
+        face_spans=[max(face_high[j]-face_low[j],1e-8) for j in range(3)]
         normal_axis = max(range(3), key=lambda i: abs(face.normal[i]))
         axes = [i for i in range(3) if i != normal_axis]
-        v_axis = max(axes, key=lambda i: spans[i]) if grain_axis == -1 else (grain_axis if grain_axis in axes else axes[1])
+        requested_axis = grain_axis.get(normal_axis, 2) if isinstance(grain_axis, dict) else grain_axis
+        v_axis = max(axes, key=lambda i: face_spans[i]) if requested_axis == -1 else (requested_axis if requested_axis in axes else axes[1])
         u_axis = next(i for i in axes if i != v_axis)
         bevel_face=highlight and max(abs(v) for v in face.normal) < .999
         selected = 1 if bevel_face else strip
@@ -54,7 +59,24 @@ def uv_map(obj, strip=0, grain_axis=2, highlight=False, compact=False):
             u = (vertex[u_axis] - low[u_axis]) / spans[u_axis]
             v = (vertex[v_axis] - low[v_axis]) / spans[v_axis]
             if strip >= 2:
-                layer.data[loop_index].uv = (selected*.25+.012+phase_u+.13*u,.015+phase_v+.69*v)
+                if density:
+                    # Use one physical projection across coplanar subdivisions.
+                    # Only restart an axis when the entire part cannot fit its trim.
+                    u_span=spans[u_axis] if spans[u_axis]*density/512<=.225 else face_spans[u_axis]
+                    v_span=spans[v_axis] if spans[v_axis]*density/512<=.96 else face_spans[v_axis]
+                    u_origin=low[u_axis] if u_span==spans[u_axis] else face_low[u_axis]
+                    v_origin=low[v_axis] if v_span==spans[v_axis] else face_low[v_axis]
+                    us=u_span*density/512;vs=v_span*density/512
+                    if us>.225 or vs>.96:
+                        raise ValueError(f'{obj.name}: face too large for consistent trim density; split the board or choose its grain axis')
+                    fu=(vertex[u_axis]-u_origin)/u_span
+                    fv=(vertex[v_axis]-v_origin)/v_span
+                    plane=f'{obj.name}:{normal_axis}:{face.normal[normal_axis]>0}:{v_axis}'
+                    pu=random.Random(f'{plane}:u:{u_origin:.6f}:{u_span:.6f}').uniform(0,max(0,.225-us))
+                    pv=random.Random(f'{plane}:v:{v_origin:.6f}:{v_span:.6f}').uniform(0,max(0,.96-vs))
+                    layer.data[loop_index].uv=(selected*.25+.012+pu+us*fu,.015+pv+vs*fv)
+                else:
+                    layer.data[loop_index].uv = (selected*.25+.012+phase_u+.13*u,.015+phase_v+.69*v)
             else:
                 # Broad faces span their trim's baked edge profile. Real bevel faces
                 # and small fittings sample the flat lighter center instead.
@@ -100,13 +122,13 @@ def beam(name, start, end, thickness, material, strip=0, bevel=.002):
     return obj
 
 
-def mesh_object(name, vertices, faces, material, strip=0):
+def mesh_object(name, vertices, faces, material, strip=0, grain_axis=2):
     mesh = bpy.data.meshes.new(name)
     mesh.from_pydata(vertices, [], faces)
     mesh.update()
     obj = bpy.data.objects.new(name, mesh)
     bpy.context.collection.objects.link(obj)
-    return finish(obj, name, material, strip)
+    return finish(obj, name, material, strip, grain_axis)
 
 
 def extrude_z(name, profile, bottom, top, material, strip=0):
@@ -152,7 +174,7 @@ def rectangular_band(name, center, outer, inner, thickness, material, strip=0, i
         j=(i+1)%4
         faces.extend([(i,j,j+4,i+4),(i+8,i+12,j+12,j+8),
                       (i,i+8,j+8,j),(i+4,j+4,j+12,i+12)])
-    obj=mesh_object(name,vertices,faces,material,strip);obj.location=center
+    obj=mesh_object(name,vertices,faces,material,strip,grain_axis=-1);obj.location=center
     import bmesh
     bm=bmesh.new();bm.from_mesh(obj.data)
     bmesh.ops.recalc_face_normals(bm,faces=list(bm.faces));bm.to_mesh(obj.data);bm.free()
@@ -259,3 +281,127 @@ def save_export(output, name, sockets):
     bpy.ops.export_scene.gltf(filepath=str((output / f"{name}-raw.glb").resolve()),
                               export_format="GLB", use_selection=True, export_yup=True,
                               export_animations=False, export_cameras=False, export_lights=False)
+
+
+def planked_panel(name, center, width, height, material, direction=0, count=6,
+                  groove_depth=.008, seam_width=.002, edge_strip=2):
+    """Continuous recessed timber joints, with an opaque backer: no sky-lit slits.
+
+    Author front along -Y, then turn about Z. Thin strips provide real joint depth
+    without full hidden plank boxes. Source parts remain editable; export joins them.
+    """
+    for i in range(count):
+        left=-width/2+i*width/count
+        right=left+width/count
+        profile=[(left,groove_depth),(left+seam_width/2,0),
+                 (right-seam_width/2,0),(right,groove_depth)]
+        vertices=[(x,y,z) for z in [0,height] for x,y in profile]
+        obj=mesh_object(f'{name} plank {i}',vertices,
+                        [(j,j+1,j+5,j+4) for j in range(3)],material,edge_strip if i in [0,count-1] else 2)
+        obj.rotation_euler[2]=direction
+        obj.location=center
+    obj=mesh_object(name+' opaque backing',
+                    [(-width/2,groove_depth+.002,0),(width/2,groove_depth+.002,0),
+                     (width/2,groove_depth+.002,height),(-width/2,groove_depth+.002,height)],
+                    [(0,1,2,3)],material,2)
+    obj.rotation_euler[2]=direction
+    obj.location=center
+
+
+def open_front_shell(name, width, height, depth, thickness, material):
+    """One continuous hollow enclosure, with shared joins and an open front.
+
+    A small conforming grid keeps back-panel UVs at the physical grain density.
+    Coplanar joins stay flat; bevel only real corners of the complete enclosure.
+    """
+    import bmesh
+    t=thickness
+    if min(width,height,depth)<=2*t:
+        raise ValueError('Shell thickness exceeds its dimensions')
+    count=max(1,math.ceil((width-2*t)/.18))
+    xs=[-width/2]+[-width/2+t+i*(width-2*t)/count for i in range(count+1)]+[width/2]
+    grid=[xs,[-depth/2,depth/2-t,depth/2],[0,t,height-t,height]]
+    nx=len(xs)-1
+    filled={(x,y,z) for x in range(nx) for y in range(2) for z in range(3)
+            if x in [0,nx-1] or y==1 or z in [0,2]}
+    vertices,faces,lookup=[],[],{}
+    def vertex(key):
+        if key not in lookup:
+            lookup[key]=len(vertices)
+            vertices.append(tuple(grid[a][key[a]] for a in range(3)))
+        return lookup[key]
+    for cell in sorted(filled):
+        for axis in range(3):
+            others=[a for a in range(3) if a!=axis]
+            for side in [-1,1]:
+                neighbor=list(cell);neighbor[axis]+=side
+                if tuple(neighbor) in filled:continue
+                face=[]
+                for u,v in [(0,0),(1,0),(1,1),(0,1)]:
+                    key=list(cell);key[axis]+=side==1
+                    key[others[0]]+=u;key[others[1]]+=v
+                    face.append(vertex(tuple(key)))
+                faces.append(face)
+    grain={0:2,1:2,2:0}
+    obj=mesh_object(name,vertices,faces,material,2,grain)
+    bm=bmesh.new();bm.from_mesh(obj.data)
+    bmesh.ops.recalc_face_normals(bm,faces=list(bm.faces))
+    if not all(edge.is_manifold for edge in bm.edges):
+        raise ValueError('Housing is not a closed manifold')
+    bm.to_mesh(obj.data);bm.free()
+    modifier=obj.modifiers.new('Bevel complete housing corners','BEVEL')
+    modifier.width=.002;modifier.segments=1;modifier.limit_method='ANGLE'
+    bpy.context.view_layer.objects.active=obj
+    bpy.ops.object.modifier_apply(modifier=modifier.name)
+    uv_map(obj,2,grain)
+    return obj
+
+
+def corner_wrap(name, corner, span, thickness, signs, material, bevel=.0007):
+    """One closed trihedral fitting, rather than three separately beveled plates.
+
+    Surface the union on a tiny orthogonal grid. Internal faces are omitted and
+    boundary vertices are shared before beveling, so corners remain continuous.
+    All dimensions are metres; signs point from the enclosure toward the corner.
+    """
+    import bmesh
+    if any(t <= 0 or t >= s for t, s in zip(thickness, span)):
+        raise ValueError('Corner wrap needs 0 < thickness < span on every axis')
+    grid = [[0, t, s] for t, s in zip(thickness, span)]
+    filled = {(x, y, z) for x in range(2) for y in range(2) for z in range(2)
+              if x == 0 or y == 0 or z == 0}
+    vertices, faces, lookup = [], [], {}
+    def vertex(key):
+        if key not in lookup:
+            lookup[key] = len(vertices)
+            vertices.append(tuple(corner[a] - signs[a] * grid[a][key[a]] for a in range(3)))
+        return lookup[key]
+    for cell in sorted(filled):
+        for axis in range(3):
+            others = [a for a in range(3) if a != axis]
+            for side in [-1, 1]:
+                neighbor = list(cell); neighbor[axis] += side
+                if tuple(neighbor) in filled:
+                    continue
+                face = []
+                for u, v in [(0, 0), (1, 0), (1, 1), (0, 1)]:
+                    key = list(cell)
+                    key[axis] += side == 1
+                    key[others[0]] += u; key[others[1]] += v
+                    face.append(vertex(tuple(key)))
+                faces.append(face)
+    obj = mesh_object(name, vertices, faces, material, 1)
+    bm = bmesh.new(); bm.from_mesh(obj.data)
+    bmesh.ops.recalc_face_normals(bm, faces=list(bm.faces))
+    bmesh.ops.dissolve_limit(bm, angle_limit=.001, verts=list(bm.verts), edges=list(bm.edges))
+    bmesh.ops.recalc_face_normals(bm, faces=list(bm.faces))
+    if not all(edge.is_manifold for edge in bm.edges):
+        raise ValueError('Corner wrap is not a closed manifold')
+    bm.to_mesh(obj.data); bm.free()
+    if bevel:
+        modifier = obj.modifiers.new('Continuous outside edge bevel', 'BEVEL')
+        modifier.width = bevel; modifier.segments = 1
+        bpy.context.view_layer.objects.active = obj
+        bpy.ops.object.modifier_apply(modifier=modifier.name)
+    uv_map(obj, 1, compact=True)
+    return obj

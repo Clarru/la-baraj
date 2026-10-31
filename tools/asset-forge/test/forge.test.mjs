@@ -26,6 +26,7 @@ import {
   reviewProject,
   packProject,
   run,
+  imagegenRequest,
 } from "../core.mjs";
 const execute = promisify(execFile),
   base = await fs.mkdtemp(path.join(os.tmpdir(), "asset-forge-unit-"));
@@ -164,7 +165,17 @@ async function fixture() {
     "unit fixture; actual Blender is exercised separately",
   );
   for (const [folder, views] of [
-    ["qa", ["front", "side", "rear", "three-quarter"]],
+    [
+      "qa",
+      [
+        "front",
+        "side",
+        "rear",
+        "three-quarter",
+        "diagnostic-clay",
+        "diagnostic-unlit",
+      ],
+    ],
     ["qa-light-90", ["three-quarter"]],
   ]) {
     await fs.mkdir(path.join(out, folder));
@@ -214,6 +225,8 @@ test("schema rejects accidental unknown fields, invalid dimensions, budget incre
     { dimensions: [1, 0, 1] },
     { budgets: { ...f.p.spec.budgets, bytes: 9999999 } },
     { seed: -1 },
+    { requiredJoints: undefined },
+    { requiredJoints: ["Same", "Same"] },
   ])
     assert.throws(() => validateSpec({ ...f.p.spec, ...change }, style));
 });
@@ -438,4 +451,155 @@ test("golden recipes reject silently ignored shape parameters", async () => {
     () => validateSpec({ ...r.spec, parameters: { width: 4 } }, style),
     /fixed geometry/,
   );
+});
+
+test("different original item briefs retain exactly the same ordered style images and template", async () => {
+  const requests = [];
+  for (const [id, brief] of [
+    ["radio", "Timber field radio with a speaker and knobs."],
+    ["tackle", "Timber fishing tackle box with divided compartments."],
+  ]) {
+    const dir = path.join(base, id);
+    await initProject(dir, "custom");
+    assert.equal((await imagegenRequest(dir)).readyForGeneration, false);
+    await fs.writeFile(path.join(dir, "brief.md"), brief);
+    requests.push(await imagegenRequest(dir));
+  }
+  assert(requests.every((r) => r.readyForGeneration));
+  assert.equal(requests[0].fixedTemplateHash, requests[1].fixedTemplateHash);
+  assert.deepEqual(requests[0].referenceImages, requests[1].referenceImages);
+  assert.equal(requests[0].referenceImages.length, 3);
+  assert.notEqual(requests[0].prompt, requests[1].prompt);
+  for (const image of requests[0].referenceImages)
+    assert.equal(await fileHash(image.path), image.sha256);
+});
+
+test("selected concepts and their exact generation records invalidate earlier builds", async () => {
+  for (const name of ["concept.png", "concept-request.json"]) {
+    const f = await fixture();
+    await fs.writeFile(path.join(f.dir, name), "new design reference");
+    await assert.rejects(checkProject(f.dir), (e) => e.code === "stale-build");
+  }
+});
+
+test("a visually rejected technically valid build cannot be packaged", async () => {
+  const f = await fixture();
+  const review = await reviewProject(
+    f.dir,
+    "Reject: wrong proportions despite passing size limits.",
+    false,
+  );
+  assert.equal(review.status, "rejected");
+  assert.equal((await checkProject(f.dir)).reviewStatus, "rejected");
+  await assert.rejects(
+    packProject(f.dir, path.join(base, "rejected-package")),
+    (e) => e.code === "review-rejected",
+  );
+});
+
+test("diagnostic renders are required and cannot be changed after review", async () => {
+  const f = await fixture();
+  await reviewProject(f.dir, "Synthetic diagnostic artifact binding check.");
+  await fs.unlink(path.join(f.out, "qa/diagnostic-clay.png"));
+  await assert.rejects(checkProject(f.dir), (e) => e.code === "stale-build");
+});
+
+test("surface depth probes distinguish opaque faces from open gaps and reject absent probes", async () => {
+  const f = await fixture();
+  const probeStyle = structuredClone(style);
+  probeStyle.recipes.custom.surfaceProbeCount = 1;
+  const probe = {
+    name: "FrontJoint",
+    origin: [0, 0.5, 0.51],
+    direction: [0, 0, -1],
+    maxDistance: 0.02,
+  };
+  const check = (probes) =>
+    lintModel(path.join(f.out, "model.glb"), f.p.spec, probeStyle, {
+      sockets: {},
+      surfaceProbes: probes,
+    });
+  assert.equal((await check([probe])).technicalPass, true);
+  const gap = await check([{ ...probe, origin: [2, 0.5, 0.51] }]);
+  assert.equal(gap.technicalPass, false);
+  assert.equal(gap.surfaceResults[0].pass, false);
+  assert(
+    (await check([])).errors.includes(
+      "Required sealed-surface probes missing.",
+    ),
+  );
+  assert(
+    (await check([{ ...probe, direction: [0, 0, 0] }])).errors.includes(
+      "Invalid probe direction.",
+    ),
+  );
+});
+
+test("declared assembly joints cannot be omitted from export metadata", async () => {
+  const f = await fixture();
+  const result = await lintModel(
+    path.join(f.out, "model.glb"),
+    { ...f.p.spec, requiredJoints: ["LidCorner"] },
+    style,
+    { sockets: {} },
+  );
+  assert.equal(result.technicalPass, false);
+  assert(
+    result.errors.includes("Missing three-direction joint contract: LidCorner"),
+  );
+  assert.equal(result.jointResults.LidCorner.pass, false);
+});
+
+test("real radio regression: old disconnected fittings/housing fail; continuous export passes all 36 joint probes", async () => {
+  const directory = path.join(TOOL, "proof/original-radio");
+  const spec = JSON.parse(
+    await fs.readFile(path.join(directory, "asset.json")),
+  );
+  const sockets = JSON.parse(
+    await fs.readFile(path.join(directory, "sockets.json")),
+  );
+  const before = await lintModel(
+    path.join(directory, "before-joints.glb"),
+    spec,
+    style,
+    sockets,
+  );
+  assert.equal(before.technicalPass, false);
+  assert.equal(before.surfaceResults.filter((p) => !p.pass).length, 36);
+  const after = await lintModel(
+    path.join(directory, "model.glb"),
+    spec,
+    style,
+    sockets,
+  );
+  assert.equal(after.technicalPass, true, after.errors.join("; "));
+  assert.equal(after.surfaceResults.length, 36);
+  assert.equal(Object.keys(after.jointResults).length, 12);
+  assert(Object.values(after.jointResults).every((j) => j.pass));
+});
+
+test("real crate regression: old open seams fail depth checks; recessed closed panels pass", async () => {
+  const directory = path.join(TOOL, "proof/crate-seams");
+  const spec = JSON.parse(
+    await fs.readFile(path.join(directory, "asset.json")),
+  );
+  const sockets = JSON.parse(
+    await fs.readFile(path.join(directory, "sockets.json")),
+  );
+  const before = await lintModel(
+    path.join(TOOL, "proof/crate/model.glb"),
+    spec,
+    style,
+    sockets,
+  );
+  assert.equal(before.technicalPass, false);
+  assert.equal(before.surfaceResults.filter((p) => !p.pass).length, 24);
+  const after = await lintModel(
+    path.join(directory, "model.glb"),
+    spec,
+    style,
+    sockets,
+  );
+  assert.equal(after.technicalPass, true, after.errors.join("; "));
+  assert.equal(after.surfaceResults.length, 72);
 });

@@ -2,7 +2,7 @@
 import math
 import bpy
 from mathutils import Vector, Matrix
-from parts import box, pyramid, beam, bolt, chain_link, extrude_z, square_band, rectangular_band, corbel, mesh_object
+from parts import box, pyramid, beam, bolt, chain_link, extrude_z, square_band, rectangular_band, corbel, mesh_object, planked_panel
 
 def lantern(material):
     box("Wall post", (0, .034, .795), (.1314, .0318, 1.207), material, bevel=.003)
@@ -63,17 +63,13 @@ def lantern(material):
 
 
 def crate(material):
-    # A closed crate can use thin visible panels; hidden plank side faces add no silhouette.
-    for side in [-1, 1]:
-        for i in range(5):
-            start = -.3824 + i * .15296
-            end = start + .1518
-            vertices = [(start,side*.3566,.0306),(end,side*.3566,.0306),
-                        (end,side*.3566,.7955),(start,side*.3566,.7955)]
-            mesh_object(f"Face plank {side} {i}",vertices,[(0,1,2,3) if side<0 else (3,2,1,0)],material,2)
-            vertices = [(side*.3566,start,.0306),(side*.3566,end,.0306),
-                        (side*.3566,end,.7955),(side*.3566,start,.7955)]
-            mesh_object(f"Side plank {side} {i}",vertices,[(0,1,2,3) if side>0 else (3,2,1,0)],material,2)
+    # The reference has six continuous panel sections. Recess joints instead of
+    # leaving open slits: a closed crate must not show the lit background through wood.
+    for side in [-1,1]:
+        planked_panel(f'Face {side}',(0,side*.3566,.0306),.76486,.76486,
+                      material,0 if side<0 else math.pi,edge_strip=3)
+        planked_panel(f'Side {side}',(side*.3566,0,.0306),.76486,.76486,
+                      material,math.pi/2 if side>0 else -math.pi/2,edge_strip=3)
     for i in range(5):
         y = -.324 + i*.162
         box(f"Lid plank {i}",(-.0047,y,.8053),(.84226,.1608,.0318),material,2,0,bevel=0)
@@ -120,3 +116,19 @@ def crate(material):
                 bolt("Front rail nail",(sx*.2425,sy*.433,z),(0,sy,0),material,.008,6)
     return {"CarryGrip": (0, 0, .5)}
 
+
+
+def crate_surface_probes():
+    """Sample both the corrected six-board joints and the old leaking five-board gaps."""
+    seams=[-.3824+(i+1)*.15296-.00058 for i in range(4)]
+    seams += [-.76486/2+(i+1)*.76486/6 for i in range(5)]
+    probes=[]
+    for wall in ['face','side']:
+        for side in [-1,1]:
+            for i,across in enumerate(seams):
+                for z in [.38,.50]:
+                    origin=[across,side*.39,z] if wall=='face' else [side*.39,across,z]
+                    direction=[0,-side,0] if wall=='face' else [-side,0,0]
+                    probes.append({'name':f'{wall}-{side}-{i}-{z}', 'origin':origin,
+                                   'direction':direction,'maxDistance':.06})
+    return probes

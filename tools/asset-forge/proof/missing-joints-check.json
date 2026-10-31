@@ -1,0 +1,6 @@
+{
+  "status": "correctly-rejected",
+  "exitCode": 1,
+  "reason": "Multi-part custom assemblies must declare requiredJoints and export joint probes",
+  "lastSuccessfulBuildCreated": false
+}

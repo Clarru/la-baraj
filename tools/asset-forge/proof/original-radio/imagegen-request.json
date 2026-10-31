@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "kit": "la-baraj-rustic-props-v1",
+  "kitVersion": 1,
+  "fixedTemplateHash": "3648cb9bfcec21b2107bb1871916d33a3a0c27ffb3c383ac784d8052ea8c417b",
+  "referenceImages": [
+    {
+      "file": "01-family.png",
+      "role": "overall style only; never copy the shown object silhouettes",
+      "sha256": "9db922ca1877597d706908d99b9f0e25e685744b220ee49b68bcf09f5b95fe8b",
+      "path": "tools/asset-forge/references/v1/01-family.png"
+    },
+    {
+      "file": "02-materials.png",
+      "role": "wood/iron finish and edge treatment only",
+      "sha256": "afb379548473622179358f07a624d1c7acded752a00bbe55c9304e07172a6a5b",
+      "path": "tools/asset-forge/references/v1/02-materials.png"
+    },
+    {
+      "file": "03-contact.png",
+      "role": "recessed joint contrast and contact shading only",
+      "sha256": "b9c660260989b37234a3f11ffca9d7e67ef95a3ca9737e63a855ff399fb023a6",
+      "path": "tools/asset-forge/references/v1/03-contact.png"
+    }
+  ],
+  "prompt": "Create a construction reference for ONE ORIGINAL new La Baraj game prop described in OBJECT BRIEF.\n\nFIXED STYLE AUTHORITY \u2014 these three attached boards are always supplied, in this order:\n1. Family board: match its stylized proportions, simple substantial silhouettes and painted timber/iron finish. The crate and lantern are STYLE EXAMPLES, not the requested object.\n2. Material board: retain warm medium-brown directional wood grain, visible end grain, muted iron, restrained light edge wear, real-looking bevel highlights, and controlled surface variation.\n3. Contact board: retain depth around inset panels, dark narrow closed joints, contact shading under rails and around fittings. Avoid white slits through supposedly solid parts, soft shapeless wood, or a uniformly flat/chalky surface.\n\nDo not reproduce any crate, lantern, wall bracket, chains or cage unless the OBJECT BRIEF asks for them. Design the new item's geometry from its own function and component list. Style and construction quality transfer; silhouette identity does not.\n\nStay within this visual world: hand-authored low-detail game geometry with convincing mapped surfaces, broad readable parts, restrained small details, timber and iron. No photoreal scanning noise, plastic, neon, glossy chrome, decorative fantasy spikes, extra accessories, scenery, logos, text or watermarks. Keep the color family and texture scale coherent with the boards. Light edge wear must follow physical edges; darker creases describe construction contact rather than arbitrary painted directional shadows.\n\nShow one consistent design in a clean 2x2 sheet: front, side, rear and three-quarter. Use neutral gray background, soft neutral studio lighting, full uncropped object and comparable scale. Keep every view structurally consistent and usable for Blender construction. Do not add dimension labels. Numerical dimensions below are intended modeling constraints; the generated image is guidance, never a measurement or a completed 3D asset.\n\nOBJECT BRIEF (variable):\n# Portable lakeside field radio\n\nAn ORIGINAL static prop: a small portable field radio for a lakeside hangout. No existing Quaternius item is the target shape. Warm timber enclosure, chunky muted-iron corner protection, one iron carry handle, a recessed slatted speaker grille on the left of the front face and three simple metal control knobs on the right. Keep a solid dark recess behind the grille and visible depth at panel/frame contacts. No letters, logos, glowing display, extra tools, chains or decoration. Simple substantial game-scale parts; the style must come only from the fixed family/material/contact reference boards. Approximate total dimensions including handle:55cm wide,40cm high,22cm deep.\n\nIntended dimensions [width,height,depth] metres: [0.55,0.4,0.22]\nStatic prop; geometry triangle ceiling: 3000. Preserve clear component separation for later Blender reconstruction.",
+  "generation": "Call the built-in image_gen tool with this prompt and these ordered local paths. This CLI does not invoke a paid provider or turn the image into a mesh.",
+  "actualGenerator": "built-in image_gen",
+  "purpose": "Original item style-transfer concept; not a rendered/exported mesh"
+}
