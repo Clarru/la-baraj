@@ -299,7 +299,8 @@ it.each(["fresh", "left-aligned"])(
     expect(a.state.arcadeStation).toBe(0);
     if (starter === "left-aligned") {
       const publications = updates(b).length,
-        saved = structuredClone([...storage.data]);
+        saved = structuredClone([...storage.data]),
+        writes = vi.spyOn(storage, "put");
       await world.onMessage(
         a as never,
         stationRequest("noop-a", 0, "move", board.revision),
@@ -308,17 +309,21 @@ it.each(["fresh", "left-aligned"])(
       expect(reply(a).view.game).toEqual(board);
       expect(updates(b)).toHaveLength(publications);
       expect([...storage.data]).toEqual(saved);
+      expect(writes).not.toHaveBeenCalled();
+      writes.mockRestore();
     }
     const direction = ARCADE_DIRECTIONS.find(
       (candidate) => slideArcade(board.board, candidate).changed,
     );
     expect(direction).toBeDefined();
+    const publications = updates(b).length;
     await world.onMessage(
       a as never,
       stationRequest("move-a", 0, "move", board.revision, direction!),
     );
     expect(reply(a).error).toBeUndefined();
     expect(reply(a).view.game?.revision).toBe(board.revision + 1);
+    expect(updates(b)).toHaveLength(publications + 1);
     const changed = updates(b).at(-1)!;
     expect(changed.stations).toHaveLength(1);
     expect(changed.stations[0]).toMatchObject({
