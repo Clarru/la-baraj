@@ -51,3 +51,6 @@ experiments/asset-skill-lab/arcade/reference.png
 experiments/asset-skill-lab/arcade/*.log
 experiments/asset-skill-lab/arcade/screen-renderer.cjs
 experiments/asset-skill-lab/arcade/qa/
+
+# Asset Forge build jobs are reproducible local authoring output.
+.forge/

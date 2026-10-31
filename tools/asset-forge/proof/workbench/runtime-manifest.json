@@ -1,0 +1,117 @@
+{
+  "version": 1,
+  "id": "la-baraj-forge-final-workbench",
+  "style": "la-baraj-timber-iron-v1",
+  "styleVersion": 1,
+  "styleHash": "675c92bb3ca98ef0c02c335248d64bb1fb9b6d716ded81dfd08379c1eb6fcfc3",
+  "model": "model.glb",
+  "modelHash": "ef0d1c4e2b6f43f5a70ba09ec9f65491c48d438725c929a3f52fe5fec9e6a1c7",
+  "buildHash": "16ffdcebf86ee425cf846f501b984fc1b7cb039ceff3a1adb68402129151ae37",
+  "units": "metres",
+  "up": "+Y",
+  "forward": "+Z",
+  "pivot": "floor-center",
+  "report": {
+    "technicalPass": true,
+    "errors": [],
+    "triangles": 604,
+    "bytes": 108704,
+    "primitives": 2,
+    "dimensions": [
+      1,
+      0.8000122074037903,
+      0.5970030823694571
+    ],
+    "bounds": {
+      "min": [
+        -0.5,
+        -0.000006088428204986673,
+        -0.29850155236059944
+      ],
+      "max": [
+        0.5,
+        0.8000061189755854,
+        0.29850153000885765
+      ]
+    },
+    "textures": [
+      {
+        "name": "trim-normal",
+        "size": [
+          512,
+          512
+        ],
+        "sha256": "acf251b016592e376c74a488cb221ade7b23688b7933859614c6a363d2e4f82a",
+        "bytes": 55468
+      },
+      {
+        "name": "trim-base-color",
+        "size": [
+          512,
+          512
+        ],
+        "sha256": "c84b1005afe4c9d736bd961ecaddc513f07dec9a903ac870497e36fb0163c673",
+        "bytes": 19612
+      },
+      {
+        "name": "trim-metallic-roughness",
+        "size": [
+          512,
+          512
+        ],
+        "sha256": "18fe90c43eb6444f5ebd8d3fa9c9fd56937c267e500c0de26958a14b48341409",
+        "bytes": 15436
+      }
+    ],
+    "materials": [
+      {
+        "name": "LaBaraj timber",
+        "baseColor": [
+          0.8,
+          0.8,
+          0.8,
+          1
+        ],
+        "normal": true,
+        "metallicRoughness": true
+      },
+      {
+        "name": "LaBaraj iron",
+        "baseColor": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "normal": true,
+        "metallicRoughness": true
+      }
+    ],
+    "sockets": {
+      "WorkSurface": [
+        0,
+        0.7900000214576721,
+        0
+      ]
+    },
+    "runtimePerformance": "Not benchmarked; these are resource budgets, not FPS."
+  },
+  "sockets": {
+    "WorkSurface": [
+      0,
+      0.7900000214576721,
+      0
+    ]
+  },
+  "collision": {
+    "type": "none"
+  },
+  "lods": [],
+  "visualReview": {
+    "artifactHash": "7c2e1fa421cd64daf63da78e86fce98887a30c2aa19b3f0c5648bcea9f3ec3bc",
+    "note": "Inspected current three-quarter and alternate-light views: timber grain follows boards and legs and all four iron fixings are exposed. Original parametric example with no reference identity claim; game collision/interactions still need integration review.",
+    "reviewedAt": "2026-10-31T10:25:40.553Z",
+    "scope": "Visual review of retained views; collision and actual game performance still require integration checks."
+  },
+  "gameIntegrationReviewRequired": true
+}

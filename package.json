@@ -11,7 +11,9 @@
     "server:dev": "wrangler dev --config apps/server/wrangler.jsonc --port 8787",
     "server:check": "tsc --noEmit -p apps/server/tsconfig.json",
     "server:deploy": "wrangler deploy --config apps/server/wrangler.jsonc",
-    "test:protocol": "vitest run --config vitest.server.config.ts"
+    "test:protocol": "vitest run --config vitest.server.config.ts",
+    "asset": "node tools/asset-forge/cli.mjs",
+    "test:assets": "node --test tools/asset-forge/test/*.test.mjs"
   },
   "dependencies": {
     "@fontsource/barlow": "^5.3.0",
