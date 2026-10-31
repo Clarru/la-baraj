@@ -4,6 +4,16 @@ Build and check static 3D props through one developer CLI. Use the measured timb
 
 This is executable tooling, not a prompt or another skill. The existing [asset skill](../../.agents/skills/la-baraj-3d-assets/SKILL.md), [two-prop results](../../experiments/asset-skill-lab/RESULTS.md) and [surface study](../../experiments/asset-skill-lab/material-study/RESULTS.md) supply the baseline. Their hashes participate in build validity.
 
+## How agents find and use it
+
+The repository's [AGENTS.md](../../AGENTS.md) directs coding agents to this CLI whenever a task involves creating/reconstructing a static prop or changing its geometry/materials. The user can ask naturally: “Build a wooden tackle box in the existing La Baraj style.” The agent handles the job, reference preparation, recipe, build, visual iteration and packaging. The user does not need to run commands or operate a Blender panel.
+
+This is instruction-based routing, not an installed background trigger. An agent must read the repository instructions and have terminal access. If its client does not automatically load `AGENTS.md`, start with: “Read AGENTS.md and use Asset Forge for this prop.” The Node/Blender/Python pipeline is independent of the chat client. Image generation is a separate optional capability: `prompt` prepares a portable request with reference paths; the agent must actually supply those images to its available generator, or reuse an approved concept and explain the limitation.
+
+The tool automates repeatable construction setup, export, validation and evidence. The agent still authors a new item's recipe and judges the actual renders. Required gates execute on Forge builds/checks/reviews/packages. `test:assets` runs retained regression tests in CI; it does not discover and certify arbitrary new GLBs added elsewhere in the repository. A client ignoring the instructions can bypass this authoring path, so do not describe the routing as a universal enforcement hook.
+
+These instructions and the CLI must exist in the agent's checkout. While the feature is in a draft PR, it is available on `codex/asset-forge`; other worktrees receive it after the release owner integrates it and those worktrees synchronize normally. Do not copy another chat's working files over an occupied checkout.
+
 ## Quick start
 
 Use Node 24 and the repository's `npm ci`. Install Blender separately if it is unavailable; the tool does not download software. Comparison sheets use Python 3 with Pillow.

@@ -2,7 +2,11 @@
 
 ## 3D prop production
 
-- For new or reconstructed static 3D props, use [.agents/skills/la-baraj-3d-assets/SKILL.md](.agents/skills/la-baraj-3d-assets/SKILL.md). Reuse existing models/materials/helpers first, establish measured reference budgets, and inspect the exported GLB under matched views.
+- For creating, reconstructing or changing a static 3D prop, use **Asset Forge** (`npm run asset -- ...`). Read [the command guide](tools/asset-forge/README.md) and [failure lessons](tools/asset-forge/LESSONS.md); use [the 3D skill](.agents/skills/la-baraj-3d-assets/SKILL.md) for reference measurement and visual judgment. Reuse suitable existing models/materials/recipes first. Placing an unchanged model does not require rebuilding it.
+- The agent operates the tool; the user need not drive a UI or remember commands. Follow `doctor` → `init` → author brief/spec/recipe → `build` → `check` → inspect → `review` → `pack`. Use `prompt` for the fixed style-reference kit when a new concept is needed; actually supply its reference images to the available generator and retain the exact request/result. Reuse an approved reference or report missing generation capability when unavailable.
+- Declare critical joints for multi-part custom assemblies. Inspect the exported views, clay/unlit diagnostics, alternate lighting and available comparisons. Failed visuals require `review --reject`; acceptance requires a concrete review of current full-resolution artifacts. The agent may perform this review without an extra user-approval step. Technical checks alone do not establish visual quality.
+- Keep reusable construction fixes, demonstrated failure lessons and relevant regression cases in the tool. Preserve reproducible inputs and evidence; do not silently loosen budgets, replace the fixed style kit or bypass checks. Package creation and runtime integration are separate; integration follows the normal feature/release workflow.
+- Routing depends on the agent reading `AGENTS.md`; clients that do not load it must be explicitly directed here. The CLI is usable by any terminal-capable agent with its documented dependencies. Its validated profile covers static timber/iron props; other asset classes/material families need validated profiles. There is no background watcher or automatic text-to-mesh service.
 - The two-prop research in `experiments/asset-skill-lab/` is experimental. Its technical passes do not establish a perfect visual match or authorize replacing production assets. Character and vegetation workflows remain separate.
 
 ## Product naming
