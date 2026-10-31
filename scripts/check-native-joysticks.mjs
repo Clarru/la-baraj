@@ -52,13 +52,18 @@ try {
     userAgent: "iPhone",
   });
   const page = await context.newPage();
-  await page.setContent(
-    "<style>body{margin:0;background:#456852;--font-body:Arial;--font-heading:Arial}" +
-      css +
-      '</style><div id="root"></div><script>' +
-      js.replaceAll("</script", "<\\/script") +
-      "</script>",
+  const html =
+    '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><title>La Baraj controller QA</title><style>html,body,#root{margin:0;width:100%;height:100%;overflow:hidden;--font-body:Arial;--font-heading:Arial}' +
+    css +
+    '</style></head><body><div id="root"></div><script>' +
+    js.replaceAll("</script", "<\\/script") +
+    "</script></body></html>";
+  await writeFile(resolve(out, "fixture.html"), html);
+  await page.evaluate(() =>
+    Object.defineProperty(navigator, "standalone", { get: () => true }),
   );
+  await page.setContent(html);
+  await page.locator(".mobile-start").click();
   await page.locator(".mobile-stick-zone.is-ready").first().waitFor();
   await page.waitForTimeout(120);
   const state = async () =>
