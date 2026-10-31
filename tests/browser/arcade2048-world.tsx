@@ -108,6 +108,7 @@ function Fixture() {
           </button>
         </div>
         <output ref={output} data-arcade-qa-state hidden />
+        <output data-arcade-actual-screens hidden />
       </aside>
     </>
   );
