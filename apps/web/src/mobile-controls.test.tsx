@@ -166,3 +166,30 @@ it("retains the native install prompt and only invokes it after an install tap",
   expect(prompt).toHaveBeenCalledOnce();
   expect(container.textContent).toContain("After installation, open La Baraj");
 });
+
+it("exposes fishing beside a bench without replacing the sit action", async () => {
+  const action = vi.fn();
+  const off = subscribeMobileActions(action);
+  await act(async () =>
+    root.render(
+      <MobileControls
+        {...props}
+        prompt={{
+          main: "Sit · Fishing bench",
+          detail: "E to cast a line",
+          key: "F",
+          secondary: { main: "Cast a line", key: "E" },
+        }}
+      />,
+    ),
+  );
+  expect(container.querySelector(".mobile-context")?.textContent).toBe(
+    "Sit · Fishing bench",
+  );
+  await act(async () =>
+    container.querySelector<HTMLButtonElement>(".mobile-secondary")!.click(),
+  );
+  expect(action.mock.calls[0][0].code).toBe("KeyE");
+  expect(action.mock.calls[0][0].source).toBe("touch");
+  off();
+});

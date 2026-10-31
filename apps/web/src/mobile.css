@@ -221,6 +221,7 @@
 .mobile-arcade-board {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-rows: repeat(4, minmax(0, 1fr));
   gap: 8px;
   padding: 8px;
   border-radius: 12px;
@@ -346,6 +347,9 @@
     max-width: calc(100% - 24px);
     padding: 8px 12px;
   }
+  .activity-prompt:has(kbd) {
+    display: none;
+  }
   .activity-prompt kbd,
   .cabin-entry-panel kbd,
   .cruce-entry kbd,
@@ -449,22 +453,36 @@
   }
   .mobile-arcade-scroll {
     max-width: 800px;
-    display: flow-root;
+    margin: 0 auto;
   }
-  .mobile-arcade-board {
-    float: left;
-    width: min(42vw, calc(100dvh - 96px));
-    margin-right: 24px;
+  .mobile-arcade-scroll:has(.mobile-arcade-board) {
+    display: grid;
+    grid-template-columns: min(42vw, calc(100dvh - 104px)) minmax(0, 1fr);
+    grid-auto-rows: min-content;
+    align-content: start;
+    gap: 8px 20px;
+  }
+  .mobile-arcade-scroll:has(.mobile-arcade-board) > * {
+    grid-column: 2;
+  }
+  .mobile-arcade-scroll .mobile-arcade-board {
+    grid-column: 1;
+    grid-row: 1 / span 6;
+    width: 100%;
+    margin: 0;
   }
   .mobile-arcade-score {
-    margin-bottom: 4px;
+    margin: 0;
   }
   .mobile-arcade-hint {
-    float: right;
-    width: calc(100% - min(42vw, calc(100dvh - 96px)) - 24px);
+    padding: 0;
   }
   .mobile-arcade-directions {
-    padding-block: 8px;
+    padding-block: 0;
+  }
+  .mobile-arcade nav {
+    flex-wrap: wrap;
+    padding-block: 0;
   }
 }
 

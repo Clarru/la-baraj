@@ -190,6 +190,12 @@ export default function Game({ initialName }: { initialName: string }) {
   );
   const chatOpen = chatMode === "editing";
   const closeChat = useCallback(() => setChatMode("closed"), []);
+  useEffect(() => {
+    if (mobileBlocked) {
+      setPanel(null);
+      closeChat();
+    }
+  }, [mobileBlocked, closeChat]);
   const finishChat = useCallback(() => setChatMode("display"), []);
   const [planesOpen, setPlanesOpen] = useState(false);
   const ownGameSide = planesSeatSide(room.ownSeatId());

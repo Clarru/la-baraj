@@ -696,13 +696,10 @@ export function Player({
         ].includes(e.code)
       ) {
         e.preventDefault();
-        keys.current.add(e.code);
+        if (e.source !== "touch") keys.current.add(e.code);
       }
     };
-    const unbindMobile = subscribeMobileActions((event) => {
-      down(event);
-      keys.current.delete(event.code);
-    });
+    const unbindMobile = subscribeMobileActions(down);
     const up = (e: KeyboardEvent) => keys.current.delete(e.code);
     const blur = () => keys.current.clear();
     window.addEventListener("keydown", down);

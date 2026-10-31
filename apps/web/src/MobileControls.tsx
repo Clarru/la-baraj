@@ -147,15 +147,22 @@ export function MobileControls({
                   )
                 }
               >
-                {prompt.key === "F" && busy ? "Stand up" : prompt.main}
+                {prompt.key === "F" && busy
+                  ? "Stand up"
+                  : prompt.key === "E" && prompt.secondary
+                    ? prompt.secondary.main
+                    : prompt.main}
               </button>
             )}
-            {busy && prompt?.key === "F" && prompt.detail.includes("E to") && (
-              <button onClick={() => performMobileAction("interact")}>
-                Use campfire
+            {prompt?.secondary && prompt.key !== prompt.secondary.key && (
+              <button
+                className="mobile-secondary"
+                onClick={() => performMobileAction("interact")}
+              >
+                {prompt.secondary.main}
               </button>
             )}
-            {busy && prompt?.key === "F" && prompt.detail.includes("A/D") && (
+            {busy && prompt?.shiftSeat && (
               <>
                 <button onClick={() => performMobileAction("seat-left")}>
                   Shift left

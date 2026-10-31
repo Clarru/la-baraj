@@ -20,7 +20,7 @@ export type ActionKey = Pick<
   | "altKey"
   | "preventDefault"
   | "stopImmediatePropagation"
->;
+> & { source?: "touch" };
 const codes: Record<MobileAction, string> = {
   interact: "KeyE",
   sit: "KeyF",
@@ -79,6 +79,7 @@ export function performMobileAction(action: MobileAction) {
   if (action === "jump") jumpUntil = performance.now() + 120;
   let stopped = false;
   const event: ActionKey = {
+    source: "touch",
     code: codes[action],
     repeat: false,
     target: null,

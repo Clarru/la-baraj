@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   joystickVector,
   mobileKeyDown,
@@ -9,7 +9,10 @@ import {
   subscribeMobileActions,
 } from "./mobile-input";
 import { swipeDirection } from "./MobileArcade2048";
-afterEach(resetMobileInput);
+afterEach(() => {
+  resetMobileInput();
+  vi.restoreAllMocks();
+});
 describe("touch movement and actions", () => {
   it("ignores resting thumb jitter and clamps a diagonal drag to the stick radius", () => {
     expect(joystickVector(3, -3)).toEqual({ x: 0, y: 0 });
@@ -55,4 +58,12 @@ describe("touch movement and actions", () => {
   ] as const)("maps a swipe (%s, %s) to %s", (x, y, direction) =>
     expect(swipeDirection(x, y)).toBe(direction),
   );
+});
+
+it("holds a tap just long enough for the physics controller to sample jump", () => {
+  const now = vi.spyOn(performance, "now").mockReturnValue(1000);
+  performMobileAction("jump");
+  expect(mobileKeyDown("Space")).toBe(true);
+  now.mockReturnValue(1121);
+  expect(mobileKeyDown("Space")).toBe(false);
 });
