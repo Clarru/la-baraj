@@ -493,3 +493,41 @@
     bottom: 0;
   }
 }
+
+/* Each thumb owns one pad; camera touches never enter canvas gesture recognition. */
+.mobile-controls .mobile-look {
+  position: absolute;
+  right: max(18px, env(safe-area-inset-right));
+  bottom: max(18px, env(safe-area-inset-bottom));
+  width: 112px;
+  height: 112px;
+}
+.mobile-look > span:first-child {
+  width: 44px;
+  height: 44px;
+}
+.mobile-actions {
+  bottom: calc(max(18px, env(safe-area-inset-bottom)) + 128px);
+}
+@media (pointer: coarse) and (max-height: 500px) {
+  .mobile-controls .mobile-look {
+    width: 100px;
+    height: 100px;
+    bottom: max(12px, env(safe-area-inset-bottom));
+  }
+  .mobile-actions {
+    bottom: calc(max(12px, env(safe-area-inset-bottom)) + 116px);
+  }
+}
+
+@media (pointer: coarse) {
+  .cabin-entry-panel,
+  .planes-entry,
+  .cruce-entry {
+    top: calc(max(8px, env(safe-area-inset-top)) + 64px);
+    bottom: auto;
+  }
+  .cruce-entry {
+    top: calc(max(8px, env(safe-area-inset-top)) + 132px);
+  }
+}

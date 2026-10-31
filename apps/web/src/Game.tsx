@@ -1,3 +1,4 @@
+import { MobileFrameDriver } from "./MobileFrameDriver";
 import { MobileArcade2048 } from "./MobileArcade2048";
 import { MobileControls } from "./MobileControls";
 import { useMobileBlocked } from "./mobile-display";
@@ -629,23 +630,37 @@ export default function Game({ initialName }: { initialName: string }) {
       <SceneBoundary>
         <Suspense fallback={<SceneLoading />}>
           <Canvas
-            shadows="percentage"
+            shadows={touch ? false : "percentage"}
+            frameloop={touch ? "never" : "always"}
             dpr={performanceLab ? 1.5 : touch ? 1 : [1, 1.5]}
             camera={{ position: [58, 35, 72], fov: 48, near: 0.1, far: 6000 }}
             gl={{
-              antialias: true,
-              powerPreference: "high-performance",
+              antialias: !touch,
+              powerPreference: touch ? "low-power" : "high-performance",
               toneMapping: THREE.ACESFilmicToneMapping,
               toneMappingExposure: 0.92,
             }}
           >
-            <WorldLighting evening={evening} forceDay={performanceLab} />
+            {touch && (
+              <MobileFrameDriver
+                covered={mobileBlocked || arcadeOpen || cruceOpen || planesOpen}
+              />
+            )}
+            <WorldLighting
+              evening={evening}
+              forceDay={performanceLab}
+              shadows={!touch}
+            />
             <WorldBackdrop evening={evening} forceDay={performanceLab} />
             <Physics timeStep={1 / 60} gravity={[0, -12, 0]}>
               <group>
                 <Terrain />
                 <Roads />
-                <LakeWater evening={evening} forceDay={performanceLab} />
+                <LakeWater
+                  evening={evening}
+                  forceDay={performanceLab}
+                  mobile={touch}
+                />
                 <Vegetation flat={flat} />
                 <Meadow forceHigh={performanceLab} />
                 <Settlement

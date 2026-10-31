@@ -33,6 +33,12 @@ const codes: Record<MobileAction, string> = {
   "seat-left": "KeyA",
   "seat-right": "KeyD",
 };
+export const mobileMovement = { x: 0, y: 0 };
+export const mobileLook = { x: 0, y: 0 };
+export function setMobileLook(x: number, y: number) {
+  mobileLook.x = x;
+  mobileLook.y = y;
+}
 const listeners = new Set<(event: ActionKey) => void>();
 let x = 0,
   y = 0,
@@ -45,14 +51,14 @@ export function joystickVector(dx: number, dy: number, radius = 48) {
   return { x: dx * scale, y: dy * scale };
 }
 export function setMobileMovement(nextX: number, nextY: number) {
-  x = nextX;
-  y = nextY;
+  x = mobileMovement.x = nextX;
+  y = mobileMovement.y = nextY;
 }
 export function setMobileRun(value: boolean) {
   running = value;
 }
 export function resetMobileInput() {
-  x = y = 0;
+  x = y = mobileMovement.x = mobileMovement.y = mobileLook.x = mobileLook.y = 0;
   running = false;
   jumpUntil = 0;
 }

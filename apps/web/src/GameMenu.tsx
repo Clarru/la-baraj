@@ -277,11 +277,10 @@ export function ControlsHelp({
     <GameDialog title="Controls" onClose={onClose}>
       {touch && (
         <p className="mobile-help">
-          Drag the left stick to move or steer. Tap Run to toggle running. Drag
-          the world to look around and pinch to zoom. Tap nearby action buttons
-          to sit, fish, enter cabins, or ride. In 2048, swipe the board or tap
-          its arrows. In Cruce, tap a playable card; slide your hand sideways to
-          see every card.
+          Drag the left stick to move or steer. Tap Run to toggle running. Use
+          the right stick to look around. Tap nearby action buttons to sit,
+          fish, enter cabins, or ride. In 2048, swipe the board. In Cruce, tap a
+          playable card; slide your hand sideways to see every card.
         </p>
       )}
       <p className="game-help-intro">
