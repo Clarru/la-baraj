@@ -7,6 +7,7 @@ import {
   type MeshBasicMaterial,
   type Object3D,
 } from "three";
+import { currentMultiplayerRoom } from "../../apps/web/src/multiplayer";
 import { screenPaints } from "./arcade-live-screen";
 const displays = new Map<number, unknown>();
 export function createArcadeTiles(...args: Parameters<typeof createTiles>) {
@@ -57,6 +58,13 @@ export function createArcadeTiles(...args: Parameters<typeof createTiles>) {
       paint: screenPaints.get(canvas) ?? [],
       instanceVersion: tiles.mesh.instanceMatrix.version,
       drawn: true,
+      peers: [...(currentMultiplayerRoom()?.remotes.values() ?? [])].map(
+        ({ player }) => ({
+          id: player.id,
+          position: player.position,
+          yaw: player.yaw,
+        }),
+      ),
     };
     const key = JSON.stringify(record);
     if (key === last) return;
