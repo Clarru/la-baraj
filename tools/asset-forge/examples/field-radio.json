@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "id": "la-baraj-forge-field-radio",
+  "profile": "la-baraj-timber-iron-v1",
+  "recipe": "custom",
+  "dimensions": [
+    0.55,
+    0.4,
+    0.24
+  ],
+  "budgets": {
+    "triangles": 3000,
+    "bytes": 180000,
+    "primitives": 3,
+    "textures": 4,
+    "textureEdge": 512
+  },
+  "seed": 0,
+  "parameters": {},
+  "requiredSockets": [
+    "CarryGrip"
+  ],
+  "collision": "none",
+  "reference": null,
+  "requiredJoints": [
+    "Corner_L_F_B",
+    "Corner_L_F_T",
+    "Corner_L_B_B",
+    "Corner_L_B_T",
+    "Corner_R_F_B",
+    "Corner_R_F_T",
+    "Corner_R_B_B",
+    "Corner_R_B_T",
+    "Housing_L_B",
+    "Housing_L_T",
+    "Housing_R_B",
+    "Housing_R_T"
+  ]
+}

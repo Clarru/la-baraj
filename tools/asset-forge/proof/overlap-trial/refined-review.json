@@ -1,0 +1,12 @@
+{
+  "artifactHash": "a60e8cab6e3bdc1fbba6b49db3f0e2e289807e32f39c21bd3668527a8da0fa56",
+  "note": "Inspected full-resolution front/side/rear/3Q, clay, unlit and alternate lighting. Hinge end and underside refinements preserve the silhouette and 33 joint contacts. New bounded coplanar advisory now has zero findings. Accept as a construction prototype; coarse grain, simple hardware and untested game collision/day-night/performance remain explicit limitations.",
+  "status": "accepted",
+  "overlapDiagnostics": {
+    "findings": 0,
+    "complete": true,
+    "scope": "axis-aligned, co-facing, exposed coplanar surfaces"
+  },
+  "reviewedAt": "2026-10-31T13:41:00.663Z",
+  "scope": "Visual review of retained views; collision and actual game performance still require integration checks."
+}

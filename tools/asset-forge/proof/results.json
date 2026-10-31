@@ -1,0 +1,51 @@
+{
+  "node": "v24.22.2",
+  "blender": "5.2.3 LTS",
+  "renderer": "Cycles24samples/512px/AgX/4CPUthreads",
+  "assets": [
+    {
+      "name": "crate",
+      "bytes": 121916,
+      "triangles": 1328,
+      "dimensions": [
+        0.842258065458267,
+        0.9325000010430813,
+        0.9087940621146201
+      ],
+      "modelHash": "474d866a2e5bcdff6e3cc04f1420e03c13e92a94cdbc65d78cc70d946d98333a",
+      "inputHash": "a823315724e023af48892f1ed4877e21ce7e589ab5d253e8ca1ac91ffd3209da",
+      "technicalPass": true,
+      "reviewStatus": "accepted"
+    },
+    {
+      "name": "lantern",
+      "bytes": 141416,
+      "triangles": 2490,
+      "dimensions": [
+        0.357321967310467,
+        1.335200011730194,
+        1.3048017693292808
+      ],
+      "modelHash": "1c347e05028cbcb529a3dbf1b07fa28d566ae44b420dbc766255d8f2a7471eec",
+      "inputHash": "bbb6d607eb545bf7b74896ebd8c6a3866271fa401ffa2dbd083dec46457e1a87",
+      "technicalPass": true,
+      "reviewStatus": "accepted"
+    },
+    {
+      "name": "workbench",
+      "bytes": 108704,
+      "triangles": 604,
+      "dimensions": [
+        1,
+        0.8000122074037903,
+        0.5970030823694571
+      ],
+      "modelHash": "ef0d1c4e2b6f43f5a70ba09ec9f65491c48d438725c929a3f52fe5fec9e6a1c7",
+      "inputHash": "16ffdcebf86ee425cf846f501b984fc1b7cb039ceff3a1adb68402129151ae37",
+      "technicalPass": true,
+      "reviewStatus": "accepted"
+    }
+  ],
+  "cacheReuseConfirmed": true,
+  "gameInstalled": false
+}

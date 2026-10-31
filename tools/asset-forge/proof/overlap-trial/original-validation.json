@@ -1,0 +1,779 @@
+{
+  "technicalPass": true,
+  "errors": [],
+  "warnings": [
+    "19 retained exposed coplanar triangle overlaps require visual inspection."
+  ],
+  "overlapDiagnostics": {
+    "scope": "axis-aligned, co-facing, exposed coplanar surfaces",
+    "planeToleranceMetres": 0.00002,
+    "minimumAreaSquareMetres": 0.000002,
+    "complete": true,
+    "testedPairs": 518,
+    "findings": [
+      {
+        "point": [
+          -0.16849727165003403,
+          0.19454877224364,
+          -0.13196205845399103
+        ],
+        "normal": [
+          -1,
+          0,
+          0
+        ],
+        "overlapAreaSquareMetres": 0.000005400654025614071,
+        "faces": [
+          {
+            "node": "source",
+            "material": "LaBaraj iron",
+            "triangle": 626
+          },
+          {
+            "node": "source",
+            "material": "LaBaraj iron",
+            "triangle": 703
+          }
+        ]
+      },
+      {
+        "point": [
+          0.22174886720816703,
+          -0.0000034821551632702175,
+          0.10499931151299118
+        ],
+        "normal": [
+          0,
+          -1,
+          0
+        ],
+        "overlapAreaSquareMetres": 0.00006750663782206616,
+        "faces": [
+          {
+            "node": "source",
+            "material": "LaBaraj timber",
+            "triangle": 8
+          },
+          {
+            "node": "source",
+            "material": "LaBaraj timber",
+            "triangle": 739
+          }
+        ]
+      },
+      {
+        "point": [
+          0.21880987822806128,
+          -0.0000034821551632702175,
+          0.11975203555758432
+        ],
+        "normal": [
+          0,
+          -1,
+          0
+        ],
+        "overlapAreaSquareMetres": 0.000026447044477505635,
+        "faces": [
+          {
+            "node": "source",
+            "material": "LaBaraj timber",
+            "triangle": 8
+          },
+          {
+            "node": "source",
+            "material": "LaBaraj timber",
+            "triangle": 740
+          }
+        ]
+      },
+      {
+        "point": [
+          0.22287370319158373,
+          -0.0000034821551632702175,
+          0.1172514251420324
+        ],
+        "normal": [
+          0,
+          -1,
+          0
+        ],
+        "overlapAreaSquareMetres": 0.000032624260524069526,
+        "faces": [
+          {
+            "node": "source",
+            "material": "LaBaraj timber",
+            "triangle": 8
+          },
+          {
+            "node": "source",
+            "material": "LaBaraj timber",
+            "triangle": 741
+          }
+        ]
+      },
+      {
+        "point": [
+          -0.20433408982996518,
+          -0.0000034821551632702175,
+          0.12050192621319548
+        ],
+        "normal": [
+          0,
+          -1,
+          0
+        ],
+        "overlapAreaSquareMetres": 0.00003261636501087142,
+        "faces": [
+          {
+            "node": "source",
+            "material": "LaBaraj timber",
+            "triangle": 9
+          },
+          {
+            "node": "source",
+            "material": "LaBaraj timber",
+            "triangle": 602
+          }
+        ]
+      },
+      {
+        "point": [
+          -0.22249875786377815,
+          -0.0000034821551632702175,
+          0.1023314087982935
+        ],
+        "normal": [
+          0,
+          -1,
+          0
+        ],
+        "overlapAreaSquareMetres": 0.00003262426052406779,
+        "faces": [
+          {
+            "node": "source",
+            "material": "LaBaraj timber",
+            "triangle": 9
+          },
+          {
+            "node": "source",
+            "material": "LaBaraj timber",
+            "triangle": 603
+          }
+        ]
+      },
+      {
+        "point": [
+          -0.2161994423814011,
+          -0.0000034821551632702175,
+          0.12020196995095103
+        ],
+        "normal": [
+          0,
+          -1,
+          0
+        ],
+        "overlapAreaSquareMetres": 0.00006748295128247879,
+        "faces": [
+          {
+            "node": "source",
+            "material": "LaBaraj timber",
+            "triangle": 9
+          },
+          {
+            "node": "source",
+            "material": "LaBaraj timber",
+            "triangle": 604
+          }
+        ]
+      },
+      {
+        "point": [
+          -0.2221988016015337,
+          -0.0000034821551632702175,
+          0.11420050495362633
+        ],
+        "normal": [
+          0,
+          -1,
+          0
+        ],
+        "overlapAreaSquareMetres": 0.00006750663782206442,
+        "faces": [
+          {
+            "node": "source",
+            "material": "LaBaraj timber",
+            "triangle": 9
+          },
+          {
+            "node": "source",
+            "material": "LaBaraj timber",
+            "triangle": 605
+          }
+        ]
+      },
+      {
+        "point": [
+          0.20433408982996526,
+          -0.0000034821551632702175,
+          0.12050192621319548
+        ],
+        "normal": [
+          0,
+          -1,
+          0
+        ],
+        "overlapAreaSquareMetres": 0.00003261636501087142,
+        "faces": [
+          {
+            "node": "source",
+            "material": "LaBaraj timber",
+            "triangle": 9
+          },
+          {
+            "node": "source",
+            "material": "LaBaraj timber",
+            "triangle": 738
+          }
+        ]
+      },
+      {
+        "point": [
+          0.21131067920289548,
+          -0.0000034821551632702175,
+          0.11975203555758435
+        ],
+        "normal": [
+          0,
+          -1,
+          0
+        ],
+        "overlapAreaSquareMetres": 0.000041035906804973155,
+        "faces": [
+          {
+            "node": "source",
+            "material": "LaBaraj timber",
+            "triangle": 9
+          },
+          {
+            "node": "source",
+            "material": "LaBaraj timber",
+            "triangle": 740
+          }
+        ]
+      },
+      {
+        "point": [
+          -0.20433408982996526,
+          -0.0000034821551632702175,
+          -0.12450291032865918
+        ],
+        "normal": [
+          0,
+          -1,
+          0
+        ],
+        "overlapAreaSquareMetres": 0.00003261636501087316,
+        "faces": [
+          {
+            "node": "source",
+            "material": "LaBaraj timber",
+            "triangle": 20
+          },
+          {
+            "node": "source",
+            "material": "LaBaraj timber",
+            "triangle": 670
+          }
+        ]
+      },
+      {
+        "point": [
+          -0.21131067920289548,
+          -0.0000034821551632702175,
+          -0.12375301967304804
+        ],
+        "normal": [
+          0,
+          -1,
+          0
+        ],
+        "overlapAreaSquareMetres": 0.00004103590680497489,
+        "faces": [
+          {
+            "node": "source",
+            "material": "LaBaraj timber",
+            "triangle": 20
+          },
+          {
+            "node": "source",
+            "material": "LaBaraj timber",
+            "triangle": 672
+          }
+        ]
+      },
+      {
+        "point": [
+          0.20433408982996518,
+          -0.0000034821551632702175,
+          -0.12450291032865918
+        ],
+        "normal": [
+          0,
+          -1,
+          0
+        ],
+        "overlapAreaSquareMetres": 0.00003261636501087316,
+        "faces": [
+          {
+            "node": "source",
+            "material": "LaBaraj timber",
+            "triangle": 20
+          },
+          {
+            "node": "source",
+            "material": "LaBaraj timber",
+            "triangle": 806
+          }
+        ]
+      },
+      {
+        "point": [
+          0.22249875786377815,
+          -0.0000034821551632702175,
+          -0.10633239291375722
+        ],
+        "normal": [
+          0,
+          -1,
+          0
+        ],
+        "overlapAreaSquareMetres": 0.000032624260524066057,
+        "faces": [
+          {
+            "node": "source",
+            "material": "LaBaraj timber",
+            "triangle": 20
+          },
+          {
+            "node": "source",
+            "material": "LaBaraj timber",
+            "triangle": 807
+          }
+        ]
+      },
+      {
+        "point": [
+          0.2161994423814011,
+          -0.0000034821551632702175,
+          -0.12420295406641473
+        ],
+        "normal": [
+          0,
+          -1,
+          0
+        ],
+        "overlapAreaSquareMetres": 0.00006748295128247879,
+        "faces": [
+          {
+            "node": "source",
+            "material": "LaBaraj timber",
+            "triangle": 20
+          },
+          {
+            "node": "source",
+            "material": "LaBaraj timber",
+            "triangle": 808
+          }
+        ]
+      },
+      {
+        "point": [
+          0.2221988016015337,
+          -0.0000034821551632702175,
+          -0.11820148906909005
+        ],
+        "normal": [
+          0,
+          -1,
+          0
+        ],
+        "overlapAreaSquareMetres": 0.00006750663782206616,
+        "faces": [
+          {
+            "node": "source",
+            "material": "LaBaraj timber",
+            "triangle": 20
+          },
+          {
+            "node": "source",
+            "material": "LaBaraj timber",
+            "triangle": 809
+          }
+        ]
+      },
+      {
+        "point": [
+          -0.22174886720816703,
+          -0.0000034821551632702175,
+          -0.1090002956284549
+        ],
+        "normal": [
+          0,
+          -1,
+          0
+        ],
+        "overlapAreaSquareMetres": 0.00006750663782206616,
+        "faces": [
+          {
+            "node": "source",
+            "material": "LaBaraj timber",
+            "triangle": 21
+          },
+          {
+            "node": "source",
+            "material": "LaBaraj timber",
+            "triangle": 671
+          }
+        ]
+      },
+      {
+        "point": [
+          -0.21880987822806128,
+          -0.0000034821551632702175,
+          -0.12375301967304804
+        ],
+        "normal": [
+          0,
+          -1,
+          0
+        ],
+        "overlapAreaSquareMetres": 0.000026447044477505635,
+        "faces": [
+          {
+            "node": "source",
+            "material": "LaBaraj timber",
+            "triangle": 21
+          },
+          {
+            "node": "source",
+            "material": "LaBaraj timber",
+            "triangle": 672
+          }
+        ]
+      },
+      {
+        "point": [
+          -0.22287370319158376,
+          -0.0000034821551632702175,
+          -0.12125240925749609
+        ],
+        "normal": [
+          0,
+          -1,
+          0
+        ],
+        "overlapAreaSquareMetres": 0.00003262426052406779,
+        "faces": [
+          {
+            "node": "source",
+            "material": "LaBaraj timber",
+            "triangle": 21
+          },
+          {
+            "node": "source",
+            "material": "LaBaraj timber",
+            "triangle": 673
+          }
+        ]
+      }
+    ]
+  },
+  "surfaceResults": [
+    {
+      "name": "Corner_L_F/corner_depth_0",
+      "pass": true,
+      "distance": 0.0038883327609099856
+    },
+    {
+      "name": "Corner_L_F/corner_depth_1",
+      "pass": true,
+      "distance": 0.0038883327609099856
+    },
+    {
+      "name": "Corner_L_F/corner_depth_2",
+      "pass": true,
+      "distance": 0.0038883327609099856
+    },
+    {
+      "name": "Corner_L_B/corner_depth_0",
+      "pass": true,
+      "distance": 0.003890123252437232
+    },
+    {
+      "name": "Corner_L_B/corner_depth_1",
+      "pass": true,
+      "distance": 0.003890123252437232
+    },
+    {
+      "name": "Corner_L_B/corner_depth_2",
+      "pass": true,
+      "distance": 0.003890123252437232
+    },
+    {
+      "name": "Corner_R_F/corner_depth_0",
+      "pass": true,
+      "distance": 0.0038883327609099856
+    },
+    {
+      "name": "Corner_R_F/corner_depth_1",
+      "pass": true,
+      "distance": 0.0038883327609099856
+    },
+    {
+      "name": "Corner_R_F/corner_depth_2",
+      "pass": true,
+      "distance": 0.0038883327609099856
+    },
+    {
+      "name": "Corner_R_B/corner_depth_0",
+      "pass": true,
+      "distance": 0.003890123252437232
+    },
+    {
+      "name": "Corner_R_B/corner_depth_1",
+      "pass": true,
+      "distance": 0.003890123252437232
+    },
+    {
+      "name": "Corner_R_B/corner_depth_2",
+      "pass": true,
+      "distance": 0.003890123252437232
+    },
+    {
+      "name": "Lid_Rabbet/closed_front_0",
+      "pass": true,
+      "distance": 0.012499257934792174
+    },
+    {
+      "name": "Lid_Rabbet/closed_front_1",
+      "pass": true,
+      "distance": 0.012499257934792174
+    },
+    {
+      "name": "Lid_Rabbet/closed_front_2",
+      "pass": true,
+      "distance": 0.012499257934792174
+    },
+    {
+      "name": "Latch_L/leaf_contact_0",
+      "pass": true,
+      "distance": 0.0029968396376051365
+    },
+    {
+      "name": "Latch_L/leaf_contact_1",
+      "pass": true,
+      "distance": 0.0029968396376051365
+    },
+    {
+      "name": "Latch_L/leaf_contact_2",
+      "pass": true,
+      "distance": 0.004000593432479299
+    },
+    {
+      "name": "Latch_R/leaf_contact_0",
+      "pass": true,
+      "distance": 0.0029968396376051365
+    },
+    {
+      "name": "Latch_R/leaf_contact_1",
+      "pass": true,
+      "distance": 0.0029968396376051365
+    },
+    {
+      "name": "Latch_R/leaf_contact_2",
+      "pass": true,
+      "distance": 0.004000593432479299
+    },
+    {
+      "name": "Hinge_L/leaf_contact_0",
+      "pass": true,
+      "distance": 0.0010028490302416704
+    },
+    {
+      "name": "Hinge_L/leaf_contact_1",
+      "pass": true,
+      "distance": 0.0019995835678090212
+    },
+    {
+      "name": "Hinge_L/leaf_contact_2",
+      "pass": true,
+      "distance": 0.0010028490302416704
+    },
+    {
+      "name": "Hinge_R/leaf_contact_0",
+      "pass": true,
+      "distance": 0.0010028490302416704
+    },
+    {
+      "name": "Hinge_R/leaf_contact_1",
+      "pass": true,
+      "distance": 0.0019995835678090212
+    },
+    {
+      "name": "Hinge_R/leaf_contact_2",
+      "pass": true,
+      "distance": 0.0010028490302416704
+    },
+    {
+      "name": "Handle_L/foot_attachment_0",
+      "pass": true,
+      "distance": 0.0010023484532967197
+    },
+    {
+      "name": "Handle_L/foot_attachment_1",
+      "pass": true,
+      "distance": 0.00399957132330564
+    },
+    {
+      "name": "Handle_L/foot_attachment_2",
+      "pass": true,
+      "distance": 0.0019990829908640984
+    },
+    {
+      "name": "Handle_R/foot_attachment_0",
+      "pass": true,
+      "distance": 0.00399957132330564
+    },
+    {
+      "name": "Handle_R/foot_attachment_1",
+      "pass": true,
+      "distance": 0.0010023484532967197
+    },
+    {
+      "name": "Handle_R/foot_attachment_2",
+      "pass": true,
+      "distance": 0.0019990829908640984
+    }
+  ],
+  "jointResults": {
+    "Corner_L_F": {
+      "pass": true
+    },
+    "Corner_R_F": {
+      "pass": true
+    },
+    "Corner_L_B": {
+      "pass": true
+    },
+    "Corner_R_B": {
+      "pass": true
+    },
+    "Lid_Rabbet": {
+      "pass": true
+    },
+    "Handle_L": {
+      "pass": true
+    },
+    "Handle_R": {
+      "pass": true
+    },
+    "Latch_L": {
+      "pass": true
+    },
+    "Latch_R": {
+      "pass": true
+    },
+    "Hinge_L": {
+      "pass": true
+    },
+    "Hinge_R": {
+      "pass": true
+    }
+  },
+  "triangles": 2356,
+  "bytes": 144584,
+  "primitives": 2,
+  "dimensions": [
+    0.46000000834465027,
+    0.31600696395269867,
+    0.27599719730386746
+  ],
+  "bounds": {
+    "min": [
+      -0.23000000417232513,
+      -0.0000034821551632702175,
+      -0.13799860237722403
+    ],
+    "max": [
+      0.23000000417232513,
+      0.3160034817975354,
+      0.13799859492664343
+    ]
+  },
+  "textures": [
+    {
+      "name": "trim-normal",
+      "size": [
+        512,
+        512
+      ],
+      "sha256": "acf251b016592e376c74a488cb221ade7b23688b7933859614c6a363d2e4f82a",
+      "bytes": 55468
+    },
+    {
+      "name": "trim-base-color",
+      "size": [
+        512,
+        512
+      ],
+      "sha256": "c84b1005afe4c9d736bd961ecaddc513f07dec9a903ac870497e36fb0163c673",
+      "bytes": 19612
+    },
+    {
+      "name": "trim-metallic-roughness",
+      "size": [
+        512,
+        512
+      ],
+      "sha256": "18fe90c43eb6444f5ebd8d3fa9c9fd56937c267e500c0de26958a14b48341409",
+      "bytes": 15436
+    }
+  ],
+  "materials": [
+    {
+      "name": "LaBaraj timber",
+      "baseColor": [
+        0.8,
+        0.8,
+        0.8,
+        1
+      ],
+      "normal": true,
+      "metallicRoughness": true
+    },
+    {
+      "name": "LaBaraj iron",
+      "baseColor": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "normal": true,
+      "metallicRoughness": true
+    }
+  ],
+  "sockets": {
+    "CarryGrip": [
+      0,
+      0.3009999990463257,
+      -0.001999996602535248
+    ],
+    "Placement": [
+      0,
+      0,
+      3.4924596548080444e-9
+    ]
+  },
+  "runtimePerformance": "Not benchmarked; these are resource budgets, not FPS."
+}

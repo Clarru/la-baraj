@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "id": "lake-wooden-tackle-box",
+  "profile": "la-baraj-timber-iron-v1",
+  "recipe": "custom",
+  "dimensions": [
+    0.46,
+    0.316,
+    0.276
+  ],
+  "budgets": {
+    "triangles": 3000,
+    "bytes": 180000,
+    "primitives": 2,
+    "textures": 3,
+    "textureEdge": 512
+  },
+  "seed": 0,
+  "parameters": {},
+  "requiredSockets": [
+    "CarryGrip",
+    "Placement"
+  ],
+  "requiredJoints": [
+    "Corner_L_F",
+    "Corner_R_F",
+    "Corner_L_B",
+    "Corner_R_B",
+    "Lid_Rabbet",
+    "Handle_L",
+    "Handle_R",
+    "Latch_L",
+    "Latch_R",
+    "Hinge_L",
+    "Hinge_R"
+  ],
+  "collision": "box",
+  "reference": null
+}

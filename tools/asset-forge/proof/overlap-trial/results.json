@@ -1,0 +1,46 @@
+{
+  "date": "2026-10-31",
+  "node": "v24.22.1",
+  "tests": 38,
+  "original": {
+    "findings": 19
+  },
+  "refined": {
+    "triangles": 2356,
+    "bytes": 144596,
+    "probes": 33,
+    "findings": 0,
+    "technicalPass": true,
+    "reviewStatus": "accepted",
+    "cacheMs": 223,
+    "reportMs": 27,
+    "stages": [
+      {
+        "name": "build",
+        "milliseconds": 758
+      },
+      {
+        "name": "optimize",
+        "milliseconds": 236
+      },
+      {
+        "name": "render-qa",
+        "milliseconds": 12053
+      },
+      {
+        "name": "render-qa-light-90",
+        "milliseconds": 2795
+      },
+      {
+        "name": "concept-compare",
+        "milliseconds": 195
+      }
+    ]
+  },
+  "limits": [
+    "Historical acceptance does not validate a stale current build.",
+    "Coplanar findings are advisory and limited to exposed axis-aligned co-facing surfaces.",
+    "Review notes are recorded judgments; this report does not inspect images or certify style.",
+    "Game placement, collision behavior, day/night appearance and performance require integration checks."
+  ]
+}
