@@ -39,6 +39,7 @@ export function useArcade2048(
   open: boolean,
   onExit?: () => void,
   stationId?: number,
+  canControl = true,
 ) {
   const view = useSyncExternalStore(room.subscribe, room.getSnapshot),
     [page, setPage] = useState<ArcadePage>("board"),
@@ -107,7 +108,7 @@ export function useArcade2048(
         onExit?.();
         return;
       }
-      if (!open || flight.current) return;
+      if (!open || !canControl || flight.current) return;
       hardware.current = { kind: value, at: performance.now() };
       if (value === "back") {
         setPage("board");
@@ -135,7 +136,7 @@ export function useArcade2048(
           });
       }
     },
-    [open, room, run, onExit],
+    [open, canControl, room, run, onExit],
   );
   const move = useCallback(
     (d: ArcadeDirection) => {
@@ -144,6 +145,7 @@ export function useArcade2048(
       if (now - lastMoveAt.current < 1000 / 8) return;
       if (
         open &&
+        canControl &&
         page === "board" &&
         !flight.current &&
         room.getSnapshot().arcade2048?.game
@@ -152,19 +154,28 @@ export function useArcade2048(
         void run({ kind: "move", direction: d });
       }
     },
-    [open, page, room, run],
+    [open, canControl, page, room, run],
   );
   const state = useMemo(
     () => ({
       view: view.arcade2048,
       page,
-      active: open,
+      active: open && canControl,
       pending,
       error,
       local: room.localPreview,
       focused,
     }),
-    [view.arcade2048, page, open, pending, error, room.localPreview, focused],
+    [
+      view.arcade2048,
+      page,
+      open,
+      canControl,
+      pending,
+      error,
+      room.localPreview,
+      focused,
+    ],
   );
   return { state, action, move, direction, hardware, setFocused };
 }

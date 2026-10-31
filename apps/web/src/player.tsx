@@ -2,6 +2,7 @@ import { arcadeExitCamera, arcadeFocusCamera } from "./arcade2048-camera";
 import {
   ARCADE_STATION,
   arcadeStation,
+  arcadeStandingPoint,
 } from "../../../packages/shared/arcade2048-station";
 import { cruceContactForPose, type CruceSeatContact } from "./cruce-seating";
 import {
@@ -127,6 +128,7 @@ import {
   stanceBaseAnimation,
   stanceForToggle,
   stanceRayOriginOffset,
+  stanceControllerHeight,
   stanceVisualLift,
   type Stance,
 } from "./stance-motion";
@@ -191,6 +193,7 @@ export function Player({
   indoors = false,
   doorTransition = false,
   waveRequest = 0,
+  arcadeStationId = null,
 }: {
   homeIndex: number;
   mode: ViewMode;
@@ -205,6 +208,7 @@ export function Player({
   indoors?: boolean;
   doorTransition?: boolean;
   waveRequest?: number;
+  arcadeStationId?: number | null;
 }) {
   const arrival = useMemo(() => homeSpawn(homeIndex), [homeIndex]);
   const controller = useRef<EcctrlHandle>(null);
@@ -280,6 +284,7 @@ export function Player({
   >([]);
   const sampleClock = useRef(0);
   const anchored = useRef(false);
+  const alignedArcade = useRef<number | null>(null);
   const lastActivityStart = useRef(-1);
   const gestureAnimation = useRef<string | null>(null);
   const facingParent = useMemo(() => new THREE.Quaternion(), []);
@@ -808,6 +813,71 @@ export function Player({
       c.body.setLinvel({ x: 0, y: 0, z: 0 }, true);
       c.body.setAngvel({ x: 0, y: 0, z: 0 }, true);
       keys.current.clear();
+    }
+    // This prop is supplied only after the current claim and public ownership agree.
+    if (arcadeStationId === null) alignedArcade.current = null;
+    if (
+      arcadeStationId !== null &&
+      alignedArcade.current !== arcadeStationId &&
+      mode === "walk" &&
+      !indoors &&
+      !doorTransition &&
+      !getVehicleState().mounted &&
+      !getBoatState().mounted &&
+      !activityAnimation(getActivityPose().kind)
+    ) {
+      const stand = arcadeStandingPoint(arcadeStationId);
+      if (stand) {
+        const ground = floorAt(stand.x, stand.z);
+        // Like the verified home arrival, this authored pad has standing clearance.
+        setPhysicalStance("standing", false);
+        const point = {
+          x: stand.x,
+          y: ground + stanceControllerHeight("standing"),
+          z: stand.z,
+        };
+        c.body.setTranslation(point, true);
+        c.body.setLinvel({ x: 0, y: 0, z: 0 }, true);
+        c.body.setAngvel({ x: 0, y: 0, z: 0 }, true);
+        c.body.resetForces(true);
+        c.body.resetTorques(true);
+        keys.current.clear();
+        jumpRequest.current = false;
+        jumpState.current = initialJumpMotion();
+        setJumping(false);
+        c.setMovement({
+          forward: false,
+          backward: false,
+          leftward: false,
+          rightward: false,
+          run: false,
+          jump: false,
+        });
+        playerPosition.set(point.x, point.y, point.z);
+        playerViewPosition.copy(playerPosition);
+        if (visual.current) {
+          visual.current.parent?.getWorldQuaternion(facingParent);
+          localFacing(stand.yaw, facingParent, facingTarget);
+          visual.current.quaternion.copy(facingTarget);
+          visual.current.position.y = ground + 0.015 - point.y;
+        }
+        sampleClock.current = 0;
+        onMotion({
+          homeIndex,
+          position: playerPosition.toArray(),
+          feet: [stand.x, ground + 0.015, stand.z],
+          facing: [Math.sin(stand.yaw), 0, Math.cos(stand.yaw)],
+          animation: "Idle_Neutral",
+          posture: "standing",
+          activity: "none",
+          velocity: [0, 0, 0],
+          jumpPhase: "grounded",
+          vehicle: null,
+          grounded: true,
+        });
+        alignedArcade.current = arcadeStationId;
+        return;
+      }
     }
     const requestedTransfer = takeCabinTransfer();
     if (requestedTransfer) {

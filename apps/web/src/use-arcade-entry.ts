@@ -8,6 +8,10 @@ export function useArcadeEntry(
   blocked: boolean,
   canApproach: (id: number) => boolean,
   onOpened: () => void,
+  authority: Pick<
+    ReturnType<MultiplayerRoom["getSnapshot"]>,
+    "status" | "selfId" | "arcadeStations" | "arcadeStationsAvailable"
+  >,
 ) {
   const [stationId, setStationId] = useState<number | null>(null),
     [opening, setOpening] = useState(false),
@@ -18,6 +22,7 @@ export function useArcadeEntry(
     generation: 0,
     opening: false,
     enabled,
+    claimantId: null as string | null,
   });
   current.current.enabled = enabled;
   const close = useCallback(() => {
@@ -25,6 +30,7 @@ export function useArcadeEntry(
       id = c.selected ?? c.pending;
     c.generation++;
     c.selected = null;
+    c.claimantId = null;
     c.pending = null;
     c.opening = false;
     if (id !== null) room.leaveArcade(id);
@@ -37,6 +43,7 @@ export function useArcadeEntry(
         id = c.selected ?? c.pending;
       c.generation++;
       c.selected = null;
+      c.claimantId = null;
       c.pending = null;
       c.opening = false;
       if (id !== null) room.leaveArcade(id);
@@ -54,6 +61,34 @@ export function useArcadeEntry(
       close();
     }
   }, [stationId, blocked, close]);
+  useEffect(() => {
+    if (
+      stationId === null ||
+      stationId < 0 ||
+      authority.status !== "online" ||
+      !authority.arcadeStationsAvailable
+    )
+      return;
+    const c = current.current,
+      owner = authority.arcadeStations.find(
+        (s) => s.id === stationId,
+      )?.playerId;
+    if (owner === authority.selfId) {
+      c.claimantId = authority.selfId;
+      return;
+    }
+    // A new socket must get its restore opportunity before an empty snapshot is a lost claim.
+    if (c.claimantId !== authority.selfId) return;
+    setError("Cabinet released. Your game is saved.");
+    close();
+  }, [
+    stationId,
+    authority.status,
+    authority.selfId,
+    authority.arcadeStations,
+    authority.arcadeStationsAvailable,
+    close,
+  ]);
   const open = useCallback(
     async (id: number) => {
       const c = current.current;
@@ -105,6 +140,7 @@ export function useArcadeEntry(
         }
         onOpened();
         c.selected = id;
+        c.claimantId = latest.selfId;
         setStationId(id);
       } catch {
         if (generation === c.generation) {

@@ -1,0 +1,23 @@
+{
+  "candidate": "37be90b612ae22796440790d4e7c66ad5c58c451",
+  "exactManifestEqual": true,
+  "files": 293,
+  "index": {
+    "sha256": "4215ba8aeef8c894d449b742116c9024bade4aedadf7a28c86896772bd2f1540",
+    "bytes": 1027
+  },
+  "closedOwnedTabs": [
+    "16",
+    "17"
+  ],
+  "viewportOverrideApplied": false,
+  "at": "2026-10-31T10:17:42.823063+00:00",
+  "removed": [
+    "assets/arcade2048-world-CmrJCJDO.css",
+    "assets/CruceBoard-CQZcXU9l.js",
+    "assets/arcade2048-world--VfJggtU.js",
+    "assets/PlanesBoard-BqDpRius.js",
+    "assets/arcade-live-local-world.worker-D2W8Fgol.js",
+    "__2048-live-37be90b-qa.html"
+  ]
+}

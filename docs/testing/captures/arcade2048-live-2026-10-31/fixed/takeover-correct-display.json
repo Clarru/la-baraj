@@ -1,0 +1,218 @@
+{
+  "owner": {
+    "status": "online",
+    "selfId": "8b9b4e54-a7bb-4786-a917-ec5b8d321487",
+    "stations": [
+      {
+        "id": 0,
+        "playerId": null,
+        "name": "",
+        "game": null,
+        "best": 0,
+        "direction": null
+      },
+      {
+        "id": 1,
+        "playerId": null,
+        "name": "",
+        "game": null,
+        "best": 0,
+        "direction": null
+      },
+      {
+        "id": 2,
+        "playerId": "8b9b4e54-a7bb-4786-a917-ec5b8d321487",
+        "name": "Arcade friend QA",
+        "game": {
+          "board": [
+            0,
+            0,
+            0,
+            0,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            2,
+            0,
+            0,
+            0,
+            0
+          ],
+          "score": 4,
+          "moves": 1,
+          "revision": 2,
+          "continued": false
+        },
+        "best": 4,
+        "direction": null
+      }
+    ],
+    "privateGame": {
+      "board": [
+        0,
+        0,
+        0,
+        0,
+        4,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        2,
+        0,
+        0,
+        0,
+        0
+      ],
+      "score": 4,
+      "moves": 1,
+      "revision": 2,
+      "continued": false
+    },
+    "blocked": false
+  },
+  "observer": {
+    "status": "online",
+    "selfId": "903b60b9-de1f-41d1-a0e5-7f306f58d726",
+    "stations": [
+      {
+        "id": 0,
+        "playerId": null,
+        "name": "",
+        "game": null,
+        "best": 0,
+        "direction": null
+      },
+      {
+        "id": 1,
+        "playerId": null,
+        "name": "",
+        "game": null,
+        "best": 0,
+        "direction": null
+      },
+      {
+        "id": 2,
+        "playerId": "8b9b4e54-a7bb-4786-a917-ec5b8d321487",
+        "name": "Arcade friend QA",
+        "game": {
+          "board": [
+            0,
+            0,
+            0,
+            0,
+            4,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            2,
+            0,
+            0,
+            0,
+            0
+          ],
+          "score": 4,
+          "moves": 1,
+          "revision": 2,
+          "continued": false
+        },
+        "best": 4,
+        "direction": null
+      }
+    ],
+    "privateGame": {
+      "board": [
+        0,
+        0,
+        0,
+        2,
+        0,
+        0,
+        0,
+        2,
+        0,
+        2,
+        0,
+        8,
+        4,
+        2,
+        8,
+        2
+      ],
+      "score": 32,
+      "moves": 12,
+      "revision": 13,
+      "continued": false
+    },
+    "blocked": false
+  },
+  "actual": {
+    "id": 2,
+    "visible": true,
+    "settled": true,
+    "board": [
+      0,
+      0,
+      0,
+      0,
+      4,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      2,
+      0,
+      0,
+      0,
+      0
+    ],
+    "faces": [
+      {
+        "value": 4,
+        "x": 97,
+        "y": -317
+      },
+      {
+        "value": 2,
+        "x": 415,
+        "y": -423
+      }
+    ],
+    "paint": [
+      "2048",
+      "LA BARAJ",
+      "SCORE",
+      "4",
+      "BEST",
+      "4",
+      "New game",
+      "Scores",
+      "Occupied · Arcade friend QA"
+    ],
+    "instanceVersion": 70,
+    "drawn": true,
+    "peers": [
+      {
+        "id": "8b9b4e54-a7bb-4786-a917-ec5b8d321487",
+        "position": [
+          -6.951,
+          0.946,
+          74.649
+        ],
+        "yaw": -2.356
+      }
+    ]
+  },
+  "controls": 0
+}

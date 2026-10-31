@@ -17,6 +17,7 @@ async function fixture() {
     status: "online",
     error: "",
     arcadeAvailable: true,
+    arcadeStationsAvailable: true,
     selfId: "you",
     arcadeStations: [],
     arcade2048: null,
@@ -45,6 +46,7 @@ async function fixture() {
       blocked,
       canApproach,
       opened,
+      snapshot,
     );
     return null;
   }
@@ -175,4 +177,69 @@ it("never sends a claim for an occupied cabinet or an offline world", async () =
   await act(() => f.controls().open(1));
   expect(f.controls().error).toContain("online");
   expect(f.room.arcadeAction).not.toHaveBeenCalled();
+});
+
+it("closes a former owner's controls on a public release or takeover without deleting their saved board", async () => {
+  const f = await fixture();
+  const saved = {
+    ranked: true,
+    best: 36,
+    leaders: [],
+    game: {
+      board: [8, 2, ...Array(14).fill(0)],
+      score: 36,
+      moves: 11,
+      revision: 12,
+      continued: false,
+    },
+  };
+  f.snapshot.arcade2048 = saved;
+  await act(() => {
+    void f.controls().open(2);
+  });
+  await f.resolve(0, 2);
+  f.snapshot.arcadeStations = [
+    {
+      id: 2,
+      playerId: "friend",
+      name: "Friend",
+      game: null,
+      best: 0,
+      direction: null,
+    },
+  ];
+  await f.render();
+  expect(f.controls().stationId).toBeNull();
+  expect(f.snapshot.arcade2048).toBe(saved);
+  expect(f.room.leaveArcade).toHaveBeenLastCalledWith(2);
+  expect(f.controls().error).toContain("saved");
+});
+it("lets a reconnect generation restore before treating an empty snapshot as a released cabinet", async () => {
+  const f = await fixture();
+  await act(() => {
+    void f.controls().open(2);
+  });
+  await f.resolve(0, 2);
+  f.snapshot.status = "reconnecting";
+  f.snapshot.arcadeStations = [];
+  await f.render();
+  expect(f.controls().stationId).toBe(2);
+  f.snapshot.status = "online";
+  f.snapshot.selfId = "new-you";
+  await f.render();
+  expect(f.controls().stationId).toBe(2);
+  f.snapshot.arcadeStations = [
+    {
+      id: 2,
+      playerId: "new-you",
+      name: "You",
+      game: null,
+      best: 0,
+      direction: null,
+    },
+  ];
+  await f.render();
+  f.snapshot.arcadeStations = [];
+  await f.render();
+  expect(f.controls().stationId).toBeNull();
 });
