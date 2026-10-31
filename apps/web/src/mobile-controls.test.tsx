@@ -102,6 +102,65 @@ it("offers a usable browser fallback after a rejected fullscreen request", async
   expect(container.querySelector(".mobile-setup")).toBeNull();
   expect(container.querySelector("[data-game]")).not.toBeNull();
 });
+it.each([true, false])(
+  "opens installed=%s Safari without the Fullscreen API",
+  async (installed) => {
+    vi.stubGlobal("navigator", {
+      userAgent: "iPhone",
+      maxTouchPoints: 5,
+      standalone: installed,
+    });
+    const descriptor = Object.getOwnPropertyDescriptor(
+      document.documentElement,
+      "requestFullscreen",
+    );
+    Object.defineProperty(document.documentElement, "requestFullscreen", {
+      configurable: true,
+      value: undefined,
+    });
+    try {
+      await act(async () =>
+        root.render(
+          <MobileExperience>
+            <div data-game>Game</div>
+          </MobileExperience>,
+        ),
+      );
+      if (installed) {
+        expect(container.querySelector(".mobile-start")?.textContent).toContain(
+          "Enter La Baraj",
+        );
+        expect(container.textContent).not.toContain(
+          "This browser cannot open fullscreen",
+        );
+        expect(container.textContent).not.toContain("Play in this browser");
+        await act(async () =>
+          container.querySelector<HTMLButtonElement>(".mobile-start")!.click(),
+        );
+      } else {
+        expect(container.textContent).toContain(
+          "This browser cannot open fullscreen",
+        );
+        const browser = [...container.querySelectorAll("button")].find(
+          (b) => b.textContent === "Play in this browser",
+        );
+        expect(browser).toBeDefined();
+        await act(async () => browser!.click());
+      }
+      expect(container.querySelector(".mobile-setup")).toBeNull();
+      expect(container.querySelector("[data-game]")).not.toBeNull();
+    } finally {
+      if (descriptor)
+        Object.defineProperty(
+          document.documentElement,
+          "requestFullscreen",
+          descriptor,
+        );
+      else
+        Reflect.deleteProperty(document.documentElement, "requestFullscreen");
+    }
+  },
+);
 it("retains the native install prompt and only invokes it after an install tap", async () => {
   installMobileDisplay();
   const prompt = vi.fn(async () => {});

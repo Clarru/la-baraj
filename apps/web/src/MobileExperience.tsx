@@ -111,8 +111,7 @@ export function MobileExperience({ children }: { children: ReactNode }) {
           <section aria-labelledby="mobile-title">
             <h1 id="mobile-title">The lake, in your pocket.</h1>
             <p>
-              Play in fullscreen for room to move. Keep your phone sideways for
-              both controllers and a wider view.
+              Keep your phone sideways for both controllers and a wider view.
             </p>
             <button
               className="mobile-start"
@@ -131,24 +130,25 @@ export function MobileExperience({ children }: { children: ReactNode }) {
               <Expand size={23} />{" "}
               {immersive ? "Enter La Baraj" : "Play in fullscreen"}
             </button>
-            {(failed ||
-              (typeof document !== "undefined" &&
-                !document.documentElement.requestFullscreen)) && (
-              <>
-                <p role="status">
-                  This browser cannot open fullscreen here. Add the game to your
-                  Home Screen for an app view, or play in the browser.
-                </p>
-                <button
-                  onClick={() => {
-                    setFallback(true);
-                    setStarted(true);
-                  }}
-                >
-                  Play in this browser
-                </button>
-              </>
-            )}
+            {!immersive &&
+              (failed ||
+                (typeof document !== "undefined" &&
+                  !document.documentElement.requestFullscreen)) && (
+                <>
+                  <p role="status">
+                    This browser cannot open fullscreen here. Add the game to
+                    your Home Screen for an app view, or play in the browser.
+                  </p>
+                  <button
+                    onClick={() => {
+                      setFallback(true);
+                      setStarted(true);
+                    }}
+                  >
+                    Play in this browser
+                  </button>
+                </>
+              )}
             <InstallInstructions />
             <p className="mobile-note">
               Left thumb to move. Use the right stick to look around. Nearby
@@ -170,7 +170,9 @@ export function MobileDisplayOptions() {
         onClick={async () =>
           setMessage(
             (await enterGameFullscreen())
-              ? "Fullscreen is on."
+              ? document.fullscreenElement
+                ? "Fullscreen is on."
+                : "App view is active."
               : "Use the Home Screen app for an app view on this browser.",
           )
         }
