@@ -657,15 +657,3 @@ button:disabled {
   text-decoration: underline;
   text-underline-offset: 2px;
 }
-.desktop-only-card {
-  text-align: center;
-}
-.desktop-only-card > p {
-  color: #172d22;
-}
-.desktop-only-card .desktop-only-address {
-  margin-top: 20px;
-  font: 700 17px/1.3 var(--font-body);
-  color: #172d22;
-  user-select: all;
-}

@@ -1,4 +1,4 @@
-/** Best-effort device gate; narrow windows and touchscreen PCs remain usable. */
+/** Device hints supplement coarse-pointer detection for mobile touch controls. */
 export type DeviceSignals = {
   userAgent?: string;
   platform?: string;

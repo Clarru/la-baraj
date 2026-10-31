@@ -1,3 +1,4 @@
+import { subscribeMobileActions, type ActionKey } from "./mobile-input";
 import { cruceSeatSide } from "../../../packages/shared/cruce-station";
 import {
   useCallback,
@@ -48,6 +49,8 @@ export type ActivityPrompt = {
   main: string;
   detail: string;
   key?: string;
+  secondary?: { main: string; key: "E" };
+  shiftSeat?: boolean;
 } | null;
 export const localSeatedActorId = "local-player";
 const catchStorageKey = "lake-cincis-catches";
@@ -293,7 +296,7 @@ export function WorldActivities({
   }, [clear]);
 
   useEffect(() => {
-    const handle = (event: KeyboardEvent) => {
+    const handle = (event: ActionKey) => {
       const target = event.target;
       if (
         event.repeat ||
@@ -469,8 +472,12 @@ export function WorldActivities({
         } else startLighting(now);
       }
     };
+    const unbindMobile = subscribeMobileActions(handle);
     window.addEventListener("keydown", handle);
-    return () => window.removeEventListener("keydown", handle);
+    return () => {
+      unbindMobile();
+      window.removeEventListener("keydown", handle);
+    };
   }, [paused, commit, camera, lit, startLighting, clear, room, requestSeat]);
 
   useFrame((_, dt) => {
@@ -632,6 +639,15 @@ export function WorldActivities({
               ? "Open the paper to play · F leaves the table"
               : `${now < seatFeedback.current.until ? seatFeedback.current.message : "A/D to shift"} · F or Escape to stand${nearFire ? ` · E to ${lit ? "put out" : "light"} the fire` : ""}`,
           key: "F",
+          shiftSeat: !isTableSeat(),
+          ...(nearFire && !isTableSeat()
+            ? {
+                secondary: {
+                  main: lit ? "Put out the campfire" : "Light the campfire",
+                  key: "E" as const,
+                },
+              }
+            : {}),
         };
       else if (current.kind === "scoot-left" || current.kind === "scoot-right")
         prompt = {
@@ -711,6 +727,20 @@ export function WorldActivities({
         prompt = {
           main: lit ? "Put out the campfire" : "Light the campfire",
           detail: "Walk to a bench and press F to sit",
+          key: "E",
+        };
+    }
+    if (
+      prompt &&
+      nearbyBench &&
+      current.kind === "none" &&
+      !nearbyBench.id.startsWith("cruce-") &&
+      !nearbyBench.id.startsWith("planes-")
+    ) {
+      if (nearFishing) prompt.secondary = { main: "Cast a line", key: "E" };
+      else if (nearFire)
+        prompt.secondary = {
+          main: lit ? "Put out the campfire" : "Light the campfire",
           key: "E",
         };
     }

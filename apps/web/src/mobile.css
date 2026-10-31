@@ -1,0 +1,494 @@
+.mobile-game-content {
+  width: 100%;
+  height: 100%;
+}
+.mobile-setup {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: max(20px, env(safe-area-inset-top))
+    max(20px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom))
+    max(20px, env(safe-area-inset-left));
+  color: #243831;
+  background: #e8e2ce;
+  font: 18px/1.4 var(--font-body);
+}
+.mobile-setup > img {
+  display: block;
+  width: min(320px, 80%);
+  height: auto;
+  margin: 0 auto 14px;
+}
+.mobile-setup > section {
+  max-width: 520px;
+  margin: auto;
+}
+.mobile-setup h1 {
+  font: 400 32px/1.1 var(--font-heading);
+  margin: 0 0 16px;
+}
+.mobile-setup p {
+  margin-block: 12px;
+}
+.mobile-setup button,
+.mobile-display-options button,
+.mobile-arcade button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 10px 16px;
+  background: #f8f3e6;
+  color: #243831;
+  border: 1px solid #8e947b;
+  border-radius: 8px;
+  font: 700 18px var(--font-body);
+  touch-action: manipulation;
+}
+.mobile-setup .mobile-start {
+  width: 100%;
+  margin-top: 8px;
+  background: #245b45;
+  color: #fff9e9;
+  border-color: #245b45;
+}
+.mobile-install {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #a7ae97;
+}
+.mobile-install h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font: 700 20px var(--font-body);
+  margin: 0 0 12px;
+}
+.mobile-note {
+  font-size: 16px;
+  color: #43594b;
+}
+.mobile-display-options {
+  padding-block: 12px 22px;
+}
+.mobile-display-options p {
+  line-height: 1.35;
+  margin-top: 10px;
+}
+.mobile-help {
+  padding-bottom: 16px;
+  line-height: 1.4;
+}
+.mobile-controls {
+  position: absolute;
+  inset: 0;
+  z-index: 16;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.mobile-movement {
+  position: absolute;
+  left: max(18px, env(safe-area-inset-left));
+  bottom: max(18px, env(safe-area-inset-bottom));
+  display: flex;
+  align-items: end;
+  gap: 10px;
+}
+.mobile-controls button {
+  pointer-events: auto;
+  min-height: 48px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #f5eedb;
+  color: #243831;
+  box-shadow: 0 3px 8px rgb(15 33 23 / 24%);
+  font: 700 17px var(--font-body);
+  touch-action: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.mobile-controls button:active,
+.mobile-controls button[aria-pressed="true"] {
+  background: #d4e6b8;
+}
+.mobile-controls .mobile-stick {
+  position: relative;
+  width: 132px;
+  height: 132px;
+  border: 2px solid #f1ecd5;
+  border-radius: 50%;
+  padding: 0;
+  background: rgb(27 57 43 / 62%);
+}
+.mobile-stick > span:first-child {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #f5eedb;
+  transform: translate(var(--stick-x, 0px), var(--stick-y, 0px));
+  box-shadow: 0 3px 8px rgb(15 33 23 / 30%);
+  pointer-events: none;
+}
+.mobile-stick-label {
+  position: absolute;
+  top: 8px;
+  left: 0;
+  width: 100%;
+  color: #fff9e9;
+  font-size: 13px;
+  pointer-events: none;
+}
+.mobile-actions {
+  position: absolute;
+  right: max(16px, env(safe-area-inset-right));
+  bottom: max(18px, env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  align-items: end;
+  gap: 10px;
+  max-width: 48%;
+}
+.mobile-controls .mobile-context {
+  background: #245b45;
+  color: #fff9e9;
+}
+.mobile-controls .mobile-run {
+  position: absolute;
+  left: 38px;
+  bottom: 148px;
+  padding-inline: 10px;
+}
+.mobile-arcade {
+  position: fixed;
+  inset: 0;
+  z-index: 75;
+  display: flex;
+  flex-direction: column;
+  background: #ede8d8;
+  color: #243831;
+  pointer-events: auto;
+  padding: max(12px, env(safe-area-inset-top))
+    max(16px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom))
+    max(16px, env(safe-area-inset-left));
+  font: 18px/1.3 var(--font-body);
+}
+.mobile-arcade header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 520px;
+  width: 100%;
+  margin: 0 auto 12px;
+}
+.mobile-arcade h1 {
+  font: 400 38px var(--font-heading);
+}
+.mobile-arcade h2 {
+  font: 400 26px var(--font-heading);
+  margin-bottom: 12px;
+}
+.mobile-arcade-scroll {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  width: 100%;
+  max-width: 520px;
+  margin: auto;
+  min-height: 0;
+  scrollbar-color: #768a7d #ece7da;
+}
+.mobile-arcade-score {
+  display: flex;
+  gap: 8px;
+  font-variant-numeric: tabular-nums;
+  align-items: baseline;
+}
+.mobile-arcade-score > strong {
+  font-size: 28px;
+}
+.mobile-arcade-score > span {
+  margin-left: auto;
+}
+.mobile-arcade-hint {
+  font-size: 16px;
+  padding-block: 8px;
+}
+.mobile-arcade-board {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-rows: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  padding: 8px;
+  border-radius: 12px;
+  background: #827a61;
+  aspect-ratio: 1;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.mobile-tile {
+  display: grid;
+  place-items: center;
+  background: #fff2cd;
+  color: #423822;
+  border-radius: 6px;
+  font: 700 clamp(22px, 7vw, 42px) var(--font-body);
+  font-variant-numeric: tabular-nums;
+}
+.mobile-tile[data-value="0"] {
+  background: #a49b82;
+}
+.mobile-tile[data-value="2"] {
+  background: #eee4ce;
+}
+.mobile-tile[data-value="4"] {
+  background: #e9d8ae;
+}
+.mobile-tile[data-value="8"] {
+  background: #f2b170;
+}
+.mobile-tile[data-value="16"] {
+  background: #ed965c;
+}
+.mobile-tile[data-value="32"] {
+  background: #dc7052;
+  color: #fff;
+}
+.mobile-tile[data-value="64"] {
+  background: #b54b30;
+  color: #fff;
+}
+.mobile-tile[data-value="128"],
+.mobile-tile[data-value="256"],
+.mobile-tile[data-value="512"] {
+  background: #efcf72;
+}
+.mobile-tile[data-value="1024"],
+.mobile-tile[data-value="2048"] {
+  background: #f0c743;
+}
+.mobile-arcade-directions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  padding-block: 12px;
+}
+.mobile-arcade-directions button {
+  min-width: 52px;
+}
+.mobile-arcade nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding-block: 8px;
+}
+.mobile-arcade-result {
+  padding-block: 16px;
+}
+.mobile-arcade-result button {
+  margin: 10px 8px 0 0;
+}
+.mobile-arcade-status {
+  padding-block: 10px;
+  font-size: 16px;
+}
+.mobile-arcade li {
+  padding: 10px 4px;
+}
+.mobile-arcade li strong {
+  float: right;
+}
+@media (pointer: coarse) {
+  html,
+  body {
+    overscroll-behavior: none;
+  }
+  .game-shell {
+    height: 100dvh;
+  }
+  .play-header {
+    top: max(8px, env(safe-area-inset-top));
+    left: max(12px, env(safe-area-inset-left));
+    right: max(12px, env(safe-area-inset-right));
+    gap: 8px;
+  }
+  .play-logo {
+    width: 128px;
+    height: 44px;
+  }
+  .play-actions {
+    gap: 4px;
+    margin: 0;
+  }
+  .play-actions .game-clock {
+    display: none;
+  }
+  .game-menu-toggle,
+  .multiplayer-status {
+    min-height: 44px;
+    padding-inline: 6px;
+  }
+  .game-shell .lake-minimap {
+    width: 94px;
+    height: 94px;
+    left: max(18px, env(safe-area-inset-left));
+    bottom: calc(max(18px, env(safe-area-inset-bottom)) + 208px);
+    border-width: 3px;
+  }
+  .activity-prompt {
+    bottom: auto;
+    top: calc(max(8px, env(safe-area-inset-top)) + 62px);
+    min-width: 0;
+    max-width: calc(100% - 24px);
+    padding: 8px 12px;
+  }
+  .activity-prompt:has(kbd) {
+    display: none;
+  }
+  .activity-prompt kbd,
+  .cabin-entry-panel kbd,
+  .cruce-entry kbd,
+  .planes-entry kbd,
+  .game-menu-actions kbd,
+  .game-menu-rescue kbd {
+    display: none;
+  }
+  .activity-prompt span {
+    display: none;
+  }
+  .cabin-entry-panel {
+    bottom: calc(max(18px, env(safe-area-inset-bottom)) + 154px);
+    width: auto;
+    min-width: 0;
+    padding: 10px;
+    gap: 8px;
+  }
+  .cabin-entry-panel > div {
+    min-width: 0;
+  }
+  .cabin-entry-panel > div span {
+    display: none;
+  }
+  .cabin-entry-panel button {
+    min-height: 48px;
+  }
+  .planes-entry,
+  .cruce-entry {
+    right: max(16px, env(safe-area-inset-right));
+    bottom: calc(max(18px, env(safe-area-inset-bottom)) + 180px);
+    max-width: 60%;
+  }
+  .cruce-entry {
+    bottom: calc(max(18px, env(safe-area-inset-bottom)) + 244px);
+  }
+  .planes-entry button,
+  .cruce-entry button {
+    min-height: 48px;
+  }
+  .planes-entry > span,
+  .cruce-entry > span {
+    max-width: 100%;
+    font-size: 14px;
+  }
+  .game-dialog {
+    inset: max(70px, calc(env(safe-area-inset-top) + 56px))
+      max(12px, env(safe-area-inset-right)) auto auto;
+    max-height: calc(
+      100dvh - 90px - env(safe-area-inset-top) - env(safe-area-inset-bottom)
+    );
+    overflow-y: auto;
+  }
+  .name-welcome {
+    overflow-y: auto;
+    height: 100dvh;
+    padding-bottom: max(24px, env(safe-area-inset-bottom));
+  }
+  .name-welcome-card {
+    max-width: calc(100vw - 32px);
+  }
+  .name-welcome-card input {
+    font-size: 18px;
+  }
+}
+@media (pointer: coarse) and (max-height: 500px) {
+  .mobile-setup > img {
+    width: 180px;
+    margin-bottom: 6px;
+  }
+  .mobile-movement {
+    bottom: max(12px, env(safe-area-inset-bottom));
+  }
+  .mobile-controls .mobile-stick {
+    width: 112px;
+    height: 112px;
+  }
+  .mobile-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: end;
+    max-width: 52%;
+    bottom: max(12px, env(safe-area-inset-bottom));
+  }
+  .game-shell .lake-minimap {
+    width: 74px;
+    height: 74px;
+    bottom: calc(max(12px, env(safe-area-inset-bottom)) + 180px);
+  }
+  .planes-entry,
+  .cruce-entry,
+  .cabin-entry-panel {
+    bottom: auto;
+    top: max(74px, calc(env(safe-area-inset-top) + 64px));
+  }
+  .cruce-entry {
+    top: max(140px, calc(env(safe-area-inset-top) + 130px));
+  }
+  .mobile-arcade header {
+    margin-bottom: 4px;
+  }
+  .mobile-arcade-scroll {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  .mobile-arcade-scroll:has(.mobile-arcade-board) {
+    display: grid;
+    grid-template-columns: min(42vw, calc(100dvh - 104px)) minmax(0, 1fr);
+    grid-auto-rows: min-content;
+    align-content: start;
+    gap: 8px 20px;
+  }
+  .mobile-arcade-scroll:has(.mobile-arcade-board) > * {
+    grid-column: 2;
+  }
+  .mobile-arcade-scroll .mobile-arcade-board {
+    grid-column: 1;
+    grid-row: 1 / span 6;
+    width: 100%;
+    margin: 0;
+  }
+  .mobile-arcade-score {
+    margin: 0;
+  }
+  .mobile-arcade-hint {
+    padding: 0;
+  }
+  .mobile-arcade-directions {
+    padding-block: 0;
+  }
+  .mobile-arcade nav {
+    flex-wrap: wrap;
+    padding-block: 0;
+  }
+}
+
+@media (pointer: coarse) and (max-height: 500px) {
+  .mobile-controls .mobile-run {
+    left: 124px;
+    bottom: 0;
+  }
+}
