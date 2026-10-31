@@ -1,0 +1,167 @@
+.environment-lab-launcher {
+  position: fixed;
+  z-index: 46;
+  top: 74px;
+  right: 22px;
+  pointer-events: auto;
+}
+:is(
+    .environment-lab-launcher,
+    .environment-lab-actions,
+    .environment-lab-panel > header
+  )
+  button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 36px;
+  border: 1px solid #465663;
+  border-radius: 4px;
+  background: #1e2c36;
+  color: #f0f4f6;
+  font:
+    500 14px "Barlow",
+    sans-serif;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+:is(
+    .environment-lab-launcher,
+    .environment-lab-actions,
+    .environment-lab-panel > header
+  )
+  button:hover {
+  background: #314451;
+}
+:is(
+    .environment-lab-launcher,
+    .environment-lab-actions,
+    .environment-lab-panel > header
+  )
+  button:focus-visible {
+  outline: 2px solid #efc47d;
+  outline-offset: 3px;
+}
+:is(
+    .environment-lab-launcher,
+    .environment-lab-actions,
+    .environment-lab-panel > header
+  )
+  button[aria-pressed="true"] {
+  background: #526751;
+}
+.environment-lab-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #efc47d;
+}
+.environment-lab-panel {
+  position: fixed;
+  z-index: 45;
+  top: 120px;
+  right: 22px;
+  width: min(342px, calc(100vw - 28px));
+  max-height: calc(100dvh - 148px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #18232c;
+  color: #f0f4f6;
+  box-shadow: 0 12px 32px #070f1b66;
+  pointer-events: auto;
+  font-family: "Barlow", sans-serif;
+  font-variant-numeric: tabular-nums;
+  color-scheme: dark;
+}
+.environment-lab-panel > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 16px 14px 10px;
+}
+.environment-lab-panel strong {
+  font-size: 18px;
+  font-weight: 600;
+}
+.environment-lab-panel header p {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: #b9cbd7;
+}
+.environment-lab-panel header button {
+  border: 0;
+  min-width: 32px;
+  min-height: 32px;
+  padding: 4px;
+}
+.environment-lab-actions {
+  display: flex;
+  gap: 7px;
+  padding: 0 14px;
+}
+.environment-lab-actions button {
+  flex: 1;
+  font-size: 13px;
+}
+.environment-lab-hint,
+.environment-lab-status {
+  margin: 10px 14px;
+  color: #b9cbd7;
+  font-size: 12px;
+  line-height: 1.45;
+}
+.environment-lab-controls {
+  overflow: auto;
+  min-height: 0;
+  overscroll-behavior: contain;
+  scrollbar-color: #6c8290 #18232c;
+}
+.environment-lab-controls .dialkit-root {
+  width: 100%;
+}
+.environment-lab-status {
+  flex: none;
+}
+.environment-lab-reference {
+  position: fixed;
+  z-index: 44;
+  left: 20px;
+  top: 120px;
+  width: min(300px, 30vw);
+  margin: 0;
+  pointer-events: none;
+}
+.environment-lab-reference img {
+  display: block;
+  width: 100%;
+  max-height: 40vh;
+  object-fit: contain;
+}
+.environment-lab-reference figcaption {
+  padding: 8px;
+  background: #18232c;
+  color: #f0f4f6;
+  font:
+    13px/1.4 "Barlow",
+    sans-serif;
+  white-space: pre-wrap;
+}
+.environment-lab ::selection {
+  color: #18232c;
+  background: #efc47d;
+}
+@media (max-width: 700px) {
+  .environment-lab-launcher {
+    top: 65px;
+    right: 14px;
+  }
+  .environment-lab-panel {
+    top: 110px;
+    right: 14px;
+    max-height: calc(100dvh - 128px);
+  }
+}

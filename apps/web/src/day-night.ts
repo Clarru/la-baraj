@@ -1,5 +1,11 @@
 import * as THREE from "three";
 import { cloudiness } from "./weather-visual";
+import {
+  environmentTuning,
+  environmentHour,
+  environmentRevision,
+  environmentColors,
+} from "./environment-tuning";
 
 let serverClock: { time: number; local: number } | null = null;
 /** An initial server snapshot corrects device clock differences without polling. */
@@ -213,16 +219,22 @@ export function currentLighting(evening = false, forceDay = false) {
       ? new URLSearchParams(location.search).get("time")
       : null;
   const now = worldNow();
-  const hour = evening
-    ? 19
-    : override !== null && Number.isFinite(Number(override))
-      ? Number(override)
-      : forceDay
-        ? 12
-        : gameMinutes(now) / 60 +
-          (((Math.floor(now / 1000) % 60) + 60) % 60) / 3600;
-  const cover = cloudiness();
-  const key = `${hour.toFixed(3)}:${cover.toFixed(2)}`;
+  const settings = environmentTuning();
+  const hour =
+    environmentHour() ??
+    (evening
+      ? 19
+      : override !== null && Number.isFinite(Number(override))
+        ? Number(override)
+        : forceDay
+          ? 12
+          : gameMinutes(now) / 60 +
+            (((Math.floor(now / 1000) % 60) + 60) % 60) / 3600);
+  const cover =
+    settings && !settings.weather.liveWeather
+      ? settings.weather.cloudCover
+      : cloudiness();
+  const key = `${hour.toFixed(3)}:${cover.toFixed(2)}:${environmentRevision()}`;
   if (cacheKey !== key) {
     cacheKey = key;
     cached = lightingAt(hour);
@@ -235,6 +247,28 @@ export function currentLighting(evening = false, forceDay = false) {
     cached.colors.sun.lerp(new THREE.Color("#d5dfdf"), cover * 0.45);
     cached.colors.water.lerp(new THREE.Color("#3d5960"), cover * 0.22);
     cached.sunIntensity *= 1 - cover * 0.5;
+    if (settings) {
+      cached.sunIntensity *= settings.light.sun;
+      cached.hemiIntensity *= settings.light.hemisphere;
+      if (settings.palette.customColors) {
+        const overrides = environmentColors();
+        for (const name of colorNames) {
+          const color = overrides[name];
+          if (color) cached.colors[name].copy(color);
+        }
+      }
+      if (settings.light.manualSun) {
+        const azimuth = THREE.MathUtils.degToRad(settings.light.sunPosition.x);
+        const elevation = THREE.MathUtils.degToRad(
+          settings.light.sunPosition.y,
+        );
+        cached.sunDirection.set(
+          Math.sin(azimuth) * Math.cos(elevation),
+          Math.sin(elevation),
+          Math.cos(azimuth) * Math.cos(elevation),
+        );
+      }
+    }
   }
   return cached;
 }

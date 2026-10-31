@@ -1,4 +1,5 @@
 import { currentLighting } from "./day-night";
+import { environmentDefaults, environmentTuning } from "./environment-tuning";
 import { memo, useEffect, useMemo } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { RigidBody } from "@react-three/rapier";
@@ -236,7 +237,8 @@ export function LakeWater({
   }, []);
   let lastLightingUpdate = -Infinity;
   useFrame((_, dt) => {
-    water.material.uniforms.time.value += dt * 0.45;
+    const settings = environmentTuning() ?? environmentDefaults;
+    water.material.uniforms.time.value += dt * settings.water.waveSpeed;
     const now = performance.now();
     if (now - lastLightingUpdate < 250) return;
     lastLightingUpdate = now;
@@ -244,6 +246,8 @@ export function LakeWater({
     water.material.uniforms.sunDirection.value.copy(light.sunDirection);
     water.material.uniforms.sunColor.value.copy(light.colors.sun);
     water.material.uniforms.waterColor.value.copy(light.colors.water);
+    water.material.uniforms.distortionScale.value = settings.water.distortion;
+    water.material.uniforms.size.value = settings.water.size;
   });
   return <primitive object={water} dispose={null} />;
 }
