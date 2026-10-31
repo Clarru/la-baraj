@@ -22,6 +22,11 @@ try {
       "import.meta.env.VITE_CRUCE_WORLD_LAB": JSON.stringify("1"),
       "import.meta.env.VITE_GAME_DIAGNOSTICS": JSON.stringify("1"),
     },
+    worker: {
+      rollupOptions: {
+        output: { entryFileNames: "assets/mobile-qa-[name]-[hash].js" },
+      },
+    },
     build: {
       outDir: resolve(root, ".impeccable/review/mobile-world/build"),
       emptyOutDir: true,
