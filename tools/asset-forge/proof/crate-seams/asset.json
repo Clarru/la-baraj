@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "id": "la-baraj-forge-final-crate",
+  "profile": "la-baraj-timber-iron-v1",
+  "recipe": "crate",
+  "dimensions": [
+    0.84225857,
+    0.93092793,
+    0.90829331
+  ],
+  "budgets": {
+    "triangles": 1576,
+    "bytes": 161276,
+    "primitives": 2,
+    "textures": 3,
+    "textureEdge": 512
+  },
+  "seed": 0,
+  "parameters": {},
+  "requiredSockets": [
+    "CarryGrip"
+  ],
+  "collision": "box",
+  "reference": "repo:experiments/asset-skill-lab/references/crate-original.glb"
+}

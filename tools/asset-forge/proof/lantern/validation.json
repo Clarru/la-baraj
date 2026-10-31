@@ -1,0 +1,74 @@
+{
+  "technicalPass": true,
+  "errors": [],
+  "triangles": 2490,
+  "bytes": 141416,
+  "primitives": 1,
+  "dimensions": [
+    0.357321967310467,
+    1.335200011730194,
+    1.3048017693292808
+  ],
+  "bounds": {
+    "min": [
+      -0.1786609836552335,
+      0,
+      -0.6524008893212533
+    ],
+    "max": [
+      0.1786609836552335,
+      1.335200011730194,
+      0.6524008800080275
+    ]
+  },
+  "textures": [
+    {
+      "name": "trim-normal",
+      "size": [
+        512,
+        512
+      ],
+      "sha256": "acf251b016592e376c74a488cb221ade7b23688b7933859614c6a363d2e4f82a",
+      "bytes": 55468
+    },
+    {
+      "name": "trim-base-color",
+      "size": [
+        512,
+        512
+      ],
+      "sha256": "c84b1005afe4c9d736bd961ecaddc513f07dec9a903ac870497e36fb0163c673",
+      "bytes": 19612
+    },
+    {
+      "name": "trim-metallic-roughness",
+      "size": [
+        512,
+        512
+      ],
+      "sha256": "18fe90c43eb6444f5ebd8d3fa9c9fd56937c267e500c0de26958a14b48341409",
+      "bytes": 15436
+    }
+  ],
+  "materials": [
+    {
+      "name": "LaBaraj iron",
+      "baseColor": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "normal": true,
+      "metallicRoughness": true
+    }
+  ],
+  "sockets": {
+    "WallMount": [
+      0,
+      0.7182000279426575,
+      -0.648900032043457
+    ]
+  },
+  "runtimePerformance": "Not benchmarked; these are resource budgets, not FPS."
+}

@@ -1,0 +1,7 @@
+{
+  "artifactHash": "124635b49fa5fb422d078bcad8c7e4e0bdc96df508f68a2007062652ab9bda82",
+  "note": "Inspected matched four views, clay and alternate lighting. Closed recessed boards eliminate light-through slits; 72 depth probes pass. Accept construction prototype; grain and rail/cap detailing still differ from Quaternius.",
+  "status": "accepted",
+  "reviewedAt": "2026-10-31T12:53:18.794Z",
+  "scope": "Visual review of retained views; collision and actual game performance still require integration checks."
+}

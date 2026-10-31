@@ -1,0 +1,26 @@
+{
+  "id": "la-baraj-rustic-props-v1",
+  "version": 1,
+  "purpose": "Fixed style-only anchors for all new object briefs. Change only as an explicit new kit version.",
+  "images": [
+    {
+      "file": "01-family.png",
+      "role": "overall style only; never copy the shown object silhouettes",
+      "sha256": "9db922ca1877597d706908d99b9f0e25e685744b220ee49b68bcf09f5b95fe8b"
+    },
+    {
+      "file": "02-materials.png",
+      "role": "wood/iron finish and edge treatment only",
+      "sha256": "afb379548473622179358f07a624d1c7acded752a00bbe55c9304e07172a6a5b"
+    },
+    {
+      "file": "03-contact.png",
+      "role": "recessed joint contrast and contact shading only",
+      "sha256": "b9c660260989b37234a3f11ffca9d7e67ef95a3ca9737e63a855ff399fb023a6"
+    }
+  ],
+  "sources": [
+    "Quaternius Fantasy Props MegaKit retained CC0 crate and lantern GLBs; actual normalized Blender renders. No authored reconstruction is used as a style anchor."
+  ],
+  "license": "../../../../experiments/asset-skill-lab/references/LICENSE.txt"
+}

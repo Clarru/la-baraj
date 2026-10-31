@@ -1,0 +1,114 @@
+{
+  "date": "2026-10-31",
+  "node": "v24.22.1",
+  "tests": 25,
+  "packages": "/tmp/forge-joint-packages-ojW4ax",
+  "results": [
+    {
+      "job": "field-radio",
+      "folder": "original-radio",
+      "directory": "/private/tmp/la-baraj-forge-field-radio/.forge/run-01768ace-aaf8-432f-9f0e-08a62cd3f44b",
+      "triangles": 2778,
+      "bytes": 155296,
+      "jointCount": 12,
+      "probeCount": 36,
+      "technicalPass": true,
+      "reviewStatus": "accepted",
+      "cacheMs": 215,
+      "stages": [
+        {
+          "name": "build",
+          "milliseconds": 767
+        },
+        {
+          "name": "optimize",
+          "milliseconds": 244
+        },
+        {
+          "name": "render-qa",
+          "milliseconds": 12288
+        },
+        {
+          "name": "render-qa-light-90",
+          "milliseconds": 2917
+        },
+        {
+          "name": "concept-compare",
+          "milliseconds": 202
+        }
+      ]
+    },
+    {
+      "job": "final-crate",
+      "folder": "crate-seams",
+      "directory": "/private/tmp/la-baraj-forge-final-crate/.forge/run-53addd8b-25b8-47fb-ad69-1ff3fed65166",
+      "triangles": 1440,
+      "bytes": 124376,
+      "jointCount": 0,
+      "probeCount": 72,
+      "technicalPass": true,
+      "reviewStatus": "accepted",
+      "cacheMs": 207,
+      "stages": [
+        {
+          "name": "build",
+          "milliseconds": 913
+        },
+        {
+          "name": "optimize",
+          "milliseconds": 236
+        },
+        {
+          "name": "render-qa",
+          "milliseconds": 13984
+        },
+        {
+          "name": "render-qa-light-90",
+          "milliseconds": 4164
+        },
+        {
+          "name": "render-reference",
+          "milliseconds": 10812
+        },
+        {
+          "name": "render-reference-light-90",
+          "milliseconds": 3395
+        },
+        {
+          "name": "compare",
+          "milliseconds": 329
+        }
+      ]
+    },
+    {
+      "job": "final-workbench",
+      "folder": "workbench-joints",
+      "directory": "/private/tmp/la-baraj-forge-final-workbench/.forge/run-73118f0e-a05e-405a-b5c6-4633198ead2e",
+      "triangles": 604,
+      "bytes": 108840,
+      "jointCount": 4,
+      "probeCount": 12,
+      "technicalPass": true,
+      "reviewStatus": "accepted",
+      "cacheMs": 199,
+      "stages": [
+        {
+          "name": "build",
+          "milliseconds": 664
+        },
+        {
+          "name": "optimize",
+          "milliseconds": 227
+        },
+        {
+          "name": "render-qa",
+          "milliseconds": 11753
+        },
+        {
+          "name": "render-qa-light-90",
+          "milliseconds": 2787
+        }
+      ]
+    }
+  ]
+}

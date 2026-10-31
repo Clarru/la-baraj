@@ -1,0 +1,85 @@
+{
+  "technicalPass": true,
+  "errors": [],
+  "triangles": 1328,
+  "bytes": 121916,
+  "primitives": 2,
+  "dimensions": [
+    0.842258065458267,
+    0.9325000010430813,
+    0.9087940621146201
+  ],
+  "bounds": {
+    "min": [
+      -0.4211290327291335,
+      0,
+      -0.45439703105731005
+    ],
+    "max": [
+      0.4211290327291335,
+      0.9325000010430813,
+      0.45439703105731005
+    ]
+  },
+  "textures": [
+    {
+      "name": "trim-normal",
+      "size": [
+        512,
+        512
+      ],
+      "sha256": "acf251b016592e376c74a488cb221ade7b23688b7933859614c6a363d2e4f82a",
+      "bytes": 55468
+    },
+    {
+      "name": "trim-base-color",
+      "size": [
+        512,
+        512
+      ],
+      "sha256": "c84b1005afe4c9d736bd961ecaddc513f07dec9a903ac870497e36fb0163c673",
+      "bytes": 19612
+    },
+    {
+      "name": "trim-metallic-roughness",
+      "size": [
+        512,
+        512
+      ],
+      "sha256": "18fe90c43eb6444f5ebd8d3fa9c9fd56937c267e500c0de26958a14b48341409",
+      "bytes": 15436
+    }
+  ],
+  "materials": [
+    {
+      "name": "LaBaraj timber",
+      "baseColor": [
+        0.8,
+        0.8,
+        0.8,
+        1
+      ],
+      "normal": true,
+      "metallicRoughness": true
+    },
+    {
+      "name": "LaBaraj iron",
+      "baseColor": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "normal": true,
+      "metallicRoughness": true
+    }
+  ],
+  "sockets": {
+    "CarryGrip": [
+      0.004700005054473877,
+      0.5532000064849854,
+      0
+    ]
+  },
+  "runtimePerformance": "Not benchmarked; these are resource budgets, not FPS."
+}
