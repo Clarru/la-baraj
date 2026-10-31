@@ -47,3 +47,5 @@ The last command builds `.impeccable/review/mobile-world/build/__mobile-world-qa
 Automated checks cover device entry, stick dead zone/clamping, touch action cleanup, simultaneous movement and interaction, pointer cancellation/panel hiding, fullscreen success/exit/denial, native install prompting and swipes. Existing Cruce, 2048, movement and multiplayer suites remain required.
 
 Physical iPhone Safari/Home Screen and Android Chrome/installed-app acceptance must distinguish real device results from emulated Chromium touch results. Browser emulation cannot verify an OS install sheet, iOS safe-area hardware or real phone GPU/thermal behavior.
+
+The completed Chromium touch pass, correction evidence, real-device limits and shared-preview restoration record are in [the October 31 verification report](testing/mobile-2026-10-31.md).

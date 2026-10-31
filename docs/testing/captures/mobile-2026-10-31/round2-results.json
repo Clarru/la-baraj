@@ -1,0 +1,166 @@
+{
+  "driver": "156.0.8078.79",
+  "rendering": "ANGLE Metal",
+  "platform": "Chromium touch emulation; iPhone and Android UAs, no OS/device claims",
+  "errors": [],
+  "sockets": [],
+  "results": [
+    {
+      "check": "fullscreen exit closes native menu",
+      "result": "pass"
+    },
+    {
+      "check": "fullscreen re-entry is reachable above former native dialog",
+      "result": "pass"
+    },
+    {
+      "check": "fullscreen resume unpauses same mounted world",
+      "result": "pass",
+      "data": 0
+    },
+    {
+      "check": "fullscreen exit closes chat editor",
+      "result": "pass"
+    },
+    {
+      "check": "touch jump preserves a physical held movement key",
+      "result": "pass",
+      "data": [
+        "KeyW"
+      ]
+    },
+    {
+      "check": "touch jump pulse does not become a stuck key",
+      "result": "pass",
+      "data": []
+    },
+    {
+      "check": "fishing and sit remain available together",
+      "result": "pass"
+    },
+    {
+      "check": "touch reels an actual fishing bite",
+      "result": "pass",
+      "data": "reel"
+    },
+    {
+      "check": "touch cancels a fishing cast",
+      "result": "pass",
+      "data": "none"
+    },
+    {
+      "check": "secondary touch puts out campfire beside Sit",
+      "result": "pass"
+    },
+    {
+      "check": "secondary touch starts campfire lighting",
+      "result": "pass",
+      "data": "fire-approach"
+    },
+    {
+      "check": "2048 portrait cells are equal squares",
+      "result": "pass",
+      "data": {
+        "w": 79.5,
+        "h": 79.5
+      }
+    },
+    {
+      "check": "2048 landscape arrows do not overlap board",
+      "result": "pass",
+      "data": {
+        "board": {
+          "x": 22,
+          "y": 68,
+          "width": 286,
+          "height": 286
+        },
+        "directions": {
+          "x": 328,
+          "y": 141.1875,
+          "width": 494,
+          "height": 48
+        }
+      }
+    },
+    {
+      "check": "2048 landscape cells stay square",
+      "result": "pass"
+    },
+    {
+      "check": "2048 landscape arrow buttons still update authority",
+      "result": "pass"
+    },
+    {
+      "check": "Cruce phone puts private hand before secondary scores",
+      "result": "pass",
+      "data": {
+        "hand": {
+          "x": 12,
+          "y": 499.59375,
+          "width": 366,
+          "height": 171.359375
+        },
+        "score": {
+          "x": 12,
+          "y": 694.953125,
+          "width": 366,
+          "height": 134.71875
+        }
+      }
+    },
+    {
+      "check": "Cruce still plays actual legal private card after mobile fixes",
+      "result": "pass"
+    },
+    {
+      "check": "Cruce landscape keeps hand beside table",
+      "result": "pass",
+      "data": {
+        "hand": {
+          "x": 430,
+          "y": 75.296875,
+          "width": 398,
+          "height": 190.3125
+        },
+        "table": {
+          "x": 35,
+          "y": 75.296875,
+          "width": 360,
+          "height": 360
+        }
+      }
+    },
+    {
+      "check": "320px phone separates thumb stick and action column",
+      "result": "pass",
+      "data": {
+        "stick": {
+          "x": 18,
+          "y": 590,
+          "width": 132,
+          "height": 132
+        },
+        "actions": {
+          "x": 198.828125,
+          "y": 558,
+          "width": 105.171875,
+          "height": 164
+        }
+      }
+    },
+    {
+      "check": "touch cancellation still clears controller after fixes",
+      "result": "pass",
+      "data": []
+    },
+    {
+      "check": "denied fullscreen shows honest playable browser fallback",
+      "result": "pass"
+    },
+    {
+      "check": "fullscreen-denied browser fallback reaches usable touch game",
+      "result": "pass"
+    }
+  ]
+}
