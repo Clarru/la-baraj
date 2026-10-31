@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, type CSSProperties } from "react";
 import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, X } from "lucide-react";
 import {
   arcadeOver,
@@ -80,16 +80,26 @@ export function MobileArcade2048({
                 press.current = null;
               }}
             >
-              {Array.from({ length: 16 }, (_, i) => (
-                <div
-                  key={i}
-                  className="mobile-tile"
-                  data-value={game?.board[i] ?? 0}
-                  aria-label={`Row ${Math.floor(i / 4) + 1}, column ${(i % 4) + 1}: ${game?.board[i] || "empty"}`}
-                >
-                  {game?.board[i] || ""}
-                </div>
-              ))}
+              {Array.from({ length: 16 }, (_, i) => {
+                const value = game?.board[i] ?? 0;
+                const digits = Math.max(4, String(value).length);
+                return (
+                  <div
+                    key={i}
+                    className="mobile-tile"
+                    data-value={value}
+                    style={
+                      {
+                        "--tile-digits": digits,
+                        fontSize: `min(42px, ${40 / digits}cqw)`,
+                      } as CSSProperties
+                    }
+                    aria-label={`Row ${Math.floor(i / 4) + 1}, column ${(i % 4) + 1}: ${value || "empty"}`}
+                  >
+                    {value || ""}
+                  </div>
+                );
+              })}
             </div>
             <div className="mobile-arcade-directions" aria-label="Move tiles">
               {(
