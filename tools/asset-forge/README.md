@@ -18,6 +18,8 @@ These instructions and the CLI must exist in the agent's checkout. While the fea
 
 Use Node 24 and the repository's `npm ci`. Install Blender separately if it is unavailable; the tool does not download software. Comparison sheets use Python 3 with Pillow.
 
+Check `node --version` against `.nvmrc` first. If the shell selects another version, use an already installed Node 24 executable or its bin directory in `PATH`. A runtime mismatch now reports the actual version/executable and remedy before importing the tool's dependencies, so the error remains parseable JSON even when authoring dependencies are not loaded.
+
 ```sh
 npm run asset -- doctor
 npm run asset -- init assets/authoring/supply-crate --recipe crate
@@ -30,6 +32,8 @@ Blender is discovered from `ASSET_FORGE_BLENDER`, the retained `ASSET_LAB_BLENDE
 `build` creates geometry, saves editable Blender source, exports and optimizes a GLB, checks it, renders front/side/rear/three-quarter views and a second lighting angle, and renders/composes a matched reference comparison when a reference GLB is supplied. No ImageGen or paid service is called. Existing validated artwork is reused.
 
 The default view set also contains `diagnostic-clay.png` (shape/contact lighting without textures) and `diagnostic-unlit.png` (base color without surface lighting). These are renders of the exported mesh, not generated paintovers. Stage timings and logs help distinguish geometry/export work from rendering cost.
+
+The validator also emits an **advisory** for exposed, co-facing, axis-aligned coplanar triangle overlaps. It lists world-space positions/normals and areas in `validation.json`; when findings exist, `qa/diagnostic-overlaps.png` and `qa/diagnostic-overlaps-rear.png` mark them in orange on the actual exported model. These markers are debug geometry in the render process only. They are removed before masks and are never exported into the asset. Interpret findings alongside clay/unlit views: underside contact or deliberately layered parts can require judgment. This is not a universal intersection detector, topology certificate or automatic visual rejection.
 
 Read the returned JSON's `directory` and inspect its `qa/`, `qa-light-90/`, and `comparison/` images. Compare silhouette, components, negative space, grain direction, edge finish and lighting response. For example:
 
@@ -50,6 +54,7 @@ A developer or coding agent can make that review; the command is a recorded asse
 | `prompt <project>` | Fixed ordered style images, pinned template and the variable brief assembled into `imagegen-request.json` |
 | `build <project> [--draft] [--force]` | Isolated build, lints, normalized export, views, reference comparisons and manifest |
 | `check <project>` / `status <project>` | Recompute model checks; reject stale inputs or changed artifacts |
+| `report <project> [--out <new.md>]` | Current validity, historical attempts, failures, review notes, timings and evidence; optional exclusive Markdown handoff |
 | `review <project> --note ...` | Bind visual findings to the current full-resolution artifacts |
 | `review <project> --reject --note ...` | Record a visual rejection; packaging remains blocked |
 | `pack <project> --out <new-directory>` | New runtime package; refuses missing/stale review and existing destinations |
@@ -58,9 +63,13 @@ All results are JSON. Progress goes to stderr; detailed process output stays in 
 
 Unchanged checked builds are reused without running Blender geometry or rendering. Changed briefs, recipes, reference files, style data, relevant instructions or the toolchain invalidate that reuse. `--force` creates a fresh run. A full-resolution cache can satisfy a draft request; draft renders cannot be approved or packaged.
 
+After a failure or at handoff, use `npm run asset -- report <project> --out <new-report.md>`. It produces the repeatable audit from existing records; the agent supplies its visual judgment through `review --note`. With `--out`, stdout is a compact JSON summary and the full evidence links stay in the Markdown file. Without it, stdout contains the detailed JSON report. Existing reports are never overwritten. An old accepted run can appear in the history while current readiness is correctly `stale-build`; incomplete/unreadable attempts are labelled rather than invented as passes. Reports do not reconstruct shell history, inspect images, run a new build or replace validation.
+
 ## Make a new shape
 
 The two golden recipes reproduce the measured lantern and crate. They are fixed geometry baselines, not arbitrary text-to-3D generation.
+
+`examples/tackle-box.py` and its JSON contract retain the separately refined result of the fresh-agent trial, including its closed L-section corners, backed lid seam and corrected hinge/underside surfaces. Reuse this checked construction when suitable; it is a fixed authored example, so dimension changes may require geometry edits. The original trial's failures and the new diagnostic controls are retained in [proof/overlap-trial/](proof/overlap-trial/README.md).
 
 ```sh
 npm run asset -- init assets/authoring/workbench --recipe custom
@@ -92,6 +101,7 @@ Custom recipes are **trusted local Python**, not sandboxed uploads. Keep them se
 - Matching input and artifact hashes before review and packaging; QA images at the declared resolution.
 - Exclusive new job/package paths, with no overwrite of an existing destination.
 - Required joint contracts, three probes per joint, checked by ray intersections against the actual decoded optimized geometry. Missing, duplicate or failed probes block technical acceptance. The measured crate additionally requires 72 panel-depth probes.
+- Bounded coplanar-overlap diagnostics, with explicit scope/completeness and marked renders. These produce warnings for inspection, not a technical pass/fail rule. Review records retain the diagnostic count and completeness.
 
 Joint checks cover declared contact locations and allowable recess depth; they do not infer every intended connection or certify arbitrary mesh topology. Choose probes that cross each likely seam, keep intentional plank recesses within their declared tolerance, and inspect the rendered joins. The corner-wrap and enclosure helpers independently assert closed manifold construction before bevel/export. Combining disconnected pieces into one Blender object is insufficient.
 

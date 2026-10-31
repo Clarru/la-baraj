@@ -2,6 +2,12 @@
 
 31 October 2026. Developer tooling only: no game runtime assets, server, shared preview or production world changed.
 
+## Improvements learned from the fresh-agent trial
+
+The tool now adds bounded export-level coplanar diagnostics, marked front/rear renders, automatic JSON/Markdown handoff reports and actionable runtime mismatch errors. The original trial is preserved. Its accepted export has 19 smaller hinge/underside overlaps; a separately refined version has zero findings within the advisory's scope while retaining 2,356 triangles and all 33 joint checks. Its 144,596-byte GLB stays within the same 180,000-byte limit.
+
+See [the retained controls and limits](proof/overlap-trial/README.md), [marked rear view](proof/overlap-trial/diagnostic-overlaps-rear.png), [refined render](proof/overlap-trial/refined.png) and [actual generated report](proof/overlap-trial/generated-report.md). Thirty-eight tool tests, 507 application tests, TypeScript, real Blender build/check/review/package flows and report/cache checks pass. The overlap diagnostic remains advisory; it does not replace visual acceptance. Historical proof below predates these additions.
+
 ## Resumed construction and joint checks
 
 The results below supersede the original crate's joint acceptance. Its retained old export is now a failing regression case; an earlier technical pass did not establish that its seams were correct.

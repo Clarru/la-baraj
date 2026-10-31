@@ -23,6 +23,7 @@ def arguments():
     parser.add_argument("--views", default="front,side,rear,three-quarter")
     parser.add_argument("--key-angle", type=float, default=0)
     parser.add_argument("--diagnostics", action="store_true")
+    parser.add_argument("--overlap-file", type=Path)
     return parser.parse_args(sys.argv[sys.argv.index("--") + 1:])
 
 
@@ -150,6 +151,34 @@ def main():
         for obj, materials_before in original_materials.items():
             for i, mat in enumerate(materials_before):
                 obj.data.materials[i] = mat
+        if args.overlap_file:
+            findings = json.loads(args.overlap_file.read_text()).get('overlapDiagnostics', {}).get('findings', [])
+            if findings:
+                marker_material = bpy.data.materials.new('QA overlap marker only')
+                marker_material.use_nodes = True
+                nodes = marker_material.node_tree.nodes
+                emission = nodes.new('ShaderNodeEmission')
+                emission.inputs['Color'].default_value = (1, .035, .005, 1)
+                emission.inputs['Strength'].default_value = 2
+                marker_material.node_tree.links.new(emission.outputs[0], nodes.get('Material Output').inputs['Surface'])
+                markers = []
+                for finding in findings:
+                    x, y, z = finding['point']
+                    # glTF scene metres -> Blender world, then the same render-only alignment.
+                    position = Vector((x, -z, y)) - shift
+                    bpy.ops.mesh.primitive_uv_sphere_add(segments=8, ring_count=4,
+                        radius=span*.006, location=position)
+                    marker = bpy.context.object
+                    marker.data.materials.append(marker_material)
+                    markers.append(marker)
+                for label, offset in [('diagnostic-overlaps', (4, -5, 3)),
+                                      ('diagnostic-overlaps-rear', (-4, 5, 3))]:
+                    camera.location = target + Vector(offset) * span
+                    aim(camera, target)
+                    scene.render.filepath = str((args.output / f'{label}.png').resolve())
+                    bpy.ops.render.render(write_still=True)
+                for marker in markers:
+                    bpy.data.objects.remove(marker, do_unlink=True)
     if args.masks:
         floor.hide_render = True
         scene.render.film_transparent = True

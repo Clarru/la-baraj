@@ -1,0 +1,12 @@
+{
+  "artifactHash": "977a25a3be907ebd65c201d3ac0d47125df494be3e1c781442aac123d7b16cd2",
+  "note": "Retain as rejected refinement control: the new advisory identifies 19 coplanar overlaps, one hinge end and 18 underside intersections. Broad black corner patches were already fixed in the original trial. Inspect marked diagnostics; correct these remaining surfaces rather than changing thresholds.",
+  "status": "rejected",
+  "overlapDiagnostics": {
+    "findings": 19,
+    "complete": true,
+    "scope": "axis-aligned, co-facing, exposed coplanar surfaces"
+  },
+  "reviewedAt": "2026-10-31T13:41:00.621Z",
+  "scope": "Visual review of retained views; collision and actual game performance still require integration checks."
+}

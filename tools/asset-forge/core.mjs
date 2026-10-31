@@ -8,8 +8,9 @@ import sharp from "sharp";
 import { NodeIO } from "@gltf-transform/core";
 import { ALL_EXTENSIONS } from "@gltf-transform/extensions";
 import { MeshoptDecoder } from "meshoptimizer";
-import { Ray, Vector3, Matrix4 } from "three";
+import { Ray, Vector3 } from "three";
 import { getBounds } from "@gltf-transform/functions";
+import { worldTriangles, coplanarOverlaps } from "./geometry.mjs";
 
 export const ROOT = path.resolve(import.meta.dirname, "../..");
 export const TOOL = import.meta.dirname;
@@ -290,6 +291,7 @@ export async function inputFingerprint(project) {
   const { spec } = project;
   const files = [
     "core.mjs",
+    "geometry.mjs",
     "cli.mjs",
     "blender/build.py",
     "blender/parts.py",
@@ -566,33 +568,23 @@ export async function lintModel(file, spec, style, sockets = { sockets: {} }) {
     ),
   ];
   const surfaceResults = [];
+  const geometry = worldTriangles(doc);
+  const overlapDiagnostics = coplanarOverlaps(geometry);
+  const warnings = [];
+  if (overlapDiagnostics.findings.length)
+    warnings.push(
+      `${overlapDiagnostics.findings.length} retained exposed coplanar triangle overlaps require visual inspection${overlapDiagnostics.complete ? "." : " (bounded analysis)."}`,
+    );
+  if (!overlapDiagnostics.complete)
+    warnings.push(
+      "Coplanar analysis is incomplete: " + overlapDiagnostics.reason,
+    );
   if (
     probes.length > 256 ||
     new Set(probes.map((p) => p?.name)).size !== probes.length
   )
     errors.push("Invalid or duplicate sealed-surface probe list.");
   if (probes.length) {
-    const trianglesWorld = [];
-    for (const node of root.listNodes())
-      for (const primitive of node.getMesh()?.listPrimitives() ?? []) {
-        const positions = primitive.getAttribute("POSITION"),
-          indices = primitive.getIndices()?.getArray(),
-          matrix = new Matrix4().fromArray(node.getWorldMatrix()),
-          vertices = [],
-          value = [];
-        if (!positions) continue;
-        for (let i = 0; i < positions.getCount(); i++) {
-          positions.getElement(i, value);
-          vertices.push(new Vector3(...value).applyMatrix4(matrix));
-        }
-        const count = indices?.length ?? vertices.length;
-        for (let i = 0; i < count; i += 3)
-          trianglesWorld.push([
-            vertices[indices ? indices[i] : i],
-            vertices[indices ? indices[i + 1] : i + 1],
-            vertices[indices ? indices[i + 2] : i + 2],
-          ]);
-      }
     const hit = new Vector3();
     for (const probe of probes.slice(0, 256)) {
       if (
@@ -620,8 +612,8 @@ export async function lintModel(file, spec, style, sockets = { sockets: {} }) {
       }
       const ray = new Ray(origin, direction.normalize());
       let distance = Infinity;
-      for (const t of trianglesWorld)
-        if (ray.intersectTriangle(...t, false, hit))
+      for (const t of geometry)
+        if (ray.intersectTriangle(...t.points, false, hit))
           distance = Math.min(distance, hit.distanceTo(origin));
       const pass = distance <= probe.maxDistance;
       surfaceResults.push({
@@ -636,6 +628,8 @@ export async function lintModel(file, spec, style, sockets = { sockets: {} }) {
   return {
     technicalPass: errors.length === 0,
     errors,
+    warnings,
+    overlapDiagnostics,
     surfaceResults,
     jointResults: Object.fromEntries(
       (spec.requiredJoints ?? []).map((name) => [
@@ -732,6 +726,9 @@ export async function checkProject(directory) {
         "three-quarter",
         "diagnostic-clay",
         "diagnostic-unlit",
+        ...(report.overlapDiagnostics.findings.length
+          ? ["diagnostic-overlaps", "diagnostic-overlaps-rear"]
+          : []),
       ],
     ],
     ["qa-light-90", ["three-quarter"]],
@@ -881,7 +878,9 @@ export async function buildProject(directory, options = {}) {
       "--views",
       views,
       "--masks",
-      ...(target === path.join(out, "qa") ? ["--diagnostics"] : []),
+      ...(target === path.join(out, "qa")
+        ? ["--diagnostics", "--overlap-file", path.join(out, "validation.json")]
+        : []),
     ]);
   await render(path.join(out, "model.glb"), path.join(out, "qa"));
   await render(
@@ -1002,6 +1001,11 @@ export async function reviewProject(directory, note, accepted = true) {
     artifactHash: await artifactDigest(checked.directory),
     note: note.trim(),
     status: accepted ? "accepted" : "rejected",
+    overlapDiagnostics: {
+      findings: checked.report.overlapDiagnostics.findings.length,
+      complete: checked.report.overlapDiagnostics.complete,
+      scope: checked.report.overlapDiagnostics.scope,
+    },
     reviewedAt: new Date().toISOString(),
     scope:
       "Visual review of retained views; collision and actual game performance still require integration checks.",

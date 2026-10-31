@@ -1,0 +1,13 @@
+{
+  "ok": false,
+  "error": {
+    "code": "runtime-mismatch",
+    "message": "Node 24 is required; this command is running v20.17.0.",
+    "details": {
+      "requiredMajor": 24,
+      "actualVersion": "v20.17.0",
+      "executable": "/usr/local/bin/node",
+      "remedy": "Select an installed Node 24 executable (project version is in .nvmrc), then run: /absolute/path/to/node24/bin/node tools/asset-forge/cli.mjs doctor. The CLI does not install runtimes."
+    }
+  }
+}

@@ -10,6 +10,7 @@ import { Document, NodeIO } from "@gltf-transform/core";
 import { ALL_EXTENSIONS, EXTTextureWebP } from "@gltf-transform/extensions";
 import { MeshoptDecoder } from "meshoptimizer";
 import sharp from "sharp";
+import { projectReport } from "../report.mjs";
 import {
   ROOT,
   TOOL,
@@ -602,4 +603,108 @@ test("real crate regression: old open seams fail depth checks; recessed closed p
   );
   assert.equal(after.technicalPass, true, after.errors.join("; "));
   assert.equal(after.surfaceResults.length, 72);
+});
+
+test("report distinguishes current reviewed validity from historical failures and evidence", async () => {
+  const f = await fixture();
+  await reviewProject(
+    f.dir,
+    "Synthetic report fixture; no real visual quality claim.",
+  );
+  const failedRun = "run-" + randomUUID(),
+    failed = path.join(f.dir, ".forge", failedRun);
+  await fs.mkdir(failed);
+  await writeJson(path.join(failed, "validation.json"), {
+    technicalPass: false,
+    errors: ["Dimensions differ"],
+    triangles: 12,
+    bytes: 400,
+  });
+  await fs.writeFile(path.join(failed, "build.log"), "retained stage output");
+  const report = await projectReport(f.dir);
+  assert.equal(report.readiness, "reviewed");
+  assert.equal(report.current.technicalPass, true);
+  const attempt = report.attempts.find((a) => a.run === failedRun);
+  assert.equal(attempt.recordedStatus, "technical-rejected");
+  assert.deepEqual(attempt.errors, ["Dimensions differ"]);
+  assert.equal(attempt.logs.length, 1);
+  assert(report.attempts.some((a) => a.artifacts["qa/diagnostic-clay.png"]));
+});
+
+test("report never calls an old accepted build current after its recipe changes", async () => {
+  const f = await fixture();
+  await reviewProject(
+    f.dir,
+    "Accepted synthetic fixture for stale report verification.",
+  );
+  await fs.appendFile(path.join(f.dir, "recipe.py"), "\n# changed assembly\n");
+  const report = await projectReport(f.dir);
+  assert.equal(report.readiness, "stale-build");
+  assert.equal(report.current.valid, false);
+  assert.equal(report.attempts[0].recordedStatus, "accepted");
+});
+
+test("report handles an initialized but unbuilt job and refuses output overwrite", async () => {
+  const dir = path.join(base, "unbuilt-report");
+  await initProject(dir, "custom");
+  const output = path.join(base, "new-report.md");
+  const report = await projectReport(dir, output);
+  assert.equal(report.readiness, "not-built");
+  assert.deepEqual(report.attempts, []);
+  const text = await fs.readFile(output, "utf8");
+  assert.match(text, /not-built/);
+  await assert.rejects(projectReport(dir, output), /destination exists/);
+  assert.equal(await fs.readFile(output, "utf8"), text);
+});
+
+test("report exposes a recorded visual rejection and unreadable historical metadata", async () => {
+  const f = await fixture();
+  await reviewProject(
+    f.dir,
+    "Reject this synthetic geometry for report testing.",
+    false,
+  );
+  const dir = path.join(f.dir, ".forge", "run-" + randomUUID());
+  await fs.mkdir(dir);
+  await fs.writeFile(path.join(dir, "manifest.json"), "broken json");
+  const report = await projectReport(f.dir);
+  assert.equal(report.readiness, "visual-rejected");
+  assert(report.attempts.some((a) => a.recordedStatus === "unreadable"));
+});
+
+test("coplanar diagnostics remain an explicit advisory, including on technically passing rejected art", async () => {
+  const directory = path.join(TOOL, "proof/overlap-trial");
+  const spec = JSON.parse(
+    await fs.readFile(path.join(directory, "asset.json")),
+  );
+  const sockets = JSON.parse(
+    await fs.readFile(path.join(directory, "sockets.json")),
+  );
+  const report = await lintModel(
+    path.join(directory, "rejected.glb"),
+    spec,
+    style,
+    sockets,
+  );
+  assert.equal(report.technicalPass, true, report.errors.join(";"));
+  assert.equal(report.surfaceResults.length, 33);
+  assert(report.warnings.some((w) => w.includes("coplanar")));
+  assert(report.overlapDiagnostics.findings.length > 0);
+});
+
+test("CLI report writes full evidence to disk and returns a compact machine summary", async () => {
+  const f = await fixture(),
+    output = path.join(f.dir, "handoff.md");
+  const { stdout } = await execute(process.execPath, [
+    path.join(TOOL, "cli.mjs"),
+    "report",
+    f.dir,
+    "--out",
+    output,
+  ]);
+  const report = JSON.parse(stdout).result;
+  assert.equal(report.markdown, output);
+  assert.equal(report.readiness, "needs-review");
+  assert.equal(report.attempts[0].artifacts, undefined);
+  assert.match(await fs.readFile(output, "utf8"), /diagnostic-clay/);
 });
