@@ -11,6 +11,11 @@ vi.mock("partyserver", () => ({
 }));
 import { WorldRoom } from "../apps/server/index";
 import { HOUSING_EPOCH, type ServerMessage } from "../packages/shared/protocol";
+import {
+  ARCADE_DIRECTIONS,
+  slideArcade,
+  type ArcadeDirection,
+} from "../packages/shared/arcade2048";
 import type { SessionState } from "../apps/server/room-core";
 import {
   ARCADE_STATION,
@@ -193,13 +198,14 @@ const stationRequest = (
   stationId: number,
   kind = "resume",
   revision = 0,
+  direction: ArcadeDirection = "left",
 ) =>
   JSON.stringify({
     type: "arcade2048-action",
     requestId,
     stationId,
     revision,
-    action: { kind, direction: "left" },
+    action: { kind, direction },
   });
 const reply = (c: ReturnType<typeof client>) =>
   c.messages.filter((m) => m.type === "arcade2048").at(-1)! as Extract<
@@ -215,70 +221,118 @@ function atStation(c: ReturnType<typeof client>, id: number) {
   const s = ARCADE_STATIONS[id];
   c.state.player.position = [s.x, 1, s.z + 1];
 }
-it("reserves atomically, blocks a second player before entry, and broadcasts only the occupied public board", async () => {
-  const storage = new Storage(),
-    a = client(0),
-    b = client(1),
-    ctx = { storage, connections: [a, b] },
-    world = new WorldRoom(ctx as never, {} as never);
-  await world.onStart();
-  atStation(a, 0);
-  atStation(b, 0);
-  await Promise.all([
-    world.onMessage(a as never, stationRequest("claim-a", 0)),
-    world.onMessage(b as never, stationRequest("claim-b", 0)),
-  ]);
-  expect(a.state.arcadeStation).toBe(0);
-  expect(b.state.arcadeStation).toBeUndefined();
-  expect(reply(b)).toMatchObject({
-    stationBlocked: true,
-    error: expect.stringContaining("Occupied by Player 0"),
-    view: { game: null },
-  });
-  const board = reply(a).view.game!;
-  expect(
-    updates(b)
-      .flatMap((m) => m.stations)
-      .findLast((s) => s.id === 0),
-  ).toMatchObject({
-    id: 0,
-    playerId: "player-0",
-    name: "Player 0",
-    game: board,
-  });
-  const publicRaw = JSON.stringify(updates(b));
-  for (const forbidden of [
-    "resumeToken",
-    "writeBudget",
-    "requests",
-    "home:2:0",
-    "arcadeClaim",
-    "claim-a",
-    "a".repeat(43),
-  ])
-    expect(publicRaw).not.toContain(forbidden);
-  expect(b.messages.filter((m) => m.type === "arcade2048")).toHaveLength(1);
-  const before = structuredClone([...storage.data]);
-  await world.onMessage(
-    b as never,
-    stationRequest("steal-move", 0, "move", board.revision),
-  );
-  expect(reply(b).stationBlocked).toBe(true);
-  expect([...storage.data]).toEqual(before);
-  await world.onMessage(b as never, stationRequest("wrong-leave", 0, "leave"));
-  expect(a.state.arcadeStation).toBe(0);
-  await world.onMessage(
-    a as never,
-    stationRequest("move-a", 0, "move", board.revision),
-  );
-  const changed = updates(b).at(-1)!;
-  expect(changed.stations).toHaveLength(1);
-  expect(changed.stations[0]).toMatchObject({
-    id: 0,
-    direction: "left",
-    game: reply(a).view.game,
-  });
-});
+it.each(["fresh", "left-aligned"])(
+  "reserves atomically, blocks a second player before entry, and broadcasts only the occupied public board (%s)",
+  async (starter) => {
+    const storage = new Storage(),
+      a = client(0),
+      b = client(1),
+      ctx = { storage, connections: [a, b] },
+      world = new WorldRoom(ctx as never, {} as never);
+    if (starter === "left-aligned") {
+      const owner = `home:${HOUSING_EPOCH}:0`;
+      await storage.put(`arcade2048-v1:${HOUSING_EPOCH}:${owner}`, {
+        version: 1,
+        owner,
+        name: a.state.player.nickname,
+        game: {
+          board: [2, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          score: 0,
+          moves: 0,
+          revision: 1,
+          continued: false,
+        },
+        best: 0,
+        bestTile: 4,
+        bestAt: 0,
+        requests: [],
+      } satisfies ArcadeRecord);
+    }
+    await world.onStart();
+    atStation(a, 0);
+    atStation(b, 0);
+    await Promise.all([
+      world.onMessage(a as never, stationRequest("claim-a", 0)),
+      world.onMessage(b as never, stationRequest("claim-b", 0)),
+    ]);
+    expect(a.state.arcadeStation).toBe(0);
+    expect(b.state.arcadeStation).toBeUndefined();
+    expect(reply(b)).toMatchObject({
+      stationBlocked: true,
+      error: expect.stringContaining("Occupied by Player 0"),
+      view: { game: null },
+    });
+    const board = reply(a).view.game!;
+    expect(
+      updates(b)
+        .flatMap((m) => m.stations)
+        .findLast((s) => s.id === 0),
+    ).toMatchObject({
+      id: 0,
+      playerId: "player-0",
+      name: "Player 0",
+      game: board,
+    });
+    const publicRaw = JSON.stringify(updates(b));
+    for (const forbidden of [
+      "resumeToken",
+      "writeBudget",
+      "requests",
+      "home:2:0",
+      "arcadeClaim",
+      "claim-a",
+      "a".repeat(43),
+    ])
+      expect(publicRaw).not.toContain(forbidden);
+    expect(b.messages.filter((m) => m.type === "arcade2048")).toHaveLength(1);
+    const before = structuredClone([...storage.data]);
+    await world.onMessage(
+      b as never,
+      stationRequest("steal-move", 0, "move", board.revision),
+    );
+    expect(reply(b).stationBlocked).toBe(true);
+    expect([...storage.data]).toEqual(before);
+    await world.onMessage(
+      b as never,
+      stationRequest("wrong-leave", 0, "leave"),
+    );
+    expect(a.state.arcadeStation).toBe(0);
+    if (starter === "left-aligned") {
+      const publications = updates(b).length,
+        saved = structuredClone([...storage.data]),
+        writes = vi.spyOn(storage, "put");
+      await world.onMessage(
+        a as never,
+        stationRequest("noop-a", 0, "move", board.revision),
+      );
+      expect(reply(a).error).toBeUndefined();
+      expect(reply(a).view.game).toEqual(board);
+      expect(updates(b)).toHaveLength(publications);
+      expect([...storage.data]).toEqual(saved);
+      expect(writes).not.toHaveBeenCalled();
+      writes.mockRestore();
+    }
+    const direction = ARCADE_DIRECTIONS.find(
+      (candidate) => slideArcade(board.board, candidate).changed,
+    );
+    expect(direction).toBeDefined();
+    const publications = updates(b).length;
+    await world.onMessage(
+      a as never,
+      stationRequest("move-a", 0, "move", board.revision, direction!),
+    );
+    expect(reply(a).error).toBeUndefined();
+    expect(reply(a).view.game?.revision).toBe(board.revision + 1);
+    expect(updates(b)).toHaveLength(publications + 1);
+    const changed = updates(b).at(-1)!;
+    expect(changed.stations).toHaveLength(1);
+    expect(changed.stations[0]).toMatchObject({
+      id: 0,
+      direction,
+      game: reply(a).view.game,
+    });
+  },
+);
 it("supports three independent personal games, survives hibernation, and releases on leave and disconnect without saving seats", async () => {
   const storage = new Storage(),
     clients = [client(0), client(1), client(2)],
