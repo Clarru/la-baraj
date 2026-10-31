@@ -33,15 +33,6 @@ afterEach(async () => {
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
 });
-function pointer(target: Element, type: string, x = 66, y = 66, id = 1) {
-  const event = new Event(type, { bubbles: true, cancelable: true });
-  Object.defineProperties(event, {
-    pointerId: { value: id },
-    clientX: { value: x },
-    clientY: { value: y },
-  });
-  target.dispatchEvent(event);
-}
 const props = {
   enabled: true,
   moving: true,
@@ -53,36 +44,6 @@ const props = {
   onStand() {},
   onChat() {},
 };
-it("supports simultaneous movement and interaction and releases cancelled/hidden controls", async () => {
-  await act(async () => root.render(<MobileControls {...props} />));
-  const stick = container.querySelector<HTMLButtonElement>(".mobile-stick")!;
-  stick.setPointerCapture = vi.fn();
-  stick.hasPointerCapture = () => false;
-  vi.spyOn(stick, "getBoundingClientRect").mockReturnValue({
-    left: 0,
-    top: 0,
-    width: 132,
-    height: 132,
-  } as DOMRect);
-  await act(async () => pointer(stick, "pointerdown", 66, 20));
-  expect(mobileKeyDown("KeyW")).toBe(true);
-  const action = vi.fn();
-  const off = subscribeMobileActions(action);
-  await act(async () =>
-    container.querySelector<HTMLButtonElement>(".mobile-context")!.click(),
-  );
-  expect(action.mock.calls[0][0].code).toBe("KeyE");
-  expect(mobileKeyDown("KeyW")).toBe(true);
-  await act(async () => pointer(stick, "pointercancel"));
-  expect(mobileKeyDown("KeyW")).toBe(false);
-  await act(async () => pointer(stick, "pointerdown", 66, 20));
-  await act(async () =>
-    root.render(<MobileControls {...props} enabled={false} />),
-  );
-  expect(mobileKeyDown("KeyW")).toBe(false);
-  expect(container.querySelector(".mobile-stick")).toBeNull();
-  off();
-});
 it("keeps the game unloaded before fullscreen, pauses on exit, and preserves the mounted game", async () => {
   const request = vi.fn(async () => {
     fullscreen = document.documentElement;
@@ -194,55 +155,23 @@ it("exposes fishing beside a bench without replacing the sit action", async () =
   off();
 });
 
-it("keeps two pointer owners independent in either arrival order and ignores a third contact", async () => {
-  const { mobileMovement, mobileLook } = await import("./mobile-input");
-  for (const lookFirst of [false, true]) {
-    await act(async () => root.render(<MobileControls {...props} />));
-    const move = container.querySelector<HTMLButtonElement>(".mobile-move")!,
-      look = container.querySelector<HTMLButtonElement>(".mobile-look")!;
-    for (const stick of [move, look]) {
-      stick.setPointerCapture = vi.fn();
-      stick.hasPointerCapture = () => false;
-      vi.spyOn(stick, "getBoundingClientRect").mockReturnValue({
-        left: 0,
-        top: 0,
-        width: 132,
-        height: 132,
-      } as DOMRect);
-    }
-    await act(async () => {
-      pointer(
-        lookFirst ? look : move,
-        "pointerdown",
-        66,
-        66,
-        lookFirst ? 2 : 1,
-      );
-      pointer(
-        lookFirst ? move : look,
-        "pointerdown",
-        66,
-        66,
-        lookFirst ? 1 : 2,
-      );
-      pointer(move, "pointermove", 79, 20, 1);
-      pointer(look, "pointermove", 105, 66, 2);
-    });
-    expect(mobileMovement.x).toBeGreaterThan(0);
-    expect(mobileMovement.y).toBeLessThan(0);
-    expect(mobileLook.x).toBeGreaterThan(0);
-    const held = { ...mobileMovement };
-    await act(async () => {
-      pointer(look, "pointerdown", 20, 66, 3);
-      pointer(look, "pointermove", 20, 66, 3);
-    });
-    expect(mobileLook.x).toBeGreaterThan(0);
-    expect(mobileMovement).toEqual(held);
-    await act(async () => pointer(look, "pointercancel", 105, 66, 2));
-    expect(mobileLook).toEqual({ x: 0, y: 0 });
-    expect(mobileMovement).toEqual(held);
-    await act(async () => pointer(move, "lostpointercapture", 79, 20, 1));
-    expect(mobileMovement).toEqual({ x: 0, y: 0 });
+it("mounts one library joystick per zone through StrictMode and repeated remounts", async () => {
+  const { StrictMode } = await import("react");
+  for (let cycle = 0; cycle < 3; cycle++) {
+    await act(async () =>
+      root.render(
+        <StrictMode>
+          <MobileControls {...props} />
+        </StrictMode>,
+      ),
+    );
+    await vi.waitFor(() =>
+      expect(
+        container.querySelectorAll(".mobile-stick-zone .joystick"),
+      ).toHaveLength(2),
+    );
+    expect(container.querySelectorAll("button.mobile-stick")).toHaveLength(0);
     await act(async () => root.render(null));
+    expect(container.querySelectorAll(".joystick")).toHaveLength(0);
   }
 });

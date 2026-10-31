@@ -13,7 +13,7 @@ try {
 try {
   await writeFile(
     temporary,
-    '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>La Baraj mobile QA</title></head><body><div id="root"></div><script type="module" src="../../tests/browser/mobile-world.tsx"></script></body></html>',
+    '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><title>La Baraj mobile QA</title></head><body><div id="root"></div><script type="module" src="../../tests/browser/mobile-world.tsx"></script></body></html>',
   );
   await build({
     configFile: resolve(root, "vite.config.ts"),

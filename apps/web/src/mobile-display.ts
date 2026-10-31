@@ -80,3 +80,17 @@ export async function enterGameFullscreen() {
     return false;
   }
 }
+
+/** Best-effort page-scoped hint; the portrait gate never pretends a rejected lock succeeded. */
+export async function requestLandscapeOrientation() {
+  const orientation = screen.orientation as ScreenOrientation & {
+    lock?: (orientation: string) => Promise<void>;
+  };
+  if (!orientation?.lock) return false;
+  try {
+    await orientation.lock("landscape");
+    return true;
+  } catch {
+    return false;
+  }
+}

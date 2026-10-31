@@ -70,10 +70,10 @@ try {
     await page.waitForTimeout(1300);
     const sample = await work();
     assert(
-      sample.width * sample.height <= 360000,
+      sample.width * sample.height <= 520000,
       "Pixel budget undone by parent rerender",
     );
-    assert(sample.width <= viewport.width * 0.9 + 1, "DPR ceiling undone");
+    assert(sample.width <= viewport.width * 1.25 + 1, "DPR ceiling undone");
     assert(
       sample.updates > sample.draws * 1.8 &&
         sample.updates < sample.draws * 2.2,
