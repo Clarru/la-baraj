@@ -1,3 +1,5 @@
+import { MobileDisplayOptions } from "./MobileExperience";
+import { useTouchDevice } from "./mobile-device";
 import { reportClientDiagnostic } from "./client-diagnostics";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { GameIcon } from "./GameArt";
@@ -149,6 +151,7 @@ export function GameMenu({
           </button>
         </div>
       </form>
+      <MobileDisplayOptions />
       <p className="game-home-info" data-testid="assigned-home">
         <GameIcon name="cabin" size={42} />
         <span>
@@ -269,8 +272,17 @@ export function ControlsHelp({
   onClose: () => void;
   onMenu: () => void;
 }) {
+  const touch = useTouchDevice();
   return (
     <GameDialog title="Controls" onClose={onClose}>
+      {touch && (
+        <p className="mobile-help">
+          Drag the left stick to move or steer. Tap Run to toggle running. Use
+          the right stick to look around. Tap nearby action buttons to sit,
+          fish, enter cabins, or ride. In 2048, swipe the board. In Cruce, tap a
+          playable card; slide your hand sideways to see every card.
+        </p>
+      )}
       <p className="game-help-intro">
         Follow the prompts beside doors, benches, and the water.
       </p>

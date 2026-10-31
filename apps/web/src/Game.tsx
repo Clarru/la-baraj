@@ -1,3 +1,9 @@
+import { mobilePixelRatio } from "./mobile-frame-clock";
+import { MobileFrameDriver } from "./MobileFrameDriver";
+import { MobileArcade2048 } from "./MobileArcade2048";
+import { MobileControls } from "./MobileControls";
+import { useMobileBlocked } from "./mobile-display";
+import { useTouchDevice } from "./mobile-device";
 import { arcadeControlledStation } from "../../../packages/shared/arcade2048-station";
 import {
   ArcadeCabinet,
@@ -170,6 +176,13 @@ export default function Game({ initialName }: { initialName: string }) {
   );
   const cabinIndices = useMemo(() => cabins.map((c) => c.index), [cabins]);
   const hasHome = roomView.status === "offline" || roomView.homeIndex !== null;
+  const mobileBlocked = useMobileBlocked();
+  const touch = useTouchDevice();
+  const [mobileDpr, setMobileDpr] = useState(() =>
+    typeof window === "undefined"
+      ? 0.9
+      : mobilePixelRatio(window.innerWidth, window.innerHeight),
+  );
   const [mode, setMode] = useState<ViewMode>("walk");
   const [flat, setFlat] = useState(false),
     [evening, setEvening] = useState(false),
@@ -184,6 +197,12 @@ export default function Game({ initialName }: { initialName: string }) {
   );
   const chatOpen = chatMode === "editing";
   const closeChat = useCallback(() => setChatMode("closed"), []);
+  useEffect(() => {
+    if (mobileBlocked) {
+      setPanel(null);
+      closeChat();
+    }
+  }, [mobileBlocked, closeChat]);
   const finishChat = useCallback(() => setChatMode("display"), []);
   const [planesOpen, setPlanesOpen] = useState(false);
   const ownGameSide = planesSeatSide(room.ownSeatId());
@@ -617,23 +636,38 @@ export default function Game({ initialName }: { initialName: string }) {
       <SceneBoundary>
         <Suspense fallback={<SceneLoading />}>
           <Canvas
-            shadows="percentage"
-            dpr={performanceLab ? 1.5 : [1, 1.5]}
+            shadows={touch ? false : "percentage"}
+            frameloop={touch ? "never" : "always"}
+            dpr={performanceLab ? 1.5 : touch ? mobileDpr : [1, 1.5]}
             camera={{ position: [58, 35, 72], fov: 48, near: 0.1, far: 6000 }}
             gl={{
-              antialias: true,
-              powerPreference: "high-performance",
+              antialias: !touch,
+              powerPreference: touch ? "low-power" : "high-performance",
               toneMapping: THREE.ACESFilmicToneMapping,
               toneMappingExposure: 0.92,
             }}
           >
-            <WorldLighting evening={evening} forceDay={performanceLab} />
+            {touch && (
+              <MobileFrameDriver
+                onPixelRatio={setMobileDpr}
+                covered={mobileBlocked || arcadeOpen || cruceOpen || planesOpen}
+              />
+            )}
+            <WorldLighting
+              evening={evening}
+              forceDay={performanceLab}
+              shadows={!touch}
+            />
             <WorldBackdrop evening={evening} forceDay={performanceLab} />
             <Physics timeStep={1 / 60} gravity={[0, -12, 0]}>
               <group>
                 <Terrain />
                 <Roads />
-                <LakeWater evening={evening} forceDay={performanceLab} />
+                <LakeWater
+                  evening={evening}
+                  forceDay={performanceLab}
+                  mobile={touch}
+                />
                 <Vegetation flat={flat} />
                 <Meadow forceHigh={performanceLab} />
                 <Settlement
@@ -662,6 +696,7 @@ export default function Game({ initialName }: { initialName: string }) {
                     resetKey={resetKey}
                     arcadeStationId={arcadeControlledId}
                     paused={
+                      mobileBlocked ||
                       panel !== null ||
                       activityBusy ||
                       arcadeOpen ||
@@ -709,6 +744,7 @@ export default function Game({ initialName }: { initialName: string }) {
                   }
                   resetKey={homeResetKey}
                   paused={
+                    mobileBlocked ||
                     !hasHome ||
                     arcadeOpen ||
                     panel !== null ||
@@ -764,6 +800,37 @@ export default function Game({ initialName }: { initialName: string }) {
       </SceneBoundary>
       {ready && (
         <div className="hud">
+          <MobileControls
+            enabled={
+              hasHome &&
+              !mobileBlocked &&
+              panel === null &&
+              !arcadeOpen &&
+              !cruceOpen &&
+              !planesOpen &&
+              !chatOpen &&
+              !doorTransition
+            }
+            moving={mode === "walk"}
+            prompt={doorPromptVisible ? null : displayedPrompt}
+            busy={activityBusy}
+            mounted={vehicleMounted || boatMounted}
+            seatedGame={
+              ownCruceSeat !== null
+                ? "Cruce"
+                : ownGameSide !== null
+                  ? "Planes"
+                  : null
+            }
+            onGame={ownCruceSeat !== null ? openCruce : openPlanes}
+            onStand={() => {
+              if (ownCruceSeat !== null) {
+                openCruce();
+                setCruceLeaveRequest((n) => n + 1);
+              } else requestTableStand();
+            }}
+            onChat={() => setChatMode("editing")}
+          />
           <GameHeader
             room={room}
             menuOpen={panel !== null}
@@ -790,6 +857,7 @@ export default function Game({ initialName }: { initialName: string }) {
             onOpen={openArcade}
           />
           <ArcadeAccessibility controls={arcade} onExit={closeArcade} />
+          <MobileArcade2048 controls={arcade} onExit={closeArcade} />
           {!arcadeOpen &&
             !planesOpen &&
             !cruceOpen &&
@@ -871,6 +939,7 @@ export default function Game({ initialName }: { initialName: string }) {
             mode={import.meta.env.DEV ? mode : "walk"}
             resetKey={homeResetKey}
             paused={
+              mobileBlocked ||
               panel !== null ||
               cruceOpen ||
               planesOpen ||

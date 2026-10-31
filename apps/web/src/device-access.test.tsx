@@ -4,7 +4,7 @@ import { isMobileDevice } from "./device-access";
 import App from "./App";
 
 afterEach(() => vi.unstubAllGlobals());
-describe("desktop-only entry", () => {
+describe("mobile device detection and entry", () => {
   it.each([
     {
       userAgent:
@@ -38,13 +38,13 @@ describe("desktop-only entry", () => {
   ])("keeps computers usable, including touch-enabled PCs: %o", (device) => {
     expect(isMobileDevice(device)).toBe(false);
   });
-  it("shows the computer message before onboarding, even for a saved name", () => {
+  it("offers mobile fullscreen and installation setup before loading a saved game", () => {
     vi.stubGlobal("navigator", { userAgent: "Mozilla/5.0 (iPhone) Mobile" });
     vi.stubGlobal("localStorage", { getItem: () => "Saved player" });
     const html = renderToStaticMarkup(<App />);
-    expect(html).toContain("Join us on a computer");
-    expect(html).toContain("keyboard and mouse");
-    expect(html).not.toContain("What should we call you?");
+    expect(html).toContain("Play in fullscreen");
+    expect(html).toContain("Add La Baraj to your Home Screen");
+    expect(html).not.toContain("Join us on a computer");
     expect(html).not.toContain("Loading the lake");
   });
 });

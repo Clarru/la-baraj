@@ -1,0 +1,239 @@
+{
+  "driver": "156.0.8078.79",
+  "errors": [],
+  "results": [
+    {
+      "check": "2048 cancel-new preserves saved game",
+      "result": "pass",
+      "data": {
+        "board": [
+          0,
+          0,
+          0,
+          0,
+          2,
+          0,
+          0,
+          2,
+          2,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "score": 0,
+        "moves": 1,
+        "revision": 2,
+        "continued": false
+      }
+    },
+    {
+      "check": "2048 leave releases actual claim",
+      "result": "pass",
+      "data": [
+        {
+          "id": 0,
+          "playerId": null,
+          "name": "",
+          "game": null,
+          "best": 0,
+          "direction": null
+        },
+        {
+          "id": 1,
+          "playerId": null,
+          "name": "",
+          "game": null,
+          "best": 0,
+          "direction": null
+        },
+        {
+          "id": 2,
+          "playerId": null,
+          "name": "",
+          "game": null,
+          "best": 0,
+          "direction": null
+        }
+      ]
+    },
+    {
+      "check": "2048 reopen restores saved board",
+      "result": "pass",
+      "data": {
+        "board": [
+          0,
+          0,
+          0,
+          0,
+          2,
+          0,
+          0,
+          2,
+          2,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "score": 0,
+        "moves": 1,
+        "revision": 2,
+        "continued": false
+      }
+    },
+    {
+      "check": "2048 swipe routes actual move",
+      "result": "pass",
+      "data": {
+        "board": [
+          4,
+          0,
+          0,
+          2,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          2
+        ],
+        "score": 4,
+        "moves": 2,
+        "revision": 3,
+        "continued": false
+      }
+    },
+    {
+      "check": "2048 landscape layout",
+      "result": "fail",
+      "detail": "Auto-sized grid rows distort cells and float layout lets arrows overlap board. Replace with explicit equal rows and a two-column landscape grid."
+    },
+    {
+      "check": "Cruce touch play consumes an actual private card",
+      "result": "pass",
+      "data": {
+        "before": [
+          4,
+          2,
+          3,
+          16,
+          12,
+          20
+        ],
+        "after": [
+          2,
+          3,
+          16,
+          12,
+          20
+        ],
+        "phase": "playing"
+      }
+    },
+    {
+      "check": "Cruce confirmed leave releases authoritative seat",
+      "result": "pass",
+      "data": null
+    },
+    {
+      "check": "touch cabin entry enters real interior",
+      "result": "pass",
+      "data": [
+        55.31060028076172,
+        6.7337327003479,
+        68.5269546508789
+      ]
+    },
+    {
+      "check": "touch cabin exit returns outside",
+      "result": "pass",
+      "data": [
+        55.32008361816406,
+        6.733206272125244,
+        66.62698364257812
+      ]
+    },
+    {
+      "check": "touch stand leaves fishing bench",
+      "result": "pass",
+      "data": "none"
+    },
+    {
+      "check": "touch stick drives mounted scooter",
+      "result": "pass",
+      "data": {
+        "start": [
+          53.68601989746094,
+          5.957858085632324,
+          63.42878723144531
+        ],
+        "after": [
+          53.72593688964844,
+          4.793200492858887,
+          55.42216491699219
+        ]
+      }
+    },
+    {
+      "check": "touch step off parks scooter",
+      "result": "pass",
+      "data": null
+    },
+    {
+      "check": "mobile arcade preserves released standing alignment",
+      "result": "pass",
+      "data": [
+        -10.151472091674805,
+        1.9207676649093628,
+        74.64852905273438
+      ]
+    },
+    {
+      "check": "desktop keeps keyboard UI without touch overlay",
+      "result": "pass"
+    },
+    {
+      "check": "desktop WASD still drives actual physics",
+      "result": "pass",
+      "data": {
+        "before": [
+          -9.939339637756348,
+          1.949405550956726,
+          74.86065673828125
+        ],
+        "after": [
+          -8.929276466369629,
+          2.108360528945923,
+          76.28973388671875
+        ]
+      }
+    },
+    {
+      "check": "second player cannot control occupied cabinet",
+      "result": "pass",
+      "data": "Occupied — blocked\nMobile QA is playing. Choose another cabinet."
+    },
+    {
+      "check": "released cabinet becomes available to another player",
+      "result": "pass"
+    }
+  ],
+  "knownFailures": [
+    "fullscreen native menu covers re-entry",
+    "2048 unequal rows and landscape overlap",
+    "fishing secondary interaction missing beside bench"
+  ]
+}

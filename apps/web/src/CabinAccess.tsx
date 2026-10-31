@@ -1,3 +1,4 @@
+import { subscribeMobileActions, type ActionKey } from "./mobile-input";
 import { useEffect, useRef, useState } from "react";
 import { GameIcon } from "./GameArt";
 import { playerPosition, type ViewMode } from "./player";
@@ -122,7 +123,7 @@ export function CabinAccess({
     );
   }, [interiorIndex, target, paused, busy, vehicleMounted, onPromptVisible]);
   useEffect(() => {
-    const key = (event: KeyboardEvent) => {
+    const key = (event: ActionKey) => {
       const node = event.target;
       if (
         locked.current ||
@@ -153,8 +154,12 @@ export function CabinAccess({
         enter(target);
       }
     };
+    const unbindMobile = subscribeMobileActions(key);
     window.addEventListener("keydown", key);
-    return () => window.removeEventListener("keydown", key);
+    return () => {
+      unbindMobile();
+      window.removeEventListener("keydown", key);
+    };
   }, [interiorIndex, target, nearExit, paused, busy, vehicleMounted]);
   const curtain = (
     <output

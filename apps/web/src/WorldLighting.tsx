@@ -6,9 +6,11 @@ import { currentLighting } from "./day-night";
 export function WorldLighting({
   evening,
   forceDay,
+  shadows = true,
 }: {
   evening: boolean;
   forceDay: boolean;
+  shadows?: boolean;
 }) {
   const sun = useRef<THREE.DirectionalLight>(null);
   const hemi = useRef<THREE.HemisphereLight>(null);
@@ -47,7 +49,7 @@ export function WorldLighting({
         ref={sun}
         position={[-80, 95, -110]}
         intensity={3.3}
-        castShadow
+        castShadow={shadows}
         shadow-mapSize={[2048, 2048]}
         shadow-camera-left={-110}
         shadow-camera-right={110}
