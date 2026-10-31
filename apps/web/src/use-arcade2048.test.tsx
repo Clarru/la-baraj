@@ -10,7 +10,7 @@ afterEach(async () => {
   vi.restoreAllMocks();
   document.body.replaceChildren();
 });
-async function fixture(reject = false) {
+async function fixture(reject = false, canControl = true) {
   Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
   let now = 1000;
   vi.spyOn(performance, "now").mockImplementation(() => now);
@@ -41,7 +41,13 @@ async function fixture(reject = false) {
   };
   let controls: ReturnType<typeof useArcade2048>;
   function Harness({ open }: { open: boolean }) {
-    controls = useArcade2048(room as unknown as MultiplayerRoom, open);
+    controls = useArcade2048(
+      room as unknown as MultiplayerRoom,
+      open,
+      undefined,
+      undefined,
+      canControl,
+    );
     return null;
   }
   const element = document.createElement("div");
@@ -116,4 +122,18 @@ it("keeps a 125ms input boundary for the server's eight-action rate while tiles 
   f.time(1125);
   await act(() => f.controls().move("right"));
   expect(f.room.arcadeAction).toHaveBeenCalledTimes(3);
+});
+
+it("keeps a saved personal game while disabling game actions without current public control", async () => {
+  const f = await fixture(false, false),
+    saved = f.controls().state.view;
+  expect(f.controls().state.active).toBe(false);
+  const calls = f.room.arcadeAction.mock.calls.length;
+  await act(() => {
+    f.controls().move("left");
+    f.controls().action("new");
+    f.controls().action("scores");
+  });
+  expect(f.room.arcadeAction).toHaveBeenCalledTimes(calls);
+  expect(f.controls().state.view).toBe(saved);
 });

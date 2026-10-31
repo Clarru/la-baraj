@@ -1,3 +1,4 @@
+import { arcadeControlledStation } from "../../../packages/shared/arcade2048-station";
 import {
   ArcadeCabinet,
   ArcadeEntry,
@@ -288,13 +289,21 @@ export default function Game({ initialName }: { initialName: string }) {
     roomView.arcadeBlocked,
     canApproachArcade,
     closeChat,
+    roomView,
   );
   const arcadeOpen = arcadeStationId !== null;
+  const arcadeControlledId = arcadeControlledStation(
+    arcadeStationId,
+    roomView.selfId,
+    roomView.arcadeStations,
+    roomView.arcadeStationsAvailable,
+  );
   const arcade = useArcade2048(
     room,
     arcadeOpen,
     closeArcade,
     arcadeStationId ?? undefined,
+    arcadeControlledId !== null,
   );
 
   const [waveAvailable, setWaveAvailable] = useState(false);
@@ -342,6 +351,12 @@ export default function Game({ initialName }: { initialName: string }) {
   useEffect(() => {
     const capture = (event: KeyboardEvent) => {
       if (arcadeOpen) {
+        if (!arcade.state.active && event.code === "Escape") {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          closeArcade();
+          return;
+        }
         captureArcadeKey(event, arcade.state, {
           move: arcade.move,
           action: arcade.action,
@@ -645,6 +660,7 @@ export default function Game({ initialName }: { initialName: string }) {
                     homeIndex={homeIndex}
                     mode={mode}
                     resetKey={resetKey}
+                    arcadeStationId={arcadeControlledId}
                     paused={
                       panel !== null ||
                       activityBusy ||
@@ -707,7 +723,7 @@ export default function Game({ initialName }: { initialName: string }) {
               {!performanceLab && (
                 <ArcadeCabinet
                   controls={arcade}
-                  selected={arcadeStationId}
+                  selected={arcadeControlledId}
                   stations={roomView.arcadeStations}
                   supported={roomView.arcadeStationsAvailable}
                   selfId={roomView.selfId}
