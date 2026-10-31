@@ -1,0 +1,324 @@
+{
+  "scope": "Desktop Chromium 156 / ANGLE Metal /393x852 DPR3 coarse touch, iPhone UA + standalone hint; not physical iOS or heat/power/GPU-time data",
+  "baselineHead": "83887364ddde4f1a1f2ba62b4da3ca3d3fd4faff",
+  "candidateHead": "44346d984e883817e921a550a2cc24015fee77cb",
+  "baseline": [
+    {
+      "name": "idle-world",
+      "seconds": 30.013,
+      "delta": {
+        "mainFrames": 1801,
+        "offscreenClears": 2306,
+        "mainDraws": 185503,
+        "offscreenDraws": 457928,
+        "mainTriangles": 2059992805,
+        "offscreenTriangles": 2196564530,
+        "rafCallbacks": 1801,
+        "cpuMs": 4812.09999909997
+      },
+      "perSecond": {
+        "mainFrames": 60.00733015693199,
+        "offscreenClears": 76.83337220537767,
+        "mainDraws": 6180.755006163995,
+        "offscreenDraws": 15257.655016159662,
+        "mainTriangles": 68636684.2701496,
+        "offscreenTriangles": 73187103.25525606,
+        "rafCallbacks": 60.00733015693199,
+        "cpuMs": 160.33385529936925
+      },
+      "rafCpuP95Ms": 5.5
+    },
+    {
+      "name": "two-finger-move-look",
+      "seconds": 28.734,
+      "delta": {
+        "mainFrames": 1722,
+        "offscreenClears": 2212,
+        "mainDraws": 130710,
+        "offscreenDraws": 492734,
+        "mainTriangles": 1423067888,
+        "offscreenTriangles": 2071843419,
+        "rafCallbacks": 1722,
+        "cpuMs": 4647.100000709295
+      },
+      "perSecond": {
+        "mainFrames": 59.929003967425345,
+        "offscreenClears": 76.98197257604231,
+        "mainDraws": 4548.966381290457,
+        "offscreenDraws": 17148.1172130577,
+        "mainTriangles": 49525575.55509152,
+        "offscreenTriangles": 72104246.50240134,
+        "rafCallbacks": 59.929003967425345,
+        "cpuMs": 161.72826619020307
+      },
+      "rafCpuP95Ms": 5.9000000059604645
+    },
+    {
+      "name": "2048-opaque-board",
+      "seconds": 20.023,
+      "delta": {
+        "mainFrames": 1202,
+        "offscreenClears": 1542,
+        "mainDraws": 58898,
+        "offscreenDraws": 314464,
+        "mainTriangles": 937817228,
+        "offscreenTriangles": 1506133966,
+        "rafCallbacks": 1202,
+        "cpuMs": 3566.2999999523163
+      },
+      "perSecond": {
+        "mainFrames": 60.03096439095041,
+        "offscreenClears": 77.01143684762523,
+        "mainDraws": 2941.51725515657,
+        "offscreenDraws": 15705.139090046447,
+        "mainTriangles": 46836998.85132098,
+        "offscreenTriangles": 75220195.07566299,
+        "rafCallbacks": 60.03096439095041,
+        "cpuMs": 178.11017329832274
+      },
+      "rafCpuP95Ms": 6.200000017881393
+    },
+    {
+      "name": "world-resumed",
+      "seconds": 10.023,
+      "delta": {
+        "mainFrames": 602,
+        "offscreenClears": 769,
+        "mainDraws": 39130,
+        "offscreenDraws": 165740,
+        "mainTriangles": 482855170,
+        "offscreenTriangles": 767319463,
+        "rafCallbacks": 602,
+        "cpuMs": 1959.6000001132488
+      },
+      "perSecond": {
+        "mainFrames": 60.06185772722738,
+        "offscreenClears": 76.72353586750474,
+        "mainDraws": 3904.0207522697797,
+        "offscreenDraws": 16535.96727526689,
+        "mainTriangles": 48174715.15514317,
+        "offscreenTriangles": 76555867.80405068,
+        "rafCallbacks": 60.06185772722738,
+        "cpuMs": 195.51032626092476
+      },
+      "rafCpuP95Ms": 5.699999988079071
+    },
+    {
+      "name": "cruce-opaque-lobby",
+      "seconds": 20.028,
+      "delta": {
+        "mainFrames": 1202,
+        "offscreenClears": 1539,
+        "mainDraws": 109382,
+        "offscreenDraws": 346265,
+        "mainTriangles": 1060464500,
+        "offscreenTriangles": 1588823574,
+        "rafCallbacks": 1202,
+        "cpuMs": 3802.70000064373
+      },
+      "perSecond": {
+        "mainFrames": 60.01597763131616,
+        "offscreenClears": 76.8424206111444,
+        "mainDraws": 5461.453964449771,
+        "offscreenDraws": 17289.04533652886,
+        "mainTriangles": 52949096.26522868,
+        "offscreenTriangles": 79330116.53684841,
+        "rafCallbacks": 60.01597763131616,
+        "cpuMs": 189.8691831757405
+      },
+      "rafCpuP95Ms": 6.800000011920929
+    }
+  ],
+  "candidate": [
+    {
+      "name": "idle-world",
+      "seconds": 30.018,
+      "delta": {
+        "simulationUpdates": 1793,
+        "driverDraws": 896,
+        "mainFrames": 900,
+        "offscreenClears": 0,
+        "mainDraws": 93600,
+        "offscreenDraws": 0,
+        "mainTriangles": 1061295300,
+        "offscreenTriangles": 0,
+        "rafCallbacks": 1801,
+        "cpuMs": 3489.0000008046627
+      },
+      "runtime": {
+        "updates": 1960,
+        "draws": 980,
+        "simulationTime": 32.666666666666096,
+        "covered": false,
+        "stopped": false,
+        "width": 353,
+        "height": 766
+      },
+      "perSecond": {
+        "simulationUpdates": 59.730828169764806,
+        "driverDraws": 29.848757412219335,
+        "mainFrames": 29.982010793523884,
+        "offscreenClears": 0,
+        "mainDraws": 3118.129122526484,
+        "offscreenDraws": 0,
+        "mainTriangles": 35355296.82190686,
+        "offscreenTriangles": 0,
+        "rafCallbacks": 59.99733493237391,
+        "cpuMs": 116.23026186970027
+      },
+      "rafCpuP95Ms": 3.7000000178813934
+    },
+    {
+      "name": "two-finger-move-look",
+      "seconds": 27.037,
+      "delta": {
+        "simulationUpdates": 1637,
+        "driverDraws": 819,
+        "mainFrames": 809,
+        "offscreenClears": 0,
+        "mainDraws": 68175,
+        "offscreenDraws": 0,
+        "mainTriangles": 750923734,
+        "offscreenTriangles": 0,
+        "rafCallbacks": 1614,
+        "cpuMs": 3341.0000003278255
+      },
+      "runtime": {
+        "updates": 3597,
+        "draws": 1799,
+        "simulationTime": 59.94999999999788,
+        "covered": false,
+        "stopped": false,
+        "width": 353,
+        "height": 766
+      },
+      "perSecond": {
+        "simulationUpdates": 60.54665828309354,
+        "driverDraws": 30.29182231756482,
+        "mainFrames": 29.921958797203832,
+        "offscreenClears": 0,
+        "mainDraws": 2521.5445500610276,
+        "offscreenDraws": 0,
+        "mainTriangles": 27773929.577985723,
+        "offscreenTriangles": 0,
+        "rafCallbacks": 59.69597218626327,
+        "cpuMs": 123.57140216473077
+      },
+      "rafCpuP95Ms": 4.0999999940395355
+    },
+    {
+      "name": "2048-opaque-board",
+      "seconds": 20.022,
+      "delta": {
+        "simulationUpdates": 0,
+        "driverDraws": 0,
+        "mainFrames": 0,
+        "offscreenClears": 0,
+        "mainDraws": 0,
+        "offscreenDraws": 0,
+        "mainTriangles": 0,
+        "offscreenTriangles": 0,
+        "rafCallbacks": 0,
+        "cpuMs": 0
+      },
+      "runtime": {
+        "updates": 3729,
+        "draws": 1865,
+        "simulationTime": 62.14999999999775,
+        "covered": true,
+        "stopped": true,
+        "width": 353,
+        "height": 766
+      },
+      "perSecond": {
+        "simulationUpdates": 0,
+        "driverDraws": 0,
+        "mainFrames": 0,
+        "offscreenClears": 0,
+        "mainDraws": 0,
+        "offscreenDraws": 0,
+        "mainTriangles": 0,
+        "offscreenTriangles": 0,
+        "rafCallbacks": 0,
+        "cpuMs": 0
+      },
+      "rafCpuP95Ms": 0
+    },
+    {
+      "name": "world-resumed",
+      "seconds": 10.023,
+      "delta": {
+        "simulationUpdates": 607,
+        "driverDraws": 303,
+        "mainFrames": 301,
+        "offscreenClears": 0,
+        "mainDraws": 19866,
+        "offscreenDraws": 0,
+        "mainTriangles": 252086597,
+        "offscreenTriangles": 0,
+        "rafCallbacks": 601,
+        "cpuMs": 1174.8000005185604
+      },
+      "runtime": {
+        "updates": 4367,
+        "draws": 2184,
+        "simulationTime": 72.78333333333049,
+        "covered": false,
+        "stopped": false,
+        "width": 353,
+        "height": 766
+      },
+      "perSecond": {
+        "simulationUpdates": 60.56071036615784,
+        "driverDraws": 30.23046991918587,
+        "mainFrames": 30.03092886361369,
+        "offscreenClears": 0,
+        "mainDraws": 1982.0413049985034,
+        "offscreenDraws": 0,
+        "mainTriangles": 25150812.830489874,
+        "offscreenTriangles": 0,
+        "rafCallbacks": 59.962087199441285,
+        "cpuMs": 117.21041609483791
+      },
+      "rafCpuP95Ms": 3.9000000059604645
+    },
+    {
+      "name": "cruce-opaque-lobby",
+      "seconds": 20.028,
+      "delta": {
+        "simulationUpdates": 0,
+        "driverDraws": 0,
+        "mainFrames": 0,
+        "offscreenClears": 0,
+        "mainDraws": 0,
+        "offscreenDraws": 0,
+        "mainTriangles": 0,
+        "offscreenTriangles": 0,
+        "rafCallbacks": 0,
+        "cpuMs": 0
+      },
+      "runtime": {
+        "updates": 4504,
+        "draws": 2253,
+        "simulationTime": 75.06666666666369,
+        "covered": true,
+        "stopped": true,
+        "width": 353,
+        "height": 766
+      },
+      "perSecond": {
+        "simulationUpdates": 0,
+        "driverDraws": 0,
+        "mainFrames": 0,
+        "offscreenClears": 0,
+        "mainDraws": 0,
+        "offscreenDraws": 0,
+        "mainTriangles": 0,
+        "offscreenTriangles": 0,
+        "rafCallbacks": 0,
+        "cpuMs": 0
+      },
+      "rafCpuP95Ms": 0
+    }
+  ]
+}

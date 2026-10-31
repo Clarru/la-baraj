@@ -1,5 +1,5 @@
 import { useRef, type CSSProperties } from "react";
-import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, X } from "lucide-react";
+import { X } from "lucide-react";
 import {
   arcadeOver,
   arcadeWon,
@@ -49,7 +49,7 @@ export function MobileArcade2048({
         {state.page === "board" && (
           <>
             <p className="mobile-arcade-hint">
-              Swipe the board or tap an arrow to merge tiles.
+              Swipe the board to merge tiles.
             </p>
             <div
               className="mobile-arcade-board"
@@ -100,25 +100,6 @@ export function MobileArcade2048({
                   </div>
                 );
               })}
-            </div>
-            <div className="mobile-arcade-directions" aria-label="Move tiles">
-              {(
-                [
-                  ["up", ArrowUp],
-                  ["left", ArrowLeft],
-                  ["down", ArrowDown],
-                  ["right", ArrowRight],
-                ] as const
-              ).map(([direction, Icon]) => (
-                <button
-                  key={direction}
-                  aria-label={`Move ${direction}`}
-                  disabled={!game || state.pending || won || over}
-                  onClick={() => move(direction)}
-                >
-                  <Icon size={25} />
-                </button>
-              ))}
             </div>
             {(won || over) && (
               <div className="mobile-arcade-result">

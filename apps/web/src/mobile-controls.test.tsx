@@ -193,3 +193,56 @@ it("exposes fishing beside a bench without replacing the sit action", async () =
   expect(action.mock.calls[0][0].source).toBe("touch");
   off();
 });
+
+it("keeps two pointer owners independent in either arrival order and ignores a third contact", async () => {
+  const { mobileMovement, mobileLook } = await import("./mobile-input");
+  for (const lookFirst of [false, true]) {
+    await act(async () => root.render(<MobileControls {...props} />));
+    const move = container.querySelector<HTMLButtonElement>(".mobile-move")!,
+      look = container.querySelector<HTMLButtonElement>(".mobile-look")!;
+    for (const stick of [move, look]) {
+      stick.setPointerCapture = vi.fn();
+      stick.hasPointerCapture = () => false;
+      vi.spyOn(stick, "getBoundingClientRect").mockReturnValue({
+        left: 0,
+        top: 0,
+        width: 132,
+        height: 132,
+      } as DOMRect);
+    }
+    await act(async () => {
+      pointer(
+        lookFirst ? look : move,
+        "pointerdown",
+        66,
+        66,
+        lookFirst ? 2 : 1,
+      );
+      pointer(
+        lookFirst ? move : look,
+        "pointerdown",
+        66,
+        66,
+        lookFirst ? 1 : 2,
+      );
+      pointer(move, "pointermove", 79, 20, 1);
+      pointer(look, "pointermove", 105, 66, 2);
+    });
+    expect(mobileMovement.x).toBeGreaterThan(0);
+    expect(mobileMovement.y).toBeLessThan(0);
+    expect(mobileLook.x).toBeGreaterThan(0);
+    const held = { ...mobileMovement };
+    await act(async () => {
+      pointer(look, "pointerdown", 20, 66, 3);
+      pointer(look, "pointermove", 20, 66, 3);
+    });
+    expect(mobileLook.x).toBeGreaterThan(0);
+    expect(mobileMovement).toEqual(held);
+    await act(async () => pointer(look, "pointercancel", 105, 66, 2));
+    expect(mobileLook).toEqual({ x: 0, y: 0 });
+    expect(mobileMovement).toEqual(held);
+    await act(async () => pointer(move, "lostpointercapture", 79, 20, 1));
+    expect(mobileMovement).toEqual({ x: 0, y: 0 });
+    await act(async () => root.render(null));
+  }
+});

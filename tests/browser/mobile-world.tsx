@@ -37,11 +37,13 @@ function Fixture() {
     const timer = setInterval(() => {
       const room = currentMultiplayerRoom(),
         view = room?.getSnapshot();
-      if (view)
+      if (view && room)
         output.current?.setAttribute(
           "data-state",
           JSON.stringify({
             status: view.status,
+            selfId: view.selfId,
+            players: [...room.remotes.values()].map(({ player }) => player),
             home: view.homeIndex,
             seat: room?.ownSeatId(),
             cruce: view.cruce,

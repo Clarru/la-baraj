@@ -5,12 +5,12 @@ La Baraj supports touch entry, world movement, nearby activities, Cruce and 2048
 ## Controls and layout
 
 - The fixed left thumb stick supplies camera-relative walking and swimming, and forward/reverse/steering for existing vehicles. Dragging beyond its radius clamps the input; a small dead zone prevents resting-thumb movement. Run toggles running/vehicle boost. Jump is a short held pulse sampled by the physics controller.
-- Drag the world with another finger to orbit; pinch to zoom using the existing OrbitControls. Each control captures its own pointer, so movement and camera/action touches can coexist.
+- Use the separate right-thumb stick to look around; movement and look own independent pointers. Mobile canvas orbit/zoom/pan gestures are disabled to avoid competing with the pads. Each control captures its own pointer, so movement and camera/action touches can coexist.
 - Nearby actions use the same handlers and eligibility checks as keyboard input: sit/stand, doors, fishing, campfire and vehicles. Touch actions have their own channel; they do not dispatch fabricated browser keyboard events. Server seat/arcade claims and proximity checks remain authoritative.
 - Releasing, cancelling or losing a pointer stops movement. Opening panels, changing activities, blurring/hiding the app, rotating the device or leaving fullscreen clears touch state. Fullscreen re-entry preserves the mounted game and its connection.
 - Cabins, game entries and chat have tappable controls. Cruce and Planes seats can reopen their game or stand using touch controls. Cruce shows the table, horizontally scrollable hand, then secondary scores/settings on phones; landscape puts the hand beside the table. Card and bidding actions use the existing private view and revision checks.
-- 2048 has a mobile board, swipe recognition, four explicit direction buttons, scores, records, new-game confirmation, win/continue, game-over and leave actions. It uses the same `useArcade2048` controller, saved game and server authority as the cabinet. Desktop retains the physical screen.
-- Touch rendering uses DPR 1 to reduce pixel work on high-density screens. This is not a measured phone performance guarantee.
+- 2048 has a mobile board, swipe recognition, scores, records, new-game confirmation, win/continue, game-over and leave actions; visible arrow buttons have been removed. It uses the same `useArcade2048` controller, saved game and server authority as the cabinet. Desktop retains the physical screen.
+- Touch rendering uses a controlled DPR/pixel budget, separate 60 Hz simulation and 30 Hz draws, and suspends the hidden world behind opaque game boards. This is not a measured phone performance guarantee.
 
 ## Fullscreen and installation
 
@@ -49,3 +49,5 @@ Automated checks cover device entry, stick dead zone/clamping, touch action clea
 Physical iPhone Safari/Home Screen and Android Chrome/installed-app acceptance must distinguish real device results from emulated Chromium touch results. Browser emulation cannot verify an OS install sheet, iOS safe-area hardware or real phone GPU/thermal behavior.
 
 The completed Chromium touch pass, correction evidence, real-device limits and shared-preview restoration record are in [the October 31 verification report](testing/mobile-2026-10-31.md).
+
+The initial physical-iPhone rejection and its measured follow-up are documented in [mobile input/performance](MOBILE_INPUT_PERFORMANCE.md) and [the follow-up verification report](testing/mobile-input-performance-2026-10-31.md). Physical heat and native two-finger acceptance are not asserted from desktop emulation.
