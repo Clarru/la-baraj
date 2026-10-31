@@ -219,6 +219,7 @@
   padding-block: 8px;
 }
 .mobile-arcade-board {
+  container-type: inline-size;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   grid-template-rows: repeat(4, minmax(0, 1fr));
@@ -237,7 +238,7 @@
   background: #fff2cd;
   color: #423822;
   border-radius: 6px;
-  font: 700 clamp(22px, 7vw, 42px) var(--font-body);
+  font: 700 calc(88px / var(--tile-digits, 4)) var(--font-body);
   font-variant-numeric: tabular-nums;
 }
 .mobile-tile[data-value="0"] {
