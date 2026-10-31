@@ -1,0 +1,59 @@
+{
+  "immediate": {
+    "elapsedMs": 1036,
+    "openingSeen": true,
+    "before": {
+      "id": "903b60b9-de1f-41d1-a0e5-7f306f58d726",
+      "position": [
+        -8.339,
+        0.932,
+        74.861
+      ],
+      "yaw": 0.785
+    },
+    "cancelled": {
+      "id": "903b60b9-de1f-41d1-a0e5-7f306f58d726",
+      "position": [
+        -8.339,
+        0.932,
+        74.861
+      ],
+      "yaw": 0.785
+    },
+    "cancelDidNotMove": true,
+    "controls": 1
+  },
+  "afterOldCompletionMs": 44604,
+  "afterOldPeer": {
+    "id": "903b60b9-de1f-41d1-a0e5-7f306f58d726",
+    "position": [
+      -6.951,
+      0.946,
+      74.649
+    ],
+    "yaw": -2.356
+  },
+  "oldCompletionDidNotMove": true,
+  "failedEntry": {
+    "before": {
+      "id": "8b9b4e54-a7bb-4786-a917-ec5b8d321487",
+      "position": [
+        -6.739,
+        0.976,
+        74.861
+      ],
+      "yaw": -2.356
+    },
+    "after": {
+      "id": "8b9b4e54-a7bb-4786-a917-ec5b8d321487",
+      "position": [
+        -6.739,
+        0.976,
+        74.861
+      ],
+      "yaw": -2.356
+    },
+    "controls": 0,
+    "xzUnchanged": true
+  }
+}
