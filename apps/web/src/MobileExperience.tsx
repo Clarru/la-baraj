@@ -5,9 +5,8 @@ import { useTouchDevice } from "./mobile-device";
 import {
   blockMobileGame,
   useMobileOrientation,
-  leaveMobileActivity,
   enterGameFullscreen,
-  requestLandscapeOrientation,
+  requestGameOrientation,
   immersiveDisplay,
   installGame,
   useInstallAvailable,
@@ -55,7 +54,7 @@ export function MobileExperience({ children }: { children: ReactNode }) {
   const frame = useRef<HTMLDivElement>(null);
   const portrait = useMobilePortrait();
   const orientation = useMobileOrientation();
-  const wrongOrientation = orientation === "portrait" ? !portrait : portrait;
+  const wrongOrientation = orientation === "landscape" && portrait;
   useMobileViewport(frame, touch);
   const [started, setStarted] = useState(false);
   const [immersive, setImmersive] = useState(false);
@@ -95,18 +94,13 @@ export function MobileExperience({ children }: { children: ReactNode }) {
           <RotateCw size={56} aria-hidden="true" />
           <h1 id="rotate-title">Rotate your phone to play</h1>
           <p>
-            {orientation === "portrait"
-              ? "2048 plays upright. Turn your phone to portrait to play."
-              : "La Baraj plays in landscape. Turn your phone sideways for both controllers and a wider view of the lake."}
+            La Baraj plays in landscape. Turn your phone sideways for both
+            controllers and a wider view of the lake.
           </p>
-          {orientation === "portrait" ? (
-            <button onClick={leaveMobileActivity}>Leave 2048</button>
-          ) : (
-            <p className="mobile-note">
-              If it stays upright, turn off Portrait Orientation Lock in Control
-              Centre.
-            </p>
-          )}
+          <p className="mobile-note">
+            If it stays upright, turn off Portrait Orientation Lock in Control
+            Centre.
+          </p>
         </main>
       )}
       {setup && !wrongOrientation && (
@@ -120,7 +114,9 @@ export function MobileExperience({ children }: { children: ReactNode }) {
           <section aria-labelledby="mobile-title">
             <h1 id="mobile-title">The lake, in your pocket.</h1>
             <p>
-              Keep your phone sideways for both controllers and a wider view.
+              {orientation === "portrait"
+                ? "Hold your phone upright for 2048."
+                : "Keep your phone sideways for both controllers and a wider view."}
             </p>
             <button
               className="mobile-start"
@@ -132,7 +128,7 @@ export function MobileExperience({ children }: { children: ReactNode }) {
                 if (entered) {
                   setImmersive(true);
                   setStarted(true);
-                  void requestLandscapeOrientation();
+                  void requestGameOrientation(orientation);
                 } else setFailed(true);
               }}
             >

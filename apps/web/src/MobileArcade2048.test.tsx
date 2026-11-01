@@ -56,11 +56,18 @@ beforeEach(async () => {
   frame.clear();
   now = 0;
   vi.stubGlobal("navigator", { userAgent: "iPhone", maxTouchPoints: 5 });
-  vi.stubGlobal("matchMedia", () => ({
-    matches: false,
+  vi.stubGlobal("matchMedia", (query: string) => ({
+    matches: query.includes("orientation: portrait"),
     addEventListener() {},
     removeEventListener() {},
   }));
+  vi.stubGlobal(
+    "ResizeObserver",
+    class {
+      observe() {}
+      disconnect() {}
+    },
+  );
   vi.stubGlobal("requestAnimationFrame", (cb: FrameRequestCallback) => {
     frame.set(++serial, cb);
     return serial;
@@ -70,8 +77,8 @@ beforeEach(async () => {
   vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockImplementation(
     () => context() as never,
   );
-  HTMLCanvasElement.prototype.setPointerCapture = vi.fn();
-  HTMLCanvasElement.prototype.hasPointerCapture = () => false;
+  HTMLElement.prototype.setPointerCapture = vi.fn();
+  HTMLElement.prototype.hasPointerCapture = () => false;
   vi.spyOn(
     HTMLCanvasElement.prototype,
     "getBoundingClientRect",
@@ -191,5 +198,98 @@ it("animates an accepted merge/spawn for the shared duration, then schedules no 
   controls = { ...controls, state: { ...controls.state, active: false } };
   await act(async () => render());
   expect(host.querySelector("canvas")).toBeNull();
+  expect(frame.size).toBe(0);
+});
+
+it.each([90, -90] as const)(
+  "routes real canvas swipes and menus at turn %s",
+  async (turn) => {
+    vi.stubGlobal("matchMedia", () => ({
+      matches: false,
+      addEventListener() {},
+      removeEventListener() {},
+    }));
+    vi.stubGlobal("screen", {
+      orientation: Object.assign(new EventTarget(), {
+        type: turn === 90 ? "landscape-primary" : "landscape-secondary",
+        angle: turn === 90 ? 90 : 270,
+      }),
+    });
+    vi.mocked(
+      HTMLCanvasElement.prototype.getBoundingClientRect,
+    ).mockReturnValue({
+      x: 0,
+      y: 0,
+      left: 0,
+      top: 0,
+      right: 640,
+      bottom: 512,
+      width: 640,
+      height: 512,
+      toJSON() {},
+    });
+    await act(async () => render());
+    expect(
+      host.querySelector<HTMLElement>(".mobile-arcade")!.dataset.portraitTurn,
+    ).toBe(String(turn));
+    const xy = (u: number, v: number) =>
+      turn === 90 ? [640 - v, u] : [v, 512 - u];
+    const tap = (u: number, v: number) => {
+      const [x, y] = xy(u, v);
+      pointer("pointerdown", x, y);
+      pointer("pointerup", x, y);
+    };
+    await act(async () => {
+      const [a, b] = xy(400, 360),
+        [x, y] = xy(100, 360);
+      pointer("pointerdown", a, b);
+      pointer("pointerup", x, y);
+    });
+    expect(move).toHaveBeenCalledWith("left");
+    await act(async () => tap(240, 110));
+    expect(action).toHaveBeenLastCalledWith("new");
+    await act(async () => tap(410, 110));
+    expect(action).toHaveBeenLastCalledWith("scores");
+    controls = { ...controls, state: { ...controls.state, page: "leaders" } };
+    await act(async () => render());
+    await act(async () => tap(200, 565));
+    expect(action).toHaveBeenLastCalledWith("back");
+    controls = { ...controls, state: { ...controls.state, page: "confirm" } };
+    await act(async () => render());
+    await act(async () => tap(350, 390));
+    expect(action).toHaveBeenLastCalledWith("confirm");
+    await act(async () => tap(100, 390));
+    expect(action).toHaveBeenLastCalledWith("back");
+    await act(async () => tap(430, 616));
+    expect(leave).toHaveBeenCalledOnce();
+  },
+);
+
+it("cancels animation callbacks while hidden and settles without an idle loop", async () => {
+  controls.direction.current = "left";
+  controls = {
+    ...controls,
+    state: {
+      ...controls.state,
+      view: {
+        ...controls.state.view!,
+        game: {
+          ...controls.state.view!.game!,
+          board: [4, 2, ...Array(14).fill(0)],
+          score: 4,
+          moves: 2,
+          revision: 2,
+        },
+      },
+    },
+  };
+  await act(async () => render());
+  expect(frame.size).toBe(1);
+  const hidden = vi.spyOn(document, "hidden", "get").mockReturnValue(true);
+  await act(async () => document.dispatchEvent(new Event("visibilitychange")));
+  expect(frame.size).toBe(0);
+  now = ARCADE_TILE_MS + 1;
+  hidden.mockReturnValue(false);
+  await act(async () => document.dispatchEvent(new Event("visibilitychange")));
   expect(frame.size).toBe(0);
 });

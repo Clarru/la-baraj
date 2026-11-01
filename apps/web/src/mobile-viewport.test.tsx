@@ -211,7 +211,7 @@ it("keeps the world size while typing and restores it despite stale iOS keyboard
   expect(frames.size).toBe(0);
 });
 
-it("switches orientation requirements for 2048 without unmounting the game", async () => {
+it("keeps the world landscape gate while the activity supplies a portrait surface without remounting", async () => {
   const { setMobileOrientation } = await import("./mobile-display");
   let portrait = false;
   const listeners = new Set<() => void>();
@@ -226,7 +226,6 @@ it("switches orientation requirements for 2048 without unmounting the game", asy
   const host = document.createElement("div");
   document.body.append(host);
   const root = createRoot(host);
-  const leave = vi.fn();
   try {
     await act(async () =>
       root.render(
@@ -239,8 +238,8 @@ it("switches orientation requirements for 2048 without unmounting the game", asy
       host.querySelector<HTMLButtonElement>(".mobile-start")!.click(),
     );
     const game = host.querySelector("[data-game]");
-    await act(async () => setMobileOrientation("portrait", leave));
-    expect(host.textContent).toContain("2048 plays upright");
+    await act(async () => setMobileOrientation("portrait"));
+    expect(host.querySelector(".mobile-rotate")).toBeNull(); // The activity supplies a portrait surface, including cached landscape views.
     await act(async () => {
       portrait = true;
       listeners.forEach((f) => f());

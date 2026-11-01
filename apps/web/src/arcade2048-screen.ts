@@ -195,10 +195,15 @@ export function hitArcadeScreen(
   s: ArcadeScreenState,
   x: number,
   y: number,
+  minimumHeight = 0,
 ): ScreenAction | null {
-  const inside = (r: readonly number[]) =>
-    x >= r[0] && x <= r[0] + r[2] && y >= r[1] && y <= r[1] + r[3];
-  if (s.active && x >= 380 && y >= 590 && x <= 488 && y <= 640) return "leave";
+  const inside = (r: readonly number[]) => {
+    const pad = Math.max(0, (minimumHeight - r[3]) / 2);
+    return (
+      x >= r[0] && x <= r[0] + r[2] && y >= r[1] - pad && y <= r[1] + r[3] + pad
+    );
+  };
+  if (s.active && inside([380, 590, 108, 50])) return "leave";
   if (s.pending) return null;
   if (inside(buttons.new)) return "new";
   if (inside(buttons.scores)) return "scores";

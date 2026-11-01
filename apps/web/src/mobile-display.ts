@@ -8,7 +8,6 @@ let installPrompt: InstallPrompt | null = null;
 let blocked = false;
 export type MobileOrientation = "landscape" | "portrait";
 let orientation: MobileOrientation = "landscape";
-let exitActivity: (() => void) | undefined;
 const listeners = new Set<() => void>();
 const notify = () => {
   for (const listener of listeners) listener();
@@ -74,11 +73,7 @@ export function useMobileBlocked() {
     () => false,
   );
 }
-export function setMobileOrientation(
-  value: MobileOrientation,
-  exit?: () => void,
-) {
-  exitActivity = exit;
+export function setMobileOrientation(value: MobileOrientation) {
   if (orientation === value) return;
   orientation = value;
   resetMobileInput();
@@ -90,9 +85,6 @@ export function useMobileOrientation() {
     () => orientation,
     () => "landscape" as MobileOrientation,
   );
-}
-export function leaveMobileActivity() {
-  exitActivity?.();
 }
 export async function enterGameFullscreen() {
   if (immersiveDisplay()) return true;

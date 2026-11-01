@@ -3,6 +3,14 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { ArcadeDirection } from "../../../packages/shared/arcade2048";
 import type { useArcade2048 } from "./use-arcade2048";
 import { useTouchDevice } from "./mobile-device";
+import { useMobilePortrait } from "./mobile-viewport";
+import {
+  arcadePortraitTurn,
+  arcadePortraitSurface,
+  arcadeTouchPoint,
+  arcadeTouchDelta,
+  type ArcadeQuarterTurn,
+} from "./mobile-arcade-surface";
 import {
   ARCADE_TILE_MS,
   SCREEN_WIDTH,
@@ -31,7 +39,29 @@ export function MobileArcade2048({
   onExit: () => void;
 }) {
   const touch = useTouchDevice();
+  const surface = useRef<HTMLElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
+  const portrait = useMobilePortrait();
+  const [turn, setTurn] = useState<ArcadeQuarterTurn>(0);
+  const [guide, setGuide] = useState(false);
+  useLayoutEffect(() => {
+    const update = () =>
+      setTurn(
+        arcadePortraitTurn(
+          portrait,
+          screen.orientation?.type,
+          screen.orientation?.angle ??
+            (window as Window & { orientation?: number }).orientation,
+        ),
+      );
+    update();
+    screen.orientation?.addEventListener("change", update);
+    window.addEventListener("orientationchange", update);
+    return () => {
+      screen.orientation?.removeEventListener("change", update);
+      window.removeEventListener("orientationchange", update);
+    };
+  }, [portrait]);
   const previous = useRef(controls.state.view);
   const animation = useRef<TileAnimation | null>(null);
   const press = useRef<{
@@ -96,16 +126,115 @@ export function MobileArcade2048({
       document.removeEventListener("visibilitychange", visibility);
     };
   }, [touch, controls.state, controls.direction, reduced, fontsReady]);
+  useLayoutEffect(() => {
+    const node = surface.current,
+      board = canvas.current;
+    if (!node || !board || !touch || !controls.state.active) return;
+    const size = () => {
+      press.current = null;
+      const box = node.getBoundingClientRect(),
+        css = getComputedStyle(node);
+      const padding = [
+        css.paddingTop,
+        css.paddingRight,
+        css.paddingBottom,
+        css.paddingLeft,
+      ].map((x) => parseFloat(x) || 0) as [number, number, number, number];
+      const p = arcadePortraitSurface(box.width, box.height, padding, turn);
+      board.style.width = `${p.width}px`;
+      board.style.height = `${p.height}px`;
+      board.style.left = `${p.x}px`;
+      board.style.top = `${p.y}px`;
+      board.style.transform = `translate(-50%,-50%) rotate(${turn}deg)`;
+    };
+    size();
+    const observer = new ResizeObserver(size);
+    observer.observe(node);
+    window.addEventListener("resize", size);
+    return () => {
+      press.current = null;
+      observer.disconnect();
+      window.removeEventListener("resize", size);
+    };
+  }, [touch, controls.state.active, turn]);
+  useEffect(() => {
+    if (!turn || !controls.state.active) {
+      setGuide(false);
+      return;
+    }
+    setGuide(true);
+    const timer = setTimeout(() => setGuide(false), 3000);
+    return () => clearTimeout(timer);
+  }, [turn, controls.state.active]);
   if (!touch || !controls.state.active) return null;
   const point = (x: number, y: number) => {
     const r = canvas.current!.getBoundingClientRect();
-    return {
-      u: ((x - r.left) * SCREEN_WIDTH) / r.width,
-      v: ((y - r.top) * SCREEN_HEIGHT) / r.height,
-    };
+    return arcadeTouchPoint(x, y, r, turn);
   };
   return (
-    <section className="mobile-arcade" aria-label="2048 touch game">
+    <section
+      ref={surface}
+      className="mobile-arcade"
+      data-portrait-turn={turn}
+      aria-label="2048 touch game"
+      onPointerDown={(e) => {
+        if (press.current) return;
+        e.preventDefault();
+        e.currentTarget.setPointerCapture(e.pointerId);
+        press.current = {
+          id: e.pointerId,
+          x: e.clientX,
+          y: e.clientY,
+          ...point(e.clientX, e.clientY),
+        };
+      }}
+      onPointerUp={(e) => {
+        const start = press.current;
+        if (start?.id !== e.pointerId) return;
+        press.current = null;
+        if (e.currentTarget.hasPointerCapture(e.pointerId))
+          e.currentTarget.releasePointerCapture(e.pointerId);
+        const dx = e.clientX - start.x,
+          dy = e.clientY - start.y;
+        if (Math.max(Math.abs(dx), Math.abs(dy)) >= 24) {
+          if (
+            controls.state.page === "board" &&
+            start.u >= 40 &&
+            start.u <= 472 &&
+            start.v >= 154 &&
+            start.v <= 586
+          ) {
+            const delta = arcadeTouchDelta(dx, dy, turn);
+            const d = swipeDirection(delta.x, delta.y);
+            if (d) controls.move(d);
+          }
+          return;
+        }
+        const p = point(e.clientX, e.clientY);
+        // Shared hit regions gain a 44px touch height at the current surface scale.
+        const bounds = canvas.current!.getBoundingClientRect();
+        const physicalHeight = turn ? bounds.width : bounds.height;
+        const action = hitArcadeScreen(
+          controls.state,
+          p.u,
+          p.v,
+          (44 * SCREEN_HEIGHT) / physicalHeight,
+        );
+        if (action === "leave") onExit();
+        else if (action) controls.action(action);
+      }}
+      onPointerCancel={(e) => {
+        if (press.current?.id === e.pointerId) press.current = null;
+      }}
+      onLostPointerCapture={(e) => {
+        if (press.current?.id === e.pointerId) press.current = null;
+      }}
+    >
+      {guide && (
+        <p className="mobile-arcade-turn-hint" role="status">
+          Hold your phone upright for 2048.
+        </p>
+      )}
       <canvas
         ref={canvas}
         className="mobile-arcade-board"
@@ -113,64 +242,6 @@ export function MobileArcade2048({
         height={SCREEN_HEIGHT * 2}
         role="group"
         aria-label={`2048 board. Score ${controls.state.view?.game?.score ?? 0}. Swipe to move tiles.`}
-        onPointerDown={(e) => {
-          if (press.current) return;
-          e.preventDefault();
-          e.currentTarget.setPointerCapture(e.pointerId);
-          press.current = {
-            id: e.pointerId,
-            x: e.clientX,
-            y: e.clientY,
-            ...point(e.clientX, e.clientY),
-          };
-        }}
-        onPointerUp={(e) => {
-          const start = press.current;
-          if (start?.id !== e.pointerId) return;
-          press.current = null;
-          if (e.currentTarget.hasPointerCapture(e.pointerId))
-            e.currentTarget.releasePointerCapture(e.pointerId);
-          const dx = e.clientX - start.x,
-            dy = e.clientY - start.y;
-          if (Math.max(Math.abs(dx), Math.abs(dy)) >= 24) {
-            if (
-              controls.state.page === "board" &&
-              start.u >= 40 &&
-              start.u <= 472 &&
-              start.v >= 154 &&
-              start.v <= 586
-            ) {
-              const d = swipeDirection(dx, dy);
-              if (d) controls.move(d);
-            }
-            return;
-          }
-          const p = point(e.clientX, e.clientY);
-          // Expand the short cabinet buttons to at least a 44px touch height.
-          const pad = Math.max(
-            0,
-            ((44 * SCREEN_HEIGHT) /
-              e.currentTarget.getBoundingClientRect().height -
-              32) /
-              2,
-          );
-          if (p.u >= 380 && p.u <= 488 && p.v >= 600 - pad) {
-            onExit();
-            return;
-          }
-          const v =
-            p.v >= 93 - pad && p.v <= 128 + pad
-              ? Math.min(128, Math.max(93, p.v))
-              : p.v;
-          const action = hitArcadeScreen(controls.state, p.u, v);
-          if (action) controls.action(action);
-        }}
-        onPointerCancel={(e) => {
-          if (press.current?.id === e.pointerId) press.current = null;
-        }}
-        onLostPointerCapture={(e) => {
-          if (press.current?.id === e.pointerId) press.current = null;
-        }}
       />
       {controls.state.error && (
         <p className="arcade-assistive" role="alert">
