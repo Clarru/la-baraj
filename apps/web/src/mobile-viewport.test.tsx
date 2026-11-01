@@ -136,7 +136,8 @@ it("keeps the world size while typing and restores it despite stale iOS keyboard
     useMobileViewport(ref, true);
     return (
       <div ref={ref} data-frame>
-        <textarea />
+        <textarea data-mobile-chat-input />
+        <input aria-label="Player name" />
       </div>
     );
   }
@@ -182,6 +183,33 @@ it("keeps the world size while typing and restores it despite stale iOS keyboard
     await act(async () => view.dispatchEvent(new Event("resize")));
     flush();
     expect(geometry()).toEqual(["852px", "393px", "0px", "0px"]);
+    // Ordinary onboarding/settings fields must fit above the keyboard, while
+    // switching fields keeps the original pre-keyboard restoration baseline.
+    const name = host.querySelector("input")!;
+    await act(async () => name.focus());
+    flush();
+    view.height = 117;
+    view.offsetTop = 25;
+    scrollY = 25;
+    await act(async () => view.dispatchEvent(new Event("resize")));
+    flush();
+    expect(geometry()).toEqual(["852px", "117px", "25px", "0px"]);
+    await act(async () => input.focus());
+    flush();
+    expect(geometry()).toEqual(["852px", "393px", "25px", "0px"]);
+    await act(async () => name.focus());
+    flush();
+    expect(geometry()).toEqual(["852px", "117px", "25px", "0px"]);
+    await act(async () => {
+      name.blur();
+      await Promise.resolve();
+    });
+    flush();
+    expect(geometry()).toEqual(["852px", "393px", "0px", "0px"]);
+    view.height = 393;
+    view.offsetTop = 0;
+    await act(async () => view.dispatchEvent(new Event("resize")));
+    flush();
     // iOS may finish orientation layout after orientationchange, while still editing.
     await act(async () => input.focus());
     flush();

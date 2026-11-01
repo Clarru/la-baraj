@@ -34,6 +34,7 @@ export function useMobileViewport(
     let frame = 0;
     let disposed = false;
     let typing = false,
+      freezeChat = false,
       restoring = false;
     let stable = mobileViewport();
     let anchor: { x: number; y: number } | null = null;
@@ -80,7 +81,7 @@ export function useMobileViewport(
         Math.abs(visible.left - stable.left) < 1
       )
         restoring = false;
-      const v = typing
+      const v = freezeChat
         ? {
             ...stable,
             top: unzoomed ? visible.top : stable.top,
@@ -93,7 +94,7 @@ export function useMobileViewport(
       if (!typing && !restoring) stable = { ...v };
       for (const key of ["width", "height", "top", "left"] as const)
         node.style.setProperty(`--mobile-${key}`, `${v[key]}px`);
-      if ((typing || restoring) && anchor && unzoomed) {
+      if ((freezeChat || restoring) && anchor && unzoomed) {
         // iOS versions differ in whether fixed layers follow the keyboard pan.
         // Keep the measured pre-focus world origin, rather than trusting a stale offset.
         const rect = node.getBoundingClientRect();
@@ -115,11 +116,17 @@ export function useMobileViewport(
       frame = requestAnimationFrame(apply);
     };
     const focusIn = () => {
-      if (!editable() || typing) return;
-      scroll = { x: window.scrollX, y: window.scrollY };
-      const rect = ref.current?.getBoundingClientRect();
-      anchor = rect ? { x: rect.x, y: rect.y } : null;
+      if (!editable()) return;
+      if (!typing) {
+        scroll = { x: window.scrollX, y: window.scrollY };
+        const rect = ref.current?.getBoundingClientRect();
+        anchor = rect ? { x: rect.x, y: rect.y } : null;
+      }
       typing = true;
+      // Only the overlay composer freezes the world. Ordinary form fields need
+      // the visible height so their scroll container can reveal them above iOS.
+      freezeChat =
+        document.activeElement?.matches("[data-mobile-chat-input]") ?? false;
       restoring = false;
       update();
     };
@@ -127,11 +134,15 @@ export function useMobileViewport(
       queueMicrotask(() => {
         if (disposed || editable()) return;
         typing = false;
+        freezeChat = false;
         restoring = true;
         update();
       });
     const rotate = () => {
       typing = editable();
+      freezeChat =
+        typing &&
+        (document.activeElement?.matches("[data-mobile-chat-input]") ?? false);
       restoring = false;
       anchor = null;
       stable = {
