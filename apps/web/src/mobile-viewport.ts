@@ -51,6 +51,21 @@ export function useMobileViewport(
       const unzoomed =
         !window.visualViewport ||
         Math.abs(window.visualViewport.scale - 1) < 0.01;
+      if ((typing || restoring) && unzoomed && visible.width !== stable.width) {
+        // A keyboard does not change the viewport width. Rotation can finish
+        // laying out after orientationchange, so rebase from the new layout.
+        stable = {
+          width: visible.width,
+          height:
+            document.documentElement.clientWidth === visible.width
+              ? document.documentElement.clientHeight
+              : window.innerHeight,
+          top: 0,
+          left: 0,
+        };
+        restoring = false;
+        anchor = null;
+      }
       if (
         restoring &&
         unzoomed &&

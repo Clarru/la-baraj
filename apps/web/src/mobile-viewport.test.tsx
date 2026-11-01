@@ -182,6 +182,28 @@ it("keeps the world size while typing and restores it despite stale iOS keyboard
     await act(async () => view.dispatchEvent(new Event("resize")));
     flush();
     expect(geometry()).toEqual(["852px", "393px", "0px", "0px"]);
+    // iOS may finish orientation layout after orientationchange, while still editing.
+    await act(async () => input.focus());
+    flush();
+    await act(async () => window.dispatchEvent(new Event("orientationchange")));
+    vi.spyOn(document.documentElement, "clientWidth", "get").mockReturnValue(
+      393,
+    );
+    vi.spyOn(document.documentElement, "clientHeight", "get").mockReturnValue(
+      852,
+    );
+    view.width = 393;
+    view.height = 300;
+    view.offsetTop = 0;
+    await act(async () => view.dispatchEvent(new Event("resize")));
+    flush();
+    expect(geometry()).toEqual(["393px", "852px", "0px", "0px"]);
+    await act(async () => {
+      input.blur();
+      await Promise.resolve();
+    });
+    flush();
+    expect(geometry()).toEqual(["393px", "852px", "0px", "0px"]);
   } finally {
     await act(async () => root.unmount());
     host.remove();
