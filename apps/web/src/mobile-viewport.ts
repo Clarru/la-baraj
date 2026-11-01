@@ -102,11 +102,14 @@ export function useMobileViewport(
       ) {
         const field = document.activeElement;
         const bounds = field.getBoundingClientRect();
+        // Safari can pan the document while a fixed frame already compensates
+        // that pan. Compare DOM rectangles in the same coordinate space.
+        const exposed = node.getBoundingClientRect();
         if (
-          bounds.top < visible.top ||
-          bounds.bottom > visible.top + visible.height ||
-          bounds.left < visible.left ||
-          bounds.right > visible.left + visible.width
+          bounds.top < exposed.top ||
+          bounds.bottom > exposed.top + v.height ||
+          bounds.left < exposed.left ||
+          bounds.right > exposed.left + v.width
         )
           field.scrollIntoView({
             block: "nearest",

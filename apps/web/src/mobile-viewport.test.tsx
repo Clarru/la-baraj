@@ -188,9 +188,9 @@ it("keeps the world size while typing and restores it despite stale iOS keyboard
     const name = host.querySelector("input")!;
     const reveal = vi.fn();
     name.scrollIntoView = reveal;
-    vi.spyOn(name, "getBoundingClientRect").mockReturnValue(
-      new DOMRect(0, 180, 200, 46),
-    );
+    const nameBounds = vi
+      .spyOn(name, "getBoundingClientRect")
+      .mockReturnValue(new DOMRect(0, 180, 200, 46));
     await act(async () => name.focus());
     flush();
     view.height = 117;
@@ -212,6 +212,24 @@ it("keeps the world size while typing and restores it despite stale iOS keyboard
     await act(async () => name.focus());
     flush();
     expect(geometry()).toEqual(["852px", "117px", "25px", "0px"]);
+    // Native Safari reports a panned VV offset while the frame DOM rect stays
+    // at zero. A covered field can fall inside those raw offset coordinates.
+    nameBounds.mockReturnValue(new DOMRect(0, 120, 200, 47));
+    view.offsetTop = 85;
+    scrollY = 85;
+    reveal.mockClear();
+    await act(async () => view.dispatchEvent(new Event("scroll")));
+    flush();
+    expect(reveal).toHaveBeenCalledOnce();
+    // Conversely, the visible field from the native trace must not be scrolled
+    // again merely because its DOM y69 is below the raw VV offset143.
+    nameBounds.mockReturnValue(new DOMRect(0, 69, 200, 47));
+    view.offsetTop = 143;
+    scrollY = 143;
+    reveal.mockClear();
+    await act(async () => view.dispatchEvent(new Event("scroll")));
+    flush();
+    expect(reveal).not.toHaveBeenCalled();
     await act(async () => {
       name.blur();
       await Promise.resolve();
