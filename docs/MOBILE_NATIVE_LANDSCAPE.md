@@ -2,6 +2,26 @@
 
 The owner’s physical iPhone 15 Pro retest rejected the custom pads: movement begins but steering becomes stuck/unresponsive. They also requested landscape, a slightly wider camera view, less bottom space and a clearer top edge. Physical acceptance remains open.
 
+## November 1: chat and portrait 2048 correction
+
+Physical iPhone screenshots exposed a missed acceptance case: the previous simulator pass used a separate software-keyboard action, so it did not prove first-tap activation. The old input was focused from a later R3F frame and used 14px text; keyboard VisualViewport updates also resized the whole world and could leave a stale offset after dismissal.
+
+The correction uses a persistent mobile DOM composer, synchronously shown/focused inside the Chat tap. Its 18px input and composer follow the keyboard independently; the world retains its measured pre-focus size/origin and restores pre-focus document scroll. One shared draft/publish controller retains desktop live publishing, rolling two-line text and five-second sent-bubble timing. Mobile editing stays open while the user pauses, with explicit send/cancel and blur/background cleanup.
+
+Mobile 2048 uses the same `drawArcadeScreen` / `makeTileAnimation` renderer and 120ms slide/merge/spawn timeline as the desktop cabinet. Normal play has no save notification. Animation callbacks stop at completion, close and hidden state. 2048 requires natural portrait; the world remains landscape, with the same mounted game/connection and a usable Leave action on the portrait gate. The manifest permits either orientation and OS orientation requests remain guarded.
+
+A November 1 follow-up corrected the physical-pose diagnosis: the earlier still-landscape observation was made with the notch at the bottom, where iPhone does not adopt portrait-secondary. With unchanged landscape installation metadata, both warm and cold launches reached natural top-notch portrait (`portrait-primary`, angle0,393×793). That evidence does not establish a retained-metadata lock. The speculative quarter-turn surface, inverse mapping and timed hint were removed; reinstalling is not a prerequisite. Native swipes/merges, score, records/back, new-game confirmation/Keep, Leave and saved-board reopen passed separately with the same local actor/home. Natural portrait was verified for fresh and existing icons. Raw Simulator screenshots are hardware-natural and must be interpreted alongside the actual CUA window/device-frame pose.
+
+Native one-tap Chat activation was rechecked with hardware keyboard disconnected before focus and no post-tap keyboard/focus action: software keyboard opened, scale stayed1, frame/world remained852×393 through typing and Send, and controls returned. A separate actual NameOnboarding fixture caught an additional failure: ordinary fields need the reduced visible height and an explicit nearest reveal after that layout is applied; otherwise Safari can retain field bounds178.7..225.7 behind a 117px viewport. The focused reveal excludes chat and intentional zoom, while preserving the pre-focus restoration baseline. Native follow-up verification of that final reveal is tracked separately from the earlier failure.
+
+A matched November 1 native comparison used archived production `4d95464` and candidate `b93323d` on the same device, fonts and warm 852×393 baseline. Native accessory-checkmark Done emitted focusout to BODY and restored the original frame/scroll in both. On one normal retap, production left the field at y178.3–225.3 behind a 117px keyboard viewport; the candidate revealed it automatically at y69.3–116.3, without a second tap or manual scroll. The previously observed cold 334px candidate failure remains recorded separately; the warm comparison does not erase it.
+
+The trace also showed a panned VisualViewport offset 143.656 while the measured fixed-frame DOM origin was approximately zero. The added ordinary-field reveal now compares field and frame DOM rectangles in the same coordinate space. Regression cases cover a covered field that falsely fits inside raw viewport-offset coordinates, an already-visible field that should not scroll again, and a nonzero frame origin. The coordinate correction passes source/browser checks; native cold 334px confirmation after that correction is an unrun follow-up.
+
+Acceptance must include a single trusted Chat-button tap with software keyboard available beforehand (no manual keyboard toggle or second focus tap), scale/pan and unchanged world/canvas bounds through typing and dismissal, subsequent controls, live publish and desktop timing, both activity orientations, and one existing Home Screen metadata migration case. Fresh installation alone cannot establish that iOS refreshes a previously installed landscape manifest.
+
+The following controller/landscape investigation retains its earlier historical measurements. The November 1 correction above supersedes its chat, 2048 and manifest status.
+
 ## Controller selection
 
 Safari exposes browser input APIs, not Apple's native-app `GCVirtualController` UI. A true system-native overlay would require a native iOS app. This web game adopts **NippleJS 1.0.4**, pinned exactly (MIT, no runtime dependencies), instead of maintaining its own button/pointer-capture joystick.

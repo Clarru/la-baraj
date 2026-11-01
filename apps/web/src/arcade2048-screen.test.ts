@@ -77,3 +77,14 @@ it("maps the game-over action to a new game and only animates accepted moves", (
     ),
   ).toBeNull();
 });
+
+it("expands the same canonical regions for touch while retaining desktop hit bounds", () => {
+  expect(hitArcadeScreen(state, 230, 80)).toBeNull();
+  expect(hitArcadeScreen(state, 230, 80, 74)).toBe("new");
+  expect(hitArcadeScreen(state, 430, 645)).toBeNull();
+  expect(hitArcadeScreen(state, 430, 645, 74)).toBe("leave");
+  expect(hitArcadeScreen({ ...state, page: "confirm" }, 350, 360)).toBeNull();
+  expect(hitArcadeScreen({ ...state, page: "confirm" }, 350, 360, 74)).toBe(
+    "confirm",
+  );
+});

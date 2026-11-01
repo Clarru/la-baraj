@@ -4,8 +4,10 @@ import { ArrowUpFromLine, Expand, Smartphone, RotateCw } from "lucide-react";
 import { useTouchDevice } from "./mobile-device";
 import {
   blockMobileGame,
+  exitMobileActivity,
+  useMobileOrientation,
   enterGameFullscreen,
-  requestLandscapeOrientation,
+  requestGameOrientation,
   immersiveDisplay,
   installGame,
   useInstallAvailable,
@@ -52,6 +54,8 @@ export function MobileExperience({ children }: { children: ReactNode }) {
   const touch = useTouchDevice();
   const frame = useRef<HTMLDivElement>(null);
   const portrait = useMobilePortrait();
+  const orientation = useMobileOrientation();
+  const wrongOrientation = orientation === "landscape" ? portrait : !portrait;
   useMobileViewport(frame, touch);
   const [started, setStarted] = useState(false);
   const [immersive, setImmersive] = useState(false);
@@ -73,7 +77,7 @@ export function MobileExperience({ children }: { children: ReactNode }) {
     };
   }, []);
   const setup = !started || (!immersive && !fallback);
-  const gate = touch && (setup || portrait);
+  const gate = touch && (setup || wrongOrientation);
   useEffect(() => {
     blockMobileGame(gate);
     return () => blockMobileGame(false);
@@ -86,21 +90,30 @@ export function MobileExperience({ children }: { children: ReactNode }) {
           {children}
         </div>
       )}
-      {portrait && (
+      {wrongOrientation && (
         <main className="mobile-rotate" aria-labelledby="rotate-title">
           <RotateCw size={56} aria-hidden="true" />
-          <h1 id="rotate-title">Rotate your phone to play</h1>
+          <h1 id="rotate-title">
+            {orientation === "portrait"
+              ? "Hold your phone upright"
+              : "Rotate your phone to play"}
+          </h1>
           <p>
-            La Baraj plays in landscape. Turn your phone sideways for both
-            controllers and a wider view of the lake.
+            {orientation === "portrait"
+              ? "2048 plays in portrait. Turn your phone upright to play."
+              : "La Baraj plays in landscape. Turn your phone sideways for both controllers and a wider view of the lake."}
           </p>
-          <p className="mobile-note">
-            If it stays upright, turn off Portrait Orientation Lock in Control
-            Centre.
-          </p>
+          {orientation === "portrait" ? (
+            <button onClick={exitMobileActivity}>Leave 2048</button>
+          ) : (
+            <p className="mobile-note">
+              If it stays upright, turn off Portrait Orientation Lock in Control
+              Centre.
+            </p>
+          )}
         </main>
       )}
-      {setup && !portrait && (
+      {setup && !wrongOrientation && (
         <main className="mobile-setup">
           <img
             src="/assets/brand/la-baraj-banner.webp"
@@ -111,7 +124,9 @@ export function MobileExperience({ children }: { children: ReactNode }) {
           <section aria-labelledby="mobile-title">
             <h1 id="mobile-title">The lake, in your pocket.</h1>
             <p>
-              Keep your phone sideways for both controllers and a wider view.
+              {orientation === "portrait"
+                ? "Hold your phone upright for 2048."
+                : "Keep your phone sideways for both controllers and a wider view."}
             </p>
             <button
               className="mobile-start"
@@ -123,7 +138,7 @@ export function MobileExperience({ children }: { children: ReactNode }) {
                 if (entered) {
                   setImmersive(true);
                   setStarted(true);
-                  void requestLandscapeOrientation();
+                  void requestGameOrientation(orientation);
                 } else setFailed(true);
               }}
             >

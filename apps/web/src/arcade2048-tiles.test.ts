@@ -48,6 +48,9 @@ function context() {
       stroke() {},
       translate() {},
       scale() {},
+      measureText(s: string) {
+        return { width: s.length * 10 };
+      },
       fillText(s: string) {
         words.push(s);
       },

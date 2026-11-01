@@ -586,7 +586,7 @@ export function ArcadeAccessibility({
       </p>
       <p role="status" aria-live="polite">
         {controls.state.error ||
-          `${controls.state.pending ? "Saving. " : ""}Score ${game?.score ?? 0}. Best ${controls.state.view?.best ?? 0}.`}
+          `Score ${game?.score ?? 0}. Best ${controls.state.view?.best ?? 0}.`}
       </p>
       <table aria-label="2048 board">
         <tbody>
