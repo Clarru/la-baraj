@@ -12,7 +12,9 @@ let root: Root, host: HTMLDivElement;
 const publishChat = vi.fn();
 const room = { publishChat } as unknown as MultiplayerRoom;
 let focusedBeforeTapReturned = false;
+let parentRenders = 0;
 function Fixture() {
+  parentRenders++;
   const [mode, setMode] = useState<"closed" | "editing" | "display">("closed");
   const input = useRef<HTMLTextAreaElement>(null);
   const draft = useBubbleChat(
@@ -54,6 +56,7 @@ beforeEach(async () => {
   vi.useFakeTimers();
   publishChat.mockClear();
   focusedBeforeTapReturned = false;
+  parentRenders = 0;
   host = document.createElement("div");
   document.body.append(host);
   root = createRoot(host);
@@ -79,7 +82,9 @@ it("focuses the already-mounted DOM input before a single Chat tap returns", asy
 it("publishes the shared rolling draft, sends once, blurs and reuses the same input", async () => {
   await act(async () => host.querySelector("button")!.click());
   const node = field();
+  const rendersBeforeTyping = parentRenders;
   await act(async () => type("hello"));
+  expect(parentRenders).toBe(rendersBeforeTyping);
   await act(async () => vi.advanceTimersByTime(150));
   expect(publishChat).toHaveBeenLastCalledWith("hello");
   publishChat.mockClear();

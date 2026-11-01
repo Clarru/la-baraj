@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef, type RefObject } from "react";
 import { createPortal, flushSync } from "react-dom";
 import { ArrowUp, X } from "lucide-react";
-import type { BubbleChatDraft } from "./use-bubble-chat";
+import { useBubbleText, type BubbleChatDraft } from "./use-bubble-chat";
 
 export function focusMobileChat(
   input: RefObject<HTMLTextAreaElement | null>,
@@ -22,6 +22,7 @@ export function MobileChatComposer({
   draft: BubbleChatDraft;
 }) {
   const editor = useRef<HTMLFormElement>(null);
+  const text = useBubbleText(draft);
   const finish = () => {
     draft.finish();
     inputRef.current?.blur();
@@ -78,7 +79,7 @@ export function MobileChatComposer({
         aria-label="Chat"
         placeholder="Say something…"
         rows={1}
-        value={draft.text}
+        value={text}
         onChange={(e) => draft.edit(e.currentTarget.value)}
         onBlur={() => {
           if (editing) draft.finish();

@@ -3,7 +3,7 @@ import { useFrame } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import * as THREE from "three";
 import { playerBubbleAnchor } from "./player";
-import type { BubbleChatDraft } from "./use-bubble-chat";
+import { useBubbleText, type BubbleChatDraft } from "./use-bubble-chat";
 
 export function LocalBubbleChat({
   draft,
@@ -12,7 +12,8 @@ export function LocalBubbleChat({
   draft: BubbleChatDraft;
   editing: boolean;
 }) {
-  const { text, edit, finish: finishEditing } = draft;
+  const { edit, finish: finishEditing } = draft;
+  const text = useBubbleText(draft);
   const anchor = useRef<THREE.Group>(null);
   const editor = useRef<HTMLDivElement | null>(null);
   const input = useRef<HTMLTextAreaElement | null>(null);

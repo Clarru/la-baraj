@@ -3,7 +3,8 @@ import {
   useEffect,
   useLayoutEffect,
   useRef,
-  useState,
+  useMemo,
+  useSyncExternalStore,
 } from "react";
 import { BUBBLE_CHAT_IDLE_MS } from "../../../packages/shared/bubble-chat";
 import { normalizeChatDraft } from "./bubble-chat-input";
@@ -18,8 +19,19 @@ export function useBubbleChat(
   onClose: () => void,
   keepEditingOpen = false,
 ) {
-  const [text, setText] = useState("");
   const latest = useRef("");
+  const listeners = useRef(new Set<() => void>());
+  const getText = useCallback(() => latest.current, []);
+  const subscribe = useCallback((listener: () => void) => {
+    listeners.current.add(listener);
+    return () => {
+      listeners.current.delete(listener);
+    };
+  }, []);
+  const setText = useCallback((value: string) => {
+    latest.current = value;
+    listeners.current.forEach((listener) => listener());
+  }, []);
   const idle = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pending = useRef<ReturnType<typeof setTimeout> | null>(null);
   const live = useRef(active),
@@ -44,7 +56,7 @@ export function useBubbleChat(
       setText("");
       room.publishChat("");
     }
-  }, [active, editing, room, cancelPending]);
+  }, [active, editing, room, cancelPending, setText]);
   useEffect(() => {
     if (active) {
       wasActive.current = true;
@@ -78,7 +90,7 @@ export function useBubbleChat(
           room.publishChat(latest.current.trim() ? latest.current : "");
       }, 150);
     },
-    [room, arm, cancelPending],
+    [room, arm, cancelPending, setText],
   );
   const finish = useCallback(() => {
     if (!live.current || !writing.current) return;
@@ -99,6 +111,13 @@ export function useBubbleChat(
     room.publishChat("");
     onClose();
   }, [room, onClose, cancelPending]);
-  return { text, edit, finish, cancel };
+  return useMemo(
+    () => ({ getText, subscribe, edit, finish, cancel }),
+    [getText, subscribe, edit, finish, cancel],
+  );
 }
 export type BubbleChatDraft = ReturnType<typeof useBubbleChat>;
+
+export function useBubbleText(draft: BubbleChatDraft) {
+  return useSyncExternalStore(draft.subscribe, draft.getText, draft.getText);
+}
