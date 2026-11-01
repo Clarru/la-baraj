@@ -502,10 +502,7 @@
   width: 112px;
   height: 112px;
 }
-.mobile-look > span:first-child {
-  width: 44px;
-  height: 44px;
-}
+
 .mobile-actions {
   bottom: calc(max(18px, env(safe-area-inset-bottom)) + 128px);
 }
@@ -530,4 +527,114 @@
   .cruce-entry {
     top: calc(max(8px, env(safe-area-inset-top)) + 132px);
   }
+}
+
+/* Installed Safari viewport: one explicit visible frame, with safe areas applied to controls only. */
+.mobile-shell {
+  position: fixed;
+  left: var(--mobile-left, 0px);
+  top: var(--mobile-top, 0px);
+  width: var(--mobile-width, 100%);
+  height: var(--mobile-height, 100%);
+  overflow: hidden;
+  background: #e8e2ce;
+  isolation: isolate;
+}
+.mobile-shell .mobile-game-content,
+.mobile-shell .game-shell,
+.mobile-shell .name-welcome {
+  height: 100%;
+  min-height: 0;
+}
+.mobile-shell .mobile-setup,
+.mobile-shell .mobile-arcade,
+.mobile-shell .cruce-overlay,
+.mobile-shell .scene-loading {
+  position: absolute;
+  inset: 0;
+}
+.mobile-shell .cruce-board {
+  height: 100%;
+}
+.mobile-rotate {
+  position: absolute;
+  inset: 0;
+  z-index: 240;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 28px;
+  text-align: center;
+  color: #243831;
+  background: #e8e2ce;
+  font: 20px/1.4 var(--font-body);
+}
+.mobile-rotate h1 {
+  font: 400 32px/1.1 var(--font-heading);
+}
+.mobile-rotate p {
+  max-width: 34ch;
+}
+.mobile-stick-zone {
+  width: 108px;
+  height: 108px;
+  pointer-events: auto;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+.mobile-stick-zone * {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.mobile-stick-zone .mobile-stick-label {
+  top: -12px;
+  height: auto;
+  width: 100%;
+  z-index: 1000;
+  font-size: 15px;
+  text-align: center;
+}
+.mobile-stick-zone .back {
+  outline: 2px solid #f1ecd5;
+}
+.mobile-controls .mobile-look {
+  width: 108px;
+  height: 108px;
+  right: max(10px, env(safe-area-inset-right));
+  bottom: max(7px, env(safe-area-inset-bottom));
+}
+.mobile-movement {
+  left: max(10px, env(safe-area-inset-left));
+  bottom: max(7px, env(safe-area-inset-bottom));
+}
+.mobile-actions {
+  bottom: calc(max(7px, env(safe-area-inset-bottom)) + 124px);
+  max-width: 50%;
+}
+.mobile-controls .mobile-run {
+  left: 119px;
+  bottom: 0;
+}
+@media (pointer: coarse) {
+  .mobile-shell .lake-minimap {
+    left: max(10px, env(safe-area-inset-left));
+    bottom: calc(max(7px, env(safe-area-inset-bottom)) + 140px);
+    width: 74px;
+    height: 74px;
+  }
+  .mobile-shell .game-dialog {
+    max-height: calc(var(--mobile-height, 100dvh) - 88px);
+  }
+}
+
+.mobile-stick-zone {
+  visibility: hidden;
+}
+.mobile-stick-zone.is-ready {
+  visibility: visible;
 }

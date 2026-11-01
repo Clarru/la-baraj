@@ -1,3 +1,4 @@
+import { preloadMobileJoysticks } from "./mobile-joystick";
 import { mobilePixelRatio } from "./mobile-frame-clock";
 import { MobileFrameDriver } from "./MobileFrameDriver";
 import { MobileArcade2048 } from "./MobileArcade2048";
@@ -178,9 +179,12 @@ export default function Game({ initialName }: { initialName: string }) {
   const hasHome = roomView.status === "offline" || roomView.homeIndex !== null;
   const mobileBlocked = useMobileBlocked();
   const touch = useTouchDevice();
+  useEffect(() => {
+    if (touch) void preloadMobileJoysticks().catch(() => {});
+  }, [touch]);
   const [mobileDpr, setMobileDpr] = useState(() =>
     typeof window === "undefined"
-      ? 0.9
+      ? 1.25
       : mobilePixelRatio(window.innerWidth, window.innerHeight),
   );
   const [mode, setMode] = useState<ViewMode>("walk");

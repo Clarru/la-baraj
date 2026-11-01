@@ -1,7 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
-  joystickVector,
   mobileKeyDown,
+  mobileMovement,
+  mobileLook,
+  setMobileLook,
   performMobileAction,
   resetMobileInput,
   setMobileMovement,
@@ -14,18 +16,19 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 describe("touch movement and actions", () => {
-  it("ignores resting thumb jitter and clamps a diagonal drag to the stick radius", () => {
-    expect(joystickVector(3, -3)).toEqual({ x: 0, y: 0 });
-    const vector = joystickVector(300, -300);
-    expect(Math.hypot(vector.x, vector.y)).toBeCloseTo(1);
-    setMobileMovement(vector.x, vector.y);
+  it("preserves independent continuous movement/look vectors and resets both", () => {
+    setMobileMovement(0.37, -0.81);
+    setMobileLook(0.72, 0.1);
+    expect(mobileMovement).toEqual({ x: 0.37, y: -0.81 });
+    expect(mobileLook).toEqual({ x: 0.72, y: 0.1 });
     expect(mobileKeyDown("KeyW")).toBe(true);
     expect(mobileKeyDown("KeyD")).toBe(true);
-    expect(mobileKeyDown("KeyS")).toBe(false);
     setMobileRun(true);
     expect(mobileKeyDown("ShiftLeft")).toBe(true);
     resetMobileInput();
-    expect(["KeyW", "KeyD", "ShiftLeft"].some(mobileKeyDown)).toBe(false);
+    expect(mobileMovement).toEqual({ x: 0, y: 0 });
+    expect(mobileLook).toEqual({ x: 0, y: 0 });
+    expect(mobileKeyDown("ShiftLeft")).toBe(false);
   });
   it("uses the same action eligibility handlers without DOM key dispatch and supports cleanup", () => {
     const seen: string[] = [];

@@ -1,5 +1,6 @@
+import { mobileMovement, mobileLook } from "../../apps/web/src/mobile-input";
 /** Local-only touch QA: real Game and LocalWorldRoom; no production connection. */
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import Game from "../../apps/web/src/Game";
 import { MobileExperience } from "../../apps/web/src/MobileExperience";
@@ -32,9 +33,32 @@ function approach(x: number, z: number) {
   requestCruceTestMove([x, terrainHeight(x, z) + 0.05, z]);
 }
 function Fixture() {
+  const [showTouch, setShowTouch] = useState(false);
+  const dropMoveEnd = useRef(false);
+  useEffect(() => {
+    const drop = (event: PointerEvent) => {
+      if (
+        dropMoveEnd.current &&
+        event.target instanceof Element &&
+        event.target.closest(".mobile-move")
+      ) {
+        dropMoveEnd.current = false;
+        event.stopImmediatePropagation();
+      }
+    };
+    document.addEventListener("pointerup", drop, true);
+    return () => document.removeEventListener("pointerup", drop, true);
+  }, []);
+  const touchOutput = useRef<HTMLOutputElement>(null);
   const output = useRef<HTMLOutputElement>(null);
   useEffect(() => {
     const timer = setInterval(() => {
+      if (touchOutput.current)
+        touchOutput.current.textContent = `Move ${mobileMovement.x.toFixed(2)}, ${mobileMovement.y.toFixed(2)} · Look ${mobileLook.x.toFixed(2)}, ${mobileLook.y.toFixed(2)} · ${Array.from(
+          document.querySelectorAll(".mobile-stick-zone .joystick"),
+        )
+          .map((node) => node.id)
+          .join(" / ")}`;
       const room = currentMultiplayerRoom(),
         view = room?.getSnapshot();
       if (view && room)
@@ -75,6 +99,16 @@ function Fixture() {
       >
         <details>
           <summary>Local touch QA</summary>
+          <button onClick={() => setShowTouch((v) => !v)}>
+            Toggle input readout
+          </button>
+          <button
+            onClick={() => {
+              dropMoveEnd.current = true;
+            }}
+          >
+            Drop next Move pointer end (test)
+          </button>
           <button
             onClick={() => {
               const s = ARCADE_STATIONS[0],
@@ -115,6 +149,23 @@ function Fixture() {
           </button>
         </details>
       </aside>
+      {showTouch && (
+        <output
+          ref={touchOutput}
+          aria-label="Native touch input readout"
+          style={{
+            position: "fixed",
+            top: 130,
+            left: "25%",
+            zIndex: 180,
+            background: "#fff4d8",
+            color: "#243831",
+            font: "14px sans-serif",
+            padding: 4,
+            pointerEvents: "none",
+          }}
+        />
+      )}
       <output ref={output} hidden data-mobile-qa />
     </>
   );
