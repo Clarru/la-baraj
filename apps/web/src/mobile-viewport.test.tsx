@@ -230,6 +230,18 @@ it("keeps the world size while typing and restores it despite stale iOS keyboard
     await act(async () => view.dispatchEvent(new Event("scroll")));
     flush();
     expect(reveal).not.toHaveBeenCalled();
+    const frameBounds = vi
+      .spyOn(frame, "getBoundingClientRect")
+      .mockReturnValue(new DOMRect(10, 25, 852, 117));
+    nameBounds.mockReturnValue(new DOMRect(20, 40, 200, 47));
+    await act(async () => view.dispatchEvent(new Event("scroll")));
+    flush();
+    expect(reveal).not.toHaveBeenCalled();
+    nameBounds.mockReturnValue(new DOMRect(20, 140, 200, 47));
+    await act(async () => view.dispatchEvent(new Event("scroll")));
+    flush();
+    expect(reveal).toHaveBeenCalledOnce();
+    frameBounds.mockRestore();
     await act(async () => {
       name.blur();
       await Promise.resolve();
