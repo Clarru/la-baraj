@@ -5,11 +5,8 @@ import type { useArcade2048 } from "./use-arcade2048";
 import { useTouchDevice } from "./mobile-device";
 import { useMobilePortrait } from "./mobile-viewport";
 import {
-  arcadePortraitTurn,
   arcadePortraitSurface,
   arcadeTouchPoint,
-  arcadeTouchDelta,
-  type ArcadeQuarterTurn,
 } from "./mobile-arcade-surface";
 import {
   ARCADE_TILE_MS,
@@ -42,26 +39,6 @@ export function MobileArcade2048({
   const surface = useRef<HTMLElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
   const portrait = useMobilePortrait();
-  const [turn, setTurn] = useState<ArcadeQuarterTurn>(0);
-  const [guide, setGuide] = useState(false);
-  useLayoutEffect(() => {
-    const update = () =>
-      setTurn(
-        arcadePortraitTurn(
-          portrait,
-          screen.orientation?.type,
-          screen.orientation?.angle ??
-            (window as Window & { orientation?: number }).orientation,
-        ),
-      );
-    update();
-    screen.orientation?.addEventListener("change", update);
-    window.addEventListener("orientationchange", update);
-    return () => {
-      screen.orientation?.removeEventListener("change", update);
-      window.removeEventListener("orientationchange", update);
-    };
-  }, [portrait]);
   const previous = useRef(controls.state.view);
   const animation = useRef<TileAnimation | null>(null);
   const press = useRef<{
@@ -140,12 +117,12 @@ export function MobileArcade2048({
         css.paddingBottom,
         css.paddingLeft,
       ].map((x) => parseFloat(x) || 0) as [number, number, number, number];
-      const p = arcadePortraitSurface(box.width, box.height, padding, turn);
+      const p = arcadePortraitSurface(box.width, box.height, padding);
       board.style.width = `${p.width}px`;
       board.style.height = `${p.height}px`;
       board.style.left = `${p.x}px`;
       board.style.top = `${p.y}px`;
-      board.style.transform = `translate(-50%,-50%) rotate(${turn}deg)`;
+      board.style.transform = "translate(-50%,-50%)";
     };
     size();
     const observer = new ResizeObserver(size);
@@ -156,26 +133,16 @@ export function MobileArcade2048({
       observer.disconnect();
       window.removeEventListener("resize", size);
     };
-  }, [touch, controls.state.active, turn]);
-  useEffect(() => {
-    if (!turn || !controls.state.active) {
-      setGuide(false);
-      return;
-    }
-    setGuide(true);
-    const timer = setTimeout(() => setGuide(false), 3000);
-    return () => clearTimeout(timer);
-  }, [turn, controls.state.active]);
+  }, [touch, controls.state.active, portrait]);
   if (!touch || !controls.state.active) return null;
   const point = (x: number, y: number) => {
     const r = canvas.current!.getBoundingClientRect();
-    return arcadeTouchPoint(x, y, r, turn);
+    return arcadeTouchPoint(x, y, r);
   };
   return (
     <section
       ref={surface}
       className="mobile-arcade"
-      data-portrait-turn={turn}
       aria-label="2048 touch game"
       onPointerDown={(e) => {
         if (press.current) return;
@@ -204,8 +171,7 @@ export function MobileArcade2048({
             start.v >= 154 &&
             start.v <= 586
           ) {
-            const delta = arcadeTouchDelta(dx, dy, turn);
-            const d = swipeDirection(delta.x, delta.y);
+            const d = swipeDirection(dx, dy);
             if (d) controls.move(d);
           }
           return;
@@ -213,7 +179,7 @@ export function MobileArcade2048({
         const p = point(e.clientX, e.clientY);
         // Shared hit regions gain a 44px touch height at the current surface scale.
         const bounds = canvas.current!.getBoundingClientRect();
-        const physicalHeight = turn ? bounds.width : bounds.height;
+        const physicalHeight = bounds.height;
         const action = hitArcadeScreen(
           controls.state,
           p.u,
@@ -230,11 +196,6 @@ export function MobileArcade2048({
         if (press.current?.id === e.pointerId) press.current = null;
       }}
     >
-      {guide && (
-        <p className="mobile-arcade-turn-hint" role="status">
-          Hold your phone upright for 2048.
-        </p>
-      )}
       <canvas
         ref={canvas}
         className="mobile-arcade-board"

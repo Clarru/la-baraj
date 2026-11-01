@@ -94,6 +94,26 @@ export function useMobileViewport(
       if (!typing && !restoring) stable = { ...v };
       for (const key of ["width", "height", "top", "left"] as const)
         node.style.setProperty(`--mobile-${key}`, `${v[key]}px`);
+      if (
+        typing &&
+        !freezeChat &&
+        unzoomed &&
+        document.activeElement instanceof HTMLElement
+      ) {
+        const field = document.activeElement;
+        const bounds = field.getBoundingClientRect();
+        if (
+          bounds.top < visible.top ||
+          bounds.bottom > visible.top + visible.height ||
+          bounds.left < visible.left ||
+          bounds.right > visible.left + visible.width
+        )
+          field.scrollIntoView({
+            block: "nearest",
+            inline: "nearest",
+            behavior: "instant",
+          });
+      }
       if ((freezeChat || restoring) && anchor && unzoomed) {
         // iOS versions differ in whether fixed layers follow the keyboard pan.
         // Keep the measured pre-focus world origin, rather than trusting a stale offset.

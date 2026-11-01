@@ -52,7 +52,7 @@ const browser = await chromium.launch({
 const evidence = {
   browser: browser.version(),
   scope:
-    "Actual mobile canvas, shared desktop renderer, authored legal values and real fonts; portrait and quarter-turn Chromium layout/input, not phone acceptance",
+    "Actual mobile canvas, shared desktop renderer, authored legal values and real fonts; portrait Chromium layout/input, not phone acceptance",
   cases: [],
 };
 try {
@@ -60,8 +60,6 @@ try {
     { width: 320, height: 740, turn: 0 },
     { width: 393, height: 852, turn: 0 },
     { width: 430, height: 932, turn: 0 },
-    { width: 852, height: 393, turn: 90 },
-    { width: 852, height: 334, turn: -90 },
   ]) {
     const { width, height, turn } = spec;
     const viewport = { width, height };
@@ -73,22 +71,6 @@ try {
     });
     try {
       const page = await context.newPage();
-      await page.evaluate(
-        ({ turn }) =>
-          Object.defineProperty(screen, "orientation", {
-            configurable: true,
-            value: Object.assign(new EventTarget(), {
-              type:
-                turn === 90
-                  ? "landscape-primary"
-                  : turn === -90
-                    ? "landscape-secondary"
-                    : "portrait-primary",
-              angle: turn === -90 ? 270 : turn,
-            }),
-          }),
-        { turn },
-      );
       await page.setContent(html);
       await page.locator("canvas.mobile-arcade-board").waitFor();
       await page.evaluate(async () => {
@@ -112,26 +94,11 @@ try {
           board.x + board.width <= viewport.width + 1 &&
           board.y + board.height <= viewport.height + 1,
       );
-      assert(Math.abs(board.width / board.height - (turn ? 1.25 : 0.8)) < 0.01);
-      assert.equal(
-        await page.locator(".mobile-arcade").getAttribute("data-portrait-turn"),
-        String(turn),
-      );
-      const xy = (u, v) =>
-        turn === 90
-          ? {
-              x: board.x + (1 - v / 640) * board.width,
-              y: board.y + (u / 512) * board.height,
-            }
-          : turn === -90
-            ? {
-                x: board.x + (v / 640) * board.width,
-                y: board.y + (1 - u / 512) * board.height,
-              }
-            : {
-                x: board.x + (u / 512) * board.width,
-                y: board.y + (v / 640) * board.height,
-              };
+      assert(Math.abs(board.width / board.height - 0.8) < 0.01);
+      const xy = (u, v) => ({
+        x: board.x + (u / 512) * board.width,
+        y: board.y + (v / 640) * board.height,
+      });
       await page.evaluate(() => {
         window.__pointerProof = [];
         for (const type of [
@@ -170,7 +137,7 @@ try {
       });
       const tap = xy(240, 110);
       await page.touchscreen.tap(tap.x, tap.y);
-      const touchHeight = (44 * 640) / (turn ? board.width : board.height);
+      const touchHeight = (44 * 640) / board.height;
       const leave = xy(430, 615 + Math.max(50, touchHeight) / 2 - 1);
       await page.touchscreen.tap(leave.x, leave.y);
       const events = await page.evaluate(() => window.__mobileArcadeEvents);

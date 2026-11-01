@@ -186,6 +186,11 @@ it("keeps the world size while typing and restores it despite stale iOS keyboard
     // Ordinary onboarding/settings fields must fit above the keyboard, while
     // switching fields keeps the original pre-keyboard restoration baseline.
     const name = host.querySelector("input")!;
+    const reveal = vi.fn();
+    name.scrollIntoView = reveal;
+    vi.spyOn(name, "getBoundingClientRect").mockReturnValue(
+      new DOMRect(0, 180, 200, 46),
+    );
     await act(async () => name.focus());
     flush();
     view.height = 117;
@@ -194,9 +199,16 @@ it("keeps the world size while typing and restores it despite stale iOS keyboard
     await act(async () => view.dispatchEvent(new Event("resize")));
     flush();
     expect(geometry()).toEqual(["852px", "117px", "25px", "0px"]);
+    expect(reveal).toHaveBeenCalledWith({
+      block: "nearest",
+      inline: "nearest",
+      behavior: "instant",
+    });
+    const calls = reveal.mock.calls.length;
     await act(async () => input.focus());
     flush();
     expect(geometry()).toEqual(["852px", "393px", "25px", "0px"]);
+    expect(reveal).toHaveBeenCalledTimes(calls);
     await act(async () => name.focus());
     flush();
     expect(geometry()).toEqual(["852px", "117px", "25px", "0px"]);
@@ -239,7 +251,7 @@ it("keeps the world size while typing and restores it despite stale iOS keyboard
   expect(frames.size).toBe(0);
 });
 
-it("keeps the world landscape gate while the activity supplies a portrait surface without remounting", async () => {
+it("gates each activity to its orientation without remounting the game", async () => {
   const { setMobileOrientation } = await import("./mobile-display");
   let portrait = false;
   const listeners = new Set<() => void>();
@@ -266,8 +278,13 @@ it("keeps the world landscape gate while the activity supplies a portrait surfac
       host.querySelector<HTMLButtonElement>(".mobile-start")!.click(),
     );
     const game = host.querySelector("[data-game]");
-    await act(async () => setMobileOrientation("portrait"));
-    expect(host.querySelector(".mobile-rotate")).toBeNull(); // The activity supplies a portrait surface, including cached landscape views.
+    const leave = vi.fn();
+    await act(async () => setMobileOrientation("portrait", leave));
+    expect(host.textContent).toContain("2048 plays in portrait");
+    await act(async () =>
+      host.querySelector<HTMLButtonElement>(".mobile-rotate button")!.click(),
+    );
+    expect(leave).toHaveBeenCalledOnce();
     await act(async () => {
       portrait = true;
       listeners.forEach((f) => f());

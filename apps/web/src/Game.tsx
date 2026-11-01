@@ -336,7 +336,7 @@ export default function Game({ initialName }: { initialName: string }) {
   useEffect(() => {
     if (!touch) return;
     const orientation = arcadeOpen ? "portrait" : "landscape";
-    setMobileOrientation(orientation);
+    setMobileOrientation(orientation, arcadeOpen ? closeArcade : undefined);
     void requestGameOrientation(orientation);
     return () => setMobileOrientation("landscape");
   }, [touch, arcadeOpen, closeArcade]);

@@ -8,6 +8,7 @@ let installPrompt: InstallPrompt | null = null;
 let blocked = false;
 export type MobileOrientation = "landscape" | "portrait";
 let orientation: MobileOrientation = "landscape";
+let activityExit: (() => void) | undefined;
 const listeners = new Set<() => void>();
 const notify = () => {
   for (const listener of listeners) listener();
@@ -73,11 +74,18 @@ export function useMobileBlocked() {
     () => false,
   );
 }
-export function setMobileOrientation(value: MobileOrientation) {
+export function setMobileOrientation(
+  value: MobileOrientation,
+  onExit?: () => void,
+) {
+  activityExit = onExit;
   if (orientation === value) return;
   orientation = value;
   resetMobileInput();
   notify();
+}
+export function exitMobileActivity() {
+  activityExit?.();
 }
 export function useMobileOrientation() {
   return useSyncExternalStore(

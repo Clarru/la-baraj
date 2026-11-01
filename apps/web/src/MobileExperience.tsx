@@ -4,6 +4,7 @@ import { ArrowUpFromLine, Expand, Smartphone, RotateCw } from "lucide-react";
 import { useTouchDevice } from "./mobile-device";
 import {
   blockMobileGame,
+  exitMobileActivity,
   useMobileOrientation,
   enterGameFullscreen,
   requestGameOrientation,
@@ -54,7 +55,7 @@ export function MobileExperience({ children }: { children: ReactNode }) {
   const frame = useRef<HTMLDivElement>(null);
   const portrait = useMobilePortrait();
   const orientation = useMobileOrientation();
-  const wrongOrientation = orientation === "landscape" && portrait;
+  const wrongOrientation = orientation === "landscape" ? portrait : !portrait;
   useMobileViewport(frame, touch);
   const [started, setStarted] = useState(false);
   const [immersive, setImmersive] = useState(false);
@@ -92,15 +93,24 @@ export function MobileExperience({ children }: { children: ReactNode }) {
       {wrongOrientation && (
         <main className="mobile-rotate" aria-labelledby="rotate-title">
           <RotateCw size={56} aria-hidden="true" />
-          <h1 id="rotate-title">Rotate your phone to play</h1>
+          <h1 id="rotate-title">
+            {orientation === "portrait"
+              ? "Hold your phone upright"
+              : "Rotate your phone to play"}
+          </h1>
           <p>
-            La Baraj plays in landscape. Turn your phone sideways for both
-            controllers and a wider view of the lake.
+            {orientation === "portrait"
+              ? "2048 plays in portrait. Turn your phone upright to play."
+              : "La Baraj plays in landscape. Turn your phone sideways for both controllers and a wider view of the lake."}
           </p>
-          <p className="mobile-note">
-            If it stays upright, turn off Portrait Orientation Lock in Control
-            Centre.
-          </p>
+          {orientation === "portrait" ? (
+            <button onClick={exitMobileActivity}>Leave 2048</button>
+          ) : (
+            <p className="mobile-note">
+              If it stays upright, turn off Portrait Orientation Lock in Control
+              Centre.
+            </p>
+          )}
         </main>
       )}
       {setup && !wrongOrientation && (
