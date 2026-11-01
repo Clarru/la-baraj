@@ -164,145 +164,31 @@
   bottom: 148px;
   padding-inline: 10px;
 }
+/* The mobile cabinet uses the same portrait canvas artwork as desktop. */
 .mobile-arcade {
-  position: fixed;
+  position: absolute;
   inset: 0;
   z-index: 75;
-  display: flex;
-  flex-direction: column;
-  background: #ede8d8;
-  color: #243831;
+  display: grid;
+  place-items: center;
+  padding: max(8px, env(safe-area-inset-top))
+    max(8px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom))
+    max(8px, env(safe-area-inset-left));
+  background: #f3e5c9;
+  color: #263b30;
   pointer-events: auto;
-  padding: max(12px, env(safe-area-inset-top))
-    max(16px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom))
-    max(16px, env(safe-area-inset-left));
-  font: 18px/1.3 var(--font-body);
-}
-.mobile-arcade header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  max-width: 520px;
-  width: 100%;
-  margin: 0 auto 12px;
-}
-.mobile-arcade h1 {
-  font: 400 38px var(--font-heading);
-}
-.mobile-arcade h2 {
-  font: 400 26px var(--font-heading);
-  margin-bottom: 12px;
-}
-.mobile-arcade-scroll {
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  width: 100%;
-  max-width: 520px;
-  margin: auto;
-  min-height: 0;
-  scrollbar-color: #768a7d #ece7da;
-}
-.mobile-arcade-score {
-  display: flex;
-  gap: 8px;
-  font-variant-numeric: tabular-nums;
-  align-items: baseline;
-}
-.mobile-arcade-score > strong {
-  font-size: 28px;
-}
-.mobile-arcade-score > span {
-  margin-left: auto;
-}
-.mobile-arcade-hint {
-  font-size: 16px;
-  padding-block: 8px;
 }
 .mobile-arcade-board {
-  container-type: inline-size;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  grid-template-rows: repeat(4, minmax(0, 1fr));
-  gap: 8px;
-  padding: 8px;
-  border-radius: 12px;
-  background: #827a61;
-  aspect-ratio: 1;
+  display: block;
+  width: min(100%, 512px);
+  height: auto;
+  max-height: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: contain;
   touch-action: none;
   user-select: none;
   -webkit-user-select: none;
-}
-.mobile-tile {
-  display: grid;
-  place-items: center;
-  background: #fff2cd;
-  color: #423822;
-  border-radius: 6px;
-  font: 700 calc(88px / var(--tile-digits, 4)) var(--font-body);
-  font-variant-numeric: tabular-nums;
-}
-.mobile-tile[data-value="0"] {
-  background: #a49b82;
-}
-.mobile-tile[data-value="2"] {
-  background: #eee4ce;
-}
-.mobile-tile[data-value="4"] {
-  background: #e9d8ae;
-}
-.mobile-tile[data-value="8"] {
-  background: #f2b170;
-}
-.mobile-tile[data-value="16"] {
-  background: #ed965c;
-}
-.mobile-tile[data-value="32"] {
-  background: #dc7052;
-  color: #fff;
-}
-.mobile-tile[data-value="64"] {
-  background: #b54b30;
-  color: #fff;
-}
-.mobile-tile[data-value="128"],
-.mobile-tile[data-value="256"],
-.mobile-tile[data-value="512"] {
-  background: #efcf72;
-}
-.mobile-tile[data-value="1024"],
-.mobile-tile[data-value="2048"] {
-  background: #f0c743;
-}
-.mobile-arcade-directions {
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-  padding-block: 12px;
-}
-.mobile-arcade-directions button {
-  min-width: 52px;
-}
-.mobile-arcade nav {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  padding-block: 8px;
-}
-.mobile-arcade-result {
-  padding-block: 16px;
-}
-.mobile-arcade-result button {
-  margin: 10px 8px 0 0;
-}
-.mobile-arcade-status {
-  padding-block: 10px;
-  font-size: 16px;
-}
-.mobile-arcade li {
-  padding: 10px 4px;
-}
-.mobile-arcade li strong {
-  float: right;
+  -webkit-touch-callout: none;
 }
 @media (pointer: coarse) {
   html,
@@ -448,42 +334,6 @@
   }
   .cruce-entry {
     top: max(140px, calc(env(safe-area-inset-top) + 130px));
-  }
-  .mobile-arcade header {
-    margin-bottom: 4px;
-  }
-  .mobile-arcade-scroll {
-    max-width: 800px;
-    margin: 0 auto;
-  }
-  .mobile-arcade-scroll:has(.mobile-arcade-board) {
-    display: grid;
-    grid-template-columns: min(42vw, calc(100dvh - 104px)) minmax(0, 1fr);
-    grid-auto-rows: min-content;
-    align-content: start;
-    gap: 8px 20px;
-  }
-  .mobile-arcade-scroll:has(.mobile-arcade-board) > * {
-    grid-column: 2;
-  }
-  .mobile-arcade-scroll .mobile-arcade-board {
-    grid-column: 1;
-    grid-row: 1 / span 6;
-    width: 100%;
-    margin: 0;
-  }
-  .mobile-arcade-score {
-    margin: 0;
-  }
-  .mobile-arcade-hint {
-    padding: 0;
-  }
-  .mobile-arcade-directions {
-    padding-block: 0;
-  }
-  .mobile-arcade nav {
-    flex-wrap: wrap;
-    padding-block: 0;
   }
 }
 
@@ -637,4 +487,73 @@
 }
 .mobile-stick-zone.is-ready {
   visibility: visible;
+}
+
+.mobile-chat-composer {
+  position: fixed;
+  top: calc(var(--chat-pan, 0px) + max(8px, env(safe-area-inset-top)));
+  left: max(12px, env(safe-area-inset-left));
+  right: max(12px, env(safe-area-inset-right));
+  z-index: 210;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 680px;
+  margin-inline: auto;
+  padding: 8px;
+  border: 2px solid #344b3b;
+  border-radius: 13px;
+  color: #20352b;
+  background: #f3e5c9;
+  box-shadow: 0 4px 12px #152b2726;
+  font: 600 18px/24px var(--font-body);
+}
+.mobile-chat-composer[hidden] {
+  display: none;
+}
+.mobile-chat-composer textarea {
+  flex: 1;
+  width: 0;
+  min-width: 0;
+  height: 48px;
+  padding: 10px 8px;
+  border: 0;
+  resize: none;
+  outline: none;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  caret-color: #20352b;
+}
+.mobile-chat-composer textarea::placeholder {
+  color: #526246;
+  opacity: 1;
+}
+.mobile-chat-composer button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 8px;
+  border: 1px solid #344b3b;
+  border-radius: 8px;
+  color: inherit;
+  background: #e4d5b3;
+  font: inherit;
+}
+.mobile-chat-composer :focus-visible {
+  outline: 2px solid #20352b;
+  outline-offset: 2px;
+}
+
+.mobile-rotate button {
+  min-height: 44px;
+  padding: 10px 18px;
+  border: 1px solid #344b3b;
+  border-radius: 8px;
+  background: #f3e5c9;
+  color: inherit;
+  font: inherit;
 }

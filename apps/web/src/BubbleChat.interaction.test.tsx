@@ -4,6 +4,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { MultiplayerRoom } from "./multiplayer";
 import { LocalBubbleChat } from "./BubbleChat";
+import { useBubbleChat } from "./use-bubble-chat";
 
 vi.mock("@react-three/fiber", () => ({ useFrame: () => {} }));
 vi.mock("@react-three/drei", () => ({
@@ -22,15 +23,12 @@ let publishChat = vi.fn<(text: string) => void>();
 let finish = vi.fn<() => void>();
 let close = vi.fn<() => void>();
 let room: MultiplayerRoom;
+function TestChat({ editing }: { editing: boolean }) {
+  const draft = useBubbleChat(room, true, editing, finish, close);
+  return <LocalBubbleChat draft={draft} editing={editing} />;
+}
 function render(editing = true) {
-  root.render(
-    <LocalBubbleChat
-      room={room}
-      editing={editing}
-      onFinishEditing={finish}
-      onClose={close}
-    />,
-  );
+  root.render(<TestChat editing={editing} />);
 }
 function field() {
   return container.querySelector("textarea")!;

@@ -2,6 +2,16 @@
 
 The owner’s physical iPhone 15 Pro retest rejected the custom pads: movement begins but steering becomes stuck/unresponsive. They also requested landscape, a slightly wider camera view, less bottom space and a clearer top edge. Physical acceptance remains open.
 
+## November 1: chat and portrait 2048 correction
+
+Physical iPhone screenshots exposed a missed acceptance case: the previous simulator pass used a separate software-keyboard action, so it did not prove first-tap activation. The old input was focused from a later R3F frame and used 14px text; keyboard VisualViewport updates also resized the whole world and could leave a stale offset after dismissal.
+
+The correction uses a persistent mobile DOM composer, synchronously shown/focused inside the Chat tap. Its 18px input and composer follow the keyboard independently; the world retains its measured pre-focus size/origin and restores pre-focus document scroll. One shared draft/publish controller retains desktop live publishing, rolling two-line text and five-second sent-bubble timing. Mobile editing stays open while the user pauses, with explicit send/cancel and blur/background cleanup.
+
+Mobile 2048 uses the same `drawArcadeScreen` / `makeTileAnimation` renderer and 120ms slide/merge/spawn timeline as the desktop cabinet. Normal play has no save notification. Animation callbacks stop at completion, close and hidden state. Portrait is required for 2048; the world remains landscape. The manifest now permits either orientation so one activity cannot globally lock the other; OS locking is a guarded hint and the visible orientation gate remains authoritative.
+
+Acceptance must include a single trusted Chat-button tap with software keyboard available beforehand (no manual keyboard toggle or second focus tap), scale/pan and unchanged world/canvas bounds through typing and dismissal, subsequent controls, live publish and desktop timing, both activity orientations, and one existing Home Screen metadata migration case. Fresh installation alone cannot establish that iOS refreshes a previously installed landscape manifest.
+
 ## Controller selection
 
 Safari exposes browser input APIs, not Apple's native-app `GCVirtualController` UI. A true system-native overlay would require a native iOS app. This web game adopts **NippleJS 1.0.4**, pinned exactly (MIT, no runtime dependencies), instead of maintaining its own button/pointer-capture joystick.

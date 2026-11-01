@@ -1,12 +1,17 @@
-import { useRef, type CSSProperties } from "react";
-import { X } from "lucide-react";
-import {
-  arcadeOver,
-  arcadeWon,
-  type ArcadeDirection,
-} from "../../../packages/shared/arcade2048";
+import "./arcade2048.css";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import type { ArcadeDirection } from "../../../packages/shared/arcade2048";
 import type { useArcade2048 } from "./use-arcade2048";
 import { useTouchDevice } from "./mobile-device";
+import {
+  ARCADE_TILE_MS,
+  SCREEN_WIDTH,
+  SCREEN_HEIGHT,
+  drawArcadeScreen,
+  hitArcadeScreen,
+  makeTileAnimation,
+  type TileAnimation,
+} from "./arcade2048-screen";
 export function swipeDirection(dx: number, dy: number): ArcadeDirection | null {
   if (Math.max(Math.abs(dx), Math.abs(dy)) < 24) return null;
   return Math.abs(dx) > Math.abs(dy)
@@ -17,6 +22,7 @@ export function swipeDirection(dx: number, dy: number): ArcadeDirection | null {
       ? "down"
       : "up";
 }
+/** The cabinet's renderer and exact 120ms slide/merge/spawn timeline, with touch input. */
 export function MobileArcade2048({
   controls,
   onExit,
@@ -25,143 +31,155 @@ export function MobileArcade2048({
   onExit: () => void;
 }) {
   const touch = useTouchDevice();
-  const press = useRef<{ id: number; x: number; y: number } | null>(null);
+  const canvas = useRef<HTMLCanvasElement>(null);
+  const previous = useRef(controls.state.view);
+  const animation = useRef<TileAnimation | null>(null);
+  const press = useRef<{
+    id: number;
+    x: number;
+    y: number;
+    u: number;
+    v: number;
+  } | null>(null);
+  const [reduced, setReduced] = useState(false);
+  const [fontsReady, setFontsReady] = useState(false);
+  useEffect(() => {
+    const query = matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setReduced(query.matches);
+    update();
+    query.addEventListener("change", update);
+    let live = true;
+    void document.fonts?.ready.then(() => {
+      if (live) setFontsReady(true);
+    });
+    return () => {
+      live = false;
+      query.removeEventListener("change", update);
+    };
+  }, []);
+  useLayoutEffect(() => {
+    const { state, direction } = controls;
+    if (state.view?.game !== previous.current?.game)
+      animation.current = reduced
+        ? null
+        : makeTileAnimation(
+            previous.current,
+            state.view,
+            direction.current,
+            performance.now(),
+          );
+    previous.current = state.view;
+    if (reduced || !state.active || state.page !== "board")
+      animation.current = null;
+    const context = canvas.current?.getContext("2d");
+    if (!touch || !state.active || !context) return;
+    let frame = 0;
+    const paint = (now: number) => {
+      frame = 0;
+      if (document.hidden) return;
+      context.setTransform(2, 0, 0, 2, 0, 0);
+      drawArcadeScreen(context, state, animation.current, now, { touch: true });
+      if (animation.current && now - animation.current.started < ARCADE_TILE_MS)
+        frame = requestAnimationFrame(paint);
+      else animation.current = null;
+    };
+    const visibility = () => {
+      cancelAnimationFrame(frame);
+      press.current = null;
+      if (!document.hidden) paint(performance.now());
+    };
+    paint(performance.now());
+    document.addEventListener("visibilitychange", visibility);
+    return () => {
+      cancelAnimationFrame(frame);
+      press.current = null;
+      document.removeEventListener("visibilitychange", visibility);
+    };
+  }, [touch, controls.state, controls.direction, reduced, fontsReady]);
   if (!touch || !controls.state.active) return null;
-  const { state, action, move } = controls;
-  const game = state.view?.game;
-  const won = !!game && arcadeWon(game) && !game.continued;
-  const over = !!game && arcadeOver(game);
+  const point = (x: number, y: number) => {
+    const r = canvas.current!.getBoundingClientRect();
+    return {
+      u: ((x - r.left) * SCREEN_WIDTH) / r.width,
+      v: ((y - r.top) * SCREEN_HEIGHT) / r.height,
+    };
+  };
   return (
     <section className="mobile-arcade" aria-label="2048 touch game">
-      <header>
-        <h1>2048</h1>
-        <button aria-label="Leave cabinet" onClick={onExit}>
-          <X size={23} /> Leave
-        </button>
-      </header>
-      <div className="mobile-arcade-scroll">
-        <p className="mobile-arcade-score">
-          Score <strong>{game?.score ?? 0}</strong>
-          <span>
-            Best <strong>{state.view?.best ?? 0}</strong>
-          </span>
+      <canvas
+        ref={canvas}
+        className="mobile-arcade-board"
+        width={SCREEN_WIDTH * 2}
+        height={SCREEN_HEIGHT * 2}
+        role="group"
+        aria-label={`2048 board. Score ${controls.state.view?.game?.score ?? 0}. Swipe to move tiles.`}
+        onPointerDown={(e) => {
+          if (press.current) return;
+          e.preventDefault();
+          e.currentTarget.setPointerCapture(e.pointerId);
+          press.current = {
+            id: e.pointerId,
+            x: e.clientX,
+            y: e.clientY,
+            ...point(e.clientX, e.clientY),
+          };
+        }}
+        onPointerUp={(e) => {
+          const start = press.current;
+          if (start?.id !== e.pointerId) return;
+          press.current = null;
+          if (e.currentTarget.hasPointerCapture(e.pointerId))
+            e.currentTarget.releasePointerCapture(e.pointerId);
+          const dx = e.clientX - start.x,
+            dy = e.clientY - start.y;
+          if (Math.max(Math.abs(dx), Math.abs(dy)) >= 24) {
+            if (
+              controls.state.page === "board" &&
+              start.u >= 40 &&
+              start.u <= 472 &&
+              start.v >= 154 &&
+              start.v <= 586
+            ) {
+              const d = swipeDirection(dx, dy);
+              if (d) controls.move(d);
+            }
+            return;
+          }
+          const p = point(e.clientX, e.clientY);
+          // Expand the short cabinet buttons to at least a 44px touch height.
+          const pad = Math.max(
+            0,
+            ((44 * SCREEN_HEIGHT) /
+              e.currentTarget.getBoundingClientRect().height -
+              32) /
+              2,
+          );
+          if (p.u >= 380 && p.u <= 488 && p.v >= 600 - pad) {
+            onExit();
+            return;
+          }
+          const v =
+            p.v >= 93 - pad && p.v <= 128 + pad
+              ? Math.min(128, Math.max(93, p.v))
+              : p.v;
+          const action = hitArcadeScreen(controls.state, p.u, v);
+          if (action) controls.action(action);
+        }}
+        onPointerCancel={(e) => {
+          if (press.current?.id === e.pointerId) press.current = null;
+        }}
+        onLostPointerCapture={(e) => {
+          if (press.current?.id === e.pointerId) press.current = null;
+        }}
+      />
+      {controls.state.error && (
+        <p className="arcade-assistive" role="alert">
+          {controls.state.error}
         </p>
-        {state.page === "board" && (
-          <>
-            <p className="mobile-arcade-hint">
-              Swipe the board to merge tiles.
-            </p>
-            <div
-              className="mobile-arcade-board"
-              role="group"
-              aria-label="2048 board. Swipe to move tiles."
-              onPointerDown={(e) => {
-                if (press.current || !game || state.pending) return;
-                e.preventDefault();
-                e.currentTarget.setPointerCapture(e.pointerId);
-                press.current = { id: e.pointerId, x: e.clientX, y: e.clientY };
-              }}
-              onPointerUp={(e) => {
-                const start = press.current;
-                if (start?.id !== e.pointerId) return;
-                press.current = null;
-                if (e.currentTarget.hasPointerCapture(e.pointerId))
-                  e.currentTarget.releasePointerCapture(e.pointerId);
-                const direction = swipeDirection(
-                  e.clientX - start.x,
-                  e.clientY - start.y,
-                );
-                if (direction) move(direction);
-              }}
-              onPointerCancel={() => {
-                press.current = null;
-              }}
-              onLostPointerCapture={() => {
-                press.current = null;
-              }}
-            >
-              {Array.from({ length: 16 }, (_, i) => {
-                const value = game?.board[i] ?? 0;
-                const digits = Math.max(4, String(value).length);
-                return (
-                  <div
-                    key={i}
-                    className="mobile-tile"
-                    data-value={value}
-                    style={
-                      {
-                        "--tile-digits": digits,
-                        fontSize: `min(42px, ${40 / digits}cqw)`,
-                      } as CSSProperties
-                    }
-                    aria-label={`Row ${Math.floor(i / 4) + 1}, column ${(i % 4) + 1}: ${value || "empty"}`}
-                  >
-                    {value || ""}
-                  </div>
-                );
-              })}
-            </div>
-            {(won || over) && (
-              <div className="mobile-arcade-result">
-                <h2>{won ? "You reached 2048!" : "No more moves"}</h2>
-                <button
-                  disabled={state.pending}
-                  onClick={() => action("continue")}
-                >
-                  {won ? "Keep going" : "New game"}
-                </button>
-              </div>
-            )}
-            {!game && !state.error && (
-              <p role="status">Loading your saved game…</p>
-            )}
-            <nav>
-              <button disabled={state.pending} onClick={() => action("new")}>
-                New game
-              </button>
-              <button disabled={state.pending} onClick={() => action("scores")}>
-                {state.local ? "Local records" : "Global records"}
-              </button>
-            </nav>
-          </>
-        )}
-        {state.page === "confirm" && (
-          <div className="mobile-arcade-result">
-            <h2>Start a new game?</h2>
-            <p>Your current board will be replaced.</p>
-            <button disabled={state.pending} onClick={() => action("confirm")}>
-              Start fresh
-            </button>
-            <button disabled={state.pending} onClick={() => action("back")}>
-              Keep this game
-            </button>
-          </div>
-        )}
-        {state.page === "leaders" && (
-          <>
-            <h2>{state.local ? "Local records" : "Global records"}</h2>
-            {state.view?.leaders.length ? (
-              <ol>
-                {state.view.leaders.map((row) => (
-                  <li key={row.rank}>
-                    {row.name}
-                    <strong>{row.score}</strong>
-                  </li>
-                ))}
-              </ol>
-            ) : (
-              <p>No records yet. Play a round to set one.</p>
-            )}
-            <button disabled={state.pending} onClick={() => action("back")}>
-              Back to game
-            </button>
-          </>
-        )}
-        <p role="status" className="mobile-arcade-status">
-          {state.error ||
-            (state.pending ? "Saving…" : "Your game saves as you play.")}
-        </p>
-      </div>
+      )}
+      <button className="arcade-assistive" onClick={onExit}>
+        Leave 2048
+      </button>
     </section>
   );
 }

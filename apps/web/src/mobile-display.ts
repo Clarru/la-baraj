@@ -6,6 +6,9 @@ type InstallPrompt = Event & {
 };
 let installPrompt: InstallPrompt | null = null;
 let blocked = false;
+export type MobileOrientation = "landscape" | "portrait";
+let orientation: MobileOrientation = "landscape";
+let exitActivity: (() => void) | undefined;
 const listeners = new Set<() => void>();
 const notify = () => {
   for (const listener of listeners) listener();
@@ -71,6 +74,26 @@ export function useMobileBlocked() {
     () => false,
   );
 }
+export function setMobileOrientation(
+  value: MobileOrientation,
+  exit?: () => void,
+) {
+  exitActivity = exit;
+  if (orientation === value) return;
+  orientation = value;
+  resetMobileInput();
+  notify();
+}
+export function useMobileOrientation() {
+  return useSyncExternalStore(
+    subscribeDisplay,
+    () => orientation,
+    () => "landscape" as MobileOrientation,
+  );
+}
+export function leaveMobileActivity() {
+  exitActivity?.();
+}
 export async function enterGameFullscreen() {
   if (immersiveDisplay()) return true;
   try {
@@ -83,12 +106,15 @@ export async function enterGameFullscreen() {
 
 /** Best-effort page-scoped hint; the portrait gate never pretends a rejected lock succeeded. */
 export async function requestLandscapeOrientation() {
+  return requestGameOrientation("landscape");
+}
+export async function requestGameOrientation(value: MobileOrientation) {
   const orientation = screen.orientation as ScreenOrientation & {
     lock?: (orientation: string) => Promise<void>;
   };
   if (!orientation?.lock) return false;
   try {
-    await orientation.lock("landscape");
+    await orientation.lock(value);
     return true;
   } catch {
     return false;

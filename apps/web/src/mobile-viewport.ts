@@ -32,31 +32,118 @@ export function useMobileViewport(
   useEffect(() => {
     if (!enabled) return;
     let frame = 0;
+    let disposed = false;
+    let typing = false,
+      restoring = false;
+    let stable = mobileViewport();
+    let anchor: { x: number; y: number } | null = null;
+    let scroll = { x: window.scrollX, y: window.scrollY };
+    const editable = () =>
+      document.activeElement instanceof HTMLElement &&
+      document.activeElement.matches(
+        "textarea,input:not([type=checkbox]):not([type=radio]),[contenteditable=true]",
+      );
     const apply = () => {
       frame = 0;
       const node = ref.current;
       if (!node || document.hidden) return;
-      const v = mobileViewport();
+      const visible = mobileViewport();
+      const unzoomed =
+        !window.visualViewport ||
+        Math.abs(window.visualViewport.scale - 1) < 0.01;
+      if (
+        restoring &&
+        unzoomed &&
+        (window.scrollX !== scroll.x || window.scrollY !== scroll.y)
+      )
+        window.scrollTo({ left: scroll.x, top: scroll.y, behavior: "instant" });
+      if (
+        restoring &&
+        visible.width === stable.width &&
+        visible.height >= stable.height - 1 &&
+        Math.abs(visible.top - stable.top) < 1 &&
+        Math.abs(visible.left - stable.left) < 1
+      )
+        restoring = false;
+      const v = typing
+        ? {
+            ...stable,
+            top: unzoomed ? visible.top : stable.top,
+            left: unzoomed ? visible.left : stable.left,
+          }
+        : restoring
+          ? stable
+          : visible;
       if (v.width <= 0 || v.height <= 0) return;
+      if (!typing && !restoring) stable = { ...v };
       for (const key of ["width", "height", "top", "left"] as const)
         node.style.setProperty(`--mobile-${key}`, `${v[key]}px`);
+      if ((typing || restoring) && anchor && unzoomed) {
+        // iOS versions differ in whether fixed layers follow the keyboard pan.
+        // Keep the measured pre-focus world origin, rather than trusting a stale offset.
+        const rect = node.getBoundingClientRect();
+        if (Math.abs(rect.y - anchor.y) > 0.5)
+          node.style.setProperty(
+            "--mobile-top",
+            `${v.top + anchor.y - rect.y}px`,
+          );
+        if (Math.abs(rect.x - anchor.x) > 0.5)
+          node.style.setProperty(
+            "--mobile-left",
+            `${v.left + anchor.x - rect.x}px`,
+          );
+      }
     };
     const update = () => {
+      if (disposed) return;
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(apply);
     };
+    const focusIn = () => {
+      if (!editable() || typing) return;
+      scroll = { x: window.scrollX, y: window.scrollY };
+      const rect = ref.current?.getBoundingClientRect();
+      anchor = rect ? { x: rect.x, y: rect.y } : null;
+      typing = true;
+      restoring = false;
+      update();
+    };
+    const focusOut = () =>
+      queueMicrotask(() => {
+        if (disposed || editable()) return;
+        typing = false;
+        restoring = true;
+        update();
+      });
+    const rotate = () => {
+      typing = editable();
+      restoring = false;
+      anchor = null;
+      stable = {
+        width: document.documentElement.clientWidth || window.innerWidth,
+        height: document.documentElement.clientHeight || window.innerHeight,
+        top: 0,
+        left: 0,
+      };
+      update();
+    };
     apply();
+    document.addEventListener("focusin", focusIn);
+    document.addEventListener("focusout", focusOut);
     window.addEventListener("resize", update);
-    window.addEventListener("orientationchange", update);
+    window.addEventListener("orientationchange", rotate);
     window.addEventListener("pageshow", update);
     window.addEventListener("focus", update);
     document.addEventListener("visibilitychange", update);
     window.visualViewport?.addEventListener("resize", update);
     window.visualViewport?.addEventListener("scroll", update);
     return () => {
+      disposed = true;
       cancelAnimationFrame(frame);
+      document.removeEventListener("focusin", focusIn);
+      document.removeEventListener("focusout", focusOut);
       window.removeEventListener("resize", update);
-      window.removeEventListener("orientationchange", update);
+      window.removeEventListener("orientationchange", rotate);
       window.removeEventListener("pageshow", update);
       window.removeEventListener("focus", update);
       document.removeEventListener("visibilitychange", update);

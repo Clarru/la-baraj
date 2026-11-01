@@ -136,22 +136,18 @@ function tile(
   c.translate(x + 49, y + 49);
   c.scale(scale, scale);
   fill(c, [-49, -49, 98, 98], bg, 4);
-  text(
-    c,
-    String(value),
-    0,
-    1,
+  let size =
     String(value).length <= 2
       ? 49
       : String(value).length <= 3
         ? 43
         : String(value).length <= 4
           ? 36
-          : 27,
-    fg,
-    "center",
-    true,
-  );
+          : 27;
+  c.font = `400 ${size}px "Bree Serif"`;
+  const width = c.measureText(String(value)).width;
+  if (width > 86) size *= 86 / width;
+  text(c, String(value), 0, 1, size, fg, "center", true);
   c.restore();
 }
 /** One cached face; the runtime atlas reuses exactly the Canvas renderer's art. */
@@ -226,7 +222,7 @@ export function drawArcadeScreen(
   s: ArcadeScreenState,
   animation: TileAnimation | null = null,
   now = 0,
-  options: { omitTiles?: boolean } = {},
+  options: { omitTiles?: boolean; touch?: boolean } = {},
 ) {
   c.save();
   c.clearRect(0, 0, 512, 640);
@@ -283,7 +279,13 @@ export function drawArcadeScreen(
           : 1,
       );
   if (s.active) {
-    text(c, ARCADE_CONTROLS_HINT, 40, 616, 16);
+    text(
+      c,
+      options.touch ? "Swipe the board to move tiles" : ARCADE_CONTROLS_HINT,
+      40,
+      616,
+      16,
+    );
     button(c, [382, 600, 90, 32], "Leave");
   } else
     text(
@@ -387,11 +389,13 @@ export function drawArcadeScreen(
     );
     text(
       c,
-      s.page === "confirm"
-        ? "Enter / Space starts · Esc keeps this game"
-        : won
-          ? "Enter / Space to keep going"
-          : "Enter / Space for a new game",
+      options.touch
+        ? ""
+        : s.page === "confirm"
+          ? "Enter / Space starts · Esc keeps this game"
+          : won
+            ? "Enter / Space to keep going"
+            : "Enter / Space for a new game",
       256,
       352,
       16,

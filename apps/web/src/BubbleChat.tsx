@@ -1,92 +1,26 @@
-import {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from "react";
+import { useEffect, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import * as THREE from "three";
-import { BUBBLE_CHAT_IDLE_MS } from "../../../packages/shared/bubble-chat";
-import { normalizeChatDraft } from "./bubble-chat-input";
-import type { MultiplayerRoom } from "./multiplayer";
 import { playerBubbleAnchor } from "./player";
+import type { BubbleChatDraft } from "./use-bubble-chat";
 
-/** Editing and lingering speech share an anchor, but only editing captures input. */
 export function LocalBubbleChat({
-  room,
+  draft,
   editing,
-  onFinishEditing,
-  onClose,
 }: {
-  room: MultiplayerRoom;
+  draft: BubbleChatDraft;
   editing: boolean;
-  onFinishEditing: () => void;
-  onClose: () => void;
 }) {
+  const { text, edit, finish: finishEditing } = draft;
   const anchor = useRef<THREE.Group>(null);
   const editor = useRef<HTMLDivElement | null>(null);
   const input = useRef<HTMLTextAreaElement | null>(null);
   const display = useRef<HTMLSpanElement | null>(null);
-  const idle = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const pending = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const latest = useRef("");
-  const [text, setText] = useState("");
   const focused = useRef(false);
-  const arm = useCallback(() => {
-    if (idle.current) clearTimeout(idle.current);
-    idle.current = setTimeout(onClose, BUBBLE_CHAT_IDLE_MS);
-  }, [onClose]);
-  const edit = useCallback(
-    (value: string) => {
-      const next = normalizeChatDraft(value);
-      latest.current = next;
-      setText(next);
-      arm();
-      if (pending.current) clearTimeout(pending.current);
-      pending.current = setTimeout(() => {
-        pending.current = null;
-        room.publishChat(latest.current.trim() ? latest.current : "");
-      }, 150);
-    },
-    [arm, room],
-  );
-  const finishEditing = useCallback(() => {
-    if (!latest.current.trim()) {
-      onClose();
-      return;
-    }
-    // Flush the last edit and renew expiry when sending or clicking away.
-    if (pending.current) clearTimeout(pending.current);
-    pending.current = null;
-    room.publishChat(latest.current);
-    arm();
-    onFinishEditing();
-  }, [arm, room, onClose, onFinishEditing]);
-  const focusInput = useCallback((node: HTMLTextAreaElement | null) => {
-    input.current = node;
-  }, []);
   useEffect(() => {
-    arm();
-    return () => {
-      if (idle.current) clearTimeout(idle.current);
-      if (pending.current) clearTimeout(pending.current);
-      room.publishChat("");
-    };
-  }, [arm, room]);
-  useLayoutEffect(() => {
     focused.current = false;
-    if (editing) {
-      // Enter starts a new thought after the previous bubble was left behind.
-      if (pending.current) clearTimeout(pending.current);
-      pending.current = null;
-      latest.current = "";
-      setText("");
-      room.publishChat("");
-      arm();
-    }
-  }, [editing, arm, room]);
+  }, [editing]);
   useEffect(() => {
     if (!editing) return;
     const clickAway = (event: PointerEvent) => {
@@ -119,6 +53,7 @@ export function LocalBubbleChat({
       focused.current = document.activeElement === node;
     }
   });
+  if (!editing && !text) return null;
   return (
     <group ref={anchor} position={playerBubbleAnchor.toArray()}>
       <Html
@@ -134,7 +69,7 @@ export function LocalBubbleChat({
                 {text ? `${text}\u200b` : "Say something…"}
               </span>
               <textarea
-                ref={focusInput}
+                ref={input}
                 aria-label="Chat"
                 aria-describedby="bubble-chat-help"
                 placeholder="Say something…"
