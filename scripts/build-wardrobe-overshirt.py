@@ -8,7 +8,7 @@ ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT/'scripts'))
 assert shutil.disk_usage(ROOT).free>=4*1024**3+64*1024**2
 from wardrobe_rig import approved_rig,duplicate,export_item,role,RAW,import_model,rebind,remove_source_rig
 from wardrobe_surfaces import Surface,knit_surface,finish_garment,reduce_garment,bind_surface
-from wardrobe_fitted_cloth import fitted_profiles,fit_upper_neck_skin,blend_neck_skin_weights
+from wardrobe_fitted_cloth import fitted_profiles,fit_upper_neck_skin,blend_neck_skin_weights,stabilize_waist
 from wardrobe_materials import tinted_fabric_material
 os.environ['LA_BARAJ_CLOTH_STUDY']='1'
 rig,approved=approved_rig();cloth=tinted_fabric_material('Wardrobe_Overshirt_Navy_Fitted',(.089354,.134031,.210619),'cap-cotton',roughness=.90,normal_strength=.3)
@@ -71,7 +71,7 @@ result=bmesh.ops.extrude_edge_only(bm,edges=boundary)
 for v in[item for item in result['geom']if isinstance(item,bmesh.types.BMVert)]:
  _,index,_=kd.find(v.co);v.co-=normals[index]*.002
 bm.to_mesh(shirt.data);bm.free()
-bind_surface(shirt,neck_reference,rig);role(shirt,'top');parts=[shirt]
+bind_surface(shirt,neck_reference,rig);stabilize_waist(shirt);role(shirt,'top');parts=[shirt]
 shirt.data.calc_loop_triangles();tree=BVHTree.FromPolygons([v.co.copy()for v in shirt.data.vertices],[list(t.vertices)for t in shirt.data.loop_triangles],all_triangles=True)
 def front(x,z):
  hit,_,_,_=tree.ray_cast(Vector((x,-1,z)),Vector((0,1,0)),2)

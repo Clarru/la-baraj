@@ -1,0 +1,844 @@
+{
+  "head": "4db6aa1e1e4941abfb84574f63adf636cb918c36",
+  "errors": [],
+  "sockets": [],
+  "external": [
+    "https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100..900&display=swap",
+    "https://fonts.gstatic.com/s/geistmono/v6/or3nQ6H-1_WfwkMZI_qYFrcdmhHkjko.woff2",
+    "https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100..900&display=swap",
+    "https://fonts.gstatic.com/s/geistmono/v6/or3nQ6H-1_WfwkMZI_qYFrcdmhHkjko.woff2"
+  ],
+  "checks": [
+    {
+      "look": "overshirt",
+      "interaction": "F at fire",
+      "state": {
+        "status": "online",
+        "id": "a400673b-98f2-4c9c-b07e-1023b5f114aa",
+        "home": 0,
+        "appearance": {
+          "version": 1,
+          "body": "male",
+          "hair": "parted",
+          "hat": "none",
+          "hatColor": "original",
+          "top": "trail-overshirt",
+          "bottom": "classic",
+          "shoes": "lake-boots",
+          "beard": "full",
+          "hairColor": "brown",
+          "topColor": "original",
+          "bottomColor": "original"
+        },
+        "available": true,
+        "position": [
+          39.27000045776367,
+          2.314319610595703,
+          40.37621307373047
+        ],
+        "activity": {
+          "anchor": [
+            39.27,
+            1.364319674400397,
+            40.37621203413667
+          ],
+          "facing": 4.71238898038469,
+          "seatHeight": 1.914319674400397,
+          "kind": "sit",
+          "startedAt": 75542.69999998808
+        },
+        "scooter": {
+          "mounted": false,
+          "parked": [
+            53.68602158793589,
+            4.86688232421875,
+            63.42878752161689
+          ],
+          "yaw": 3.13660235889303,
+          "speed": 0
+        },
+        "boat": {
+          "mounted": false,
+          "parked": [
+            3.7,
+            0.05,
+            38.87531356447997
+          ],
+          "yaw": 3.141592653589793,
+          "speed": 0,
+          "velocity": [
+            0,
+            0
+          ],
+          "angularVelocity": 0,
+          "rudder": 0
+        },
+        "remotes": [
+          {
+            "id": "072b9b7f-d9f5-4886-8799-74579efc9cf2",
+            "nickname": "Mobile QA",
+            "position": [
+              41.575,
+              1.392,
+              39.26
+            ],
+            "yaw": 2.188,
+            "animation": "Idle_Neutral",
+            "activity": "none",
+            "vehicle": "none",
+            "homeIndex": 1,
+            "posture": "standing",
+            "speed": 0,
+            "jumpPhase": "grounded",
+            "boat": {
+              "position": [
+                -3.7,
+                38.875
+              ],
+              "yaw": 3.141,
+              "velocity": [
+                0,
+                0
+              ]
+            },
+            "boatImpactRevision": 0,
+            "appearance": {
+              "version": 1,
+              "body": "male",
+              "hair": "parted",
+              "hat": "none",
+              "hatColor": "original",
+              "top": "lake-workshirt",
+              "bottom": "classic",
+              "shoes": "lake-boots",
+              "beard": "full",
+              "hairColor": "brown",
+              "topColor": "original",
+              "bottomColor": "original"
+            }
+          }
+        ]
+      },
+      "observer": [
+        {
+          "id": "a400673b-98f2-4c9c-b07e-1023b5f114aa",
+          "nickname": "Clothing QA A",
+          "position": [
+            39.27,
+            1.464,
+            40.376
+          ],
+          "yaw": -1.571,
+          "animation": "Activity_Sit",
+          "activity": "sit",
+          "vehicle": "none",
+          "homeIndex": 0,
+          "posture": "standing",
+          "speed": 0,
+          "jumpPhase": "grounded",
+          "boat": {
+            "position": [
+              3.7,
+              38.875
+            ],
+            "yaw": 3.141,
+            "velocity": [
+              0,
+              0
+            ]
+          },
+          "boatImpactRevision": 0,
+          "seatId": "campfire-1:seat:1",
+          "appearance": {
+            "version": 1,
+            "body": "male",
+            "hair": "parted",
+            "hat": "none",
+            "hatColor": "original",
+            "top": "trail-overshirt",
+            "bottom": "classic",
+            "shoes": "lake-boots",
+            "beard": "full",
+            "hairColor": "brown",
+            "topColor": "original",
+            "bottomColor": "original"
+          }
+        }
+      ]
+    },
+    {
+      "look": "rust-knit-canvas",
+      "before": [
+        39.222442626953125,
+        2.9341752529144287,
+        40.37621307373047
+      ],
+      "after": {
+        "status": "online",
+        "id": "a400673b-98f2-4c9c-b07e-1023b5f114aa",
+        "home": 0,
+        "appearance": {
+          "version": 1,
+          "body": "male",
+          "hair": "parted",
+          "hat": "none",
+          "hatColor": "original",
+          "top": "weekend-knit",
+          "bottom": "classic",
+          "shoes": "canvas-low",
+          "beard": "full",
+          "hairColor": "brown",
+          "topColor": "rust",
+          "bottomColor": "original"
+        },
+        "available": true,
+        "position": [
+          40.4788818359375,
+          2.464787244796753,
+          42.15399932861328
+        ],
+        "activity": {
+          "kind": "none",
+          "startedAt": 91352.69999998808
+        },
+        "scooter": {
+          "mounted": false,
+          "parked": [
+            53.68602158793589,
+            4.86688232421875,
+            63.42878752161689
+          ],
+          "yaw": 3.13660235889303,
+          "speed": 0
+        },
+        "boat": {
+          "mounted": false,
+          "parked": [
+            3.7,
+            0.05,
+            38.87531356447997
+          ],
+          "yaw": 3.141592653589793,
+          "speed": 0,
+          "velocity": [
+            0,
+            0
+          ],
+          "angularVelocity": 0,
+          "rudder": 0
+        },
+        "remotes": [
+          {
+            "id": "072b9b7f-d9f5-4886-8799-74579efc9cf2",
+            "nickname": "Mobile QA",
+            "position": [
+              41.575,
+              1.392,
+              39.26
+            ],
+            "yaw": 2.188,
+            "animation": "Idle_Neutral",
+            "activity": "none",
+            "vehicle": "none",
+            "homeIndex": 1,
+            "posture": "standing",
+            "speed": 0,
+            "jumpPhase": "grounded",
+            "boat": {
+              "position": [
+                -3.7,
+                38.875
+              ],
+              "yaw": 3.141,
+              "velocity": [
+                0,
+                0
+              ]
+            },
+            "boatImpactRevision": 0,
+            "appearance": {
+              "version": 1,
+              "body": "male",
+              "hair": "parted",
+              "hat": "none",
+              "hatColor": "original",
+              "top": "lake-workshirt",
+              "bottom": "classic",
+              "shoes": "lake-boots",
+              "beard": "full",
+              "hairColor": "brown",
+              "topColor": "original",
+              "bottomColor": "original"
+            }
+          }
+        ]
+      },
+      "observer": [
+        {
+          "id": "a400673b-98f2-4c9c-b07e-1023b5f114aa",
+          "nickname": "Clothing QA A",
+          "position": [
+            40.479,
+            1.398,
+            42.154
+          ],
+          "yaw": 0.615,
+          "animation": "Idle_Neutral",
+          "activity": "none",
+          "vehicle": "none",
+          "homeIndex": 0,
+          "posture": "standing",
+          "speed": 0.05,
+          "jumpPhase": "grounded",
+          "boat": {
+            "position": [
+              3.7,
+              38.875
+            ],
+            "yaw": 3.141,
+            "velocity": [
+              0,
+              0
+            ]
+          },
+          "boatImpactRevision": 0,
+          "appearance": {
+            "version": 1,
+            "body": "male",
+            "hair": "parted",
+            "hat": "none",
+            "hatColor": "original",
+            "top": "weekend-knit",
+            "bottom": "classic",
+            "shoes": "canvas-low",
+            "beard": "full",
+            "hairColor": "brown",
+            "topColor": "rust",
+            "bottomColor": "original"
+          }
+        }
+      ]
+    },
+    {
+      "look": "female",
+      "stage": "move-and-crouch",
+      "state": {
+        "status": "online",
+        "id": "a400673b-98f2-4c9c-b07e-1023b5f114aa",
+        "home": 0,
+        "appearance": {
+          "version": 1,
+          "body": "female"
+        },
+        "available": true,
+        "position": [
+          38.571014404296875,
+          1.9443392753601074,
+          43.505775451660156
+        ],
+        "activity": {
+          "kind": "none",
+          "startedAt": 110250.69999998808
+        },
+        "scooter": {
+          "mounted": false,
+          "parked": [
+            53.68602158793589,
+            4.86688232421875,
+            63.42878752161689
+          ],
+          "yaw": 3.13660235889303,
+          "speed": 0
+        },
+        "boat": {
+          "mounted": false,
+          "parked": [
+            3.7,
+            0.05,
+            38.87531356447997
+          ],
+          "yaw": 3.141592653589793,
+          "speed": 0,
+          "velocity": [
+            0,
+            0
+          ],
+          "angularVelocity": 0,
+          "rudder": 0
+        },
+        "remotes": [
+          {
+            "id": "072b9b7f-d9f5-4886-8799-74579efc9cf2",
+            "nickname": "Mobile QA",
+            "position": [
+              41.575,
+              1.392,
+              39.26
+            ],
+            "yaw": 2.188,
+            "animation": "Idle_Neutral",
+            "activity": "none",
+            "vehicle": "none",
+            "homeIndex": 1,
+            "posture": "standing",
+            "speed": 0,
+            "jumpPhase": "grounded",
+            "boat": {
+              "position": [
+                -3.7,
+                38.875
+              ],
+              "yaw": 3.141,
+              "velocity": [
+                0,
+                0
+              ]
+            },
+            "boatImpactRevision": 0,
+            "appearance": {
+              "version": 1,
+              "body": "male",
+              "hair": "parted",
+              "hat": "none",
+              "hatColor": "original",
+              "top": "lake-workshirt",
+              "bottom": "classic",
+              "shoes": "lake-boots",
+              "beard": "full",
+              "hairColor": "brown",
+              "topColor": "original",
+              "bottomColor": "original"
+            }
+          }
+        ]
+      },
+      "observer": [
+        {
+          "id": "a400673b-98f2-4c9c-b07e-1023b5f114aa",
+          "nickname": "Clothing QA A",
+          "position": [
+            38.571,
+            1.379,
+            43.506
+          ],
+          "yaw": -0.955,
+          "animation": "Crouch_Idle",
+          "activity": "none",
+          "vehicle": "none",
+          "homeIndex": 0,
+          "posture": "crouching",
+          "speed": 0,
+          "jumpPhase": "grounded",
+          "boat": {
+            "position": [
+              3.7,
+              38.875
+            ],
+            "yaw": 3.141,
+            "velocity": [
+              0,
+              0
+            ]
+          },
+          "boatImpactRevision": 0,
+          "appearance": {
+            "version": 1,
+            "body": "female"
+          }
+        }
+      ]
+    },
+    {
+      "look": "female",
+      "stage": "prone",
+      "observer": [
+        {
+          "id": "a400673b-98f2-4c9c-b07e-1023b5f114aa",
+          "nickname": "Clothing QA A",
+          "position": [
+            38.571,
+            1.839,
+            43.506
+          ],
+          "yaw": -0.955,
+          "animation": "Prone_Idle",
+          "activity": "none",
+          "vehicle": "none",
+          "homeIndex": 0,
+          "posture": "prone",
+          "speed": 0,
+          "jumpPhase": "grounded",
+          "boat": {
+            "position": [
+              3.7,
+              38.875
+            ],
+            "yaw": 3.141,
+            "velocity": [
+              0,
+              0
+            ]
+          },
+          "boatImpactRevision": 0,
+          "appearance": {
+            "version": 1,
+            "body": "female"
+          }
+        }
+      ]
+    },
+    {
+      "look": "female",
+      "stage": "grounded-fire-sit",
+      "state": {
+        "status": "online",
+        "id": "a400673b-98f2-4c9c-b07e-1023b5f114aa",
+        "home": 0,
+        "appearance": {
+          "version": 1,
+          "body": "female"
+        },
+        "available": true,
+        "position": [
+          39.27000045776367,
+          2.314319610595703,
+          40.37621307373047
+        ],
+        "activity": {
+          "anchor": [
+            39.27,
+            1.364319674400397,
+            40.37621203413667
+          ],
+          "facing": 4.71238898038469,
+          "seatHeight": 1.914319674400397,
+          "kind": "sit",
+          "startedAt": 131990.19999998808
+        },
+        "scooter": {
+          "mounted": false,
+          "parked": [
+            53.68602158793589,
+            4.86688232421875,
+            63.42878752161689
+          ],
+          "yaw": 3.13660235889303,
+          "speed": 0
+        },
+        "boat": {
+          "mounted": false,
+          "parked": [
+            3.7,
+            0.05,
+            38.87531356447997
+          ],
+          "yaw": 3.141592653589793,
+          "speed": 0,
+          "velocity": [
+            0,
+            0
+          ],
+          "angularVelocity": 0,
+          "rudder": 0
+        },
+        "remotes": [
+          {
+            "id": "072b9b7f-d9f5-4886-8799-74579efc9cf2",
+            "nickname": "Mobile QA",
+            "position": [
+              41.575,
+              1.392,
+              39.26
+            ],
+            "yaw": 2.188,
+            "animation": "Idle_Neutral",
+            "activity": "none",
+            "vehicle": "none",
+            "homeIndex": 1,
+            "posture": "standing",
+            "speed": 0,
+            "jumpPhase": "grounded",
+            "boat": {
+              "position": [
+                -3.7,
+                38.875
+              ],
+              "yaw": 3.141,
+              "velocity": [
+                0,
+                0
+              ]
+            },
+            "boatImpactRevision": 0,
+            "appearance": {
+              "version": 1,
+              "body": "male",
+              "hair": "parted",
+              "hat": "none",
+              "hatColor": "original",
+              "top": "lake-workshirt",
+              "bottom": "classic",
+              "shoes": "lake-boots",
+              "beard": "full",
+              "hairColor": "brown",
+              "topColor": "original",
+              "bottomColor": "original"
+            }
+          }
+        ]
+      },
+      "observer": [
+        {
+          "id": "a400673b-98f2-4c9c-b07e-1023b5f114aa",
+          "nickname": "Clothing QA A",
+          "position": [
+            39.27,
+            1.464,
+            40.376
+          ],
+          "yaw": -1.571,
+          "animation": "Activity_Sit",
+          "activity": "sit",
+          "vehicle": "none",
+          "homeIndex": 0,
+          "posture": "standing",
+          "speed": 0,
+          "jumpPhase": "grounded",
+          "boat": {
+            "position": [
+              3.7,
+              38.875
+            ],
+            "yaw": 3.141,
+            "velocity": [
+              0,
+              0
+            ]
+          },
+          "boatImpactRevision": 0,
+          "seatId": "campfire-1:seat:1",
+          "appearance": {
+            "version": 1,
+            "body": "female"
+          }
+        }
+      ]
+    },
+    {
+      "look": "female",
+      "stage": "front-grounded",
+      "observer": [
+        {
+          "id": "a400673b-98f2-4c9c-b07e-1023b5f114aa",
+          "nickname": "Clothing QA A",
+          "position": [
+            39.198,
+            1.898,
+            40.376
+          ],
+          "yaw": -1.571,
+          "animation": "Idle_Neutral",
+          "activity": "none",
+          "vehicle": "none",
+          "homeIndex": 0,
+          "posture": "standing",
+          "speed": 0,
+          "jumpPhase": "grounded",
+          "boat": {
+            "position": [
+              3.7,
+              38.875
+            ],
+            "yaw": 3.141,
+            "velocity": [
+              0,
+              0
+            ]
+          },
+          "boatImpactRevision": 0,
+          "appearance": {
+            "version": 1,
+            "body": "female"
+          }
+        }
+      ]
+    },
+    {
+      "look": "knit",
+      "stage": "grounded-fire-sit",
+      "state": {
+        "status": "online",
+        "id": "a400673b-98f2-4c9c-b07e-1023b5f114aa",
+        "home": 0,
+        "appearance": {
+          "version": 1,
+          "body": "male",
+          "hair": "parted",
+          "hat": "none",
+          "hatColor": "original",
+          "top": "weekend-knit",
+          "bottom": "classic",
+          "shoes": "lake-boots",
+          "beard": "full",
+          "hairColor": "brown",
+          "topColor": "original",
+          "bottomColor": "original"
+        },
+        "available": true,
+        "position": [
+          39.27000045776367,
+          2.314319610595703,
+          40.37621307373047
+        ],
+        "activity": {
+          "anchor": [
+            39.27,
+            1.364319674400397,
+            40.37621203413667
+          ],
+          "facing": 4.71238898038469,
+          "seatHeight": 1.914319674400397,
+          "kind": "sit",
+          "startedAt": 257036.5
+        },
+        "scooter": {
+          "mounted": false,
+          "parked": [
+            53.68602158793589,
+            4.86688232421875,
+            63.42878752161689
+          ],
+          "yaw": 3.13660235889303,
+          "speed": 0
+        },
+        "boat": {
+          "mounted": false,
+          "parked": [
+            3.7,
+            0.05,
+            38.87531356447997
+          ],
+          "yaw": 3.141592653589793,
+          "speed": 0,
+          "velocity": [
+            0,
+            0
+          ],
+          "angularVelocity": 0,
+          "rudder": 0
+        },
+        "remotes": [
+          {
+            "id": "072b9b7f-d9f5-4886-8799-74579efc9cf2",
+            "nickname": "Mobile QA",
+            "position": [
+              41.575,
+              1.392,
+              39.26
+            ],
+            "yaw": 2.188,
+            "animation": "Idle_Neutral",
+            "activity": "none",
+            "vehicle": "none",
+            "homeIndex": 1,
+            "posture": "standing",
+            "speed": 0,
+            "jumpPhase": "grounded",
+            "boat": {
+              "position": [
+                -3.7,
+                38.875
+              ],
+              "yaw": 3.141,
+              "velocity": [
+                0,
+                0
+              ]
+            },
+            "boatImpactRevision": 0,
+            "appearance": {
+              "version": 1,
+              "body": "male",
+              "hair": "parted",
+              "hat": "none",
+              "hatColor": "original",
+              "top": "lake-workshirt",
+              "bottom": "classic",
+              "shoes": "lake-boots",
+              "beard": "full",
+              "hairColor": "brown",
+              "topColor": "original",
+              "bottomColor": "original"
+            }
+          }
+        ]
+      },
+      "observer": [
+        {
+          "id": "a400673b-98f2-4c9c-b07e-1023b5f114aa",
+          "nickname": "Clothing QA A",
+          "position": [
+            39.27,
+            1.464,
+            40.376
+          ],
+          "yaw": -1.571,
+          "animation": "Activity_Sit",
+          "activity": "sit",
+          "vehicle": "none",
+          "homeIndex": 0,
+          "posture": "standing",
+          "speed": 0,
+          "jumpPhase": "grounded",
+          "boat": {
+            "position": [
+              3.7,
+              38.875
+            ],
+            "yaw": 3.141,
+            "velocity": [
+              0,
+              0
+            ]
+          },
+          "boatImpactRevision": 0,
+          "seatId": "campfire-1:seat:1",
+          "appearance": {
+            "version": 1,
+            "body": "male",
+            "hair": "parted",
+            "hat": "none",
+            "hatColor": "original",
+            "top": "weekend-knit",
+            "bottom": "classic",
+            "shoes": "lake-boots",
+            "beard": "full",
+            "hairColor": "brown",
+            "topColor": "original",
+            "bottomColor": "original"
+          }
+        }
+      ]
+    }
+  ],
+  "controlsFailure": "First owned context closed automatically after a QA locator timeout: Noon is a select option, not a button. Night/initial/movement screenshots retained. No leaked headless Chrome process remained.",
+  "finishedGame": true,
+  "firstContextEvidence": {
+    "defaultCandidateDownloads": 0,
+    "overshirtMovement": {
+      "before": [
+        55.384254455566406,
+        6.049004554748535,
+        63.78707504272461
+      ],
+      "after": [
+        56.75438690185547,
+        6.125586986541748,
+        65.70879364013672
+      ]
+    },
+    "source": "Observed in earlier tool result; the context subsequently auto-closed after the documented QA locator timeout. Raw initial/moved frames retained."
+  },
+  "ownedContextsClosed": true,
+  "externalRequestExplanation": "EnvironmentLab/Dialkit loads Google Geist Mono font CSS/woff2. No production sockets or user storage/recipes were used."
+}

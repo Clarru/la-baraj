@@ -48,7 +48,7 @@ The source character, scripts, rig and animation are excluded.
 
 ## Verification
 
-609 frontend tests pass against the candidate GLBs. TypeScript passes. Tests
+613 frontend tests pass against the candidate GLBs. TypeScript passes. Tests
 cover actual chest bounds, tucked underlayer coverage, version hashes, per-player
 colour isolation, retained maps and original-colour restoration. The optimizer
 checks canonical inverse binds, 65 joints, skin attributes and no duplicate clips.
@@ -63,3 +63,7 @@ shoes, cream overshirt in Run with long hair, rust knit in Walk with buzzed hair
 and female Idle/Wave/Run/Jump samples. All browser reports have zero page errors
 and zero network requests. Contact sheets are compositions of actual renders.
 These sampled views do not prove every possible outfit/animation combination.
+
+The first shared-world review and its qualifications are in WORLD_REVIEW.md.
+The initial render/ images describe the earlier frozen candidate. The updated
+male top evidence is in final-male-tops/ and its hashes are in exports.json.

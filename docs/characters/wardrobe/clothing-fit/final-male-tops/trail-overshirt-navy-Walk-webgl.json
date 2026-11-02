@@ -1,0 +1,77 @@
+{
+  "appearance": {
+    "version": 1,
+    "body": "male",
+    "top": "trail-overshirt",
+    "topColor": "navy",
+    "bottom": "weekend-shorts",
+    "shoes": "canvas-low"
+  },
+  "focus": "pose",
+  "scope": "Actual GLB/wardrobe code and Appearance preview light/pose; offscreen single asset, no Game scene or listener",
+  "assets": [
+    {
+      "id": "male-custom-top-skin",
+      "sha256": "dc380bf25f3fc7c2e22d7a67019e8ccdfdb7ec165671cccba41b4e2a7c599a37"
+    },
+    {
+      "id": "top-trail-overshirt",
+      "sha256": "db4e08615b05d0ac2556dbacffb7276dbdb73c2bfc6941f6d2d671978acc6c90"
+    },
+    {
+      "id": "bottom-weekend-shorts",
+      "sha256": "ede3a1e260f7431b5463b67770e974c7048b102c8f0962b76cfc92511f1377d0"
+    },
+    {
+      "id": "shoes-canvas-low",
+      "sha256": "83d8c7461574b59f679e52b2d72f8faa5a2d28f41ae22e16d902f354181ad61b"
+    }
+  ],
+  "errors": [],
+  "requests": [],
+  "animations": [
+    "HitRecieve",
+    "Idle_Neutral",
+    "Jog",
+    "Jump_Land",
+    "Jump_Loop",
+    "Jump_Start",
+    "Punch_Left",
+    "Punch_Right",
+    "Run",
+    "Walk",
+    "Wave",
+    "Jump_RunStart",
+    "Jump_RunAir",
+    "Jump_RunLand",
+    "Activity_Catch",
+    "Activity_HoldRod",
+    "Activity_SitDown",
+    "Activity_StandUp",
+    "Activity_Sit",
+    "Activity_Cast",
+    "Activity_ScootLeft",
+    "Activity_ScootRight",
+    "Activity_LightFire",
+    "Swim_Forward",
+    "Swim_Idle",
+    "Punch_Jab",
+    "Punch_Hit",
+    "Crouch_Idle",
+    "Crouch_Walk",
+    "Prone_Idle",
+    "Prone_Crawl",
+    "Activity_BiteGesture",
+    "Activity_ReelGesture",
+    "Social_Wave"
+  ],
+  "pose": {
+    "name": "Walk",
+    "time": 0.3
+  },
+  "stats": {
+    "calls": 15,
+    "triangles": 30735,
+    "renderer": "WebKit WebGL"
+  }
+}

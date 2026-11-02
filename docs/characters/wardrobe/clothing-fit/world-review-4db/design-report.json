@@ -1,0 +1,449 @@
+{
+  "head": "4db6aa1e1e4941abfb84574f63adf636cb918c36",
+  "scope": "Real paired authority/client/wardrobe fixture; canonical clip playback, not physical gameplay",
+  "checks": [
+    {
+      "kind": "colour-and-peer-isolation",
+      "top": "trail-overshirt",
+      "topColor": "original",
+      "other": {
+        "version": 1,
+        "body": "male",
+        "hair": "parted",
+        "hat": "none",
+        "hatColor": "original",
+        "top": "trail-overshirt",
+        "bottom": "classic",
+        "shoes": "canvas-low",
+        "beard": "moustache",
+        "hairColor": "brown",
+        "topColor": "original",
+        "bottomColor": "original"
+      }
+    },
+    {
+      "kind": "colour-and-peer-isolation",
+      "top": "trail-overshirt",
+      "topColor": "navy",
+      "other": {
+        "version": 1,
+        "body": "male",
+        "hair": "parted",
+        "hat": "none",
+        "hatColor": "original",
+        "top": "trail-overshirt",
+        "bottom": "classic",
+        "shoes": "canvas-low",
+        "beard": "moustache",
+        "hairColor": "brown",
+        "topColor": "original",
+        "bottomColor": "original"
+      }
+    },
+    {
+      "kind": "colour-and-peer-isolation",
+      "top": "trail-overshirt",
+      "topColor": "sage",
+      "other": {
+        "version": 1,
+        "body": "male",
+        "hair": "parted",
+        "hat": "none",
+        "hatColor": "original",
+        "top": "trail-overshirt",
+        "bottom": "classic",
+        "shoes": "canvas-low",
+        "beard": "moustache",
+        "hairColor": "brown",
+        "topColor": "original",
+        "bottomColor": "original"
+      }
+    },
+    {
+      "kind": "colour-and-peer-isolation",
+      "top": "trail-overshirt",
+      "topColor": "charcoal",
+      "other": {
+        "version": 1,
+        "body": "male",
+        "hair": "parted",
+        "hat": "none",
+        "hatColor": "original",
+        "top": "trail-overshirt",
+        "bottom": "classic",
+        "shoes": "canvas-low",
+        "beard": "moustache",
+        "hairColor": "brown",
+        "topColor": "original",
+        "bottomColor": "original"
+      }
+    },
+    {
+      "kind": "colour-and-peer-isolation",
+      "top": "trail-overshirt",
+      "topColor": "cream",
+      "other": {
+        "version": 1,
+        "body": "male",
+        "hair": "parted",
+        "hat": "none",
+        "hatColor": "original",
+        "top": "trail-overshirt",
+        "bottom": "classic",
+        "shoes": "canvas-low",
+        "beard": "moustache",
+        "hairColor": "brown",
+        "topColor": "original",
+        "bottomColor": "original"
+      }
+    },
+    {
+      "kind": "colour-and-peer-isolation",
+      "top": "trail-overshirt",
+      "topColor": "rust",
+      "other": {
+        "version": 1,
+        "body": "male",
+        "hair": "parted",
+        "hat": "none",
+        "hatColor": "original",
+        "top": "trail-overshirt",
+        "bottom": "classic",
+        "shoes": "canvas-low",
+        "beard": "moustache",
+        "hairColor": "brown",
+        "topColor": "original",
+        "bottomColor": "original"
+      }
+    },
+    {
+      "kind": "clip-fit",
+      "top": "trail-overshirt",
+      "animation": "Walk"
+    },
+    {
+      "kind": "clip-fit",
+      "top": "trail-overshirt",
+      "animation": "Run"
+    },
+    {
+      "kind": "clip-fit",
+      "top": "trail-overshirt",
+      "animation": "Social_Wave"
+    },
+    {
+      "kind": "clip-fit",
+      "top": "trail-overshirt",
+      "animation": "Activity_Sit"
+    },
+    {
+      "kind": "clip-fit",
+      "top": "trail-overshirt",
+      "animation": "Crouch_Idle"
+    },
+    {
+      "kind": "clip-fit",
+      "top": "trail-overshirt",
+      "animation": "Prone_Idle"
+    },
+    {
+      "kind": "clip-fit",
+      "top": "trail-overshirt",
+      "animation": "Swim_Idle"
+    },
+    {
+      "kind": "colour-and-peer-isolation",
+      "top": "weekend-knit",
+      "topColor": "original",
+      "other": {
+        "version": 1,
+        "body": "male",
+        "hair": "parted",
+        "hat": "none",
+        "hatColor": "original",
+        "top": "weekend-knit",
+        "bottom": "classic",
+        "shoes": "canvas-low",
+        "beard": "moustache",
+        "hairColor": "brown",
+        "topColor": "original",
+        "bottomColor": "original"
+      }
+    },
+    {
+      "kind": "colour-and-peer-isolation",
+      "top": "weekend-knit",
+      "topColor": "navy",
+      "other": {
+        "version": 1,
+        "body": "male",
+        "hair": "parted",
+        "hat": "none",
+        "hatColor": "original",
+        "top": "weekend-knit",
+        "bottom": "classic",
+        "shoes": "canvas-low",
+        "beard": "moustache",
+        "hairColor": "brown",
+        "topColor": "original",
+        "bottomColor": "original"
+      }
+    },
+    {
+      "kind": "colour-and-peer-isolation",
+      "top": "weekend-knit",
+      "topColor": "sage",
+      "other": {
+        "version": 1,
+        "body": "male",
+        "hair": "parted",
+        "hat": "none",
+        "hatColor": "original",
+        "top": "weekend-knit",
+        "bottom": "classic",
+        "shoes": "canvas-low",
+        "beard": "moustache",
+        "hairColor": "brown",
+        "topColor": "original",
+        "bottomColor": "original"
+      }
+    },
+    {
+      "kind": "colour-and-peer-isolation",
+      "top": "weekend-knit",
+      "topColor": "charcoal",
+      "other": {
+        "version": 1,
+        "body": "male",
+        "hair": "parted",
+        "hat": "none",
+        "hatColor": "original",
+        "top": "weekend-knit",
+        "bottom": "classic",
+        "shoes": "canvas-low",
+        "beard": "moustache",
+        "hairColor": "brown",
+        "topColor": "original",
+        "bottomColor": "original"
+      }
+    },
+    {
+      "kind": "colour-and-peer-isolation",
+      "top": "weekend-knit",
+      "topColor": "cream",
+      "other": {
+        "version": 1,
+        "body": "male",
+        "hair": "parted",
+        "hat": "none",
+        "hatColor": "original",
+        "top": "weekend-knit",
+        "bottom": "classic",
+        "shoes": "canvas-low",
+        "beard": "moustache",
+        "hairColor": "brown",
+        "topColor": "original",
+        "bottomColor": "original"
+      }
+    },
+    {
+      "kind": "colour-and-peer-isolation",
+      "top": "weekend-knit",
+      "topColor": "rust",
+      "other": {
+        "version": 1,
+        "body": "male",
+        "hair": "parted",
+        "hat": "none",
+        "hatColor": "original",
+        "top": "weekend-knit",
+        "bottom": "classic",
+        "shoes": "canvas-low",
+        "beard": "moustache",
+        "hairColor": "brown",
+        "topColor": "original",
+        "bottomColor": "original"
+      }
+    },
+    {
+      "kind": "clip-fit",
+      "top": "weekend-knit",
+      "animation": "Walk"
+    },
+    {
+      "kind": "clip-fit",
+      "top": "weekend-knit",
+      "animation": "Run"
+    },
+    {
+      "kind": "clip-fit",
+      "top": "weekend-knit",
+      "animation": "Social_Wave"
+    },
+    {
+      "kind": "clip-fit",
+      "top": "weekend-knit",
+      "animation": "Activity_Sit"
+    },
+    {
+      "kind": "clip-fit",
+      "top": "weekend-knit",
+      "animation": "Crouch_Idle"
+    },
+    {
+      "kind": "clip-fit",
+      "top": "weekend-knit",
+      "animation": "Prone_Idle"
+    },
+    {
+      "kind": "clip-fit",
+      "top": "weekend-knit",
+      "animation": "Swim_Idle"
+    },
+    {
+      "kind": "female-clip-fit",
+      "animation": "Idle_Neutral"
+    },
+    {
+      "kind": "female-clip-fit",
+      "animation": "Walk"
+    },
+    {
+      "kind": "female-clip-fit",
+      "animation": "Run"
+    },
+    {
+      "kind": "female-clip-fit",
+      "animation": "Jump_Loop"
+    },
+    {
+      "kind": "female-clip-fit",
+      "animation": "Activity_Sit"
+    },
+    {
+      "kind": "female-clip-fit",
+      "animation": "Crouch_Idle"
+    },
+    {
+      "kind": "female-clip-fit",
+      "animation": "Prone_Idle"
+    },
+    {
+      "kind": "female-clip-fit",
+      "animation": "Swim_Idle"
+    },
+    {
+      "kind": "canvas-bottom-fit",
+      "bottom": "classic"
+    },
+    {
+      "kind": "canvas-bottom-fit",
+      "bottom": "trail-cargo"
+    },
+    {
+      "kind": "canvas-bottom-fit",
+      "bottom": "weekend-shorts"
+    }
+  ],
+  "errors": [],
+  "consoleErrors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ],
+  "sockets": [],
+  "external": [],
+  "views": [
+    "trail-overshirt-original",
+    "trail-overshirt-navy",
+    "trail-overshirt-sage",
+    "trail-overshirt-charcoal",
+    "trail-overshirt-cream",
+    "trail-overshirt-rust",
+    "trail-overshirt-original-restored",
+    "trail-overshirt-Walk-full",
+    "trail-overshirt-Walk-side",
+    "trail-overshirt-Walk-rear",
+    "trail-overshirt-Run-full",
+    "trail-overshirt-Run-side",
+    "trail-overshirt-Run-rear",
+    "trail-overshirt-Social_Wave-full",
+    "trail-overshirt-Social_Wave-side",
+    "trail-overshirt-Social_Wave-rear",
+    "trail-overshirt-Activity_Sit-full",
+    "trail-overshirt-Activity_Sit-side",
+    "trail-overshirt-Activity_Sit-rear",
+    "trail-overshirt-Crouch_Idle-full",
+    "trail-overshirt-Crouch_Idle-side",
+    "trail-overshirt-Crouch_Idle-rear",
+    "trail-overshirt-Prone_Idle-full",
+    "trail-overshirt-Prone_Idle-side",
+    "trail-overshirt-Prone_Idle-rear",
+    "trail-overshirt-Swim_Idle-full",
+    "trail-overshirt-Swim_Idle-side",
+    "trail-overshirt-Swim_Idle-rear",
+    "weekend-knit-original",
+    "weekend-knit-navy",
+    "weekend-knit-sage",
+    "weekend-knit-charcoal",
+    "weekend-knit-cream",
+    "weekend-knit-rust",
+    "weekend-knit-original-restored",
+    "weekend-knit-Walk-full",
+    "weekend-knit-Walk-side",
+    "weekend-knit-Walk-rear",
+    "weekend-knit-Run-full",
+    "weekend-knit-Run-side",
+    "weekend-knit-Run-rear",
+    "weekend-knit-Social_Wave-full",
+    "weekend-knit-Social_Wave-side",
+    "weekend-knit-Social_Wave-rear",
+    "weekend-knit-Activity_Sit-full",
+    "weekend-knit-Activity_Sit-side",
+    "weekend-knit-Activity_Sit-rear",
+    "weekend-knit-Crouch_Idle-full",
+    "weekend-knit-Crouch_Idle-side",
+    "weekend-knit-Crouch_Idle-rear",
+    "weekend-knit-Prone_Idle-full",
+    "weekend-knit-Prone_Idle-side",
+    "weekend-knit-Prone_Idle-rear",
+    "weekend-knit-Swim_Idle-full",
+    "weekend-knit-Swim_Idle-side",
+    "weekend-knit-Swim_Idle-rear",
+    "female-Idle_Neutral-full",
+    "female-Idle_Neutral-side",
+    "female-Idle_Neutral-rear",
+    "female-Walk-full",
+    "female-Walk-side",
+    "female-Walk-rear",
+    "female-Run-full",
+    "female-Run-side",
+    "female-Run-rear",
+    "female-Jump_Loop-full",
+    "female-Jump_Loop-side",
+    "female-Jump_Loop-rear",
+    "female-Activity_Sit-full",
+    "female-Activity_Sit-side",
+    "female-Activity_Sit-rear",
+    "female-Crouch_Idle-full",
+    "female-Crouch_Idle-side",
+    "female-Crouch_Idle-rear",
+    "female-Prone_Idle-full",
+    "female-Prone_Idle-side",
+    "female-Prone_Idle-rear",
+    "female-Swim_Idle-full",
+    "female-Swim_Idle-side",
+    "female-Swim_Idle-rear",
+    "canvas-classic-Idle_Neutral-full",
+    "canvas-classic-Idle_Neutral-side",
+    "canvas-classic-Walk-full",
+    "canvas-classic-Walk-side",
+    "canvas-trail-cargo-Idle_Neutral-full",
+    "canvas-trail-cargo-Idle_Neutral-side",
+    "canvas-trail-cargo-Walk-full",
+    "canvas-trail-cargo-Walk-side",
+    "canvas-weekend-shorts-Idle_Neutral-full",
+    "canvas-weekend-shorts-Idle_Neutral-side",
+    "canvas-weekend-shorts-Walk-full",
+    "canvas-weekend-shorts-Walk-side"
+  ],
+  "failure": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n+ [\n+   'Failed to load resource: the server responded with a status of 404 (Not Found)'\n+ ]\n- []\n"
+}

@@ -110,7 +110,10 @@ control=bpy.data.materials.new('Unused canvas stitch bake control');control.use_
 parts=cloth_atlas(body,parts,cloth,control,'authored-canvas',high_uv_scale=4,roughness_range=(.88,.97))
 export_item(rig,parts,'shoes-canvas-low')
 bpy.ops.wm.save_as_mainfile(filepath=str(RAW/'authored-canvas-study.blend'),compress=True)
+provenance=json.loads((ROOT/'assets/wardrobe-source/licenses/rex-provenance.json').read_text())
+assert provenance['sourceSHA256']==source_data['sourceSHA256']
 (ROOT/'docs/characters/wardrobe/clothing-fit/canvas-source.json').write_text(json.dumps({
+    **provenance,
     'source':'https://studio.blender.org/characters/rex/v1/',
     'license':'https://creativecommons.org/licenses/by/4.0/',
     'credit':'Rex, Sprite Fright — Blender Studio',

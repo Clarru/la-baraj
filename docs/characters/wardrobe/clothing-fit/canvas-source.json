@@ -3,5 +3,12 @@
   "license": "https://creativecommons.org/licenses/by/4.0/",
   "credit": "Rex, Sprite Fright \u2014 Blender Studio",
   "adaptation": "Shoe mesh data only; fitted to canonical feet, recoloured and surface-baked. Source rig/scripts/animation are excluded.",
-  "stage": "Unaccepted visual study"
+  "stage": "Unaccepted visual study",
+  "download": "https://studio.blender.org/download-source/files/cb/cb8d453b64a548d03bcee7671f83e599/cb8d453b64a548d03bcee7671f83e599.blend",
+  "sourceSHA256": "7e0a774da5f309cde4eb9ba313890b554b9fd8d284d2b668a28f72b1380e5335",
+  "sourceBytes": 88742805,
+  "sourcePageSHA256": "83a215ee7264b2edb137427a68c38e2f0f22d7b2c70f2b9291a02d007c1922e2",
+  "originalNoticePath": "assets/wardrobe-source/licenses/rex-cc-by-notice.html",
+  "originalNotice": "You are free to share and adapt this content - but you must give attribution to Blender Studio.",
+  "meshDataSHA256": "cf464266ac22801f6cb83ce8935f61be68a41202854c0ac39e6da821e3e28de5"
 }

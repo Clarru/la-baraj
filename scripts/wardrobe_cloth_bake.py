@@ -25,7 +25,7 @@ def prepare_cloth_surface(garment,budget=6000):
     bm.to_mesh(garment.data);bm.free()
     return high
 
-def cloth_atlas(body,parts,cloth,thread,identifier,high_uv_scale=2.4,roughness_range=(.84,.94)):
+def cloth_atlas(body,parts,cloth,thread,identifier,high_uv_scale=2.4,roughness_range=(.84,.94),bake_margin=4):
     high=bpy.data.objects.get('High cotton cloth bake source')
     if high is None:raise RuntimeError('Missing dense cloth bake source')
     out=RAW/'bakes'/identifier;out.mkdir(parents=True,exist_ok=True)
@@ -52,13 +52,13 @@ def cloth_atlas(body,parts,cloth,thread,identifier,high_uv_scale=2.4,roughness_r
     for obj in cloth_parts:obj.select_set(True)
     bpy.context.view_layer.objects.active=body;bpy.ops.object.join();parts=[body,*remaining]
     uv=body.data.uv_layers.new(name='GarmentSurface');body.data.uv_layers.active=uv
-    bpy.ops.object.mode_set(mode='EDIT');bpy.ops.mesh.select_all(action='SELECT');bpy.ops.uv.smart_project(angle_limit=math.radians(66),island_margin=.006);bpy.ops.object.mode_set(mode='OBJECT')
+    bpy.ops.object.mode_set(mode='EDIT');bpy.ops.mesh.select_all(action='SELECT');bpy.ops.uv.smart_project(angle_limit=math.radians(66),island_margin=max(.006,bake_margin/1024));bpy.ops.object.mode_set(mode='OBJECT')
     body.data.uv_layers['GarmentSurface'].active_render=True
     for obj in bpy.context.scene.objects:
         if obj.type=='MESH':obj.hide_render=obj not in parts and obj not in sources
     for obj in sources:obj.hide_set(False)
     scene=bpy.context.scene;scene.render.engine='CYCLES';scene.cycles.samples=8;scene.render.threads_mode='FIXED';scene.render.threads=4
-    scene.render.bake.margin=4;scene.render.bake.normal_space='TANGENT'
+    scene.render.bake.margin=bake_margin;scene.render.bake.normal_space='TANGENT'
     nodes,links=cloth.node_tree.nodes,cloth.node_tree.links
     shader=next(n for n in nodes if n.type=='BSDF_PRINCIPLED');output=next(n for n in nodes if n.type=='OUTPUT_MATERIAL')
     original_mix=next(n for n in nodes if n.type=='MIX'and n.data_type=='RGBA')
@@ -80,8 +80,16 @@ def cloth_atlas(body,parts,cloth,thread,identifier,high_uv_scale=2.4,roughness_r
     normal_image,normal_texture=image_node('normal',True);normal_image.generated_color=(.5,.5,1,1);normal_image.update();select_sources()
     bpy.ops.object.bake(type='NORMAL',use_clear=False,use_selected_to_active=True,cage_extrusion=.012,max_ray_distance=.03,uv_layer='GarmentSurface')
     save(normal_image,'normal')
-    color_image,color_texture=image_node('neutral albedo');select_sources()
-    bpy.ops.object.bake(type='DIFFUSE',pass_filter={'COLOR'},use_selected_to_active=True,cage_extrusion=.012,max_ray_distance=.03,uv_layer='GarmentSurface')
+    color_image,color_texture=image_node('neutral albedo')
+    # Preserve a neutral textile background in the gutter at reduced mip levels.
+    # The source and target share sRGB image encoding; do not use black padding.
+    import numpy as np
+    source_image=source_color.image
+    source_pixels=np.empty(len(source_image.pixels),dtype=np.float32)
+    source_image.pixels.foreach_get(source_pixels)
+    neutral=source_pixels.reshape(-1,source_image.channels)[:,:3].mean(axis=0)
+    color_image.generated_color=(*map(float,neutral),1);color_image.update();select_sources()
+    bpy.ops.object.bake(type='DIFFUSE',pass_filter={'COLOR'},use_clear=False,use_selected_to_active=True,cage_extrusion=.012,max_ray_distance=.03,uv_layer='GarmentSurface')
     save(color_image,'albedo')
     # AO is evaluated on the low garment and the sewn thread sources, avoiding
     # a coincident dense body casting a false shadow over the entire target.
@@ -93,8 +101,9 @@ def cloth_atlas(body,parts,cloth,thread,identifier,high_uv_scale=2.4,roughness_r
     roughness=nodes.new('ShaderNodeMapRange');roughness.inputs['From Min'].default_value=0;roughness.inputs['From Max'].default_value=1;roughness.inputs['To Min'].default_value=roughness_range[0];roughness.inputs['To Max'].default_value=roughness_range[1];links.new(luminance.outputs[0],roughness.inputs['Value'])
     channels=nodes.new('ShaderNodeCombineColor');links.new(ao.outputs['AO'],channels.inputs['Red']);links.new(roughness.outputs['Result'],channels.inputs['Green']);channels.inputs['Blue'].default_value=0
     emission=nodes.new('ShaderNodeEmission');links.new(channels.outputs[0],emission.inputs['Color']);links.new(emission.outputs[0],output.inputs['Surface'])
-    orm_image,orm_texture=image_node('occlusion roughness metalness',True);scene.cycles.samples=16
-    bpy.ops.object.bake(type='EMIT',use_selected_to_active=False,uv_layer='GarmentSurface');save(orm_image,'orm')
+    orm_image,orm_texture=image_node('occlusion roughness metalness',True)
+    orm_image.generated_color=(1,sum(roughness_range)/2,0,1);orm_image.update();scene.cycles.samples=16
+    bpy.ops.object.bake(type='EMIT',use_clear=False,use_selected_to_active=False,uv_layer='GarmentSurface');save(orm_image,'orm')
     # Replace the source weave graph with the baked, neutral atlas. All three
     # channels use the same unique UV set; player dyes remain material factors.
     nodes.clear();shader=nodes.new('ShaderNodeBsdfPrincipled');output=nodes.new('ShaderNodeOutputMaterial');links.new(shader.outputs['BSDF'],output.inputs['Surface']);shader.inputs['Specular IOR Level'].default_value=.22

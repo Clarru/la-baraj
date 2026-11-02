@@ -83,6 +83,7 @@ const originalHair = (root: THREE.Object3D) =>
 describe("atomic per-actor wardrobe changes", () => {
   it.each([
     ["weekend-knit", "Wardrobe_Knit_Charcoal_Fitted", 0.195],
+    ["weekend-knit", "Wardrobe_Knit_Charcoal_Fitted_Rib", 0.195],
     ["trail-overshirt", "Wardrobe_Overshirt_Navy_Fitted", 0.313],
     ["weekend-knit", "Wardrobe_Knit_Charcoal", 1],
     ["trail-overshirt", "Wardrobe_Overshirt_Navy", 1],

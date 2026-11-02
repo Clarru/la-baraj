@@ -74,13 +74,26 @@ for (const filename of filenames.filter(name => !selected || selected.has(name.s
     texture.setImage(original.getImage()).setMimeType(original.getMimeType()).setName("approved_"+hash);
     retainedApprovedTextures++;
   }
+  // Narrow rib strips need less texture area than the full garment atlas.
+  // Keep their material separate without adding two full-size fabric maps.
+  for (const material of doc.getRoot().listMaterials()) {
+    if (material.getName() !== "Wardrobe_Knit_Charcoal_Fitted_Rib") continue;
+    material.getBaseColorTexture()?.setName("rib_albedo");
+    material.getNormalTexture()?.setName("rib_normal");
+  }
   await doc.transform(dedup(), prune(), textureCompress({
+    encoder: sharp, targetFormat: "webp", resize: [256, 256],
+    pattern: /^rib_/, slots: /^(?!normalTexture|metallicRoughnessTexture|occlusionTexture).*$/,
+  }), textureCompress({
+    encoder: sharp, targetFormat: "webp", resize: [256, 256], lossless: true,
+    pattern: /^rib_/, slots: /^(normalTexture|metallicRoughnessTexture|occlusionTexture)$/,
+  }), textureCompress({
     encoder: sharp, targetFormat: "webp", resize: [1024, 1024],
-    pattern: /^(?!approved_)/,
+    pattern: /^(?!approved_|rib_)/,
     slots: /^(?!normalTexture|metallicRoughnessTexture|occlusionTexture).*$/,
   }), textureCompress({
     encoder: sharp, targetFormat: "webp", resize: [512, 512], lossless: true,
-    pattern: /^(?!approved_)/,
+    pattern: /^(?!approved_|rib_)/,
     slots: /^(normalTexture|metallicRoughnessTexture|occlusionTexture)$/,
   }));
   let triangles = 0;

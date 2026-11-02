@@ -4,8 +4,8 @@
 # Shoulder sides sit behind the sternum, aligned to the source upper-arm joints.
 def fitted_profiles():
     return [
-        (.990,.190,.135,.102),(1.005,.194,.135,.102),
-        (1.035,.195,.134,.100),(1.10,.185,.131,.095),
+        (.990,.190,.135,.134),(1.005,.194,.135,.134),
+        (1.035,.195,.134,.131),(1.10,.185,.131,.118),
         (1.24,.205,.141,.094),(1.37,.219,.127,.118),
         (1.43,.227,.111,.123),(1.48,.233,.070,.123),
         (1.52,.228,.055,.117),(1.555,.105,.100,.105),
@@ -122,3 +122,38 @@ def knit_edge_bands(garment,material):
             if face.normal.dot(normal)<0:face.normal_flip()
         patch.to_mesh(o.data);patch.free();result.append(o)
     bm.free();return result
+
+
+def fit_turned_bands(bands,garment):
+    """Keep the ribs outside the actual reduced shell, including sleeve taper."""
+    from mathutils import Vector
+    from mathutils.bvhtree import BVHTree
+    garment.data.calc_loop_triangles()
+    tree=BVHTree.FromPolygons([v.co.copy()for v in garment.data.vertices],
+        [list(t.vertices)for t in garment.data.loop_triangles],all_triangles=True)
+    for band in bands:
+        kind='cuff'if 'cuff'in band.name else'hem'if 'hem'in band.name else'neck'
+        for vertex in band.data.vertices:
+            p=vertex.co
+            origin=Vector((p.x,.0654,1.4555)) if kind=='cuff' else Vector((0,.055 if kind=='neck'else .020,p.z))
+            radial=p-origin
+            if radial.length<.0001:continue
+            radial.normalize();point,_,_,_=tree.ray_cast(origin,radial,.4)
+            if point is None:point,_,_,_=tree.find_nearest(p)
+            vertex.co=point+radial*.0025
+        band.data.update()
+
+
+def stabilize_waist(garment):
+    """Keep the waistband on the pelvis, with a smooth transition to the torso."""
+    pelvis=garment.vertex_groups.get('pelvis') or garment.vertex_groups.new(name='pelvis')
+    for vertex in garment.data.vertices:
+        blend=max(0,min(1,(1.18-vertex.co.z)/.10))
+        if not blend:continue
+        weights={garment.vertex_groups[g.group].name:g.weight*(1-blend)for g in vertex.groups}
+        weights['pelvis']=weights.get('pelvis',0)+blend
+        values=sorted(weights.items(),key=lambda pair:pair[1],reverse=True)[:4]
+        total=sum(weight for _,weight in values)
+        for group in garment.vertex_groups:group.remove([vertex.index])
+        for name,weight in values:
+            if weight:garment.vertex_groups[name].add([vertex.index],weight/total,'REPLACE')

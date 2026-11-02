@@ -11,12 +11,13 @@ const name=process.argv[3]||'cap-v2',focus=process.argv[4]||'hat';
 const out=path.resolve(root,process.env.WARDROBE_RENDER_DIR||'docs/characters/wardrobe/quality-rework/render');await fs.mkdir(out,{recursive:true});
 const b=await chromium.launch({executablePath:process.env.CHROME_EXECUTABLE||'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',headless:true,args:['--use-angle=metal']});
 const c=await b.newContext({viewport:{width:900,height:900},deviceScaleFactor:1});
-const report={appearance,scope:'Actual GLB/wardrobe code and Appearance preview light/pose; offscreen single asset, no Game scene or listener',assets:[],errors:[],requests:[]};
+const report={appearance,focus,scope:'Actual GLB/wardrobe code and Appearance preview light/pose; offscreen single asset, no Game scene or listener',assets:[],errors:[],requests:[]};
 try{
  const p=await c.newPage();p.on('pageerror',e=>report.errors.push(e.message));p.on('request',r=>{if(/^https?:/.test(r.url()))report.requests.push(r.url())});
  const base=await fs.readFile(path.join(root,'apps/web/public/assets/optimized/Lakeside_Man.glb'));
  await p.setContent('<style>html,body{margin:0;overflow:hidden}canvas{display:block}</style><canvas></canvas>');
  await p.evaluate(data=>window.wardrobeAssetData={Lakeside_Man:data},base.toString('base64'));
+ await p.evaluate(data=>window.wardrobeSupplementData=data,JSON.parse(await fs.readFile(path.join(root,'apps/web/public/assets/animations/character-actions.json'),'utf8')));
  await p.addScriptTag({path:bundle});await p.evaluate(()=>window.wardrobeAssetReady);
  const ids=await p.evaluate(a=>window.wardrobeAssetViewer.required(a),appearance),data={};
  for(const id of ids){const bytes=await fs.readFile(path.join(root,'assets/source-models/wardrobe/optimized',id+'.glb'));data[id]=bytes.toString('base64');report.assets.push({id,sha256:crypto.createHash('sha256').update(bytes).digest('hex')})}

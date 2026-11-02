@@ -48,6 +48,82 @@ describe("selected wardrobe downloads and garment fit", () => {
       expect(Math.min(...section)).toBeGreaterThan(-0.155);
     },
   );
+  it.each(["top-weekend-knit", "top-trail-overshirt"])(
+    "keeps %s outside the original trouser waistband at the rear",
+    async (id) => {
+      const { NodeIO } = await import("@gltf-transform/core");
+      const { ALL_EXTENSIONS } = await import("@gltf-transform/extensions");
+      const io = new NodeIO().registerExtensions(ALL_EXTENSIONS);
+      async function rearAtWaist(asset: string) {
+        const doc = await io.readBinary(
+          await readFile(
+            new URL(
+              "../public/assets/avatars/wardrobe/" + asset + ".glb",
+              import.meta.url,
+            ),
+          ),
+        );
+        const values: number[] = [];
+        for (const mesh of doc.getRoot().listMeshes())
+          for (const primitive of mesh.listPrimitives()) {
+            const position = primitive.getAttribute("POSITION")!;
+            for (let i = 0; i < position.getCount(); i++) {
+              const p = position.getElement(i, []);
+              if (Math.abs(p[0]) < 0.05 && p[1] >= 0.98 && p[1] <= 1.04)
+                values.push(p[2]);
+            }
+          }
+        expect(values.length).toBeGreaterThan(5);
+        return Math.min(...values);
+      }
+      expect(await rearAtWaist(id)).toBeLessThan(
+        (await rearAtWaist("bottom-classic-full")) - 0.002,
+      );
+    },
+  );
+  it("retains the rib's fabric UVs after joining it with the knit atlas", async () => {
+    const { NodeIO } = await import("@gltf-transform/core");
+    const { ALL_EXTENSIONS } = await import("@gltf-transform/extensions");
+    const doc = await new NodeIO()
+      .registerExtensions(ALL_EXTENSIONS)
+      .readBinary(
+        await readFile(
+          new URL(
+            "../public/assets/avatars/wardrobe/top-weekend-knit.glb",
+            import.meta.url,
+          ),
+        ),
+      );
+    const rib = doc
+      .getRoot()
+      .listMeshes()
+      .flatMap((mesh) => mesh.listPrimitives())
+      .find(
+        (primitive) =>
+          primitive.getMaterial()?.getName() ===
+          "Wardrobe_Knit_Charcoal_Fitted_Rib",
+      );
+    expect(rib).toBeDefined();
+    const material = rib!.getMaterial()!;
+    expect(material.getBaseColorTexture()).not.toBeNull();
+    expect(material.getNormalTexture()).not.toBeNull();
+    const channel = material.getBaseColorTextureInfo()!.getTexCoord();
+    expect(material.getNormalTextureInfo()!.getTexCoord()).toBe(channel);
+    const uv = rib!.getAttribute("TEXCOORD_" + channel)!;
+    expect(uv).toBeDefined();
+    const indices = rib!.getIndices(),
+      u: number[] = [],
+      v: number[] = [];
+    for (let i = 0; i < (indices?.getCount() ?? uv.getCount()); i++) {
+      const index = indices ? indices.getElement(i, [])[0] : i;
+      const point = uv.getElement(index, []);
+      u.push(point[0]);
+      v.push(point[1]);
+    }
+    // A missing FabricUV layer previously sampled one flat atlas corner.
+    expect(Math.max(...u) - Math.min(...u)).toBeGreaterThan(1);
+    expect(Math.max(...v) - Math.min(...v)).toBeGreaterThan(0.05);
+  });
   it("ships a tucked female top with no exposed abdominal skin geometry", async () => {
     const { NodeIO } = await import("@gltf-transform/core");
     const { ALL_EXTENSIONS } = await import("@gltf-transform/extensions");
