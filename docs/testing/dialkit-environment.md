@@ -52,6 +52,20 @@ real controller starts/resets to this recipe, retains later edits across conditi
 switches, and leaves Clear unchanged. Node24 tests now pass 105 files / 597 tests,
 with TypeScript and the production build passing.
 
+Browser acceptance of `d1c8f46` confirmed fresh Golden/Mist 16:30, Sun 0.30,
+hemisphere 0.60, ambient 0.90, exposure 0.71, cloud 0.80, automatic sun and the
+-62/6 pad readout. A later Sun 0.41 edit survived Clear switching and full reload;
+Reset returned the authored lighting recipe. Clear retained 1.0/0.92 and the
+seeded Dawn/Partly condition retained 0.43/0.88. There were no console errors,
+and the real-storage guard stayed true. The owned test tab closed, viewport was
+reset, seven authorized additions were removed after hash checks, and all391
+normal baseline paths/SHA/sizes were verified restored. The publisher then
+published local combined `b3a67d0` with the exact runtime, preserving existing
+study assets and the single2669 listener. Production remains unchanged. Evidence:
+`.impeccable/review/golden-mist-defaults.jpg` and the publisher’s
+`.impeccable/review/golden-mist-local/publication.json`. No extra visual/build
+cycle was needed for this data/defaults update.
+
 ## Seasonal daylight
 
 `solar.ts` uses NOAA's compact fractional-year equations at the existing weather
