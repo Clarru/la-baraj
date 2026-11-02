@@ -1,0 +1,43 @@
+{
+  "goldenHour:mist": {
+    "enabled": true,
+    "clock.liveTime": false,
+    "clock.hour": 16.5,
+    "weather.liveWeather": false,
+    "weather.cloudCover": 0.8,
+    "light.sun": 0.3,
+    "light.hemisphere": 0.6,
+    "light.ambient": 0.9,
+    "light.exposure": 0.71,
+    "light.shadows": true,
+    "light.manualSun": false,
+    "light.sunPosition": { "x": -62, "y": 6 },
+    "light.ground": "#7c8458",
+    "atmosphere.fogNear": 20,
+    "atmosphere.fogFar": 360,
+    "atmosphere.cloudScale": 1,
+    "atmosphere.cloudOpacity": 0.55,
+    "atmosphere.wind": { "x": 0.2, "y": 0 },
+    "palette.customColors": false,
+    "palette.sky": "#82b0c7",
+    "palette.horizon": "#bed0be",
+    "palette.fog": "#aec5b5",
+    "palette.land": "#ffffff",
+    "palette.sun": "#ffe2b3",
+    "palette.hemi": "#eef1db",
+    "palette.water": "#145b61",
+    "palette.sampleTime": {
+      "type": "action",
+      "label": "Sample this time’s colors"
+    },
+    "water.waveSpeed": 0.45,
+    "water.distortion": 0.3,
+    "water.size": 7.5,
+    "reference.image": "",
+    "reference.show": true,
+    "reference.opacity": 0.75,
+    "reference.notes": "",
+    "exportSettings": { "type": "action", "label": "Export settings as JSON" },
+    "reset": { "type": "action", "label": "Reset this condition" }
+  }
+}

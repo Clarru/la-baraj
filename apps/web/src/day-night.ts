@@ -1,5 +1,13 @@
 import * as THREE from "three";
-import { cloudiness } from "./weather-visual";
+import { cloudiness, fogPresence } from "./weather-visual";
+import { solarDay, solarPaletteHour, solarPosition } from "./solar";
+import { liveEnvironment, type RenderSettings } from "./live-environment";
+import {
+  environmentTuning,
+  environmentHour,
+  environmentRevision,
+  environmentColors,
+} from "./environment-tuning";
 
 let serverClock: { time: number; local: number } | null = null;
 /** An initial server snapshot corrects device clock differences without polling. */
@@ -173,6 +181,7 @@ export type Lighting = {
   sunIntensity: number;
   hemiIntensity: number;
   cloudCover: number;
+  renderSettings?: RenderSettings;
 };
 export function lightingAt(hour: number): Lighting {
   hour = ((hour % 24) + 24) % 24;
@@ -213,19 +222,39 @@ export function currentLighting(evening = false, forceDay = false) {
       ? new URLSearchParams(location.search).get("time")
       : null;
   const now = worldNow();
-  const hour = evening
-    ? 19
-    : override !== null && Number.isFinite(Number(override))
-      ? Number(override)
-      : forceDay
-        ? 12
-        : gameMinutes(now) / 60 +
-          (((Math.floor(now / 1000) % 60) + 60) % 60) / 3600;
-  const cover = cloudiness();
-  const key = `${hour.toFixed(3)}:${cover.toFixed(2)}`;
+  const settings = environmentTuning();
+  const hour =
+    environmentHour() ??
+    (evening
+      ? 19
+      : override !== null && Number.isFinite(Number(override))
+        ? Number(override)
+        : forceDay
+          ? 12
+          : gameMinutes(now) / 60 +
+            (((Math.floor(now / 1000) % 60) + 60) % 60) / 3600);
+  const cover =
+    settings && !settings.weather.liveWeather
+      ? settings.weather.cloudCover
+      : cloudiness();
+  const day = solarDay(now, settings?.clock.month ?? 0);
+  const diagnostic = !settings && (evening || forceDay || override !== null);
+  const phase = solarPaletteHour(hour, day);
+  const fog = fogPresence();
+  const key = `${day.date}:${hour.toFixed(3)}:${cover.toFixed(2)}:${fog.toFixed(3)}:${diagnostic}:${environmentRevision()}`;
   if (cacheKey !== key) {
     cacheKey = key;
-    cached = lightingAt(hour);
+    // Keep fixed noon/evening diagnostic fixtures stable; the live/editor world is seasonal.
+    cached = lightingAt(diagnostic ? hour : phase);
+    const render = settings ?? liveEnvironment(phase, diagnostic ? 0 : fog);
+    cached.renderSettings = render;
+    if (!diagnostic) {
+      const sun = solarPosition(hour, day);
+      // Below the horizon this directional source becomes navigable moon fill.
+      cached.sunDirection
+        .set(sun.x, sun.y > 0 ? sun.y : Math.max(0.12, -sun.y), sun.z)
+        .normalize();
+    }
     cached.cloudCover = cover;
     const grey = new THREE.Color("#819199");
     cached.colors.sky.lerp(grey, cover * 0.4);
@@ -235,6 +264,28 @@ export function currentLighting(evening = false, forceDay = false) {
     cached.colors.sun.lerp(new THREE.Color("#d5dfdf"), cover * 0.45);
     cached.colors.water.lerp(new THREE.Color("#3d5960"), cover * 0.22);
     cached.sunIntensity *= 1 - cover * 0.5;
+    cached.sunIntensity *= render.light.sun;
+    cached.hemiIntensity *= render.light.hemisphere;
+    if (settings) {
+      if (settings.palette.customColors) {
+        const overrides = environmentColors();
+        for (const name of colorNames) {
+          const color = overrides[name];
+          if (color) cached.colors[name].copy(color);
+        }
+      }
+      if (settings.light.manualSun) {
+        const azimuth = THREE.MathUtils.degToRad(settings.light.sunPosition.x);
+        const elevation = THREE.MathUtils.degToRad(
+          settings.light.sunPosition.y,
+        );
+        cached.sunDirection.set(
+          Math.sin(azimuth) * Math.cos(elevation),
+          Math.sin(elevation),
+          Math.cos(azimuth) * Math.cos(elevation),
+        );
+      }
+    }
   }
   return cached;
 }
