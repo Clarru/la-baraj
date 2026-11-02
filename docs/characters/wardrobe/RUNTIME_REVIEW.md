@@ -71,15 +71,25 @@ Source report: `captures-b2/resources.json`.
 ## Publication cleanup
 
 The B2 session ended early at monotonic245796.942767916. Exactly35 authorized
-hash-matching additions were removed. All351 original path/size/SHA entries were
+hash-matching additions were removed. All 351 original path/size/SHA entries were
 verified, as was the HTTP index SHA256
 `16c499ab1c8235ad1322817d74cde81f9778e37b5ae443edff7523d5e496f21f`.
-ListenerPID35046 remained running and untouched. The cleanup report is
+Listener PID35046 remained running and untouched. The cleanup report is
 `.impeccable/review/wardrobe/cleanup-b2e28ac.json`.
 
-A final short completion window reused the same frozen35-file packet solely for
+A final short completion window reused the same frozen 35-file packet solely for
 three men's outfits in actual activities/vehicles. It closed at
-monotonic246433.550570083, well before its action cutoff247005.329321166. All35
-additions were removed, all351 protected path/size/SHA entries and the HTTP index
-were verified again, and listener35046 remained untouched. Report:
+monotonic246433.550570083, well before its action cutoff247005.329321166. All 35
+additions were removed, all 351 protected path/size/SHA entries and the HTTP index
+were verified again, and listener 35046 remained untouched. Report:
 `.impeccable/review/wardrobe/cleanup-b2e28ac-completion.json`.
+
+## Final selected pack
+
+The independent mesh/action review subsequently passed the finite 88+12 capture
+set and the female reference/component comparison. `acceptance.json` pins the
+selected 24 GLB hashes. Noncandidate packing completed with24 files totaling
+15,884,484 bytes, and the normal production build passed. The GLB bytes and
+content URLs are unchanged from the inspected B2 packet; only manifest stage
+metadata changed to accepted. That does not itself publish a build or grant
+release-owner integration approval.

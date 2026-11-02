@@ -29,12 +29,12 @@ The b2e28ac runtime inspection resolved the four targeted defects: brow/iris
 readability, root integration, prior striped prone tips and plausible solid
 stylized prone drape. A fresh independent fallback reviewer inspected current
 head/side/rear and prone/sit/crouch/swim views, compared rejected controls, and found
-no new material fit failure at that correction scope. This is separate from the
-pending full-outfit/action acceptance.
+no new material fit failure at that correction scope. The subsequent full-outfit and sampled-action
+review also passed; see MESH_ACTION_REVIEW.md and the hash-pinned acceptance.json.
 
 Current female GLB SHA256:
 `4e348f26e1b0daefb389d2d24974a8c0f498af845df4ea45c5cb39afd01e94e1`.
-It contains30,254 triangles and12 rendered primitives; the rejected control had
+It contains 30,254 triangles and 12 rendered primitives; the rejected control had
 35,310 triangles and13 primitives. Runtime/resource and actual Game evidence is
 recorded in RUNTIME_REVIEW.md. Refresh packed hashes/content URLs only through the
 normal packer. Both frozen QA packets remain immutable controls.

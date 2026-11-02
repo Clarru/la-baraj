@@ -32,7 +32,8 @@ restoration is only promised while that worker survives, not after its expiry.
 Official Quaternius CC0 Standard downloads, provenance, license notices, exact
 ImageGen prompts/references and reproducible Blender scripts are retained. Raw
 archives, original sources and editable Blender scenes remain ignored locally.
-The runtime pack contains 24 selected GLBs; final acceptance packing remains gated.
+The runtime pack contains 24 selected GLBs; acceptance.json now pins their accepted
+visual/sampled-action hashes, and the noncandidate pack completed successfully.
 
 ## Evidence completed
 
@@ -48,8 +49,9 @@ The runtime pack contains 24 selected GLBs; final acceptance packing remains gat
   fit failure observed in neutral/side/rear/sit/crouch/prone/swim evidence.
 - Frozen `b2e28ac` runtime: 88 actual WebGL front/rear sampled frames cover three
   complete men's outfits and the female preset in 11 clips. The men's selections
-  cover each modeled hair/hat/top/bottom/shoe choice. Independent full-mesh/action
-  review is pending; sampled frames are not a complete animation sweep.
+  cover each modeled hair/hat/top/bottom/shoe choice. Independent full-mesh/sampled-action
+  review passed at the scope recorded in MESH_ACTION_REVIEW.md; sampled frames
+  are not a complete animation sweep.
 - Actual Game with two independent clients on the local SharedWorker: female Apply,
   observer agreement and same-worker reload restore passed. Campfire sit, standing
   fishing cast, mounted scooter/boat movement and walking were state checked.
@@ -57,9 +59,9 @@ The runtime pack contains 24 selected GLBs; final acceptance packing remains gat
   visible settled capture (`verified-clear-grass-prone-front.png`).
 - Final men's actual-contact pass: all three complete outfits applied through
   normal UI, with observer agreement; each captured in campfire sit, fishing wait,
-  scooter and boat movement. All12 captures showed no new material fit/contact
-  failure at gameplay scale; zero page errors/sockets. Offline review includes
-  these captures.
+  scooter and boat movement. All 12 captures showed no new material fit/contact
+  failure at gameplay scale; zero page errors/sockets. The independent mesh/action reviewer inspected
+  all 12 captures and found no material actionable issue.
 - Earlier misleading `actual-prone.png`/`actual-crouch.png` and tree-occluded prone
   captures are explicitly excluded from visual acceptance. No physics or gameplay
   source was changed to make these tests pass.
@@ -68,11 +70,12 @@ The runtime pack contains 24 selected GLBs; final acceptance packing remains gat
   are recorded in RUNTIME_REVIEW.md; they do not establish iPhone performance.
 
 `REVIEW_EVIDENCE.json` pins local reports and all 88 adverse-pose capture hashes.
-Final source checks passed: frontend **582/582** across100 files, protocol
-**182/182** across14 files, and server TypeScript. Material positive/negative
-controls2/2 and focused local factory/catalogue18/18 passed earlier. Client
+Final source checks passed: frontend **582/582** across 100 files, protocol
+**182/182** across 14 files, and server TypeScript. Material positive/negative
+controls 2/2 and focused local factory/catalogue 18/18 passed earlier. Client
 TypeScript and production/isolated QA builds passed for the frozen runtime;
-final accepted-pack production build remains required.
+the final accepted-pack production build also passed. Catalogue actual-byte/hash
+checks 5/5 and material controls 2/2 passed again after acceptance packing.
 
 ## Preview safety and remaining work
 
@@ -82,7 +85,7 @@ the normal HTTP index. Listener PID35046 was untouched. The earlier C60 session 
 also restored their protected baselines. No production connection, live world/home
 write, Worker deployment or additional listener was made by these QA fixtures.
 
-Still required: independent full mesh/action disposition; coverage of any named
-remaining pose/item gaps; final hash-matching asset acceptance; current-main
-integration, checks and release-owner PR/release review. Existing mobile controls,
-chat, 2048, ownership and world integration must be preserved.
+Still required: release-owner code/provenance review, any resulting finite fixes,
+main integration/release and production verification. Existing mobile controls,
+chat, 2048, ownership and world integration must be preserved. No further model
+or preview work is outstanding from the completed finite review.
