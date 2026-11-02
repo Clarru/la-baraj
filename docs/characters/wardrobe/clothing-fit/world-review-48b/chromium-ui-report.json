@@ -1,0 +1,198 @@
+{
+  "engine": "chromium",
+  "head": "48b69e23158b2e92c130f0778f65810e5fb790c6",
+  "url": "http://127.0.0.1:4173/__clothing-fit-qa.html",
+  "views": [
+    {
+      "name": "desktop",
+      "path": "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/clothing-fit/delta48b/captures/chromium/desktop.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    },
+    {
+      "name": "desktop-female",
+      "path": "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/clothing-fit/delta48b/captures/chromium/desktop-female.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    },
+    {
+      "name": "desktop-paired-female",
+      "path": "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/clothing-fit/delta48b/captures/chromium/desktop-paired-female.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    },
+    {
+      "name": "desktop-configured",
+      "path": "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/clothing-fit/delta48b/captures/chromium/desktop-configured.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    },
+    {
+      "name": "phone-portrait",
+      "path": "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/clothing-fit/delta48b/captures/chromium/phone-portrait.png",
+      "viewport": {
+        "width": 393,
+        "height": 852
+      }
+    },
+    {
+      "name": "phone-portrait-female",
+      "path": "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/clothing-fit/delta48b/captures/chromium/phone-portrait-female.png",
+      "viewport": {
+        "width": 393,
+        "height": 852
+      }
+    },
+    {
+      "name": "phone-portrait-paired-female",
+      "path": "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/clothing-fit/delta48b/captures/chromium/phone-portrait-paired-female.png",
+      "viewport": {
+        "width": 393,
+        "height": 852
+      }
+    },
+    {
+      "name": "phone-portrait-configured",
+      "path": "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/clothing-fit/delta48b/captures/chromium/phone-portrait-configured.png",
+      "viewport": {
+        "width": 393,
+        "height": 852
+      }
+    },
+    {
+      "name": "phone-landscape",
+      "path": "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/clothing-fit/delta48b/captures/chromium/phone-landscape.png",
+      "viewport": {
+        "width": 852,
+        "height": 393
+      }
+    },
+    {
+      "name": "phone-landscape-female",
+      "path": "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/clothing-fit/delta48b/captures/chromium/phone-landscape-female.png",
+      "viewport": {
+        "width": 852,
+        "height": 393
+      }
+    },
+    {
+      "name": "phone-landscape-paired-female",
+      "path": "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/clothing-fit/delta48b/captures/chromium/phone-landscape-paired-female.png",
+      "viewport": {
+        "width": 852,
+        "height": 393
+      }
+    },
+    {
+      "name": "phone-landscape-configured",
+      "path": "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/clothing-fit/delta48b/captures/chromium/phone-landscape-configured.png",
+      "viewport": {
+        "width": 852,
+        "height": 393
+      }
+    }
+  ],
+  "errors": [],
+  "sockets": [],
+  "external": [],
+  "checks": [
+    {
+      "name": "desktop",
+      "defaultAdditionalDownloads": 0,
+      "cancel": true,
+      "apply": true,
+      "twoClientAgreement": true,
+      "restoreSelection": true,
+      "reset": true,
+      "overflow": {
+        "left": 250,
+        "right": 1190,
+        "top": 155,
+        "bottom": 845,
+        "width": 1440,
+        "height": 1000,
+        "horizontal": false
+      },
+      "requestedAssets": [
+        "http://127.0.0.1:4173/assets/clothing-fit-qa/female-brunette-tailored-110b0bdbea545c5d.glb",
+        "http://127.0.0.1:4173/assets/avatars/wardrobe/hair-long.glb?v=ccc33e3a8da7933e",
+        "http://127.0.0.1:4173/assets/avatars/wardrobe/beard-moustache.glb?v=7908187322d59587",
+        "http://127.0.0.1:4173/assets/avatars/wardrobe/hair-long-hat.glb?v=a6cdc6b65708afac",
+        "http://127.0.0.1:4173/assets/avatars/wardrobe/hat-stitched-bucket.glb?v=145d0522b9f6230e",
+        "http://127.0.0.1:4173/assets/clothing-fit-qa/male-custom-top-skin-dc380bf25f3fc7c2.glb",
+        "http://127.0.0.1:4173/assets/clothing-fit-qa/top-weekend-knit-6f9cb27c191251e9.glb",
+        "http://127.0.0.1:4173/assets/avatars/wardrobe/bottom-trail-cargo-tucked.glb?v=4a695996450017db",
+        "http://127.0.0.1:4173/assets/avatars/wardrobe/bottom-trail-cargo-full.glb?v=bc61a63329bfab0f",
+        "http://127.0.0.1:4173/assets/clothing-fit-qa/shoes-canvas-low-83d8c7461574b59f.glb"
+      ]
+    },
+    {
+      "name": "phone-portrait",
+      "defaultAdditionalDownloads": 0,
+      "cancel": true,
+      "apply": true,
+      "twoClientAgreement": true,
+      "restoreSelection": true,
+      "reset": true,
+      "overflow": {
+        "left": 16,
+        "right": 377,
+        "top": 81,
+        "bottom": 771,
+        "width": 393,
+        "height": 852,
+        "horizontal": false
+      },
+      "requestedAssets": [
+        "http://127.0.0.1:4173/assets/clothing-fit-qa/female-brunette-tailored-110b0bdbea545c5d.glb",
+        "http://127.0.0.1:4173/assets/avatars/wardrobe/hair-long.glb?v=ccc33e3a8da7933e",
+        "http://127.0.0.1:4173/assets/avatars/wardrobe/beard-moustache.glb?v=7908187322d59587",
+        "http://127.0.0.1:4173/assets/avatars/wardrobe/hair-long-hat.glb?v=a6cdc6b65708afac",
+        "http://127.0.0.1:4173/assets/avatars/wardrobe/hat-stitched-bucket.glb?v=145d0522b9f6230e",
+        "http://127.0.0.1:4173/assets/clothing-fit-qa/male-custom-top-skin-dc380bf25f3fc7c2.glb",
+        "http://127.0.0.1:4173/assets/clothing-fit-qa/top-weekend-knit-6f9cb27c191251e9.glb",
+        "http://127.0.0.1:4173/assets/avatars/wardrobe/bottom-trail-cargo-tucked.glb?v=4a695996450017db",
+        "http://127.0.0.1:4173/assets/avatars/wardrobe/bottom-trail-cargo-full.glb?v=bc61a63329bfab0f",
+        "http://127.0.0.1:4173/assets/clothing-fit-qa/shoes-canvas-low-83d8c7461574b59f.glb"
+      ]
+    },
+    {
+      "name": "phone-landscape",
+      "defaultAdditionalDownloads": 0,
+      "cancel": true,
+      "apply": true,
+      "twoClientAgreement": true,
+      "restoreSelection": true,
+      "reset": true,
+      "overflow": {
+        "left": 14,
+        "right": 838,
+        "top": 8,
+        "bottom": 385,
+        "width": 852,
+        "height": 393,
+        "horizontal": false
+      },
+      "requestedAssets": [
+        "http://127.0.0.1:4173/assets/clothing-fit-qa/female-brunette-tailored-110b0bdbea545c5d.glb",
+        "http://127.0.0.1:4173/assets/avatars/wardrobe/hair-long.glb?v=ccc33e3a8da7933e",
+        "http://127.0.0.1:4173/assets/avatars/wardrobe/beard-moustache.glb?v=7908187322d59587",
+        "http://127.0.0.1:4173/assets/avatars/wardrobe/hair-long-hat.glb?v=a6cdc6b65708afac",
+        "http://127.0.0.1:4173/assets/avatars/wardrobe/hat-stitched-bucket.glb?v=145d0522b9f6230e",
+        "http://127.0.0.1:4173/assets/clothing-fit-qa/male-custom-top-skin-dc380bf25f3fc7c2.glb",
+        "http://127.0.0.1:4173/assets/clothing-fit-qa/top-weekend-knit-6f9cb27c191251e9.glb",
+        "http://127.0.0.1:4173/assets/avatars/wardrobe/bottom-trail-cargo-tucked.glb?v=4a695996450017db",
+        "http://127.0.0.1:4173/assets/avatars/wardrobe/bottom-trail-cargo-full.glb?v=bc61a63329bfab0f",
+        "http://127.0.0.1:4173/assets/clothing-fit-qa/shoes-canvas-low-83d8c7461574b59f.glb"
+      ]
+    }
+  ]
+}

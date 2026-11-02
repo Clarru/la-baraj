@@ -1,8 +1,9 @@
 # Headless clothing reconstruction
 
-Status: **candidate; world acceptance pending**. These replace the earlier
-rejected studies. The release hold remains until the frozen game review passes.
-No new asset is marked accepted. Approved hats and Lakeside_Man.glb are unchanged.
+Status: **author world/design review passed; release-owner clearance pending**.
+These replace the earlier rejected studies. The frozen 48b69e2 delta passed its
+scoped final world review. Production remains on hold pending release-owner
+clearance; no new asset is marked accepted. Approved hats and Lakeside_Man.glb are unchanged.
 
 ## Authoring
 

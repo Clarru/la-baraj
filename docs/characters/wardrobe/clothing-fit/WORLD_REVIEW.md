@@ -59,3 +59,36 @@ unchanged functional evidence can be reused with that qualification. The changed
 tops still require their own final additive delta review before release.
 
 No physical iPhone heat/battery measurement has been made for this asset rework.
+
+## Closed final delta window: 48b69e2
+
+Author world/design verdict: **PASS for the reported fit and rib finish defects
+in the sampled cases**. Release-owner clearance and integration are separate.
+The exact five final hashes remain in exports.json. The knit is 665,032 bytes
+(8,637 triangles); the overshirt is 699,068 bytes (11,396 triangles). The three
+other candidate GLBs are unchanged from the previous scoped review.
+
+Both engines again passed desktop/portrait/landscape appearance flows. A fresh
+three-actor control verified all six colours and Original restoration, including
+the new rib material and an independent Original-colour actor. Actual Game
+Cream/Navy tops used real Apply, focused movement, grounded crouch and fire
+seating, Cancel/reopen and reload restoration. Fresh QA identities had separate
+homes; default male candidate downloads were zero.
+
+The first automated gameplay capture pass skipped a lazily loaded lighting
+control and retained live/night lighting with its panel visible. That report
+is explicitly qualified. The repeated daylight pass waited for the controller,
+enabled private noon/clear and verified enabled=true/controllerVisible=false
+at every capture. Its inspected crouch/seat views retain waist coverage and
+clean rib surfaces. The authoritative shared clock was not changed.
+
+The favicon404 and external Geist font requests remain recorded; there were no
+runtime page errors or production sockets. The evaluated Prone/Swim renders are
+preview geometry checks, not physical swimming/prone gameplay claims for this
+window. Selected results and reports are in world-review-48b/. Full raw controls
+remain in the local delta48b evidence directory.
+
+All owned browsers/contexts closed. Exactly 18 hash-matching additions were
+removed at 18.74 minutes; all 425 baseline paths/sizes/hashes, normal HTTP index
+and PID6159 were verified unchanged. No source, packet, canonical GLB or normal
+index was changed inside either QA window.

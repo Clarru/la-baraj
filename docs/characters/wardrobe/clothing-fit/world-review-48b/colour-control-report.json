@@ -1,0 +1,254 @@
+{
+  "head": "48b69e23158b2e92c130f0778f65810e5fb790c6",
+  "scope": "Three rendered actors: local, observer copy of local, and independent Original-colour control. No physical gameplay.",
+  "checks": [
+    {
+      "kind": "colour-and-peer-isolation",
+      "top": "trail-overshirt",
+      "topColor": "original",
+      "other": {
+        "version": 1,
+        "body": "male",
+        "hair": "parted",
+        "hat": "none",
+        "hatColor": "original",
+        "top": "trail-overshirt",
+        "bottom": "classic",
+        "shoes": "canvas-low",
+        "beard": "moustache",
+        "hairColor": "brown",
+        "topColor": "original",
+        "bottomColor": "original"
+      }
+    },
+    {
+      "kind": "colour-and-peer-isolation",
+      "top": "trail-overshirt",
+      "topColor": "navy",
+      "other": {
+        "version": 1,
+        "body": "male",
+        "hair": "parted",
+        "hat": "none",
+        "hatColor": "original",
+        "top": "trail-overshirt",
+        "bottom": "classic",
+        "shoes": "canvas-low",
+        "beard": "moustache",
+        "hairColor": "brown",
+        "topColor": "original",
+        "bottomColor": "original"
+      }
+    },
+    {
+      "kind": "colour-and-peer-isolation",
+      "top": "trail-overshirt",
+      "topColor": "sage",
+      "other": {
+        "version": 1,
+        "body": "male",
+        "hair": "parted",
+        "hat": "none",
+        "hatColor": "original",
+        "top": "trail-overshirt",
+        "bottom": "classic",
+        "shoes": "canvas-low",
+        "beard": "moustache",
+        "hairColor": "brown",
+        "topColor": "original",
+        "bottomColor": "original"
+      }
+    },
+    {
+      "kind": "colour-and-peer-isolation",
+      "top": "trail-overshirt",
+      "topColor": "charcoal",
+      "other": {
+        "version": 1,
+        "body": "male",
+        "hair": "parted",
+        "hat": "none",
+        "hatColor": "original",
+        "top": "trail-overshirt",
+        "bottom": "classic",
+        "shoes": "canvas-low",
+        "beard": "moustache",
+        "hairColor": "brown",
+        "topColor": "original",
+        "bottomColor": "original"
+      }
+    },
+    {
+      "kind": "colour-and-peer-isolation",
+      "top": "trail-overshirt",
+      "topColor": "cream",
+      "other": {
+        "version": 1,
+        "body": "male",
+        "hair": "parted",
+        "hat": "none",
+        "hatColor": "original",
+        "top": "trail-overshirt",
+        "bottom": "classic",
+        "shoes": "canvas-low",
+        "beard": "moustache",
+        "hairColor": "brown",
+        "topColor": "original",
+        "bottomColor": "original"
+      }
+    },
+    {
+      "kind": "colour-and-peer-isolation",
+      "top": "trail-overshirt",
+      "topColor": "rust",
+      "other": {
+        "version": 1,
+        "body": "male",
+        "hair": "parted",
+        "hat": "none",
+        "hatColor": "original",
+        "top": "trail-overshirt",
+        "bottom": "classic",
+        "shoes": "canvas-low",
+        "beard": "moustache",
+        "hairColor": "brown",
+        "topColor": "original",
+        "bottomColor": "original"
+      }
+    },
+    {
+      "kind": "colour-and-peer-isolation",
+      "top": "weekend-knit",
+      "topColor": "original",
+      "other": {
+        "version": 1,
+        "body": "male",
+        "hair": "parted",
+        "hat": "none",
+        "hatColor": "original",
+        "top": "weekend-knit",
+        "bottom": "classic",
+        "shoes": "canvas-low",
+        "beard": "moustache",
+        "hairColor": "brown",
+        "topColor": "original",
+        "bottomColor": "original"
+      }
+    },
+    {
+      "kind": "colour-and-peer-isolation",
+      "top": "weekend-knit",
+      "topColor": "navy",
+      "other": {
+        "version": 1,
+        "body": "male",
+        "hair": "parted",
+        "hat": "none",
+        "hatColor": "original",
+        "top": "weekend-knit",
+        "bottom": "classic",
+        "shoes": "canvas-low",
+        "beard": "moustache",
+        "hairColor": "brown",
+        "topColor": "original",
+        "bottomColor": "original"
+      }
+    },
+    {
+      "kind": "colour-and-peer-isolation",
+      "top": "weekend-knit",
+      "topColor": "sage",
+      "other": {
+        "version": 1,
+        "body": "male",
+        "hair": "parted",
+        "hat": "none",
+        "hatColor": "original",
+        "top": "weekend-knit",
+        "bottom": "classic",
+        "shoes": "canvas-low",
+        "beard": "moustache",
+        "hairColor": "brown",
+        "topColor": "original",
+        "bottomColor": "original"
+      }
+    },
+    {
+      "kind": "colour-and-peer-isolation",
+      "top": "weekend-knit",
+      "topColor": "charcoal",
+      "other": {
+        "version": 1,
+        "body": "male",
+        "hair": "parted",
+        "hat": "none",
+        "hatColor": "original",
+        "top": "weekend-knit",
+        "bottom": "classic",
+        "shoes": "canvas-low",
+        "beard": "moustache",
+        "hairColor": "brown",
+        "topColor": "original",
+        "bottomColor": "original"
+      }
+    },
+    {
+      "kind": "colour-and-peer-isolation",
+      "top": "weekend-knit",
+      "topColor": "cream",
+      "other": {
+        "version": 1,
+        "body": "male",
+        "hair": "parted",
+        "hat": "none",
+        "hatColor": "original",
+        "top": "weekend-knit",
+        "bottom": "classic",
+        "shoes": "canvas-low",
+        "beard": "moustache",
+        "hairColor": "brown",
+        "topColor": "original",
+        "bottomColor": "original"
+      }
+    },
+    {
+      "kind": "colour-and-peer-isolation",
+      "top": "weekend-knit",
+      "topColor": "rust",
+      "other": {
+        "version": 1,
+        "body": "male",
+        "hair": "parted",
+        "hat": "none",
+        "hatColor": "original",
+        "top": "weekend-knit",
+        "bottom": "classic",
+        "shoes": "canvas-low",
+        "beard": "moustache",
+        "hairColor": "brown",
+        "topColor": "original",
+        "bottomColor": "original"
+      }
+    }
+  ],
+  "errors": [],
+  "consoleErrors": [],
+  "sockets": [],
+  "external": [],
+  "views": [
+    "trail-overshirt-original",
+    "trail-overshirt-navy",
+    "trail-overshirt-sage",
+    "trail-overshirt-charcoal",
+    "trail-overshirt-cream",
+    "trail-overshirt-rust",
+    "trail-overshirt-original-restored",
+    "weekend-knit-original",
+    "weekend-knit-navy",
+    "weekend-knit-sage",
+    "weekend-knit-charcoal",
+    "weekend-knit-cream",
+    "weekend-knit-rust",
+    "weekend-knit-original-restored"
+  ]
+}
