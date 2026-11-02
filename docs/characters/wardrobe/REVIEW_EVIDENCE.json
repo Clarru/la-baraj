@@ -817,5 +817,17 @@
       "bytes": 1489793,
       "sha256": "f88a5cf9d0626d6afee17e5008c83b753b94d09b2f3ae2bebb8051a48eb3d619"
     }
-  ]
+  ],
+  "nativeKeyboardRegression": {
+    "path": ".impeccable/review/wardrobe/native-cancel-report.json",
+    "sha256": "6a1f260afbf22dcd1861251ec36b026067f0839e307007d64d4d65a1a6139058",
+    "bytes": 5639,
+    "scope": "actual game-input module and native dialog default events; not a Game scene",
+    "engines": [
+      "chromium",
+      "webkit"
+    ],
+    "negativeControlCases": 2,
+    "fixedCases": 2
+  }
 }

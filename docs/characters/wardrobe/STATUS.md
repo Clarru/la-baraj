@@ -70,12 +70,22 @@ visual/sampled-action hashes, and the noncandidate pack completed successfully.
   are recorded in RUNTIME_REVIEW.md; they do not establish iPhone performance.
 
 `REVIEW_EVIDENCE.json` pins local reports and all 88 adverse-pose capture hashes.
-Final source checks passed: frontend **582/582** across 100 files, protocol
+Final source checks passed: frontend **583/583** across 100 files, protocol
 **182/182** across 14 files, and server TypeScript. Material positive/negative
 controls 2/2 and focused local factory/catalogue 18/18 passed earlier. Client
 TypeScript and production/isolated QA builds passed for the frozen runtime;
 the final accepted-pack production build also passed. Catalogue actual-byte/hash
 checks 5/5 and material controls 2/2 passed again after acceptance packing.
+
+A final keyboard regression fix lets the native Appearance dialog own Escape,
+so the global shortcut cannot bypass its pending-save close guard or replace it
+with Controls through `?`. Gameplay listeners stay blocked while native button
+and focus defaults remain. Eight focused UI tests and the full583-test suite
+passed. A Chromium/WebKit native-dialog fixture reproduces the original Escape
+bypass as a negative control, then confirms busy Escape retention, normal Escape
+close after saving, blocked help/movement and native Enter/Space button activation.
+This fixture uses the actual game-input module without a Game scene or listener.
+The normal production build passed again after that three-line routing fix.
 
 ## Preview safety and remaining work
 

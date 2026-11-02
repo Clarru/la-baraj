@@ -200,4 +200,23 @@ describe("production world interface", () => {
     for (const code of ["Digit1", "Digit6", "KeyC", "KeyP"])
       expect(captureGameKey(key(code), idle)).toBe("pass");
   });
+  it("lets Appearance own native Escape and blocks help/game shortcuts without canceling button defaults", () => {
+    for (const [code, value] of [
+      ["Escape", "Escape"],
+      ["Slash", "?"],
+      ["KeyW", "w"],
+      ["KeyR", "r"],
+      ["KeyF", "f"],
+      ["Enter", "Enter"],
+      ["Space", " "],
+      ["Tab", "Tab"],
+    ]) {
+      const event = key(code, value);
+      expect(
+        captureGameKey(event, { ...idle, panel: "appearance" }),
+      ).toBe("block");
+      expect(event.stopImmediatePropagation).toHaveBeenCalledOnce();
+      expect(event.preventDefault).not.toHaveBeenCalled();
+    }
+  });
 });

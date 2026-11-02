@@ -93,3 +93,24 @@ selected 24 GLB hashes. Noncandidate packing completed with24 files totaling
 content URLs are unchanged from the inspected B2 packet; only manifest stage
 metadata changed to accepted. That does not itself publish a build or grant
 release-owner integration approval.
+
+## Native Appearance keyboard regression
+
+The global panel shortcut previously closed Appearance directly on Escape, so it
+could bypass `GameDialog`'s pending-save close guard. `?` could also replace it
+with Controls. Appearance now retains native dialog defaults while stopping game
+listeners, allowing the dialog's cancel handler to honor its save state.
+
+`node scripts/check-appearance-dialog-keys.mjs` (with the existing Playwright
+module/browser paths) runs four Chromium/WebKit cases against the actual
+TypeScript-stripped game-input module and a native dialog. The negative control
+removes only the new guard and reproduces the busy Escape close. The fixed cases
+retain the busy dialog, close normally after saving, block help/game listeners,
+and retain native Enter/Space button activation. All owned contexts close in
+finally blocks. No listener, Game scene, production socket or profile write is
+involved; this is a native key/default-event regression, not another whole-Game
+capture. Report: `.impeccable/review/wardrobe/native-cancel-report.json`.
+
+The focused production UI suite8/8, full frontend583/583, client TypeScript and
+normal production build passed after the fix. Protocol182/182 and server
+TypeScript remain valid from the unchanged backend source.
