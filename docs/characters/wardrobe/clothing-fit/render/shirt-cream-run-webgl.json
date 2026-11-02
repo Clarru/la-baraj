@@ -1,0 +1,62 @@
+{
+  "appearance": {
+    "version": 1,
+    "body": "male",
+    "top": "trail-overshirt",
+    "topColor": "cream",
+    "hair": "long",
+    "beard": "short",
+    "shoes": "canvas-low"
+  },
+  "scope": "Actual GLB/wardrobe code and Appearance preview light/pose; offscreen single asset, no Game scene or listener",
+  "assets": [
+    {
+      "id": "hair-long",
+      "sha256": "ccc33e3a8da7933eeec1f9c31224970fa6c037c6c098443ad432683bf0ca2282"
+    },
+    {
+      "id": "beard-short",
+      "sha256": "caa5cfa1d88dc13e5c9d44548b514697b4feef7c8a3fbd2e23abf9a324dd4f6c"
+    },
+    {
+      "id": "male-custom-top-skin",
+      "sha256": "dc380bf25f3fc7c2e22d7a67019e8ccdfdb7ec165671cccba41b4e2a7c599a37"
+    },
+    {
+      "id": "top-trail-overshirt",
+      "sha256": "f07abb8111f50a4d4532960f231e8252c5f184e6433a93b97aba606ae783a3cf"
+    },
+    {
+      "id": "bottom-classic-full",
+      "sha256": "9dadae65a1c2798ba0e4ce95036c113919a4d1e09cdadc077a43d24a340af044"
+    },
+    {
+      "id": "shoes-canvas-low",
+      "sha256": "83d8c7461574b59f679e52b2d72f8faa5a2d28f41ae22e16d902f354181ad61b"
+    }
+  ],
+  "errors": [],
+  "requests": [],
+  "animations": [
+    "HitRecieve",
+    "Idle_Neutral",
+    "Jog",
+    "Jump_Land",
+    "Jump_Loop",
+    "Jump_Start",
+    "Punch_Left",
+    "Punch_Right",
+    "Run",
+    "Walk",
+    "Wave"
+  ],
+  "pose": {
+    "name": "Run",
+    "time": 0.33
+  },
+  "stats": {
+    "calls": 14,
+    "triangles": 30532,
+    "renderer": "WebKit WebGL"
+  }
+}

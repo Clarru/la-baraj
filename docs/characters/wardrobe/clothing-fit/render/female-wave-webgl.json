@@ -1,0 +1,37 @@
+{
+  "appearance": {
+    "version": 1,
+    "body": "female"
+  },
+  "scope": "Actual GLB/wardrobe code and Appearance preview light/pose; offscreen single asset, no Game scene or listener",
+  "assets": [
+    {
+      "id": "female-brunette-tailored",
+      "sha256": "110b0bdbea545c5dd23865118d81030c47e3644cf1acb1868b8323e11555cf7b"
+    }
+  ],
+  "errors": [],
+  "requests": [],
+  "animations": [
+    "HitRecieve",
+    "Idle_Neutral",
+    "Jog",
+    "Jump_Land",
+    "Jump_Loop",
+    "Jump_Start",
+    "Punch_Left",
+    "Punch_Right",
+    "Run",
+    "Walk",
+    "Wave"
+  ],
+  "pose": {
+    "name": "Wave",
+    "time": 0.8
+  },
+  "stats": {
+    "calls": 12,
+    "triangles": 37528,
+    "renderer": "WebKit WebGL"
+  }
+}

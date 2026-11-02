@@ -17,6 +17,37 @@ import {
 import versions from "./wardrobe-asset-versions.json";
 
 describe("selected wardrobe downloads and garment fit", () => {
+  it.each(["top-weekend-knit", "top-trail-overshirt"])(
+    "keeps %s within the approved character's measured chest depth",
+    async (id) => {
+      const { NodeIO } = await import("@gltf-transform/core");
+      const { ALL_EXTENSIONS } = await import("@gltf-transform/extensions");
+      const bytes = await readFile(
+        new URL(
+          "../public/assets/avatars/wardrobe/" + id + ".glb",
+          import.meta.url,
+        ),
+      );
+      const doc = await new NodeIO()
+        .registerExtensions(ALL_EXTENSIONS)
+        .readBinary(bytes);
+      const section: number[] = [];
+      for (const mesh of doc.getRoot().listMeshes())
+        for (const primitive of mesh.listPrimitives()) {
+          const position = primitive.getAttribute("POSITION")!;
+          for (let index = 0; index < position.getCount(); index++) {
+            const point = position.getElement(index, []);
+            if (Math.abs(point[0]) < 0.04 && point[1] > 1.32 && point[1] < 1.4)
+              section.push(point[2]);
+          }
+        }
+      expect(section.length).toBeGreaterThan(20);
+      // Approved workshirt front/back are approximately +.105/-.140 m.
+      // Permit cloth ease, while rejecting the previous +.139/-.197 m barrel.
+      expect(Math.max(...section)).toBeLessThan(0.125);
+      expect(Math.min(...section)).toBeGreaterThan(-0.155);
+    },
+  );
   it("ships a tucked female top with no exposed abdominal skin geometry", async () => {
     const { NodeIO } = await import("@gltf-transform/core");
     const { ALL_EXTENSIONS } = await import("@gltf-transform/extensions");
@@ -29,6 +60,22 @@ describe("selected wardrobe downloads and garment fit", () => {
     const doc = await new NodeIO()
       .registerExtensions(ALL_EXTENSIONS)
       .readBinary(bytes);
+    // Footwear replacement must retain the publisher eyeballs as visible geometry.
+    const eyes = doc
+      .getRoot()
+      .listMeshes()
+      .flatMap((mesh) => mesh.listPrimitives())
+      .filter((primitive) =>
+        primitive.getMaterial()?.getName().startsWith("MI_Eyes"),
+      );
+    expect(eyes.length).toBeGreaterThan(0);
+    expect(
+      eyes.reduce(
+        (count, primitive) =>
+          count + primitive.getAttribute("POSITION")!.getCount(),
+        0,
+      ),
+    ).toBeGreaterThan(100);
     const skin = doc
       .getRoot()
       .listNodes()

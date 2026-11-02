@@ -1,0 +1,38 @@
+{
+  "appearance": {
+    "version": 1,
+    "body": "male",
+    "shoes": "canvas-low"
+  },
+  "scope": "Actual GLB/wardrobe code and Appearance preview light/pose; offscreen single asset, no Game scene or listener",
+  "assets": [
+    {
+      "id": "bottom-classic-full",
+      "sha256": "9dadae65a1c2798ba0e4ce95036c113919a4d1e09cdadc077a43d24a340af044"
+    },
+    {
+      "id": "shoes-canvas-low",
+      "sha256": "83d8c7461574b59f679e52b2d72f8faa5a2d28f41ae22e16d902f354181ad61b"
+    }
+  ],
+  "errors": [],
+  "requests": [],
+  "animations": [
+    "HitRecieve",
+    "Idle_Neutral",
+    "Jog",
+    "Jump_Land",
+    "Jump_Loop",
+    "Jump_Start",
+    "Punch_Left",
+    "Punch_Right",
+    "Run",
+    "Walk",
+    "Wave"
+  ],
+  "stats": {
+    "calls": 13,
+    "triangles": 23279,
+    "renderer": "WebKit WebGL"
+  }
+}

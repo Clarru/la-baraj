@@ -4,6 +4,7 @@ import bmesh
 import json
 import math
 import sys
+import runpy
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/"scripts"))
@@ -63,7 +64,7 @@ def line(name,points,radius,material,side):
 default=duplicate(approved["Male_Peasant_Feet"],"Wardrobe_Shoes_LakeBoots")
 role(default,"shoes")
 items=[("shoes-lake-boots",[default])]
-for style,height,material in [("hiking",.242,leather),("canvas",.119,canvas)]:
+for style,height,material in [("hiking",.242,leather)]:
     shoe=duplicate(default,"Wardrobe_Shoes_"+style.title())
     crop(shoe,height)
     shoe.data.materials.clear()
@@ -117,5 +118,8 @@ for identifier,objects in items:
     for obj in objects:role(obj,"shoes")
     target=export_item(rig,objects,identifier)
     records.append({"id":identifier,"artifact":str(target.relative_to(ROOT)),"accepted":False})
+records.append({"id":"shoes-canvas-low","artifact":"assets/source-models/wardrobe/build/shoes-canvas-low.glb","accepted":False})
 (ROOT/"docs/characters/wardrobe/shoe-authoring.json").write_text(json.dumps(records,indent=2)+"\n")
-bpy.ops.wm.save_as_mainfile(filepath=str(RAW/"shoes-source.blend"))
+bpy.ops.wm.save_as_mainfile(filepath=str(RAW/"shoes-source.blend"),compress=True)
+# Canvas has its own anatomical last; never derive it from the hiking boot.
+runpy.run_path(str(ROOT/"scripts/build-wardrobe-canvas.py"),run_name="__main__")

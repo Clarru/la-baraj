@@ -36,8 +36,10 @@ window.wardrobeAssetReady=(async()=>{
     actor.updateMatrixWorld(true);renderer.render(scene,camera);
   }
   window.wardrobeAssetViewer={
+    plainCloth:()=>{actor.traverse(node=>{if(!node.isMesh)return;for(const material of Array.isArray(node.material)?node.material:[node.material])if(/Overshirt_Navy|Knit_Charcoal/.test(material.name)){for(const slot of['map','normalMap','aoMap','roughnessMap','metalnessMap'])material[slot]=null;material.color.setRGB(.04,.075,.13);material.roughness=.85;material.metalness=0;material.needsUpdate=true}})},
+    normalMaps:enabled=>{actor.traverse(node=>{if(!node.isMesh)return;for(const material of Array.isArray(node.material)?node.material:[node.material])if(/Overshirt_Navy|Knit_Charcoal/.test(material.name)){if(material.userData.studyNormalMap===undefined)material.userData.studyNormalMap=material.normalMap;material.normalMap=enabled?material.userData.studyNormalMap:null;material.needsUpdate=true}})},
     animations:()=>base.animations.map(c=>c.name),
-    pose:(name,time)=>{const clip=base.animations.find(c=>c.name===name);if(!clip)throw Error('Unknown pose '+name);mixer.stopAllAction();mixer.clipAction(clip).play();mixer.setTime(time);actor.updateMatrixWorld(true)},
+    pose:(name,time)=>{mixer.stopAllAction();if(name==='Rest'){actor.traverse(node=>{if(node.isSkinnedMesh)node.skeleton.pose()});actor.updateMatrixWorld(true);return}const clip=base.animations.find(c=>c.name===name);if(!clip)throw Error('Unknown pose '+name);mixer.clipAction(clip).play();mixer.setTime(time);actor.updateMatrixWorld(true)},
     required:wardrobeAssetIds,
     apply:async appearance=>{await wardrobe.update(appearance);view();await renderer.compileAsync(scene,camera);view()},
     view,

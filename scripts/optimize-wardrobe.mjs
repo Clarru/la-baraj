@@ -97,7 +97,7 @@ for (const filename of filenames.filter(name => !selected || selected.has(name.s
       material.setName("Wardrobe_Hair");
       material.setBaseColorFactor([0.035, 0.022, 0.016, 1]);
     }
-    if (filename === "top-weekend-knit.glb") {
+    if (filename === "top-weekend-knit.glb" && material.getName() === "Wardrobe_Knit_Charcoal") {
       material.setBaseColorFactor([0.065, 0.075, 0.085, 1]);
       material.setRoughnessFactor(0.88);
     }
@@ -110,9 +110,9 @@ for (const filename of filenames.filter(name => !selected || selected.has(name.s
       material.setBaseColorFactor([0.17, 0.20, 0.12, 1]);
     if (filename.startsWith("bottom-weekend-shorts") && material.getName().includes("Twill"))
       material.setBaseColorFactor([0.7, 0.59, 0.41, 1]);
-    if (filename === "top-trail-overshirt.glb" && material.getBaseColorTexture())
+    if (filename === "top-trail-overshirt.glb" && material.getBaseColorTexture() && !material.getName().includes("_Fitted"))
       material.setBaseColorFactor([0.04, 0.075, 0.13, 1]);
-    if (filename === "female-brunette-tailored.glb" && material.getName().includes("Black_Tailoring"))
+    if (filename === "female-brunette-tailored.glb" && material.getName().includes("Black_Tailoring") && !material.getName().includes("_Fitted"))
       material.setBaseColorFactor([0.009, 0.012, 0.015, 1]);
     if (filename === "female-brunette-tailored.glb" && material.getName().includes("Female_Brunette"))
       material.setBaseColorFactor([0.045, 0.021, 0.011, 1]);

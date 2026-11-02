@@ -1,17 +1,24 @@
 """Reference outfit, editable rigged prototype. Exported review decides acceptance."""
 import bpy
+import os
+os.environ["LA_BARAJ_CLOTH_STUDY"]="1"
 import bmesh
 import json
 import math
 import sys
+import shutil
 from pathlib import Path
 from mathutils import Vector
 from mathutils.bvhtree import BVHTree
+assert bpy.app.background, 'Run this authoring script with Blender --background'
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/"scripts"))
+assert shutil.disk_usage(ROOT).free>=4*1024**3+128*1024**2
+from wardrobe_tailoring import tailored_blazer,fit_underlayer
+from wardrobe_footwear import pumps
 from wardrobe_rig import RAW,approved_rig,import_model,rebind,remove_source_rig,duplicate,export_item,role
 from wardrobe_surfaces import Surface,knit_surface,finish_garment,bind_surface,rib_band,reduce_garment
-from wardrobe_materials import fabric_normal
+from wardrobe_materials import tinted_fabric_material
 rig,approved=approved_rig()
 for obj in approved.values():
     obj.hide_render=True
@@ -30,11 +37,8 @@ def mat(name,color,roughness=.8,metal=0):
     bsdf.inputs["Roughness"].default_value=roughness
     bsdf.inputs["Metallic"].default_value=metal
     return result
-cloth=mat("Wardrobe_Female_Black_Tailoring",(.005,.007,.009),.9)
-texture=cloth.node_tree.nodes.new("ShaderNodeTexImage")
-texture.image=bpy.data.images.load(str(ROOT/"assets/wardrobe-source/textures/twill-albedo.png"))
-cloth.node_tree.links.new(texture.outputs["Color"],cloth.node_tree.nodes.get("Principled BSDF").inputs["Base Color"])
-fabric_normal(cloth,"twill")
+cloth=tinted_fabric_material("Wardrobe_Female_Black_Tailoring_Fitted",(.075,.080,.090),
+    "cap-cotton",roughness=.9,normal_strength=.18)
 underlayer=mat("Wardrobe_Female_Black_Crop",(.009,.011,.014))
 tights_mat=mat("Wardrobe_Female_Sheer_Tights",(.028,.020,.017),.76)
 leather=mat("Wardrobe_Female_Black_Leather",(.006,.007,.009),.44)
@@ -101,94 +105,30 @@ for vertex in tights.data.vertices:
         factor=max(0,min(1,(.15-p.z)/.10))
         p.x=side*.1143+(p.x-side*.1143)*(1-.20*factor)
         p.y=.012+(p.y-.012)*(1-.10*factor)
-        p.z+=.070*max(0,min(1,p.y/.13))*factor
+        p.z+=.040*max(0,min(1,p.y/.13))*factor
+        # Covered foot volume stays inside the shoe last. Retain the visible
+        # ankle above 11 cm; publisher toes are wider than a dressed pump.
+        inset=max(0,min(1,(.11-p.z)/.05))
+        p.x=side*.1143+(p.x-side*.1143)*(1-.28*inset)
+        p.y=.055+(p.y-.055)*(1-.20*inset)
 tights.data.materials.clear()
 tights.data.materials.append(tights_mat)
 role(tights,"tights")
 pieces.append(tights)
 
-# Structured connected blazer shell, open down the front, with full sleeves.
-profiles=[(.79,.225,.170,.175),(.807,.228,.173,.178),(.87,.226,.174,.175),
-    (1.03,.209,.178,.170),(1.24,.215,.213,.164),(1.37,.228,.207,.155),
-    (1.43,.238,.180,.149),(1.48,.243,.160,.145),(1.52,.232,.135,.131),
-    (1.555,.092,.083,.080),(1.575,.086,.079,.077)]
-blazer=knit_surface(cloth,profiles,[.52,.52,.49,.38,.43,.57,.62,.53,.45,1.15,1.20],
-                    name="Wardrobe_Female_Blazer")
-finish_garment(blazer,.004)
-reduce_garment(blazer,.4)
-attach(blazer,"top")
-# Coat skirts hang from the pelvis rather than acquiring arbitrary nearest-thigh
-# weights. Keep ring weights continuous across the front opening and hem.
-pelvis=blazer.vertex_groups.get("pelvis")
-if not pelvis:
-    pelvis=blazer.vertex_groups.new(name="pelvis")
-for vertex in blazer.data.vertices:
-    if vertex.co.z<1.12:
-        for group in blazer.vertex_groups:
-            group.remove([vertex.index])
-        pelvis.add([vertex.index],1,"REPLACE")
-
-# Project the folded collar/lapels onto the measured outer chest, instead of
-# spanning the opening as the previous cravat-like six-point polygon did.
-def blazer_front_y(x,z):
-    low,high=profiles[0],profiles[-1]
-    for a,b in zip(profiles,profiles[1:]):
-        if a[0]<=z<=b[0]:
-            low,high=a,b
-            break
-    t=max(0,min(1,(z-low[0])/(high[0]-low[0])))
-    width=low[1]*(1-t)+high[1]*t
-    front=low[2]*(1-t)+high[2]*t
-    return .045-front*math.sqrt(max(0,1-(x/width)**2))
-for side in [-1,1]:
-    s=Surface()
-    for pattern in [
-        [(.085,1.566),(.150,1.500),(.125,1.435),(.078,1.530)],
-        [(.112,1.442),(.124,1.420),(.157,1.425),(.186,1.340),(.095,1.160),(.118,1.360)],
-    ]:
-        indices=[s.point((side*x,blazer_front_y(x,z)-(.012 if z>1.55 else .006),z))
-                 for x,z in pattern]
-        uvs=[(x/.24,z/.24) for x,z in pattern]
-        if side==1:
-            indices.reverse()
-            uvs.reverse()
-        s.face(indices,uvs)
-    lapel=s.object("Blazer notched lapel",cloth)
-    bpy.context.view_layer.objects.active=lapel
-    shell=lapel.modifiers.new("Lapel folded thickness","SOLIDIFY")
-    shell.thickness=.004
-    bpy.ops.object.modifier_apply(modifier=shell.name)
-    bevel=lapel.modifiers.new("Soft tailored lapel edge","BEVEL")
-    bevel.width=.001
-    bevel.segments=2
-    bpy.ops.object.modifier_apply(modifier=bevel.name)
-    attach(lapel,"top")
-    s=Surface()
-    rows=[]
-    for row in range(3):
-        z=.97+row*.016
-        ids=[]
-        for column in range(7):
-            x=side*(.105+column*.013)
-            y=.045-.177*math.sqrt(max(0,1-(x/.218)**2))-.004
-            ids.append(s.point((x,y,z)))
-        rows.append(ids)
-    for row in range(2):
-        for col in range(6):
-            s.face((rows[row][col],rows[row][col+1],rows[row+1][col+1],rows[row+1][col]),
-                [(col/6,row/2),((col+1)/6,row/2),((col+1)/6,(row+1)/2),(col/6,(row+1)/2)])
-    welt=s.object("Blazer tailored pocket welt",cloth)
-    bpy.context.view_layer.objects.active=welt
-    shell=welt.modifiers.new("Pocket flap doubled cloth","SOLIDIFY")
-    shell.thickness=.0035
-    bpy.ops.object.modifier_apply(modifier=shell.name)
-    attach(welt,"top")
+# Measured jacket shell with surface-fitted rolled collar and notched lapels.
+jacket_cloth=cloth.copy();jacket_cloth.name='Wardrobe_Female_Black_Tailoring_Jacket_Fitted'
+blazer,tailoring,blazer_front_y=tailored_blazer(body,jacket_cloth,rig)
+for obj in [blazer,*tailoring]:
+    role(obj,"top")
+    pieces.append(obj)
 
 # High-neck underlayer extends below the waistband; shorts/belt overlap it.
 crop=rib_band("Wardrobe_Female_TuckedTop",[(1.015,.153,.119),
     (1.055,.152,.120),(1.10,.137,.113),(1.175,.113,.106),(1.19,.116,.11),
     (1.29,.151,.161),(1.38,.154,.163),(1.44,.139,.128),
     (1.51,.078,.075),(1.56,.069,.070)],underlayer,center=(0,.015,0))
+fit_underlayer(crop,body)
 attach(crop,"top")
 
 # Tailored shorts use the publisher's authored pelvis/crotch topology, retaining
@@ -231,6 +171,9 @@ pieces.append(shorts)
 # Slim leather belt and actual hollow gold rectangular buckle.
 belt=rib_band("Wardrobe_Female_Belt",[(1.047,.186,.142),(1.068,.181,.140)],leather,
               center=(0,.017,0))
+# The jacket permanently covers the rear and sides. Omit that hidden belt
+# volume so different pelvis/chest skin weights cannot push it through the coat.
+select_faces(belt,lambda face:centroid(face).y<-.040)
 attach(belt,"bottom")
 def box(name,loc,size,material):
     for o in bpy.context.selected_objects:o.select_set(False)
@@ -253,61 +196,26 @@ for x,z,w,h in [(0,1.046,.038,.004),(0,1.069,.038,.004),
 # Subtle paired cuff buttons.
 for side in [-1,1]:
     for x in [.663,.68,.697]:
-        attach(box("Blazer cuff button",(side*x,.014,1.43),(.008,.004,.008),leather),"top")
+        button=box("Blazer cuff button",(side*x,blazer_front_y(side*x,1.43)-.0015,1.43),(.006,.002,.006),leather)
+        bind_surface(button,blazer,rig)
+        role(button,"top")
+        pieces.append(button)
 
-# Pointed closed-toe pumps: separate shaped upper, thin sole and slender heel.
+# Closed almond-toe pumps use the actor's own last, a continuous sole and
+# stable 4 cm tapered heel. Foot/ball weights keep the counter off the calf.
+sole_mat=mat("Wardrobe_Female_Pump_Outsole",(.009,.010,.011),.82)
 for side in [-1,1]:
-    center_x=side*.1143
-    s=Surface()
-    rings=[]
-    count=64
-    for stage in range(4):
-        ring=[]
-        for j in range(count):
-            a=j*math.tau/count
-            cosine,sine=math.cos(a),math.sin(a)
-            depth=.145 if cosine>=0 else .120
-            taper=1-.52*max(0,cosine)**3
-            ox=center_x+.052*sine*taper
-            oy=.012-depth*cosine
-            floor=.013+.070*((1-cosine)/2)**2
-            if stage==0:
-                point=(ox,oy,floor)
-            elif stage==1:
-                point=(ox,oy,floor+.008)
-            else:
-                t=.42 if stage==2 else 1
-                ix=center_x+.036*sine
-                iy=.033-.096*cosine
-                opening_height=.055+.095*((1-cosine)/2)
-                z=floor+.008+(1.1 if stage==2 else 1)*t*(opening_height-floor)
-                point=(ox*(1-t)+ix*t,oy*(1-t)+iy*t,z)
-            ring.append(s.point(point))
-        rings.append(ring)
-    for k in range(3):
-        for j in range(count):
-            n=(j+1)%count
-            s.face((rings[k][j],rings[k][n],rings[k+1][n],rings[k+1][j]),
-                   [(j/count,k/3),((j+1)/count,k/3),((j+1)/count,(k+1)/3),(j/count,(k+1)/3)])
-    center=s.point((center_x,.02,.035))
-    for j in range(count):
-        n=(j+1)%count
-        s.face((rings[0][n],rings[0][j],center),
-               [(n/count,0),(j/count,0),(.5,.5)])
-    shoe=s.object("Wardrobe_Female_PointedPump",leather)
-    bpy.context.view_layer.objects.active=shoe
-    shell=shoe.modifiers.new("Pump leather thickness","SOLIDIFY")
-    shell.thickness=.002
-    bpy.ops.object.modifier_apply(modifier=shell.name)
-    attach(shoe,"shoes")
-    heel=box("Wardrobe_Female_SlenderHeel",(center_x,.117,.042),(.014,.018,.084),leather)
-    attach(heel,"shoes")
-    for component in [shoe,heel]:
+    for component in pumps(body,side,leather,sole_mat,box):
+        attach(component,"shoes")
+        # The upper follows the ankle's own skin field at the opening. Rigid
+        # foot-only weighting there splits it from the calf during idle/walk.
+        if "AlmondPump" in component.name:
+            continue
         component.vertex_groups.clear()
         foot=component.vertex_groups.new(name="foot_l" if side==1 else "foot_r")
         ball=component.vertex_groups.new(name="ball_l" if side==1 else "ball_r")
         for vertex in component.data.vertices:
-            t=max(0,min(.75,(-vertex.co.y-.05)/.11)) if component==shoe else 0
+            t=max(0,min(.75,(-vertex.co.y-.05)/.11)) if "Heel" not in component.name else 0
             foot.add([vertex.index],1-t,"REPLACE")
             if t:ball.add([vertex.index],t,"REPLACE")
 
@@ -458,8 +366,19 @@ remove_source_rig(hair_rig)
 
 for obj in bpy.context.scene.objects:
     if obj.type=="MESH" and not obj.vertex_groups:obj.hide_render=True
+# Bake the jacket independently; shared shorts/leather materials stay intact.
+from wardrobe_cloth_bake import cloth_atlas
+jacket_parts=[o for o in pieces if o==blazer or o.name.startswith('Blazer cuff button')or(len(o.data.materials)==1 and o.data.materials[0]==jacket_cloth)]
+other_pieces=[o for o in pieces if o not in jacket_parts]
+for o in jacket_parts:
+    if len(o.data.materials)==1 and o.data.materials[0]==jacket_cloth:
+        for corner in o.data.uv_layers[0].data:corner.uv*=2.4
+thread_control=bpy.data.materials.new('Unused jacket thread bake control');thread_control.use_nodes=True
+jacket_parts=cloth_atlas(blazer,jacket_parts,jacket_cloth,thread_control,'female-jacket',high_uv_scale=2.4,roughness_range=(.86,.96))
+pieces=[*other_pieces,*jacket_parts]
+for o in pieces:o.hide_render=False
 artifact=export_item(rig,pieces,"female-brunette-tailored")
-bpy.ops.wm.save_as_mainfile(filepath=str(RAW/"female-tailored-source.blend"))
+bpy.ops.wm.save_as_mainfile(filepath=str(RAW/"female-draped-jacket-study.blend"),compress=True)
 (ROOT/"docs/characters/wardrobe/female-authoring.json").write_text(json.dumps({
     "stage":"Complete-component rigged prototype; fit and visual review required",
     "artifact":str(artifact.relative_to(ROOT)),
@@ -467,3 +386,7 @@ bpy.ops.wm.save_as_mainfile(filepath=str(RAW/"female-tailored-source.blend"))
     "hairConstruction":"Measured publisher islands: unchanged inner scalp/crown; fitted back drape and paired authored front locks; no added tubes",
     "hairIslands":hair_islands,
     "accepted":False},indent=2)+"\n")
+
+# Reuse the authored toe/arch and fit the concealed foot inside the pumps.
+import runpy
+runpy.run_path(str(ROOT/"scripts/fit-wardrobe-pumps.py"),run_name="__main__")

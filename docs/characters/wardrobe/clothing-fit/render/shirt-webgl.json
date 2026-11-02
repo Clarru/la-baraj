@@ -1,0 +1,43 @@
+{
+  "appearance": {
+    "version": 1,
+    "body": "male",
+    "top": "trail-overshirt",
+    "beard": "moustache"
+  },
+  "scope": "Actual GLB/wardrobe code and Appearance preview light/pose; offscreen single asset, no Game scene or listener",
+  "assets": [
+    {
+      "id": "beard-moustache",
+      "sha256": "7908187322d595873f70369cd0ad31f1fdca06327cee4ce8b9ff8ce35a8cf30d"
+    },
+    {
+      "id": "male-custom-top-skin",
+      "sha256": "dc380bf25f3fc7c2e22d7a67019e8ccdfdb7ec165671cccba41b4e2a7c599a37"
+    },
+    {
+      "id": "top-trail-overshirt",
+      "sha256": "f07abb8111f50a4d4532960f231e8252c5f184e6433a93b97aba606ae783a3cf"
+    }
+  ],
+  "errors": [],
+  "requests": [],
+  "animations": [
+    "HitRecieve",
+    "Idle_Neutral",
+    "Jog",
+    "Jump_Land",
+    "Jump_Loop",
+    "Jump_Start",
+    "Punch_Left",
+    "Punch_Right",
+    "Run",
+    "Walk",
+    "Wave"
+  ],
+  "stats": {
+    "calls": 11,
+    "triangles": 24619,
+    "renderer": "WebKit WebGL"
+  }
+}

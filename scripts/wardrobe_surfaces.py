@@ -34,7 +34,7 @@ class Surface:
         return obj
 
 
-def knit_surface(material, profiles=None, front_gaps=None, name="Wardrobe_Top_WeekendKnit"):
+def knit_surface(material, profiles=None, front_gaps=None, name="Wardrobe_Top_WeekendKnit", center_y=.045, shoulder_back=0):
     # Reference-specific torso profiles (z, half width, front depth, back depth).
     # Shoulder holes share their edge vertices with the sleeve surface.
     profiles = profiles or [
@@ -58,7 +58,9 @@ def knit_surface(material, profiles=None, front_gaps=None, name="Wardrobe_Top_We
             cosine, sine = math.cos(angle), math.sin(angle)
             depth = front if cosine >= 0 else back
             fold = .0015 * math.sin(angle * 7 + z * 31) if z < 1.40 else 0
-            ring.append(surface.point((sine * (width + fold), .045 - cosine * (depth + fold), z)))
+            shoulder = min(1, max(0, (z-1.30)/.07), max(0, (1.56-z)/.04))
+            ring.append(surface.point((sine * (width + fold), center_y - cosine * (depth + fold)
+                + shoulder_back * shoulder * sine**4, z)))
         rings.append(ring)
     for level in range(len(rings) - 1):
         for j in range(count):

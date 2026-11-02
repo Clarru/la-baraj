@@ -116,9 +116,13 @@ function tint(
     role === "top" &&
     appearance.topColor !== "original" &&
     /Knit|Overshirt_Navy/.test(material.name)
-  )
+  ) {
     color(clothColors[appearance.topColor]);
-  else if (role === "bottom" && appearance.bottomColor !== "original")
+    if (material.name.includes("_Fitted"))
+      material.color.multiplyScalar(
+        1 / (material.name.includes("Knit") ? 0.195 : 0.313),
+      );
+  } else if (role === "bottom" && appearance.bottomColor !== "original")
     color(clothColors[appearance.bottomColor]);
 }
 

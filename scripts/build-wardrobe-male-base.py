@@ -5,13 +5,13 @@ import sys
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/"scripts"))
-from wardrobe_rig import RAW,approved_rig,duplicate,export_item,role
+from wardrobe_rig import RAW,approved_rig,duplicate,export_item,role,import_model,rebind,remove_source_rig
 rig,approved=approved_rig()
 head=duplicate(approved["SuperHero_Male"],"Wardrobe_Male_CleanNeck")
 mesh=bmesh.new()
 mesh.from_mesh(head.data)
 bmesh.ops.bisect_plane(mesh,geom=list(mesh.verts)+list(mesh.edges)+list(mesh.faces),
-    plane_co=(0,0,1.565),plane_no=(0,0,1),clear_inner=True)
+    plane_co=(0,0,1.54),plane_no=(0,-.3,1),clear_inner=True)
 bmesh.ops.delete(mesh,geom=[v for v in mesh.verts if not v.link_faces],context="VERTS")
 mesh.to_mesh(head.data)
 mesh.free()

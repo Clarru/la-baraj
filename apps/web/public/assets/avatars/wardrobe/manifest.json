@@ -1,7 +1,7 @@
 {
-  "stage": "Accepted wardrobe exports",
+  "stage": "Headless clothing candidates \u2014 world acceptance pending",
   "originalMaleUnchanged": true,
-  "source": "Quaternius CC0 Standard base characters and modular outfits; reference-led Blender reconstruction; retained provenance in docs/characters/wardrobe and assets/wardrobe-source",
+  "source": "Quaternius CC0 base/outfits; Blender Studio Rex shoe mesh (CC-BY-4.0); MRT/MakeHuman CC0 stiletto last; reference-led reconstruction. See ATTRIBUTION.md and docs/characters/wardrobe/clothing-fit.",
   "assets": [
     {
       "id": "beard-moustache",
@@ -291,25 +291,25 @@
     },
     {
       "id": "female-brunette-tailored",
-      "bytes": 2436068,
-      "triangles": 30800,
+      "bytes": 2744624,
+      "triangles": 37528,
       "meshes": 8,
-      "textures": 9,
+      "textures": 12,
       "retainedApprovedTextures": 0,
       "joints": 65,
       "bounds": {
         "min": [
           -0.9316649436950684,
-          0,
-          -0.2470073252916336
+          -1.9205321223125793e-05,
+          -0.17701980471611023
         ],
         "max": [
           0.9316649436950684,
           1.8274903297424316,
-          0.14880000054836273
+          0.13612832129001617
         ]
       },
-      "sha256": "db918bb9b800467b3029fc580eb09f2d3918eb66090dcacafe2c42ecf8a547cf"
+      "sha256": "110b0bdbea545c5dd23865118d81030c47e3644cf1acb1868b8323e11555cf7b"
     },
     {
       "id": "hair-buzzed",
@@ -357,8 +357,8 @@
     },
     {
       "id": "male-custom-top-skin",
-      "bytes": 1012108,
-      "triangles": 6280,
+      "bytes": 1013708,
+      "triangles": 6334,
       "meshes": 1,
       "textures": 6,
       "retainedApprovedTextures": 6,
@@ -367,7 +367,7 @@
         "min": [
           -0.9256387948989868,
           1.3684839010238647,
-          -0.11471334099769592
+          -0.11190321296453476
         ],
         "max": [
           0.9256389737129211,
@@ -375,29 +375,29 @@
           0.11516901850700378
         ]
       },
-      "sha256": "b2a73d5d52c63061284b172fbdeae1f025904b565f1a3edc9d37dc8ae39a0518"
+      "sha256": "dc380bf25f3fc7c2e22d7a67019e8ccdfdb7ec165671cccba41b4e2a7c599a37"
     },
     {
       "id": "shoes-canvas-low",
-      "bytes": 105672,
-      "triangles": 1890,
+      "bytes": 836264,
+      "triangles": 5986,
       "meshes": 1,
-      "textures": 0,
+      "textures": 3,
       "retainedApprovedTextures": 0,
       "joints": 65,
       "bounds": {
         "min": [
-          -0.1826712042093277,
-          -0.003979654982686043,
-          -0.1391800045967102
+          -0.17104820907115936,
+          1.3601100363302976e-05,
+          -0.1374136358499527
         ],
         "max": [
-          0.1826712191104889,
-          0.1014670580625534,
-          0.16754069924354553
+          0.17091086506843567,
+          0.1292738914489746,
+          0.15862902998924255
         ]
       },
-      "sha256": "7d753e558995274e514b80c59547b888212c6de082a9383449b3f87a8634406c"
+      "sha256": "83d8c7461574b59f679e52b2d72f8faa5a2d28f41ae22e16d902f354181ad61b"
     },
     {
       "id": "shoes-trail-hikers",
@@ -423,47 +423,47 @@
     },
     {
       "id": "top-trail-overshirt",
-      "bytes": 757700,
-      "triangles": 8620,
+      "bytes": 771924,
+      "triangles": 11408,
       "meshes": 1,
-      "textures": 2,
+      "textures": 3,
       "retainedApprovedTextures": 0,
       "joints": 65,
       "bounds": {
         "min": [
-          -0.7101278305053711,
-          0.9846087694168091,
-          -0.1969900280237198
+          -0.7100003957748413,
+          0.9918583631515503,
+          -0.15730172395706177
         ],
         "max": [
-          0.7101307511329651,
-          1.5762181282043457,
-          0.16496334969997406
+          0.7100000381469727,
+          1.565000057220459,
+          0.12328170239925385
         ]
       },
-      "sha256": "faf923be422487527baf3f4a5a4c169b5dd52d9c42f51099e6cf61bcad360fca"
+      "sha256": "f07abb8111f50a4d4532960f231e8252c5f184e6433a93b97aba606ae783a3cf"
     },
     {
       "id": "top-weekend-knit",
-      "bytes": 859112,
-      "triangles": 7942,
+      "bytes": 638868,
+      "triangles": 8640,
       "meshes": 1,
-      "textures": 2,
+      "textures": 3,
       "retainedApprovedTextures": 0,
       "joints": 65,
       "bounds": {
         "min": [
-          -0.7140271067619324,
-          0.9868819713592529,
-          -0.2059374749660492
+          -0.7100000381469727,
+          0.9926216006278992,
+          -0.14285989105701447
         ],
         "max": [
-          0.714409589767456,
-          1.5829877853393555,
-          0.13055597245693207
+          0.7100000381469727,
+          1.5781219005584717,
+          0.12012846767902374
         ]
       },
-      "sha256": "e69b4a180e7311a4c047c2a5dc8a4abdbc5de22d90a9180bec7f09b1e92d99cd"
+      "sha256": "7fe07b1750a358a1fb37de279d911176ea2601e9de8199fad105778fe1097c74"
     },
     {
       "id": "hair-buzzed-hat",

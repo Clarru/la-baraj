@@ -81,6 +81,59 @@ function asset(name: string, role = "hair") {
 const originalHair = (root: THREE.Object3D) =>
   root.getObjectByName("Hairstyle_Hair_SimpleParted") as THREE.SkinnedMesh;
 describe("atomic per-actor wardrobe changes", () => {
+  it.each([
+    ["weekend-knit", "Wardrobe_Knit_Charcoal_Fitted", 0.195],
+    ["trail-overshirt", "Wardrobe_Overshirt_Navy_Fitted", 0.313],
+    ["weekend-knit", "Wardrobe_Knit_Charcoal", 1],
+    ["trail-overshirt", "Wardrobe_Overshirt_Navy", 1],
+  ] as const)(
+    "dyes %s cloth while retaining source detail and actor isolation (%s)",
+    async (top, name, luminance) => {
+      const first = actor(),
+        second = actor(),
+        garment = asset("fitted-top", "top"),
+        support = asset("covered-neck", "skin");
+      const source = garment.mesh.material as THREE.MeshStandardMaterial;
+      source.name = name;
+      source.color.setRGB(0.089354, 0.134031, 0.210619);
+      source.map = new THREE.Texture();
+      source.normalMap = new THREE.Texture();
+      const original = source.color.clone();
+      const load: WardrobeLoader = async (id) =>
+        id === "male-custom-top-skin" ? support.root : garment.root;
+      const wardrobe = new AvatarWardrobe(first.root, load),
+        other = new AvatarWardrobe(second.root, load);
+      try {
+        await other.update({ ...DEFAULT_APPEARANCE, top });
+        await wardrobe.update({
+          ...DEFAULT_APPEARANCE,
+          top,
+          topColor: "cream",
+        });
+        const material = (
+          first.root.getObjectByName("fitted-top") as THREE.Mesh
+        ).material as THREE.MeshStandardMaterial;
+        const untouched = (
+          second.root.getObjectByName("fitted-top") as THREE.Mesh
+        ).material as THREE.MeshStandardMaterial;
+        expect(material.color.r).toBeCloseTo(0.62 / luminance);
+        expect(material.color.g).toBeCloseTo(0.52 / luminance);
+        expect(material.color.b).toBeCloseTo(0.36 / luminance);
+        expect(material.map).toBe(source.map);
+        expect(material.normalMap).toBe(source.normalMap);
+        expect(source.color.equals(original)).toBe(true);
+        expect(untouched.color.equals(original)).toBe(true);
+        await wardrobe.update({ ...DEFAULT_APPEARANCE, top });
+        const restored = (
+          first.root.getObjectByName("fitted-top") as THREE.Mesh
+        ).material as THREE.MeshStandardMaterial;
+        expect(restored.color.equals(original)).toBe(true);
+      } finally {
+        wardrobe.dispose();
+        other.dispose();
+      }
+    },
+  );
   it("dyes hat cloth per player, preserves texture detail and restores the original", async () => {
     const base = actor(),
       hat = asset("dyed-hat", "hat"),
