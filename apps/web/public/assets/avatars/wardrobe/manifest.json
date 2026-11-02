@@ -356,72 +356,6 @@
       "sha256": "ccc33e3a8da7933eeec1f9c31224970fa6c037c6c098443ad432683bf0ca2282"
     },
     {
-      "id": "hat-knit-beanie",
-      "bytes": 712108,
-      "triangles": 3328,
-      "meshes": 1,
-      "textures": 2,
-      "retainedApprovedTextures": 0,
-      "joints": 65,
-      "bounds": {
-        "min": [
-          -0.12300000339746475,
-          1.75,
-          -0.15700000524520874
-        ],
-        "max": [
-          0.12300000339746475,
-          1.9129999876022339,
-          0.11299999803304672
-        ]
-      },
-      "sha256": "863b5dd80a3fc29facb32457f00b72cbbfb10f17e21be63a8550030022b4dc4b"
-    },
-    {
-      "id": "hat-panel-cap",
-      "bytes": 512384,
-      "triangles": 2120,
-      "meshes": 1,
-      "textures": 2,
-      "retainedApprovedTextures": 0,
-      "joints": 65,
-      "bounds": {
-        "min": [
-          -0.12517134845256805,
-          1.7519999742507935,
-          -0.15000000596046448
-        ],
-        "max": [
-          0.12517134845256805,
-          1.8839999437332153,
-          0.1946052759885788
-        ]
-      },
-      "sha256": "da9f48640eef27321172892595cbfc7fd436104398a17bd2fb7f6de7be25d3a0"
-    },
-    {
-      "id": "hat-stitched-bucket",
-      "bytes": 610248,
-      "triangles": 5248,
-      "meshes": 1,
-      "textures": 2,
-      "retainedApprovedTextures": 0,
-      "joints": 65,
-      "bounds": {
-        "min": [
-          -0.1709488332271576,
-          1.75,
-          -0.20394858717918396
-        ],
-        "max": [
-          0.1709488332271576,
-          1.86899995803833,
-          0.15994858741760254
-        ]
-      },
-      "sha256": "cd9f7de28dfda43e535f9976184b9167c68f598e100cbace0f6519cb4e78f897"
-    },
-    {
       "id": "male-custom-top-skin",
       "bytes": 1012108,
       "triangles": 6280,
@@ -530,6 +464,138 @@
         ]
       },
       "sha256": "e69b4a180e7311a4c047c2a5dc8a4abdbc5de22d90a9180bec7f09b1e92d99cd"
+    },
+    {
+      "id": "hair-buzzed-hat",
+      "bytes": 339020,
+      "triangles": 544,
+      "meshes": 1,
+      "textures": 2,
+      "retainedApprovedTextures": 0,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.07692083716392517,
+          1.6441491842269897,
+          -0.10873813927173615
+        ],
+        "max": [
+          0.07692082226276398,
+          1.7549999952316284,
+          0.050345975905656815
+        ]
+      },
+      "sha256": "fa3955fa53c14c21b01d905735b9ccccba246ad3258d164cc4ecaba1efc22ca0"
+    },
+    {
+      "id": "hair-long-hat",
+      "bytes": 536960,
+      "triangles": 2150,
+      "meshes": 1,
+      "textures": 2,
+      "retainedApprovedTextures": 0,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.12235528230667114,
+          1.5521847009658813,
+          -0.16805948317050934
+        ],
+        "max": [
+          0.12235528230667114,
+          1.7549999952316284,
+          0.0857478454709053
+        ]
+      },
+      "sha256": "a6cdc6b65708afac6f7953789ae3020e4fac20399d002db44f7b2d6c6274df55"
+    },
+    {
+      "id": "hair-parted-hat",
+      "bytes": 37516,
+      "triangles": 523,
+      "meshes": 1,
+      "textures": 0,
+      "retainedApprovedTextures": 0,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.07686397433280945,
+          1.6605604887008667,
+          -0.10871792584657669
+        ],
+        "max": [
+          0.07692631334066391,
+          1.7549999952316284,
+          0.051009733229875565
+        ]
+      },
+      "sha256": "a08bcd02352c5ffc501ffa13455c20e051ecfa1de7e6f3908037bbaf36c60ebe"
+    },
+    {
+      "id": "hat-knit-beanie",
+      "bytes": 978712,
+      "triangles": 11232,
+      "meshes": 1,
+      "textures": 2,
+      "retainedApprovedTextures": 0,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.0988801047205925,
+          1.695351481437683,
+          -0.11817289888858795
+        ],
+        "max": [
+          0.0988800972700119,
+          1.8291869163513184,
+          0.11024110019207001
+        ]
+      },
+      "sha256": "04dfafc3872fd5d8586c2544d987d51ba74bf276390fb4e3b704e0f2210a3069"
+    },
+    {
+      "id": "hat-panel-cap",
+      "bytes": 764092,
+      "triangles": 12584,
+      "meshes": 1,
+      "textures": 2,
+      "retainedApprovedTextures": 0,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.08408735692501068,
+          1.7120747566223145,
+          -0.11696122586727142
+        ],
+        "max": [
+          0.08408735692501068,
+          1.8250993490219116,
+          0.14935655891895294
+        ]
+      },
+      "sha256": "a48abc75673f3dbc5a1e175f5fdac0e4687bbbb497f19c784a904e0be828519f"
+    },
+    {
+      "id": "hat-stitched-bucket",
+      "bytes": 712544,
+      "triangles": 7776,
+      "meshes": 1,
+      "textures": 2,
+      "retainedApprovedTextures": 0,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.12052097916603088,
+          1.6981720924377441,
+          -0.15345773100852966
+        ],
+        "max": [
+          0.12052098661661148,
+          1.8370000123977661,
+          0.13715620338916779
+        ]
+      },
+      "sha256": "145d0522b9f6230e29fd11ef2fb215d0c4e1f6c23f6dd295059e17578ee55fc2"
     }
   ]
 }

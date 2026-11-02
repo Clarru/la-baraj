@@ -11,6 +11,22 @@ import {
 } from "../../../packages/shared/appearance";
 
 describe("bounded appearance profile", () => {
+  it("keeps old hat colours unchanged and accepts only bounded new dyes", () => {
+    const { hatColor: _oldMissing, ...old } = DEFAULT_APPEARANCE;
+    expect(normalizeAppearance(old)).toEqual(DEFAULT_APPEARANCE);
+    expect(normalizeAppearance({ ...old, hatColor: "#fff" })).toEqual(
+      DEFAULT_APPEARANCE,
+    );
+    const dyed = {
+      ...DEFAULT_APPEARANCE,
+      hat: "panel-cap" as const,
+      hatColor: "cream" as const,
+    };
+    expect(normalizeAppearance(dyed)).toEqual(dyed);
+    expect(appearanceKey(dyed)).not.toBe(
+      appearanceKey({ ...dyed, hatColor: "original" }),
+    );
+  });
   it("preserves approved appearance for old and future profiles", () => {
     for (const value of [
       undefined,

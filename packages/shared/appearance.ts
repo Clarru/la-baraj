@@ -40,6 +40,7 @@ export type MaleAppearance = {
   shoes: (typeof SHOE_IDS)[number];
   beard: (typeof BEARD_IDS)[number];
   hairColor: (typeof HAIR_COLORS)[number];
+  hatColor: (typeof CLOTH_COLORS)[number];
   topColor: (typeof CLOTH_COLORS)[number];
   bottomColor: (typeof CLOTH_COLORS)[number];
 };
@@ -56,6 +57,7 @@ export const DEFAULT_APPEARANCE: Readonly<MaleAppearance> = Object.freeze({
   shoes: "lake-boots",
   beard: "full",
   hairColor: "brown",
+  hatColor: "original",
   topColor: "original",
   bottomColor: "original",
 });
@@ -83,6 +85,11 @@ export function normalizeAppearance(value: unknown): Appearance {
     body: "male",
     hair: choice(HAIR_IDS, source.hair, DEFAULT_APPEARANCE.hair),
     hat: choice(HAT_IDS, source.hat, DEFAULT_APPEARANCE.hat),
+    hatColor: choice(
+      CLOTH_COLORS,
+      source.hatColor,
+      DEFAULT_APPEARANCE.hatColor,
+    ),
     top: choice(TOP_IDS, source.top, DEFAULT_APPEARANCE.top),
     bottom: choice(BOTTOM_IDS, source.bottom, DEFAULT_APPEARANCE.bottom),
     shoes: choice(SHOE_IDS, source.shoes, DEFAULT_APPEARANCE.shoes),

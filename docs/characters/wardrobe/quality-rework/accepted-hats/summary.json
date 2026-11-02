@@ -1,0 +1,273 @@
+{
+  "frozenHead": "0b461639931fa784b284539d974ddcf13a5b26c9",
+  "base": "e5558b8665eb2e3b19dbc68219de68a022cea3d4",
+  "fits": [
+    {
+      "hat": "panel-cap",
+      "hair": "parted",
+      "views": [
+        "front",
+        "side",
+        "rear"
+      ],
+      "walk": true,
+      "turn": true
+    },
+    {
+      "hat": "panel-cap",
+      "hair": "buzzed",
+      "views": [
+        "front",
+        "side",
+        "rear"
+      ],
+      "walk": true,
+      "turn": true
+    },
+    {
+      "hat": "panel-cap",
+      "hair": "long",
+      "views": [
+        "front",
+        "side",
+        "rear"
+      ],
+      "walk": true,
+      "turn": true
+    },
+    {
+      "hat": "knit-beanie",
+      "hair": "parted",
+      "views": [
+        "front",
+        "side",
+        "rear"
+      ],
+      "walk": true,
+      "turn": true
+    },
+    {
+      "hat": "knit-beanie",
+      "hair": "buzzed",
+      "views": [
+        "front",
+        "side",
+        "rear"
+      ],
+      "walk": true,
+      "turn": true
+    },
+    {
+      "hat": "knit-beanie",
+      "hair": "long",
+      "views": [
+        "front",
+        "side",
+        "rear"
+      ],
+      "walk": true,
+      "turn": true
+    },
+    {
+      "hat": "stitched-bucket",
+      "hair": "parted",
+      "views": [
+        "front",
+        "side",
+        "rear"
+      ],
+      "walk": true,
+      "turn": true
+    },
+    {
+      "hat": "stitched-bucket",
+      "hair": "buzzed",
+      "views": [
+        "front",
+        "side",
+        "rear"
+      ],
+      "walk": true,
+      "turn": true
+    },
+    {
+      "hat": "stitched-bucket",
+      "hair": "long",
+      "views": [
+        "front",
+        "side",
+        "rear"
+      ],
+      "walk": true,
+      "turn": true
+    }
+  ],
+  "materialIsolation": [
+    {
+      "x": -1.4,
+      "name": "Wardrobe_Hat_Cap_Navy",
+      "uuid": "c5f821de-1dcd-4318-a466-f89c039e1df2",
+      "color": [
+        1.9808306709265178,
+        1.661341853035144,
+        1.1501597444089458
+      ],
+      "map": "5981b52c-44ca-4f6d-b8ab-70ecc18910a1",
+      "normal": "16d4a9fa-6da0-4af2-bb92-07ecf293e822"
+    },
+    {
+      "x": 0,
+      "name": "Wardrobe_Hat_Cap_Navy",
+      "uuid": "f4e7afbf-73d8-48d0-874f-722cce4d3b7e",
+      "color": [
+        1.9808306709265178,
+        1.661341853035144,
+        1.1501597444089458
+      ],
+      "map": "5981b52c-44ca-4f6d-b8ab-70ecc18910a1",
+      "normal": "16d4a9fa-6da0-4af2-bb92-07ecf293e822"
+    },
+    {
+      "x": 1.4,
+      "name": "Wardrobe_Hat_Cap_Navy",
+      "uuid": "7b542bf3-9bac-437b-8b49-ee5d592202a1",
+      "color": [
+        0.12779552715654954,
+        0.23961661341853036,
+        0.415335463258786
+      ],
+      "map": "5981b52c-44ca-4f6d-b8ab-70ecc18910a1",
+      "normal": "16d4a9fa-6da0-4af2-bb92-07ecf293e822"
+    }
+  ],
+  "stagedUI": [
+    {
+      "hat": "panel-cap",
+      "swatches": 6,
+      "originalRestored": true
+    },
+    {
+      "hat": "knit-beanie",
+      "swatches": 6,
+      "originalRestored": true
+    },
+    {
+      "hat": "stitched-bucket",
+      "swatches": 6,
+      "originalRestored": true
+    },
+    {
+      "name": "desktop",
+      "bounds": {
+        "x": 250,
+        "y": 155,
+        "width": 940,
+        "height": 690
+      },
+      "apply": true,
+      "cancel": true,
+      "reopen": true
+    },
+    {
+      "name": "portrait",
+      "bounds": {
+        "x": 16,
+        "y": 81,
+        "width": 361,
+        "height": 690
+      },
+      "apply": true,
+      "cancel": true,
+      "reopen": true
+    },
+    {
+      "name": "landscape",
+      "bounds": {
+        "x": 14,
+        "y": 8,
+        "width": 824,
+        "height": 377
+      },
+      "apply": true,
+      "cancel": true,
+      "reopen": true
+    }
+  ],
+  "actualGame": [
+    {
+      "actualGameApply": true,
+      "observerAgreement": true,
+      "distinctHomes": true
+    },
+    {
+      "movement": true,
+      "observer": true,
+      "persistedReload": true,
+      "reset": true
+    }
+  ],
+  "movementMetres": 1.4278365946926972,
+  "identityHomes": [
+    {
+      "id": "62bc6fda-d1e9-4b56-981e-3ea4f1492c94",
+      "home": 0
+    },
+    {
+      "id": "0461dd78-0f8b-4fe4-a88e-a3305de52754",
+      "home": 1
+    }
+  ],
+  "noHatRestoration": [
+    {
+      "hair": "parted",
+      "removeHatRestoresFullStyle": true,
+      "observer": true
+    },
+    {
+      "hair": "buzzed",
+      "removeHatRestoresFullStyle": true,
+      "observer": true
+    },
+    {
+      "hair": "long",
+      "removeHatRestoresFullStyle": true,
+      "observer": true
+    }
+  ],
+  "defaultAdditionalDownloads": 0,
+  "pageErrorsInFinalDirectGame": [],
+  "socketsInFinalDirectGame": [],
+  "clothingBaselineUnchanged": true,
+  "cleanup": {
+    "removedAdditions": 18,
+    "baselineFiles": 409,
+    "allBaselineHashesIdentical": true,
+    "normalHTTPIndexIdentical": true,
+    "listenerPID": 2669,
+    "elapsedSeconds": 1202.8975818339968
+  },
+  "actionsWithinGrant": true,
+  "runnerFindings": [
+    "Returning an unchanged profile to Original correctly disables Apply; first runner incorrectly expected it enabled. Corrected expectation passed for all hats.",
+    "A keyboard movement attempt on an unfocused/background canvas did not move. Bringing the owned tab forward and focusing its canvas produced 1.4278m movement.",
+    "A preliminary mixed/routed fixture pass recorded CSS preload aborts. A standalone direct published-Game rerun recorded no page errors or failed requests; no product source/model change was made to obtain that result."
+  ],
+  "limits": [
+    "Stylised visual fit and brief walk/turn observations, not all possible animation frames.",
+    "Increased hat geometry was retained for the approved shape. No iPhone heat, battery or whole-world GPU benchmark claim.",
+    "Frontend and Worker release remains owned by Main; hats are not yet live."
+  ],
+  "evidenceHashes": {
+    "fit-report.json": "51a8a99d15aeb5dd67920968da23c627c488b3c212acee0cd4f7c3762231b9fe",
+    "settings-report.json": "f86ff248540f827e35f930dbe0f8041207b72afa3bf4fb838c4bf3a930c87daf",
+    "game-first-report.json": "5d80630a555389e6a301ae9fa19e9a0132c5566fb2006a07dce9066bb8d9ae38",
+    "game-report.json": "099948d7f80df012c342a477551d34860ec20d3a0ce575f0c53eeba241cc4d5c",
+    "removal-report.json": "8580c508708a0bb6412038e24c344f0a45b192ca6969dddc9908f4d54b75ad88",
+    "panel-cap-fits-sheet.png": "8d4f9c08c37c0ddcd1270ea4399ac94803ec964f662c339199c0b2decebd9567",
+    "knit-beanie-fits-sheet.png": "1f068ab46bce44503fe60164833afb361e7eef2239ab7ecd63fceef5a1c40d4f",
+    "stitched-bucket-fits-sheet.png": "e584d60bea01edec4e112e28f17a2d9d58fbcb019e9e0022c3e77f1175307ad4",
+    "portrait-settings.png": "00c97e347cc5ba4a2e568cc1fead66de884c921617c512a1454858a4e44e84ae",
+    "landscape-settings.png": "60ef54a20f846de5a22083951a97e729ec513066c7c4e14c11620976a7f08ce1",
+    "actual-game-dyed-beanie.png": "57d78f1e7f0f6ec22d3ecb5e5f675ecaf3b8e89182c525eca9b1711cffee2245"
+  }
+}

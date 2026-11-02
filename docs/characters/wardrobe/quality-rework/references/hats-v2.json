@@ -1,0 +1,12 @@
+{
+  "provider": "built-in image_gen",
+  "model": "unknown",
+  "kind": "generated construction reference, not a built model",
+  "prompt": "Use case: stylized-concept. Create a construction reference sheet for THREE fitted men's hats for La Baraj, a high-quality stylized 3D adventure game. Input images are rejected current-game hats; preserve the man's existing face, adult proportions, hair and stylized rendering finish as the character anchor, but replace the hats. Layout: three rows, each row has close front-three-quarter and exact side views of the SAME hat on the SAME man, neutral warm-grey studio background, evenly lit, big enough to inspect construction. Row1: tailored low-profile six-panel navy cotton cap; snug anatomical sweatband at hairline, softly shaped crown following scalp, graceful shallow-curved visor attached seamlessly to crown, fine panel stitching, no giant rigid dome or stacked horizontal plates. Row2: close-fitting charcoal/olive rib-knit watch beanie; rounded soft crown only slightly above scalp, believable vertical knit ribs and a narrow rounded folded cuff sitting lower around the head, no oversized helmet/dome. Row3: washed olive cotton BUCKET HAT; tapered soft crown, subtle flat oval top seam, broad soft brim that noticeably slopes DOWN around the head, concentric stitching, no fedora crown or stiff horizontal fedora brim/contrast dress-hat band. Hats must look like believable tailored fabric, restrained finish matching the existing detailed stylized head, not glossy plastic or crude primitives. No logos, no new facial accessories, no facial identity redesign, no extra hats. Treat the input hat forms as negative controls, not desired silhouettes. This image is a modeling reference; coherent construction and fit are the priority.",
+  "inputRoles": {
+    "cap": "rejected current hat; approved face/style anchor",
+    "beanie": "rejected current fit and construction",
+    "bucket": "rejected current fedora-like form"
+  },
+  "selected": "all three rows as construction targets; derive exact dimensions from canonical head geometry"
+}

@@ -139,6 +139,7 @@ export type ServerMessage =
         arcade2048?: boolean;
         arcadeStations?: boolean;
         appearance?: boolean;
+        appearanceHatColors?: boolean;
       };
       arcadeStations?: ArcadeStationView[];
       cruceRecovery?: CruceRecovery;

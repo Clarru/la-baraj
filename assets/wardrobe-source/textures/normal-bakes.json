@@ -28,5 +28,15 @@
     "bumpDistance": 0.00019999999494757503,
     "bumpStrength": 0.55,
     "output": "assets/wardrobe-source/textures/hair-normal.png"
+  },
+  {
+    "fabric": "cap-cotton",
+    "source": "assets/wardrobe-source/textures/cap-cotton-albedo.png",
+    "sourceSHA256": "f8b9774ded738f7bd18f34796150ddf8e4e3d8ddfa382a0c9b349c735c25db18",
+    "bake": "Blender Cycles tangent-space NORMAL on 0.1 m UV plane",
+    "resolution": 512,
+    "bumpDistance": 7.999999797903001e-05,
+    "bumpStrength": 0.55,
+    "output": "assets/wardrobe-source/textures/cap-cotton-normal.png"
   }
 ]

@@ -1,0 +1,83 @@
+{
+  "head": "0b461639931fa784b284539d974ddcf13a5b26c9",
+  "runnerSHA256": "8867950d8717ebf4543624c1380084abba65c782e704b6ec778468f73149935b",
+  "checks": [
+    {
+      "hat": "panel-cap",
+      "swatches": 6,
+      "originalRestored": true
+    },
+    {
+      "hat": "knit-beanie",
+      "swatches": 6,
+      "originalRestored": true
+    },
+    {
+      "hat": "stitched-bucket",
+      "swatches": 6,
+      "originalRestored": true
+    },
+    {
+      "name": "desktop",
+      "bounds": {
+        "x": 250,
+        "y": 155,
+        "width": 940,
+        "height": 690
+      },
+      "apply": true,
+      "cancel": true,
+      "reopen": true
+    },
+    {
+      "name": "portrait",
+      "bounds": {
+        "x": 16,
+        "y": 81,
+        "width": 361,
+        "height": 690
+      },
+      "apply": true,
+      "cancel": true,
+      "reopen": true
+    },
+    {
+      "name": "landscape",
+      "bounds": {
+        "x": 14,
+        "y": 8,
+        "width": 824,
+        "height": 377
+      },
+      "apply": true,
+      "cancel": true,
+      "reopen": true
+    }
+  ],
+  "fits": [],
+  "errors": [
+    "Unable to preload CSS for http://127.0.0.1:4173/assets/EnvironmentLab-gffh9q2N.css",
+    "Unable to preload CSS for http://127.0.0.1:4173/assets/EnvironmentLab-gffh9q2N.css"
+  ],
+  "sockets": [],
+  "privateAssets": [
+    "http://127.0.0.1:4173/assets/hat-colours-qa/hair-parted-hat-a08bcd02352c5ffc.glb",
+    "http://127.0.0.1:4173/assets/hat-colours-qa/hat-panel-cap-a48abc75673f3dbc.glb",
+    "http://127.0.0.1:4173/assets/hat-colours-qa/hat-knit-beanie-04dfafc3872fd5d8.glb",
+    "http://127.0.0.1:4173/assets/hat-colours-qa/hat-stitched-bucket-145d0522b9f6230e.glb"
+  ],
+  "canonicalHats": [],
+  "screens": [
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/hat-colours/acceptance/desktop-settings.png",
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/hat-colours/acceptance/portrait-settings.png",
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/hat-colours/acceptance/landscape-settings.png"
+  ],
+  "identities": {
+    "first": {},
+    "second": {
+      "id": "59efee61-3008-423d-936a-b741490b462d",
+      "home": 1
+    }
+  },
+  "failure": "TimeoutError: locator.click: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Open menu', exact: true })\u001b[22m\n"
+}

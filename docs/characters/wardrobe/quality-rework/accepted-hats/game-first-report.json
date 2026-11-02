@@ -1,0 +1,254 @@
+{
+  "errors": [],
+  "failed": [],
+  "checks": [],
+  "sockets": [],
+  "firstState": {
+    "state": {
+      "status": "online",
+      "id": "f57bf055-2761-42de-951b-6ea3937acdf8",
+      "home": 0,
+      "appearance": {
+        "version": 1,
+        "body": "male",
+        "hair": "parted",
+        "hat": "none",
+        "hatColor": "original",
+        "top": "lake-workshirt",
+        "bottom": "classic",
+        "shoes": "lake-boots",
+        "beard": "full",
+        "hairColor": "brown",
+        "topColor": "original",
+        "bottomColor": "original"
+      },
+      "available": true,
+      "position": [
+        45,
+        1.9983432995767503,
+        26.998350833850452
+      ],
+      "activity": {
+        "kind": "none",
+        "startedAt": 0
+      },
+      "scooter": {
+        "mounted": false,
+        "parked": [
+          0,
+          0,
+          0
+        ],
+        "yaw": 0,
+        "speed": 0
+      },
+      "boat": {
+        "mounted": false,
+        "parked": [
+          3.7,
+          0.05,
+          38.87531356447997
+        ],
+        "yaw": 3.141592653589793,
+        "speed": 0,
+        "velocity": [
+          0,
+          0
+        ],
+        "angularVelocity": 0,
+        "rudder": 0
+      },
+      "remotes": []
+    },
+    "body": "Nearly there…\n\n100%\nLocal touch QA"
+  },
+  "identities": [
+    {
+      "status": "online",
+      "id": "f57bf055-2761-42de-951b-6ea3937acdf8",
+      "home": 0,
+      "appearance": {
+        "version": 1,
+        "body": "male",
+        "hair": "parted",
+        "hat": "none",
+        "hatColor": "original",
+        "top": "lake-workshirt",
+        "bottom": "classic",
+        "shoes": "lake-boots",
+        "beard": "full",
+        "hairColor": "brown",
+        "topColor": "original",
+        "bottomColor": "original"
+      },
+      "available": true,
+      "position": [
+        55.384254455566406,
+        6.049004554748535,
+        63.78707504272461
+      ],
+      "activity": {
+        "kind": "none",
+        "startedAt": 0
+      },
+      "scooter": {
+        "mounted": false,
+        "parked": [
+          53.68602158793589,
+          4.86688232421875,
+          63.42878752161689
+        ],
+        "yaw": 3.13660235889303,
+        "speed": 0
+      },
+      "boat": {
+        "mounted": false,
+        "parked": [
+          3.7,
+          0.05,
+          38.87531356447997
+        ],
+        "yaw": 3.141592653589793,
+        "speed": 0,
+        "velocity": [
+          0,
+          0
+        ],
+        "angularVelocity": 0,
+        "rudder": 0
+      },
+      "remotes": [
+        {
+          "id": "4101d0b8-dbc6-449c-948e-ba3dc85e667e",
+          "nickname": "Mobile QA",
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "yaw": 0,
+          "animation": "idle",
+          "activity": "none",
+          "vehicle": "none",
+          "homeIndex": 1,
+          "appearance": {
+            "version": 1,
+            "body": "male",
+            "hair": "parted",
+            "hat": "none",
+            "hatColor": "original",
+            "top": "lake-workshirt",
+            "bottom": "classic",
+            "shoes": "lake-boots",
+            "beard": "full",
+            "hairColor": "brown",
+            "topColor": "original",
+            "bottomColor": "original"
+          }
+        }
+      ]
+    },
+    {
+      "status": "online",
+      "id": "4101d0b8-dbc6-449c-948e-ba3dc85e667e",
+      "home": 1,
+      "appearance": {
+        "version": 1,
+        "body": "male",
+        "hair": "parted",
+        "hat": "none",
+        "hatColor": "original",
+        "top": "lake-workshirt",
+        "bottom": "classic",
+        "shoes": "lake-boots",
+        "beard": "full",
+        "hairColor": "brown",
+        "topColor": "original",
+        "bottomColor": "original"
+      },
+      "available": true,
+      "position": [
+        45,
+        1.9983432995767503,
+        26.998350833850452
+      ],
+      "activity": {
+        "kind": "none",
+        "startedAt": 2673.699999988079
+      },
+      "scooter": {
+        "mounted": false,
+        "parked": [
+          0,
+          0,
+          0
+        ],
+        "yaw": 0,
+        "speed": 0
+      },
+      "boat": {
+        "mounted": false,
+        "parked": [
+          3.7,
+          0.05,
+          38.87531356447997
+        ],
+        "yaw": 3.141592653589793,
+        "speed": 0,
+        "velocity": [
+          0,
+          0
+        ],
+        "angularVelocity": 0,
+        "rudder": 0
+      },
+      "remotes": [
+        {
+          "id": "f57bf055-2761-42de-951b-6ea3937acdf8",
+          "nickname": "Mobile QA",
+          "position": [
+            55.384,
+            4.974,
+            63.787
+          ],
+          "yaw": 3.137,
+          "animation": "Idle_Neutral",
+          "activity": "none",
+          "vehicle": "none",
+          "homeIndex": 0,
+          "posture": "standing",
+          "speed": 0,
+          "jumpPhase": "grounded",
+          "boat": {
+            "position": [
+              3.7,
+              38.875
+            ],
+            "yaw": 3.141,
+            "velocity": [
+              0,
+              0
+            ]
+          },
+          "boatImpactRevision": 0,
+          "appearance": {
+            "version": 1,
+            "body": "male",
+            "hair": "parted",
+            "hat": "none",
+            "hatColor": "original",
+            "top": "lake-workshirt",
+            "bottom": "classic",
+            "shoes": "lake-boots",
+            "beard": "full",
+            "hairColor": "brown",
+            "topColor": "original",
+            "bottomColor": "original"
+          },
+          "idleMs": 4517
+        }
+      ]
+    }
+  ],
+  "failure": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert.ok(Math.hypot(before[0]-after[0],before[2]-after[2])>.05)\n"
+}

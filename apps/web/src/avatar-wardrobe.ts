@@ -102,6 +102,17 @@ function tint(
   if (role === "hair" || role === "facialHair")
     color(hairColors[appearance.hairColor]);
   else if (
+    role === "hat" &&
+    appearance.hatColor !== "original" &&
+    /^Wardrobe_Hat_(Cap_Navy|Beanie_Olive|Bucket_Olive)$/.test(material.name)
+  ) {
+    color(clothColors[appearance.hatColor]);
+    // Neutral fabric maps retain their weave; compensate their base luminance
+    // so the same swatch reads consistently across cotton and knit.
+    material.color.multiplyScalar(
+      1 / (material.name.includes("Cap_Navy") ? 0.313 : 0.195),
+    );
+  } else if (
     role === "top" &&
     appearance.topColor !== "original" &&
     /Knit|Overshirt_Navy/.test(material.name)
@@ -225,7 +236,7 @@ export class AvatarWardrobe {
       else {
         if (
           original.name === "Hairstyle_Hair_SimpleParted" &&
-          appearance.hair !== "parted"
+          (appearance.hair !== "parted" || appearance.hat !== "none")
         )
           visible = false;
         if (

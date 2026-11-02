@@ -1,0 +1,7 @@
+{
+  "provider": "built-in image_gen",
+  "model": "unknown",
+  "kind": "generated neutral albedo texture, not a model or acceptance render",
+  "prompt": "Use case: stylized-concept. Asset type: seamless PBR BASE COLOR TEXTURE for the navy cotton cap in a stylized 3D adventure game. Produce ONLY a square flat textile texture swatch, orthographic and evenly colored, no object or scene. Fine tightly woven cotton twill, extremely subtle diagonal micro-weave, neutral light grey around RGB160 with only small thread-level color variation. The sample represents about10cm of fabric: individual threads much finer than1mm. Seamless/tileable on every edge. No seams, stitches, folds, wrinkles, borders, shadows, highlights, gradient, dirt blobs, labels, logos or macro stripes. Do not make chunky denim ropes or visibly raised knitted ridges. This is a neutral albedo mask to be tinted navy by a physically based material; apparent lighting and volume must not be painted into it.",
+  "output": "assets/wardrobe-source/textures/cap-cotton-albedo.png"
+}
