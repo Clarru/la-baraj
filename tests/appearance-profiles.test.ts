@@ -3,6 +3,26 @@ import { AppearanceProfiles } from "../apps/server/appearance-profiles";
 import { DEFAULT_APPEARANCE } from "../packages/shared/appearance";
 
 describe("owner appearance persistence", () => {
+  it("persists hat dye through profile reload while defaulting legacy profiles", async () => {
+    const save = vi.fn().mockResolvedValue(undefined);
+    const profiles = new AppearanceProfiles({ save });
+    const dyed = {
+      ...DEFAULT_APPEARANCE,
+      hat: "knit-beanie" as const,
+      hatColor: "rust" as const,
+    };
+    await profiles.save(0, dyed);
+    expect(save).toHaveBeenCalledWith(0, dyed);
+    const restored = new AppearanceProfiles({ save }, [
+      [0, save.mock.calls[0][1]],
+      [1, { version: 1, body: "male", hat: "panel-cap" }],
+    ]);
+    expect(restored.get(0)).toEqual(dyed);
+    expect(restored.get(1)).toMatchObject({
+      hat: "panel-cap",
+      hatColor: "original",
+    });
+  });
   it("restores profiles without changing old owners or accepting arbitrary fields", () => {
     const profiles = new AppearanceProfiles({ save: async () => {} }, [
       [0, { version: 1, body: "female", url: "/arbitrary.glb" }],

@@ -8,6 +8,9 @@ import versions from "./wardrobe-asset-versions.json";
 export const WARDROBE_ASSETS = [
   "hair-buzzed",
   "hair-long",
+  "hair-parted-hat",
+  "hair-buzzed-hat",
+  "hair-long-hat",
   "beard-short",
   "beard-moustache",
   "hat-panel-cap",
@@ -40,7 +43,9 @@ export function wardrobeAssetIds(value: Appearance): WardrobeAssetId[] {
   const appearance = normalizeAppearance(value);
   if (appearance.body === "female") return ["female-brunette-tailored"];
   const ids: WardrobeAssetId[] = [];
-  if (appearance.hair !== "parted")
+  if (appearance.hat !== "none")
+    ids.push(("hair-" + appearance.hair + "-hat") as WardrobeAssetId);
+  else if (appearance.hair !== "parted")
     ids.push(appearance.hair === "buzzed" ? "hair-buzzed" : "hair-long");
   if (appearance.beard === "short") ids.push("beard-short");
   if (appearance.beard === "moustache") ids.push("beard-moustache");

@@ -40,8 +40,19 @@ for(const material of approved.getRoot().listMaterials()) {
 }
 await fs.writeFile(path.join(root,"apps/web/src/wardrobe-approved-textures.json"),
   JSON.stringify(approvedMaterials,null,2)+"\n");
-const records = [];
-for (const filename of (await fs.readdir(source)).filter((name) => name.endsWith(".glb")).sort()) {
+const arguments_ = process.argv.slice(2);
+if (arguments_.length && arguments_[0] !== "--only") throw Error("Use --only followed by wardrobe IDs");
+const selected = arguments_.length ? new Set(arguments_.slice(1)) : null;
+if (selected && (!selected.size || [...selected].some(id => !/^[a-z][a-z0-9-]+$/.test(id))))
+  throw Error("--only requires valid wardrobe IDs");
+const filenames = (await fs.readdir(source)).filter(name => name.endsWith(".glb")).sort();
+if (selected) for (const id of selected)
+  if (!filenames.includes(id + ".glb")) throw Error("Missing wardrobe source: " + id);
+const manifestPath = path.join(root, "docs/characters/wardrobe/candidates.json");
+const records = selected
+  ? JSON.parse(await fs.readFile(manifestPath,"utf8")).assets.filter(asset => !selected.has(asset.id))
+  : [];
+for (const filename of filenames.filter(name => !selected || selected.has(name.slice(0,-4)))) {
   const doc = await io.read(path.join(source, filename));
   if (doc.getRoot().listAnimations().length) throw Error("Garment candidates must not duplicate animation payloads");
   for (const skin of doc.getRoot().listSkins()) {
@@ -90,7 +101,8 @@ for (const filename of (await fs.readdir(source)).filter((name) => name.endsWith
       material.setBaseColorFactor([0.065, 0.075, 0.085, 1]);
       material.setRoughnessFactor(0.88);
     }
-    if (filename.startsWith("hat-") && material.getBaseColorTexture()) {
+    if (filename.startsWith("hat-") && material.getBaseColorTexture() &&
+        !/^Wardrobe_Hat_(Cap_Navy|Beanie_Olive|Bucket_Olive)$/.test(material.getName())) {
       material.setBaseColorFactor(filename.includes("beanie")
         ? [0.12, 0.15, 0.14, 1] : [0.06, 0.08, 0.12, 1]);
     }
@@ -125,6 +137,7 @@ for (const filename of (await fs.readdir(source)).filter((name) => name.endsWith
     bounds: getBounds(doc.getRoot().getDefaultScene()),
     sha256: crypto.createHash("sha256").update(bytes).digest("hex") });
 }
+records.sort((a,b) => a.id.localeCompare(b.id));
 const manifest = { stage: "optimized candidates; visual and deformation review required", assets: records };
-await fs.writeFile(path.join(root, "docs/characters/wardrobe/candidates.json"), JSON.stringify(manifest, null, 2) + "\n");
+await fs.writeFile(manifestPath, JSON.stringify(manifest, null, 2) + "\n");
 console.log(JSON.stringify(manifest, null, 2));

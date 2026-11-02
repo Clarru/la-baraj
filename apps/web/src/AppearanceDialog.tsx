@@ -430,6 +430,19 @@ export function AppearanceDialog({
                   />
                 </>
               )}
+              {category === "hat" && draft.hat !== "none" && (
+                <>
+                  <h3>Hat color</h3>
+                  <Swatches
+                    label="Hat color"
+                    values={clothSwatches}
+                    selected={draft.hatColor}
+                    onChange={(id) =>
+                      change("hatColor", id as MaleAppearance["hatColor"])
+                    }
+                  />
+                </>
+              )}
               {((category === "top" && draft.top !== "lake-workshirt") ||
                 category === "bottom") && (
                 <>

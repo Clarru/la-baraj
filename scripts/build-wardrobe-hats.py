@@ -1,168 +1,100 @@
-"""Three distinct fitted hats: panel cap, rib-cuff beanie and stitched bucket."""
-import bpy
-import json
-import math
-import sys
+"""Head-fitted knit beanie and soft down-brim bucket; preserve approved cap."""
+import bpy,bmesh,math,sys,json,subprocess
 from pathlib import Path
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "scripts"))
-from wardrobe_rig import RAW, approved_rig, export_item, role
+from mathutils import Vector
+ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT/'scripts'))
+from wardrobe_rig import approved_rig,export_item,role,RAW
 from wardrobe_surfaces import Surface
-from wardrobe_materials import fabric_normal
-
-rig, approved = approved_rig()
-
-def material(name, color, texture=None):
-    result = bpy.data.materials.new(name)
-    result.use_nodes = True
-    shader = result.node_tree.nodes.get("Principled BSDF")
-    shader.inputs["Base Color"].default_value = (*color, 1)
-    shader.inputs["Roughness"].default_value = .84
-    if texture:
-        node = result.node_tree.nodes.new("ShaderNodeTexImage")
-        node.image = bpy.data.images.load(str(ROOT / "assets/wardrobe-source/textures" / texture),
-                                          check_existing=True)
-        result.node_tree.links.new(node.outputs["Color"], shader.inputs["Base Color"])
-        fabric_normal(result,"knit" if texture.startswith("knit") else "twill")
-    return result
-
-fabric = material("Wardrobe_Hat_Twill", (.06, .08, .12), "twill-albedo.png")
-knit = material("Wardrobe_Hat_Knit", (.12, .15, .14), "knit-albedo.png")
-stitch = material("Wardrobe_Hat_Stitch", (.035, .045, .055))
-trim = material("Wardrobe_Hat_Trim", (.025, .032, .045))
-
-def ring_surface(name, profiles, mat, segments=64, center_y=.022):
-    s = Surface()
-    rings = []
-    for z, rx, ry in profiles:
-        rings.append([s.point((rx * math.sin(i * math.tau / segments),
-                               center_y - ry * math.cos(i * math.tau / segments), z))
-                      for i in range(segments)])
-    for k in range(len(rings) - 1):
-        for i in range(segments):
-            n = (i + 1) % segments
-            u, un = i / segments * 3, (i + 1) / segments * 3
-            v, vn = profiles[k][0] * 8, profiles[k + 1][0] * 8
-            vertices=(rings[k][i],rings[k][n],rings[k+1][n],rings[k+1][i])
-            coordinates=[(u,v),(un,v),(un,vn),(u,vn)]
-            if profiles[k][1]<.10 and profiles[k+1][1]<.10:
-                coordinates=[(s.vertices[index][0]/.24+.5,s.vertices[index][1]/.24+.5)
-                             for index in vertices]
-            s.face(vertices,coordinates)
-    return s.object(name, mat)
-
-def curve(name, points, radius, mat):
-    data = bpy.data.curves.new(name, "CURVE")
-    data.dimensions = "3D"
-    data.bevel_depth, data.bevel_resolution, data.resolution_u = radius, 1, 1
-    line = data.splines.new("POLY")
-    line.points.add(len(points) - 1)
-    for point, xyz in zip(line.points, points):
-        point.co = (*xyz, 1)
-    obj = bpy.data.objects.new(name, data)
-    bpy.context.collection.objects.link(obj)
-    obj.data.materials.append(mat)
-    for selected in bpy.context.selected_objects:
-        selected.select_set(False)
-    bpy.context.view_layer.objects.active = obj
-    obj.select_set(True)
-    bpy.ops.object.convert(target="MESH")
-    obj.select_set(False)
-    return obj
+from wardrobe_anatomical import scalp_crown
+from wardrobe_materials import tinted_fabric_material
+# The accepted cap has its own source and is never rebuilt from the rejected dome.
+subprocess.run([bpy.app.binary_path,'--background','--python-exit-code','1','--python',str(ROOT/'scripts/prototype-cap-scalp.py')],check=True)
+rig,approved=approved_rig();head=approved['SuperHero_Male']
+knit=tinted_fabric_material('Wardrobe_Hat_Beanie_Olive',(.31,.36,.24),'knit',roughness=.96)
+cloth=tinted_fabric_material('Wardrobe_Hat_Bucket_Olive',(.60,.65,.40),'twill',roughness=.94,normal_strength=.25)
+thread=bpy.data.materials.new('Wardrobe_Hat_Thread');thread.use_nodes=True
+thread.node_tree.nodes.get('Principled BSDF').inputs['Base Color'].default_value=(.16,.17,.11,1)
+thread.node_tree.nodes.get('Principled BSDF').inputs['Roughness'].default_value=.95
 
 def bind(obj):
-    obj.parent = rig
-    group = obj.vertex_groups.new(name="Head")
-    group.add(list(range(len(obj.data.vertices))), 1, "REPLACE")
-    modifier = obj.modifiers.new("Head attachment", "ARMATURE")
-    modifier.object = rig
-    role(obj, "hat")
-    for polygon in obj.data.polygons:
-        polygon.use_smooth = True
-
-def consolidate(parts, name):
-    for obj in bpy.context.scene.objects:
-        obj.select_set(False)
-    for obj in parts:
-        obj.select_set(True)
-    bpy.context.view_layer.objects.active = parts[0]
-    bpy.ops.object.join()
-    obj = parts[0]
-    obj.name = name
-    bind(obj)
+    obj.vertex_groups.clear();g=obj.vertex_groups.new(name='Head');g.add(list(range(len(obj.data.vertices))),1,'REPLACE')
+    obj.parent=rig;m=obj.modifiers.new('Canonical head attachment','ARMATURE');m.object=rig;role(obj,'hat')
+    for p in obj.data.polygons:p.use_smooth=True
     return obj
 
-items = []
-# Six-panel cap: crowned profile, curved visor, panel welts, top button.
-cap_profile = [(1.755,.112,.124),(1.768,.114,.126),(1.802,.110,.121),
-               (1.837,.099,.107),(1.858,.076,.083),(1.873,.038,.042),
-               (1.878,.002,.002)]
-parts = [ring_surface("Cap crown", cap_profile, fabric)]
-parts.append(ring_surface("Cap sweatband", [(1.754,.116,.126),(1.769,.118,.128)], trim))
-s = Surface()
-grid = []
-for t in range(7):
-    v = t / 6
-    row = []
-    for j in range(25):
-        u = j / 24 * 2 - 1
-        x = .111 * u * (1 + .10 * v)
-        y = -.079 - .115 * (1 - u*u)**.45 * v
-        z = 1.766 - .014 * v + .013 * u*u
-        row.append(s.point((x,y,z)))
-    grid.append(row)
-for k in range(6):
-    for j in range(24):
-        s.face((grid[k][j],grid[k][j+1],grid[k+1][j+1],grid[k+1][j]),
-               [(j/24,k/6),((j+1)/24,k/6),((j+1)/24,(k+1)/6),(j/24,(k+1)/6)])
-visor = s.object("Curved cap visor", fabric)
-bpy.context.view_layer.objects.active = visor
-shell = visor.modifiers.new("Bound visor edge", "SOLIDIFY")
-shell.thickness = .005
-bpy.ops.object.modifier_apply(modifier=shell.name)
-parts.append(visor)
-for i in range(6):
-    angle = i * math.tau / 6
-    points = [(rx*math.sin(angle)*1.008, .022-ry*math.cos(angle)*1.008,z+.0006)
-              for z,rx,ry in cap_profile]
-    parts.append(curve("Cap panel welt",points,.0005,stitch))
-parts.append(ring_surface("Cap crown button",[(1.876,.008,.008),(1.882,.007,.007),(1.884,.001,.001)],trim,24))
-items.append(("hat-panel-cap",consolidate(parts,"Wardrobe_Hat_PanelCap")))
+def solid(obj,thickness):
+    bpy.context.view_layer.objects.active=obj
+    m=obj.modifiers.new('Turned fabric thickness','SOLIDIFY');m.thickness=thickness;m.offset=-1
+    bpy.ops.object.modifier_apply(modifier=m.name)
 
-# Beanie is a rounded knit crown with a doubled folded cuff.
-parts = [ring_surface("Beanie crown",[(1.76,.117,.130),(1.81,.116,.131),
-    (1.85,.110,.124),(1.885,.092,.102),(1.905,.055,.063),(1.913,.002,.002)],knit)]
-parts.append(ring_surface("Beanie folded cuff",[(1.750,.119,.131),(1.758,.123,.135),
-    (1.79,.122,.135),(1.806,.118,.131)],knit))
-for z in [1.755,1.801]:
-    points = [(.121*math.sin(i*math.tau/96),.022-.134*math.cos(i*math.tau/96),z)
-              for i in range(97)]
-    parts.append(curve("Cuff knitted edge",points,.001,trim))
-items.append(("hat-knit-beanie",consolidate(parts,"Wardrobe_Hat_KnitBeanie")))
+def opening(obj):
+    bm=bmesh.new();bm.from_mesh(obj.data);p=[v.co.copy()for v in bm.verts if v.is_boundary];bm.free()
+    return sorted(p,key=lambda p:math.atan2(p.x,-(p.y-.014)))
 
-# Bucket has a sloped stitched brim and shallow flat-topped, tapered crown.
-parts = [ring_surface("Bucket crown",[(1.77,.122,.132),(1.785,.121,.131),
-    (1.838,.111,.121),(1.858,.108,.117),(1.867,.09,.098),
-    (1.869,.002,.002)],fabric)]
-brim = ring_surface("Bucket sloping brim",[(1.77,.122,.132),(1.768,.136,.146),
-    (1.751,.167,.178),(1.750,.17,.181)],fabric)
-bpy.context.view_layer.objects.active = brim
-shell = brim.modifiers.new("Folded brim thickness","SOLIDIFY")
-shell.thickness = .003
-bpy.ops.object.modifier_apply(modifier=shell.name)
-parts.append(brim)
-parts.append(ring_surface("Bucket hatband",[(1.774,.123,.133),(1.796,.120,.130)],trim))
-for radius in [.142,.154,.166]:
-    z = 1.768 - (radius-.136)/(.167-.136)*.017
-    points = [(radius*math.sin(i*math.tau/96),.022-(radius+.011)*math.cos(i*math.tau/96),z+.0012)
-              for i in range(97)]
-    parts.append(curve("Brim concentric stitching",points,.0006,stitch))
-items.append(("hat-stitched-bucket",consolidate(parts,"Wardrobe_Hat_StitchedBucket")))
-records=[]
-for identifier,obj in items:
-    obj["wardrobeItem"]=identifier
-    artifact=export_item(rig,[obj],identifier)
-    records.append({"id":identifier,"raw":str(artifact.relative_to(ROOT)),
-                    "vertices":len(obj.data.vertices),"accepted":False})
-(ROOT/"docs/characters/wardrobe/hat-authoring.json").write_text(json.dumps(records,indent=2)+"\n")
-bpy.ops.wm.save_as_mainfile(filepath=str(RAW/"hats-source.blend"))
+def loft(name,rings,material):
+    s=Surface();ids=[[s.point(p)for p in ring]for ring in rings];n=len(ids[0])
+    for k in range(len(ids)-1):
+        for j in range(n):
+            jj=(j+1)%n
+            s.face((ids[k][j],ids[k+1][j],ids[k+1][jj],ids[k][jj]),[(j/n*3,k*.15),(j/n*3,(k+1)*.15),((j+1)/n*3,(k+1)*.15),((j+1)/n*3,k*.15)])
+    obj=s.object(name,material)
+    bm=bmesh.new();bm.from_mesh(obj.data);bmesh.ops.recalc_face_normals(bm,faces=list(bm.faces));bm.to_mesh(obj.data);bm.free()
+    return obj
+
+crown,_,_,_=scalp_crown(head,knit,hem=1.704,clearance=.012,ease=.008,count=144,levels=16)
+crown.name='Beanie fitted knit crown'
+for v in crown.data.vertices:
+    a=math.atan2(v.co.x,-(v.co.y-.014));normal=Vector((math.sin(a),-math.cos(a),0))
+    v.co+=normal*(.00065*math.cos(a*36))
+base=opening(crown);cuff=[]
+for height,thickness in [(0,0),(.003,.002),(.007,.003),(.024,.003),(.029,.001),(.027,-.001),(.004,-.001),(0,0)]:
+    row=[]
+    for p in base:
+        a=math.atan2(p.x,-(p.y-.014));radial=Vector((math.sin(a),-math.cos(a),0))
+        q=p+radial*(thickness+.0007*math.cos(a*36));q.z+=height;row.append(q)
+    cuff.append(row)
+fold=loft('Beanie rounded folded cuff',cuff,knit)
+solid(crown,.002)
+beanie=[bind(crown),bind(fold)]
+export_item(rig,beanie,'hat-knit-beanie')
+
+# Bucket side wall follows the measured opening; the top is a separate panel.
+fit,_,_,_=scalp_crown(head,cloth,hem=1.732,clearance=.014,ease=.005,count=96,levels=12)
+base=opening(fit);fit.hide_set(True);fit.hide_render=True
+center=Vector((0,.014,0));top=[]
+for p in base:
+    q=center+(p-center)*.85;q.z=1.833+.001*math.sin(math.atan2(p.x,-(p.y-.014))*3);top.append(q)
+wall=[]
+for t in [0,.04,.20,.55,.90,.97,1]:
+    row=[]
+    for p,q in zip(base,top):
+        co=p.lerp(q,t);a=math.atan2(co.x,-(co.y-.014));co+=Vector((math.sin(a),-math.cos(a),0))*(.0012*math.sin(a*5+t*4)*math.sin(math.pi*t));row.append(co)
+    wall.append(row)
+side=loft('Bucket soft tapered cloth wall',wall,cloth)
+lid=[]
+for scale,lift in [(1,0),(.97,.002),(.75,.003),(.40,.003),(.001,.003)]:
+    lid.append([Vector((p.x*scale,.014+(p.y-.014)*scale,p.z+lift))for p in top])
+top_panel=loft('Bucket separate top cloth panel',lid,cloth)
+brim=[]
+for t in [0,.10,.25,.5,.75,.93,1]:
+    row=[]
+    for p in base:
+        a=math.atan2(p.x,-(p.y-.014));co=p+Vector((math.sin(a),-math.cos(a),0))*(.034*t)
+        co.z-=.027*t**1.15;co.z+=.0013*math.sin(a*3+.4)*t;row.append(co)
+    brim.append(row)
+flange=loft('Bucket downward sloping flexible brim',brim,cloth)
+solid(flange,.0018);solid(side,.0015);solid(top_panel,.0015)
+# Stitch rows are placed on the actual brim, rather than guessed inside it.
+s=Surface()
+for k in [2,3,4,5,6]:
+    path=brim[k]+[brim[k][0]]
+    for i,(a,b)in enumerate(zip(path,path[1:])):
+        if i%2:continue
+        tangent=(b-a).normalized();normal=Vector((0,0,1));w=normal.cross(tangent)*.00025
+        aa=a+normal*.0008;bb=a.lerp(b,.7)+normal*.0008
+        ids=[s.point(p)for p in [aa-w,bb-w,bb+w,aa+w]];s.face(ids,[(0,0),(1,0),(1,1),(0,1)])
+stitches=s.object('Bucket brim concentric topstitching',thread)
+bucket=[bind(o)for o in [side,top_panel,flange,stitches]]
+export_item(rig,bucket,'hat-stitched-bucket')
+bpy.ops.wm.save_as_mainfile(filepath=str(RAW/'hats-anatomical-source.blend'))
+(ROOT/'docs/characters/wardrobe/hat-authoring.json').write_text(json.dumps({'method':'Head-derived cloth fitting','cap':'User approved anatomical cap; built separately','beanie':'Fitted crown and folded cuff','bucket':'Separate top, shaped wall and downward brim','accepted':False},indent=2)+'\n')

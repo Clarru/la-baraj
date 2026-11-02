@@ -1,0 +1,601 @@
+{
+  "stage": "Hat rework review candidates \u2014 release verification pending",
+  "originalMaleUnchanged": true,
+  "source": "Quaternius CC0 Standard base characters and modular outfits; reference-led Blender reconstruction; retained provenance in docs/characters/wardrobe and assets/wardrobe-source",
+  "assets": [
+    {
+      "id": "beard-moustache",
+      "bytes": 23648,
+      "triangles": 124,
+      "meshes": 1,
+      "textures": 0,
+      "retainedApprovedTextures": 0,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.045538607984781265,
+          1.621999979019165,
+          0.06635086238384247
+        ],
+        "max": [
+          0.045538607984781265,
+          1.6440913677215576,
+          0.09683027118444443
+        ]
+      },
+      "sha256": "7908187322d595873f70369cd0ad31f1fdca06327cee4ce8b9ff8ce35a8cf30d"
+    },
+    {
+      "id": "beard-short",
+      "bytes": 51600,
+      "triangles": 1034,
+      "meshes": 1,
+      "textures": 0,
+      "retainedApprovedTextures": 0,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.08075305074453354,
+          1.5815364122390747,
+          -0.008151276037096977
+        ],
+        "max": [
+          0.08075305074453354,
+          1.6893519163131714,
+          0.09683027118444443
+        ]
+      },
+      "sha256": "caa5cfa1d88dc13e5c9d44548b514697b4feef7c8a3fbd2e23abf9a324dd4f6c"
+    },
+    {
+      "id": "bottom-classic-ankle",
+      "bytes": 457728,
+      "triangles": 952,
+      "meshes": 1,
+      "textures": 3,
+      "retainedApprovedTextures": 3,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.22150075435638428,
+          0.23000000417232513,
+          -0.1427704393863678
+        ],
+        "max": [
+          0.22150078415870667,
+          1.0536991357803345,
+          0.0769030973315239
+        ]
+      },
+      "sha256": "77058a5690b8ef43c4290c7d6b2c1a2ae400e2e0cadfb1c28c2ffad240f3789d"
+    },
+    {
+      "id": "bottom-classic-dyed-ankle",
+      "bytes": 667204,
+      "triangles": 952,
+      "meshes": 1,
+      "textures": 3,
+      "retainedApprovedTextures": 2,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.22150075435638428,
+          0.23000000417232513,
+          -0.1427704393863678
+        ],
+        "max": [
+          0.22150078415870667,
+          1.0536991357803345,
+          0.0769030973315239
+        ]
+      },
+      "sha256": "b1b7dd1d35ea55afa99c2a76ce9f87eb26fb4ce0fb20abda5b3a3af83e6abec1"
+    },
+    {
+      "id": "bottom-classic-dyed-full",
+      "bytes": 672896,
+      "triangles": 1112,
+      "meshes": 1,
+      "textures": 3,
+      "retainedApprovedTextures": 2,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.22150075435638428,
+          0.111098513007164,
+          -0.1427704393863678
+        ],
+        "max": [
+          0.22150078415870667,
+          1.0536991357803345,
+          0.0769030973315239
+        ]
+      },
+      "sha256": "b475b68b73b0b1529c7b8c7a15969eccb485157fdd41aa4cc47ea8abe1feeebc"
+    },
+    {
+      "id": "bottom-classic-dyed-tucked",
+      "bytes": 672896,
+      "triangles": 1112,
+      "meshes": 1,
+      "textures": 3,
+      "retainedApprovedTextures": 2,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.23513281345367432,
+          0.4030441343784332,
+          -0.1517549753189087
+        ],
+        "max": [
+          0.2351328432559967,
+          1.0536991357803345,
+          0.0769030973315239
+        ]
+      },
+      "sha256": "deb637225f803395505a20da58d9de05ff05ac8f47ba77ed53c0a2dc8044c320"
+    },
+    {
+      "id": "bottom-classic-full",
+      "bytes": 463420,
+      "triangles": 1112,
+      "meshes": 1,
+      "textures": 3,
+      "retainedApprovedTextures": 3,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.22150075435638428,
+          0.111098513007164,
+          -0.1427704393863678
+        ],
+        "max": [
+          0.22150078415870667,
+          1.0536991357803345,
+          0.0769030973315239
+        ]
+      },
+      "sha256": "9dadae65a1c2798ba0e4ce95036c113919a4d1e09cdadc077a43d24a340af044"
+    },
+    {
+      "id": "bottom-trail-cargo-ankle",
+      "bytes": 558908,
+      "triangles": 1704,
+      "meshes": 1,
+      "textures": 2,
+      "retainedApprovedTextures": 0,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.22499999403953552,
+          0.23000000417232513,
+          -0.1427704393863678
+        ],
+        "max": [
+          0.22499999403953552,
+          1.0536991357803345,
+          0.0769030973315239
+        ]
+      },
+      "sha256": "781e245c70fd5a3287b064067017169a23c223f0a24cecb8bc323d53f2c0b545"
+    },
+    {
+      "id": "bottom-trail-cargo-full",
+      "bytes": 564008,
+      "triangles": 1864,
+      "meshes": 1,
+      "textures": 2,
+      "retainedApprovedTextures": 0,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.22499999403953552,
+          0.111098513007164,
+          -0.1427704393863678
+        ],
+        "max": [
+          0.22499999403953552,
+          1.0536991357803345,
+          0.0769030973315239
+        ]
+      },
+      "sha256": "bc61a63329bfab0f3f0facf1f4a25d07d51f51af31e8acf2ca37aa0670303608"
+    },
+    {
+      "id": "bottom-trail-cargo-tucked",
+      "bytes": 549444,
+      "triangles": 1452,
+      "meshes": 1,
+      "textures": 2,
+      "retainedApprovedTextures": 0,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.22499999403953552,
+          0.4320000112056732,
+          -0.1427704393863678
+        ],
+        "max": [
+          0.22499999403953552,
+          1.0536991357803345,
+          0.0769030973315239
+        ]
+      },
+      "sha256": "4a695996450017db56f77f24a7b0b0d1e7e051c64d685305bfaf72bedf00f72e"
+    },
+    {
+      "id": "bottom-weekend-shorts-ankle",
+      "bytes": 908856,
+      "triangles": 2604,
+      "meshes": 2,
+      "textures": 5,
+      "retainedApprovedTextures": 0,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.20196227729320526,
+          0.23999999463558197,
+          -0.16050268709659576
+        ],
+        "max": [
+          0.20196233689785004,
+          1.0536991357803345,
+          0.0769030973315239
+        ]
+      },
+      "sha256": "2aa0ed70babc20ebf2167d58f0c4e23cf397c31f78cc019da92ac09dd0cebfe7"
+    },
+    {
+      "id": "bottom-weekend-shorts-tucked",
+      "bytes": 891952,
+      "triangles": 2176,
+      "meshes": 2,
+      "textures": 5,
+      "retainedApprovedTextures": 0,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.20196227729320526,
+          0.4449999928474426,
+          -0.14667299389839172
+        ],
+        "max": [
+          0.20196233689785004,
+          1.0536991357803345,
+          0.0769030973315239
+        ]
+      },
+      "sha256": "096fd4a62412aab5289a715bdc47286b4341b6722570100d87ae6a1f598dcd03"
+    },
+    {
+      "id": "bottom-weekend-shorts",
+      "bytes": 922332,
+      "triangles": 2932,
+      "meshes": 2,
+      "textures": 5,
+      "retainedApprovedTextures": 0,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.20196227729320526,
+          0.09000000357627869,
+          -0.16050268709659576
+        ],
+        "max": [
+          0.20196233689785004,
+          1.0536991357803345,
+          0.0769030973315239
+        ]
+      },
+      "sha256": "ede3a1e260f7431b5463b67770e974c7048b102c8f0962b76cfc92511f1377d0"
+    },
+    {
+      "id": "female-brunette-tailored",
+      "bytes": 2433580,
+      "triangles": 30254,
+      "meshes": 8,
+      "textures": 9,
+      "retainedApprovedTextures": 0,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.9316649436950684,
+          0,
+          -0.2470073252916336
+        ],
+        "max": [
+          0.9316649436950684,
+          1.8274903297424316,
+          0.14880000054836273
+        ]
+      },
+      "sha256": "4e348f26e1b0daefb389d2d24974a8c0f498af845df4ea45c5cb39afd01e94e1"
+    },
+    {
+      "id": "hair-buzzed",
+      "bytes": 348884,
+      "triangles": 830,
+      "meshes": 1,
+      "textures": 2,
+      "retainedApprovedTextures": 0,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.07729528844356537,
+          1.6441491842269897,
+          -0.10803259164094925
+        ],
+        "max": [
+          0.0772952064871788,
+          1.8135133981704712,
+          0.08289118111133575
+        ]
+      },
+      "sha256": "1634d3a6627c5f57b89f8eee530ad1ef52d57ec3d7d82b8daf3abf61cda2fc68"
+    },
+    {
+      "id": "hair-long",
+      "bytes": 583636,
+      "triangles": 2906,
+      "meshes": 1,
+      "textures": 2,
+      "retainedApprovedTextures": 0,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.12235528230667114,
+          1.5521847009658813,
+          -0.16805945336818695
+        ],
+        "max": [
+          0.12235528230667114,
+          1.8274903297424316,
+          0.10401826351881027
+        ]
+      },
+      "sha256": "ccc33e3a8da7933eeec1f9c31224970fa6c037c6c098443ad432683bf0ca2282"
+    },
+    {
+      "id": "male-custom-top-skin",
+      "bytes": 1012108,
+      "triangles": 6280,
+      "meshes": 1,
+      "textures": 6,
+      "retainedApprovedTextures": 6,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.9256387948989868,
+          1.3684839010238647,
+          -0.11471334099769592
+        ],
+        "max": [
+          0.9256389737129211,
+          1.8100770711898804,
+          0.11516901850700378
+        ]
+      },
+      "sha256": "b2a73d5d52c63061284b172fbdeae1f025904b565f1a3edc9d37dc8ae39a0518"
+    },
+    {
+      "id": "shoes-canvas-low",
+      "bytes": 105672,
+      "triangles": 1890,
+      "meshes": 1,
+      "textures": 0,
+      "retainedApprovedTextures": 0,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.1826712042093277,
+          -0.003979654982686043,
+          -0.1391800045967102
+        ],
+        "max": [
+          0.1826712191104889,
+          0.1014670580625534,
+          0.16754069924354553
+        ]
+      },
+      "sha256": "7d753e558995274e514b80c59547b888212c6de082a9383449b3f87a8634406c"
+    },
+    {
+      "id": "shoes-trail-hikers",
+      "bytes": 544160,
+      "triangles": 2374,
+      "meshes": 1,
+      "textures": 3,
+      "retainedApprovedTextures": 3,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.1826712042093277,
+          -0.003967706114053726,
+          -0.1391800045967102
+        ],
+        "max": [
+          0.1826712191104889,
+          0.24199999868869781,
+          0.16754069924354553
+        ]
+      },
+      "sha256": "78dbe3e831518db8659d524a12441b1a5f3918205fef91750eb4012961ee37a3"
+    },
+    {
+      "id": "top-trail-overshirt",
+      "bytes": 757700,
+      "triangles": 8620,
+      "meshes": 1,
+      "textures": 2,
+      "retainedApprovedTextures": 0,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.7101278305053711,
+          0.9846087694168091,
+          -0.1969900280237198
+        ],
+        "max": [
+          0.7101307511329651,
+          1.5762181282043457,
+          0.16496334969997406
+        ]
+      },
+      "sha256": "faf923be422487527baf3f4a5a4c169b5dd52d9c42f51099e6cf61bcad360fca"
+    },
+    {
+      "id": "top-weekend-knit",
+      "bytes": 859112,
+      "triangles": 7942,
+      "meshes": 1,
+      "textures": 2,
+      "retainedApprovedTextures": 0,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.7140271067619324,
+          0.9868819713592529,
+          -0.2059374749660492
+        ],
+        "max": [
+          0.714409589767456,
+          1.5829877853393555,
+          0.13055597245693207
+        ]
+      },
+      "sha256": "e69b4a180e7311a4c047c2a5dc8a4abdbc5de22d90a9180bec7f09b1e92d99cd"
+    },
+    {
+      "id": "hair-buzzed-hat",
+      "bytes": 339020,
+      "triangles": 544,
+      "meshes": 1,
+      "textures": 2,
+      "retainedApprovedTextures": 0,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.07692083716392517,
+          1.6441491842269897,
+          -0.10873813927173615
+        ],
+        "max": [
+          0.07692082226276398,
+          1.7549999952316284,
+          0.050345975905656815
+        ]
+      },
+      "sha256": "fa3955fa53c14c21b01d905735b9ccccba246ad3258d164cc4ecaba1efc22ca0"
+    },
+    {
+      "id": "hair-long-hat",
+      "bytes": 536960,
+      "triangles": 2150,
+      "meshes": 1,
+      "textures": 2,
+      "retainedApprovedTextures": 0,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.12235528230667114,
+          1.5521847009658813,
+          -0.16805948317050934
+        ],
+        "max": [
+          0.12235528230667114,
+          1.7549999952316284,
+          0.0857478454709053
+        ]
+      },
+      "sha256": "a6cdc6b65708afac6f7953789ae3020e4fac20399d002db44f7b2d6c6274df55"
+    },
+    {
+      "id": "hair-parted-hat",
+      "bytes": 37516,
+      "triangles": 523,
+      "meshes": 1,
+      "textures": 0,
+      "retainedApprovedTextures": 0,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.07686397433280945,
+          1.6605604887008667,
+          -0.10871792584657669
+        ],
+        "max": [
+          0.07692631334066391,
+          1.7549999952316284,
+          0.051009733229875565
+        ]
+      },
+      "sha256": "a08bcd02352c5ffc501ffa13455c20e051ecfa1de7e6f3908037bbaf36c60ebe"
+    },
+    {
+      "id": "hat-knit-beanie",
+      "bytes": 978712,
+      "triangles": 11232,
+      "meshes": 1,
+      "textures": 2,
+      "retainedApprovedTextures": 0,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.0988801047205925,
+          1.695351481437683,
+          -0.11817289888858795
+        ],
+        "max": [
+          0.0988800972700119,
+          1.8291869163513184,
+          0.11024110019207001
+        ]
+      },
+      "sha256": "04dfafc3872fd5d8586c2544d987d51ba74bf276390fb4e3b704e0f2210a3069"
+    },
+    {
+      "id": "hat-panel-cap",
+      "bytes": 764092,
+      "triangles": 12584,
+      "meshes": 1,
+      "textures": 2,
+      "retainedApprovedTextures": 0,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.08408735692501068,
+          1.7120747566223145,
+          -0.11696122586727142
+        ],
+        "max": [
+          0.08408735692501068,
+          1.8250993490219116,
+          0.14935655891895294
+        ]
+      },
+      "sha256": "a48abc75673f3dbc5a1e175f5fdac0e4687bbbb497f19c784a904e0be828519f"
+    },
+    {
+      "id": "hat-stitched-bucket",
+      "bytes": 712544,
+      "triangles": 7776,
+      "meshes": 1,
+      "textures": 2,
+      "retainedApprovedTextures": 0,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.12052097916603088,
+          1.6981720924377441,
+          -0.15345773100852966
+        ],
+        "max": [
+          0.12052098661661148,
+          1.8370000123977661,
+          0.13715620338916779
+        ]
+      },
+      "sha256": "145d0522b9f6230e29fd11ef2fb215d0c4e1f6c23f6dd295059e17578ee55fc2"
+    }
+  ]
+}

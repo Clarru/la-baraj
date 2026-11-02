@@ -1,0 +1,176 @@
+{
+  "scope": "Hats and bounded hat colours only; other clothing research is excluded",
+  "runtimeAssets": [
+    {
+      "id": "hair-buzzed-hat",
+      "candidate": "assets/source-models/wardrobe/optimized/hair-buzzed-hat.glb",
+      "bytes": 339020,
+      "triangles": 544,
+      "meshes": 1,
+      "textures": 2,
+      "retainedApprovedTextures": 0,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.07692083716392517,
+          1.6441491842269897,
+          -0.10873813927173615
+        ],
+        "max": [
+          0.07692082226276398,
+          1.7549999952316284,
+          0.050345975905656815
+        ]
+      },
+      "sha256": "fa3955fa53c14c21b01d905735b9ccccba246ad3258d164cc4ecaba1efc22ca0"
+    },
+    {
+      "id": "hair-long-hat",
+      "candidate": "assets/source-models/wardrobe/optimized/hair-long-hat.glb",
+      "bytes": 536960,
+      "triangles": 2150,
+      "meshes": 1,
+      "textures": 2,
+      "retainedApprovedTextures": 0,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.12235528230667114,
+          1.5521847009658813,
+          -0.16805948317050934
+        ],
+        "max": [
+          0.12235528230667114,
+          1.7549999952316284,
+          0.0857478454709053
+        ]
+      },
+      "sha256": "a6cdc6b65708afac6f7953789ae3020e4fac20399d002db44f7b2d6c6274df55"
+    },
+    {
+      "id": "hair-parted-hat",
+      "candidate": "assets/source-models/wardrobe/optimized/hair-parted-hat.glb",
+      "bytes": 37516,
+      "triangles": 523,
+      "meshes": 1,
+      "textures": 0,
+      "retainedApprovedTextures": 0,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.07686397433280945,
+          1.6605604887008667,
+          -0.10871792584657669
+        ],
+        "max": [
+          0.07692631334066391,
+          1.7549999952316284,
+          0.051009733229875565
+        ]
+      },
+      "sha256": "a08bcd02352c5ffc501ffa13455c20e051ecfa1de7e6f3908037bbaf36c60ebe"
+    },
+    {
+      "id": "hat-knit-beanie",
+      "candidate": "assets/source-models/wardrobe/optimized/hat-knit-beanie.glb",
+      "bytes": 978712,
+      "triangles": 11232,
+      "meshes": 1,
+      "textures": 2,
+      "retainedApprovedTextures": 0,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.0988801047205925,
+          1.695351481437683,
+          -0.11817289888858795
+        ],
+        "max": [
+          0.0988800972700119,
+          1.8291869163513184,
+          0.11024110019207001
+        ]
+      },
+      "sha256": "04dfafc3872fd5d8586c2544d987d51ba74bf276390fb4e3b704e0f2210a3069"
+    },
+    {
+      "id": "hat-panel-cap",
+      "candidate": "assets/source-models/wardrobe/optimized/hat-panel-cap.glb",
+      "bytes": 764092,
+      "triangles": 12584,
+      "meshes": 1,
+      "textures": 2,
+      "retainedApprovedTextures": 0,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.08408735692501068,
+          1.7120747566223145,
+          -0.11696122586727142
+        ],
+        "max": [
+          0.08408735692501068,
+          1.8250993490219116,
+          0.14935655891895294
+        ]
+      },
+      "sha256": "a48abc75673f3dbc5a1e175f5fdac0e4687bbbb497f19c784a904e0be828519f"
+    },
+    {
+      "id": "hat-stitched-bucket",
+      "candidate": "assets/source-models/wardrobe/optimized/hat-stitched-bucket.glb",
+      "bytes": 712544,
+      "triangles": 7776,
+      "meshes": 1,
+      "textures": 2,
+      "retainedApprovedTextures": 0,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.12052097916603088,
+          1.6981720924377441,
+          -0.15345773100852966
+        ],
+        "max": [
+          0.12052098661661148,
+          1.8370000123977661,
+          0.13715620338916779
+        ]
+      },
+      "sha256": "145d0522b9f6230e29fd11ef2fb215d0c4e1f6c23f6dd295059e17578ee55fc2"
+    }
+  ],
+  "sourceHashes": {
+    "packages/shared/appearance.ts": "27a887dff0d80c5a023509b0ffbe7b52d7947b00df1f351d630b3ca5badf6b10",
+    "apps/web/src/AppearanceDialog.tsx": "7c906b29140fa885431810b65306de1b8e043d892980e6e8212411b90720111a",
+    "apps/web/src/avatar-wardrobe.ts": "e540bc17692c95465537769c2baf9cd34640fecf03d4d3d810dc82fd11ce5679",
+    "apps/web/src/wardrobe-catalog.ts": "8f3a2f17302df142940bde66a64ebe0db73caf4740cd6b7eae7a992a21369cec",
+    "scripts/prototype-cap-scalp.py": "392e0b586fa4375728dc38b716fe5bfb2437d366d2d07e23ae3b28f04af9999d",
+    "scripts/wardrobe_anatomical.py": "b5b3bc20b0bfbad0edd90f6498a9df348ffa3513d547d38f41bf79706a14a7d8",
+    "scripts/build-wardrobe-hats.py": "6607a7f186c9dc1732050c11aa2b6a5f5c0e9d0dc28247127d0b61abcf9ddd3e",
+    "scripts/build-wardrobe-hat-hair.py": "79d533a1f645757ac5ddf4d501ff1291970c53d3f6dbce766d14ffcde87e5762",
+    "scripts/wardrobe_materials.py": "a4a2edf2c11095824d8cdbac655719a5e0167d4228d87eb0d82944630a862546",
+    "scripts/bake-wardrobe-fabric.py": "0c6f784120942ee51c038ca0bacc68920930ce8e7e0af6909e92d9625a3c3be4",
+    "assets/wardrobe-source/textures/cap-cotton-albedo.png": "f8b9774ded738f7bd18f34796150ddf8e4e3d8ddfa382a0c9b349c735c25db18",
+    "assets/wardrobe-source/textures/cap-cotton-normal.png": "2b98630f3b1e841e597d0c843fc7e8f8cede8366709afd4fc62ebf9d5d9695c4",
+    "scripts/build-hat-colours-qa.mjs": "48a285f6a57738b0c1e15e57822936d07109f88491f2133c4cb9939e49bb02e8",
+    "scripts/snapshot-hat-colours-qa.mjs": "7a31103b82df476c2fb81c4e6059e2c3b7a785e5b2381370901a1d7f99783358",
+    "scripts/check-hat-colors-browser.mjs": "012440dc94092942a5c508b91987f98ae6e8664d5f8f4644c0dd887e54939d02",
+    "tests/browser/hat-wardrobe-catalog.ts": "3a68f3308b5e0f7c44de3c631801eca0d2536efd5b02eb997051a44ba2a14c8c"
+  },
+  "previewPublication": "Awaiting release owner disk clearance and bounded QA grant",
+  "browserValidation": "Prepared, paused by release owner for disk-space recovery",
+  "serverDeploymentRequired": true,
+  "capVisualApproval": "User approved anatomical cap, 2026-11-02",
+  "filteredVersions": "docs/characters/wardrobe/quality-rework/hats-runtime-versions.json",
+  "filteredRuntimeManifest": "docs/characters/wardrobe/quality-rework/hats-runtime-manifest.json",
+  "runtimeSource": "assets/source-models/wardrobe/optimized/{id}.glb; verify runtimeAssets SHA256 before copying",
+  "notes": "Filtered manifests preserve HEAD clothing hashes; do not copy this worktree public wardrobe wholesale.",
+  "base": "e5558b8665eb2e3b19dbc68219de68a022cea3d4",
+  "preservedExperimentsCommit": "073a830",
+  "branch": "codex/hat-fit-colours",
+  "qaSource": "Existing tests/browser/wardrobe-world.tsx + wardrobe-game.tsx at this clean commit; build-wardrobe-qa.mjs creates uniquely named wardrobe-qa worker",
+  "qaBuild": "scripts/build-hat-colours-qa.mjs",
+  "qaFreeze": "scripts/snapshot-hat-colours-qa.mjs",
+  "qaURLIsolation": "QA-only catalogue alias; six content-named hat/under-hair GLBs; canonical clothing assets and URLs unchanged"
+}
