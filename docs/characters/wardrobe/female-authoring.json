@@ -1,17 +1,11 @@
 {
-  "stage": "Complete-component rigged prototype; fit and visual review required",
+  "stage": "Authoring source for accepted runtime export at documented sampled scope",
   "artifact": "assets/source-models/wardrobe/build/female-brunette-tailored.glb",
   "components": [
     "Wardrobe_Female_Head",
     "Wardrobe_Female_Hands",
-    "Eyes.001",
     "Eyebrows.001",
-    "Wardrobe_Female_Tights",
-    "Wardrobe_Female_Blazer",
-    "Blazer notched lapel",
-    "Blazer tailored pocket welt",
-    "Blazer notched lapel.001",
-    "Blazer tailored pocket welt.001",
+    "Eyes.001",
     "Wardrobe_Female_TuckedTop",
     "Wardrobe_Female_TailoredShorts",
     "Wardrobe_Female_Belt",
@@ -19,17 +13,16 @@
     "Gold belt buckle.001",
     "Gold belt buckle.002",
     "Gold belt buckle.003",
+    "Wardrobe_Female_LongBrunette",
+    "Wardrobe_Female_Blazer",
     "Blazer cuff button",
     "Blazer cuff button.001",
     "Blazer cuff button.002",
     "Blazer cuff button.003",
     "Blazer cuff button.004",
     "Blazer cuff button.005",
-    "Wardrobe_Female_PointedPump",
-    "Wardrobe_Female_SlenderHeel",
-    "Wardrobe_Female_PointedPump.001",
-    "Wardrobe_Female_SlenderHeel.001",
-    "Wardrobe_Female_LongBrunette"
+    "CC0 authored pump last",
+    "Refitted pump tights"
   ],
   "canonicalBones": 65,
   "hairConstruction": "Measured publisher islands: unchanged inner scalp/crown; fitted back drape and paired authored front locks; no added tubes",
@@ -133,5 +126,8 @@
       ]
     }
   ],
-  "accepted": false
+  "accepted": true,
+  "footwearSource": "MRT / Margaret Toigo, MakeHuman CC0 stiletto last; see clothing-fit/heels-source.json",
+  "acceptedRuntimeSHA256": "110b0bdbea545c5dd23865118d81030c47e3644cf1acb1868b8323e11555cf7b",
+  "evidence": "clothing-fit/release-clearance.json; clothing-fit/WORLD_REVIEW.md"
 }

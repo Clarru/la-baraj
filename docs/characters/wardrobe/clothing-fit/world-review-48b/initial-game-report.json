@@ -1,0 +1,347 @@
+{
+  "head": "48b69e23158b2e92c130f0778f65810e5fb790c6",
+  "lighting": "Private fresh-context noon/clear inspection overrides; shared clock unchanged",
+  "checks": [
+    {
+      "kind": "fresh-independent-identities",
+      "a": {
+        "id": "886bbbd3-8306-44e5-a4fb-faad4aef2e14",
+        "home": 0
+      },
+      "b": {
+        "id": "7f109ddf-b2a1-4f3a-8a1b-9b000d624744",
+        "home": 1
+      },
+      "defaultCandidateDownloads": 0
+    },
+    {
+      "kind": "focused-grounded-movement",
+      "top": "weekend-knit",
+      "before": [
+        40.01964569091797,
+        2.893336057662964,
+        40.37621307373047
+      ],
+      "after": [
+        38.74005889892578,
+        2.4539413452148438,
+        38.56580352783203
+      ]
+    },
+    {
+      "kind": "grounded-crouch",
+      "top": "weekend-knit",
+      "observer": [
+        {
+          "id": "886bbbd3-8306-44e5-a4fb-faad4aef2e14",
+          "nickname": "Mobile QA",
+          "position": [
+            38.74,
+            1.379,
+            38.566
+          ],
+          "yaw": -2.526,
+          "animation": "Crouch_Idle",
+          "activity": "none",
+          "vehicle": "none",
+          "homeIndex": 0,
+          "posture": "crouching",
+          "speed": 0,
+          "jumpPhase": "grounded",
+          "boat": {
+            "position": [
+              3.7,
+              38.875
+            ],
+            "yaw": 3.141,
+            "velocity": [
+              0,
+              0
+            ]
+          },
+          "boatImpactRevision": 0,
+          "appearance": {
+            "version": 1,
+            "body": "male",
+            "hair": "parted",
+            "hat": "none",
+            "hatColor": "original",
+            "top": "weekend-knit",
+            "bottom": "classic",
+            "shoes": "canvas-low",
+            "beard": "full",
+            "hairColor": "brown",
+            "topColor": "cream",
+            "bottomColor": "original"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "grounded-fire-seat",
+      "top": "weekend-knit",
+      "local": {
+        "anchor": [
+          39.27,
+          1.364319674400397,
+          40.37621203413667
+        ],
+        "facing": 4.71238898038469,
+        "seatHeight": 1.914319674400397,
+        "kind": "sit",
+        "startedAt": 14987
+      },
+      "observer": [
+        {
+          "id": "886bbbd3-8306-44e5-a4fb-faad4aef2e14",
+          "nickname": "Mobile QA",
+          "position": [
+            39.27,
+            1.464,
+            40.376
+          ],
+          "yaw": -1.571,
+          "animation": "Activity_Sit",
+          "activity": "sit",
+          "vehicle": "none",
+          "homeIndex": 0,
+          "posture": "standing",
+          "speed": 0,
+          "jumpPhase": "grounded",
+          "boat": {
+            "position": [
+              3.7,
+              38.875
+            ],
+            "yaw": 3.141,
+            "velocity": [
+              0,
+              0
+            ]
+          },
+          "boatImpactRevision": 0,
+          "seatId": "campfire-1:seat:1",
+          "appearance": {
+            "version": 1,
+            "body": "male",
+            "hair": "parted",
+            "hat": "none",
+            "hatColor": "original",
+            "top": "weekend-knit",
+            "bottom": "classic",
+            "shoes": "canvas-low",
+            "beard": "full",
+            "hairColor": "brown",
+            "topColor": "cream",
+            "bottomColor": "original"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "reopen-selection-and-cancel",
+      "top": "weekend-knit"
+    },
+    {
+      "kind": "focused-grounded-movement",
+      "top": "trail-overshirt",
+      "before": [
+        40.003204345703125,
+        2.911189317703247,
+        40.37622833251953
+      ],
+      "after": [
+        38.71624755859375,
+        2.4537389278411865,
+        38.555274963378906
+      ]
+    },
+    {
+      "kind": "grounded-crouch",
+      "top": "trail-overshirt",
+      "observer": [
+        {
+          "id": "886bbbd3-8306-44e5-a4fb-faad4aef2e14",
+          "nickname": "Mobile QA",
+          "position": [
+            38.716,
+            1.379,
+            38.555
+          ],
+          "yaw": -2.526,
+          "animation": "Crouch_Idle",
+          "activity": "none",
+          "vehicle": "none",
+          "homeIndex": 0,
+          "posture": "crouching",
+          "speed": 0,
+          "jumpPhase": "grounded",
+          "boat": {
+            "position": [
+              3.7,
+              38.875
+            ],
+            "yaw": 3.141,
+            "velocity": [
+              0,
+              0
+            ]
+          },
+          "boatImpactRevision": 0,
+          "appearance": {
+            "version": 1,
+            "body": "male",
+            "hair": "parted",
+            "hat": "none",
+            "hatColor": "original",
+            "top": "trail-overshirt",
+            "bottom": "classic",
+            "shoes": "canvas-low",
+            "beard": "full",
+            "hairColor": "brown",
+            "topColor": "cream",
+            "bottomColor": "original"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "grounded-fire-seat",
+      "top": "trail-overshirt",
+      "local": {
+        "anchor": [
+          39.27,
+          1.364319674400397,
+          40.37621203413667
+        ],
+        "facing": 4.71238898038469,
+        "seatHeight": 1.914319674400397,
+        "kind": "sit",
+        "startedAt": 24469.19999998808
+      },
+      "observer": [
+        {
+          "id": "886bbbd3-8306-44e5-a4fb-faad4aef2e14",
+          "nickname": "Mobile QA",
+          "position": [
+            39.27,
+            1.464,
+            40.376
+          ],
+          "yaw": -1.571,
+          "animation": "Activity_Sit",
+          "activity": "sit",
+          "vehicle": "none",
+          "homeIndex": 0,
+          "posture": "standing",
+          "speed": 0,
+          "jumpPhase": "grounded",
+          "boat": {
+            "position": [
+              3.7,
+              38.875
+            ],
+            "yaw": 3.141,
+            "velocity": [
+              0,
+              0
+            ]
+          },
+          "boatImpactRevision": 0,
+          "seatId": "campfire-1:seat:1",
+          "appearance": {
+            "version": 1,
+            "body": "male",
+            "hair": "parted",
+            "hat": "none",
+            "hatColor": "original",
+            "top": "trail-overshirt",
+            "bottom": "classic",
+            "shoes": "canvas-low",
+            "beard": "full",
+            "hairColor": "brown",
+            "topColor": "cream",
+            "bottomColor": "original"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "reopen-selection-and-cancel",
+      "top": "trail-overshirt"
+    },
+    {
+      "kind": "reload-restoration",
+      "before": {
+        "id": "886bbbd3-8306-44e5-a4fb-faad4aef2e14",
+        "home": 0,
+        "appearance": {
+          "version": 1,
+          "body": "male",
+          "hair": "parted",
+          "hat": "none",
+          "hatColor": "original",
+          "top": "trail-overshirt",
+          "bottom": "classic",
+          "shoes": "canvas-low",
+          "beard": "full",
+          "hairColor": "brown",
+          "topColor": "cream",
+          "bottomColor": "original"
+        }
+      },
+      "after": {
+        "id": "45139297-88dc-4ada-8a18-dd84643e06c6",
+        "home": 0,
+        "appearance": {
+          "version": 1,
+          "body": "male",
+          "hair": "parted",
+          "hat": "none",
+          "hatColor": "original",
+          "top": "trail-overshirt",
+          "bottom": "classic",
+          "shoes": "canvas-low",
+          "beard": "full",
+          "hairColor": "brown",
+          "topColor": "cream",
+          "bottomColor": "original"
+        }
+      }
+    }
+  ],
+  "views": [
+    "weekend-knit-paired-colours",
+    "weekend-knit-crouch",
+    "weekend-knit-fire-sit",
+    "trail-overshirt-paired-colours",
+    "trail-overshirt-crouch",
+    "trail-overshirt-fire-sit",
+    "reload-restored"
+  ],
+  "errors": [],
+  "consoleErrors": [
+    {
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "location": {
+        "url": "http://127.0.0.1:4173/favicon.ico",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    }
+  ],
+  "sockets": [],
+  "external": [
+    "https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100..900&display=swap",
+    "https://fonts.gstatic.com/s/geistmono/v6/or3nQ6H-1_WfwkMZI_qYFrcdmhHkjko.woff2",
+    "https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100..900&display=swap",
+    "https://fonts.gstatic.com/s/geistmono/v6/or3nQ6H-1_WfwkMZI_qYFrcdmhHkjko.woff2",
+    "https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100..900&display=swap",
+    "https://fonts.gstatic.com/s/geistmono/v6/or3nQ6H-1_WfwkMZI_qYFrcdmhHkjko.woff2"
+  ],
+  "httpFailures": [],
+  "ownedContextsClosed": true,
+  "lightingQualification": "Initial automation did not wait for the lazily loaded lighting controller; these retained captures use live/night lighting with a visible controller. See game-daylight/report.json for explicitly verified private noon/clear, controller-hidden captures."
+}

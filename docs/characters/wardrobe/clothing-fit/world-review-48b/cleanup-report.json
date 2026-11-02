@@ -1,0 +1,30 @@
+{
+  "head": "48b69e23158b2e92c130f0778f65810e5fb790c6",
+  "removed": 18,
+  "protectedFilesVerified": 425,
+  "removedPaths": [
+    "__clothing-fit-game-qa.html",
+    "__clothing-fit-qa.html",
+    "assets/CruceBoard-Pgpa0wAP.js",
+    "assets/EnvironmentLab-BF8oWuED.js",
+    "assets/PlanesBoard-BOHssLCr.js",
+    "assets/__clothing-fit-game-qa-51fYTG9M.js",
+    "assets/__clothing-fit-game-qa-CpN3q0Pa.css",
+    "assets/__clothing-fit-qa-DkZeZD49.js",
+    "assets/clothing-fit-qa-local-world.worker-BtQCRBk2.js",
+    "assets/clothing-fit-qa/ATTRIBUTION.md",
+    "assets/clothing-fit-qa/female-brunette-tailored-110b0bdbea545c5d.glb",
+    "assets/clothing-fit-qa/male-custom-top-skin-dc380bf25f3fc7c2.glb",
+    "assets/clothing-fit-qa/shoes-canvas-low-83d8c7461574b59f.glb",
+    "assets/clothing-fit-qa/top-trail-overshirt-db4e08615b05d0ac.glb",
+    "assets/clothing-fit-qa/top-weekend-knit-6f9cb27c191251e9.glb",
+    "assets/jsx-runtime-Wy9s6hX0.js",
+    "assets/mobile-B68X_aTd.css",
+    "assets/mobile-CpeXimtN.js"
+  ],
+  "normalIndexSHA256": "8e650475e04006f9472ee878ff1a1cc8e13c38852b1d398ae7ab2fc55dbd859f",
+  "listenerPID": 6159,
+  "listenerUntouched": true,
+  "baseline": "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/chill-movement/.impeccable/review/clothing-fit-release/baseline48.json",
+  "monotonic": 310666.271325375
+}

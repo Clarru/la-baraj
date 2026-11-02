@@ -1,0 +1,4 @@
+# Exported from MakeClothes (TM)
+# author MRT
+# license CC0
+# homepage http://www.makehuman.org/

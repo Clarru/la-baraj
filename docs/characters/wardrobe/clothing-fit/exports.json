@@ -1,0 +1,117 @@
+{
+  "stage": "Accepted at release-owner documented sampled world/design scope",
+  "originalMaleSHA256": "1c89c5710998736679a7a10403e89f998a912624c1fe674959668364bd2ba520",
+  "assets": [
+    {
+      "id": "female-brunette-tailored",
+      "bytes": 2744624,
+      "triangles": 37528,
+      "meshes": 8,
+      "textures": 12,
+      "retainedApprovedTextures": 0,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.9316649436950684,
+          -1.9205321223125793e-05,
+          -0.17701980471611023
+        ],
+        "max": [
+          0.9316649436950684,
+          1.8274903297424316,
+          0.13612832129001617
+        ]
+      },
+      "sha256": "110b0bdbea545c5dd23865118d81030c47e3644cf1acb1868b8323e11555cf7b"
+    },
+    {
+      "id": "male-custom-top-skin",
+      "bytes": 1013708,
+      "triangles": 6334,
+      "meshes": 1,
+      "textures": 6,
+      "retainedApprovedTextures": 6,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.9256387948989868,
+          1.3684839010238647,
+          -0.11190321296453476
+        ],
+        "max": [
+          0.9256389737129211,
+          1.8100770711898804,
+          0.11516901850700378
+        ]
+      },
+      "sha256": "dc380bf25f3fc7c2e22d7a67019e8ccdfdb7ec165671cccba41b4e2a7c599a37"
+    },
+    {
+      "id": "shoes-canvas-low",
+      "bytes": 836264,
+      "triangles": 5986,
+      "meshes": 1,
+      "textures": 3,
+      "retainedApprovedTextures": 0,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.17104820907115936,
+          1.3601100363302976e-05,
+          -0.1374136358499527
+        ],
+        "max": [
+          0.17091086506843567,
+          0.1292738914489746,
+          0.15862902998924255
+        ]
+      },
+      "sha256": "83d8c7461574b59f679e52b2d72f8faa5a2d28f41ae22e16d902f354181ad61b"
+    },
+    {
+      "id": "top-trail-overshirt",
+      "bytes": 699068,
+      "triangles": 11396,
+      "meshes": 1,
+      "textures": 3,
+      "retainedApprovedTextures": 0,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.7100003957748413,
+          0.9917458295822144,
+          -0.15730507671833038
+        ],
+        "max": [
+          0.7100000381469727,
+          1.565000057220459,
+          0.12337122857570648
+        ]
+      },
+      "sha256": "db4e08615b05d0ac2556dbacffb7276dbdb73c2bfc6941f6d2d671978acc6c90"
+    },
+    {
+      "id": "top-weekend-knit",
+      "bytes": 665032,
+      "triangles": 8637,
+      "meshes": 1,
+      "textures": 5,
+      "retainedApprovedTextures": 0,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.7100000381469727,
+          0.9922919869422913,
+          -0.1629149317741394
+        ],
+        "max": [
+          0.7100000381469727,
+          1.5780500173568726,
+          0.11988189071416855
+        ]
+      },
+      "sha256": "6f9cb27c191251e9498348c9dcbbbba5341fe8a518dd5d3655b76964add54204"
+    }
+  ],
+  "clearance": "release-clearance.json"
+}

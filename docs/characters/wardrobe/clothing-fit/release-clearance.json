@@ -1,0 +1,40 @@
+{
+  "status": "Release-owner sampled visual clearance; integration/deployment owned by Main",
+  "recordedAtUTC": "2026-11-02T23:11:55.894048+00:00",
+  "ownerThread": "01a18308-e4d3-7e23-8e25-3349fd2f47e0",
+  "frozenVisualHead": "48b69e23158b2e92c130f0778f65810e5fb790c6",
+  "basis": "Independent release-owner inspection of final daylight paired colour/crouch/seating frames, matched before/after close-ups, prior unchanged female/canvas views and protected-preview cleanup.",
+  "scope": "Reported chest/waist/rib defects in inspected sampled looks/poses; exact five model hashes.",
+  "limits": [
+    "No all-frame, physical-iPhone or perfect-fashion guarantee",
+    "No model/tint/UI changes after the frozen visual head",
+    "Green final CI and release-owner integration/publication required"
+  ],
+  "assets": [
+    {
+      "id": "top-weekend-knit",
+      "sha256": "6f9cb27c191251e9498348c9dcbbbba5341fe8a518dd5d3655b76964add54204",
+      "accepted": true
+    },
+    {
+      "id": "top-trail-overshirt",
+      "sha256": "db4e08615b05d0ac2556dbacffb7276dbdb73c2bfc6941f6d2d671978acc6c90",
+      "accepted": true
+    },
+    {
+      "id": "female-brunette-tailored",
+      "sha256": "110b0bdbea545c5dd23865118d81030c47e3644cf1acb1868b8323e11555cf7b",
+      "accepted": true
+    },
+    {
+      "id": "male-custom-top-skin",
+      "sha256": "dc380bf25f3fc7c2e22d7a67019e8ccdfdb7ec165671cccba41b4e2a7c599a37",
+      "accepted": true
+    },
+    {
+      "id": "shoes-canvas-low",
+      "sha256": "83d8c7461574b59f679e52b2d72f8faa5a2d28f41ae22e16d902f354181ad61b",
+      "accepted": true
+    }
+  ]
+}
