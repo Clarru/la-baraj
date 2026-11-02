@@ -3,6 +3,11 @@ import type {
   ArcadeStationView,
 } from "../../packages/shared/arcade2048";
 import { Arcade2048Service, ArcadeError } from "./arcade2048";
+import { AppearanceProfiles } from "./appearance-profiles";
+import {
+  normalizeAppearance,
+  type Appearance,
+} from "../../packages/shared/appearance";
 import {
   ARCADE_STATION,
   ARCADE_STATIONS,
@@ -65,6 +70,8 @@ export type SessionState = {
   housingEpoch?: number;
   resumeTable?: boolean;
   resumeCruce?: boolean;
+  appearance?: Appearance;
+  appearanceRevision?: number;
 };
 export interface RoomConnection {
   readonly state: Readonly<SessionState> | null;
@@ -79,6 +86,7 @@ export type RoomRuntime = {
   planes?: PlanesTable;
   cruce?: CruceTable;
   arcade?: Arcade2048Service;
+  appearances?: AppearanceProfiles;
   retryPlaneCleanup?: () => Promise<void>;
   requestWeather?: () => void;
 };
@@ -352,6 +360,7 @@ export class RoomCore {
       },
       players: this.active().map((c) => ({
         ...c.state!.player,
+        ...(c.state!.appearance ? { appearance: c.state!.appearance } : {}),
         ...(c.state!.lastInputAt === undefined
           ? {}
           : {
@@ -367,8 +376,17 @@ export class RoomCore {
       cruce: this.cruce.view(this.tableActor(connection)),
       ...(this.runtime.arcade
         ? {
-            features: { arcade2048: true, arcadeStations: true },
             arcadeStations: this.arcadeStations(),
+          }
+        : {}),
+      ...(this.runtime.arcade || this.runtime.appearances
+        ? {
+            features: {
+              ...(this.runtime.arcade
+                ? { arcade2048: true, arcadeStations: true }
+                : {}),
+              ...(this.runtime.appearances ? { appearance: true } : {}),
+            },
           }
         : {}),
       ...(recovery ? { cruceRecovery: recovery } : {}),
@@ -438,6 +456,60 @@ export class RoomCore {
     this.send(connection, { type: "error", code, message });
     if (violations >= 3)
       connection.close(1008, "Invalid or excessive messages");
+  }
+  private async saveAppearance(
+    connection: RoomConnection,
+    value: Appearance,
+    requestId?: string,
+  ) {
+    const owner = connection.state?.home?.index;
+    const profiles = this.runtime.appearances;
+    const reply = (error?: string) =>
+      this.send(connection, {
+        type: "appearance",
+        id: connection.state!.player.id,
+        appearance: normalizeAppearance(connection.state!.appearance),
+        ...(requestId ? { requestId } : {}),
+        ...(error ? { error } : {}),
+      });
+    if (owner === undefined || !profiles) {
+      reply(
+        owner === undefined
+          ? "Your cabin is still connecting. Try again shortly."
+          : "Appearance saving is temporarily unavailable. Try again later.",
+      );
+      return;
+    }
+    const revision = (connection.state!.appearanceRevision ?? 0) + 1;
+    connection.setState({ ...connection.state!, appearanceRevision: revision });
+    try {
+      await profiles.save(owner, value);
+    } catch {
+      if (this.active().includes(connection))
+        reply("Your appearance could not be saved. Try again.");
+      return;
+    }
+    if (
+      this.active().includes(connection) &&
+      connection.state!.appearanceRevision !== revision
+    ) {
+      if (requestId) reply("Superseded by a newer appearance change.");
+      return;
+    }
+    // Cosmetics are separate from pose state, so pose traffic never retransmits
+    // the wardrobe. Update other authenticated tabs of this same owner as well.
+    for (const other of this.active()) {
+      if (other.state!.home?.index !== owner) continue;
+      if (other === connection && other.state!.appearanceRevision !== revision)
+        continue;
+      other.setState({ ...other.state!, appearance: profiles.get(owner) });
+      this.broadcast({
+        type: "appearance",
+        id: other.state!.player.id,
+        appearance: profiles.get(owner),
+        ...(other === connection && requestId ? { requestId } : {}),
+      });
+    }
   }
   async message(connection: RoomConnection, raw: unknown, now = Date.now()) {
     const state = connection.state;
@@ -1022,6 +1094,26 @@ export class RoomCore {
           return;
         }
         this.broadcastVillage();
+        if (this.runtime.appearances) {
+          // Seed a first profile from a device preference, but never let a stale
+          // reconnect/rename hello overwrite an already committed owner profile.
+          if (
+            message.appearance !== undefined &&
+            !this.runtime.appearances.has(connection.state!.home!.index)
+          )
+            await this.saveAppearance(connection, message.appearance);
+          else if (connection.state!.appearance === undefined) {
+            const appearance = this.runtime.appearances.get(
+              connection.state!.home!.index,
+            );
+            connection.setState({ ...connection.state!, appearance });
+            this.broadcast({
+              type: "appearance",
+              id: connection.state!.player.id,
+              appearance,
+            });
+          }
+        }
       }
       const actor = this.tableActor(connection);
       if (actor) {
@@ -1070,6 +1162,14 @@ export class RoomCore {
       }
       this.broadcast({ type: "pose", player: connection.state!.player });
       if (message.requestHome) this.snapshot(connection);
+      return;
+    }
+    if (message.type === "appearance") {
+      await this.saveAppearance(
+        connection,
+        message.appearance,
+        message.requestId,
+      );
       return;
     }
     if (message.type === "fire") {

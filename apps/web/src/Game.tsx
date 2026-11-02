@@ -76,6 +76,7 @@ import { LocalBubbleChat } from "./BubbleChat";
 import { useBubbleChat } from "./use-bubble-chat";
 import { MobileChatComposer, focusMobileChat } from "./MobileChatComposer";
 import { ControlsHelp, GameHeader, GameMenu } from "./GameMenu";
+import { AppearanceDialog } from "./AppearanceDialog";
 import { captureGameKey, type GamePanel } from "./game-input";
 import { planesSeatSide } from "../../../packages/shared/planes-station";
 import { requestTableStand } from "./planes-activity";
@@ -720,6 +721,7 @@ export default function Game({ initialName }: { initialName: string }) {
               {hasHome && (
                 <group visible={!arcadeOpen}>
                   <Player
+                    appearance={roomView.appearance}
                     homeIndex={homeIndex}
                     mode={mode}
                     resetKey={resetKey}
@@ -1017,6 +1019,7 @@ export default function Game({ initialName }: { initialName: string }) {
               canLookHome={interiorIndex === null}
               onRename={(name) => room.rename(name)}
               onControls={() => setPanel("controls")}
+              onAppearance={() => setPanel("appearance")}
               onHome={lookHome}
               canWave={
                 !activityBusy &&
@@ -1039,6 +1042,13 @@ export default function Game({ initialName }: { initialName: string }) {
             <ControlsHelp
               onClose={() => setPanel(null)}
               onMenu={() => setPanel("menu")}
+            />
+          )}
+          {panel === "appearance" && (
+            <AppearanceDialog
+              room={room}
+              initial={roomView.appearance}
+              onClose={() => setPanel(null)}
             />
           )}
           {(import.meta.env.DEV ||

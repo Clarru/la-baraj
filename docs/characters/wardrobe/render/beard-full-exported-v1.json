@@ -1,0 +1,22 @@
+{
+  "asset": "assets/source-models/wardrobe/optimized/beard-full.glb",
+  "sha256": "6a30f62010e5674cf6056de52675f3d1164cd0f6f4975796bbbf5e756197bf2c",
+  "proof": "Exported GLB on unchanged approved animated skeleton; not a concept image",
+  "poses": [
+    {
+      "view": "Front",
+      "clip": "Idle_Neutral",
+      "frameOffset": 1
+    },
+    {
+      "view": "Side",
+      "clip": "Idle_Neutral",
+      "frameOffset": 1
+    },
+    {
+      "view": "Rear",
+      "clip": "Idle_Neutral",
+      "frameOffset": 1
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "asset": "assets/source-models/wardrobe/optimized/top-trail-overshirt.glb",
+  "sha256": "faf923be422487527baf3f4a5a4c169b5dd52d9c42f51099e6cf61bcad360fca",
+  "proof": "Exported GLB on unchanged approved animated skeleton; not a concept image",
+  "poses": [
+    {
+      "view": "Front",
+      "clip": "Idle_Neutral",
+      "frameOffset": 1
+    },
+    {
+      "view": "Side",
+      "clip": "Idle_Neutral",
+      "frameOffset": 1
+    },
+    {
+      "view": "Rear",
+      "clip": "Idle_Neutral",
+      "frameOffset": 1
+    },
+    {
+      "view": "Walk",
+      "clip": "Walk",
+      "frameOffset": 10
+    },
+    {
+      "view": "Run",
+      "clip": "Run",
+      "frameOffset": 8
+    },
+    {
+      "view": "Jump",
+      "clip": "Jump_Loop",
+      "frameOffset": 10
+    }
+  ]
+}

@@ -1,12 +1,6 @@
-export type GamePanel = "menu" | "controls" | null;
+export type GamePanel = "menu" | "controls" | "appearance" | null;
 export type GameShortcut =
-  | "pass"
-  | "block"
-  | "close-panel"
-  | "controls"
-  | "home"
-  | "reset"
-  | "walk";
+  "pass" | "block" | "close-panel" | "controls" | "home" | "reset" | "walk";
 export type GameKey = {
   code: string;
   key: string;
@@ -26,6 +20,9 @@ export function gameShortcut(
   event: GameKey,
   state: GameInputState,
 ): GameShortcut {
+  // The native Appearance dialog owns Escape and its pending-save close guard.
+  // Keep native button/focus defaults while blocking every gameplay shortcut.
+  if (state.panel === "appearance") return "block";
   if (state.panel) {
     if (event.code === "Escape") return "close-panel";
     if (!state.typing && event.key === "?" && !event.repeat) return "controls";

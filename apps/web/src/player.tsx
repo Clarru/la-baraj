@@ -45,6 +45,9 @@ import {
 } from "./character-resources";
 import { assetUrl } from "./assets";
 import { currentMultiplayerRoom } from "./multiplayer";
+import type { Appearance } from "../../../packages/shared/appearance";
+import { DEFAULT_APPEARANCE } from "../../../packages/shared/appearance";
+import { useAvatarWardrobe } from "./use-avatar-wardrobe";
 import { createTableReactionRig } from "./table-reactions";
 import {
   PLANES_TABLE,
@@ -203,6 +206,7 @@ export function Player({
   doorTransition = false,
   waveRequest = 0,
   arcadeStationId = null,
+  appearance = DEFAULT_APPEARANCE,
 }: {
   homeIndex: number;
   mode: ViewMode;
@@ -218,6 +222,7 @@ export function Player({
   doorTransition?: boolean;
   waveRequest?: number;
   arcadeStationId?: number | null;
+  appearance?: Appearance;
 }) {
   const arrival = useMemo(() => homeSpawn(homeIndex), [homeIndex]);
   const controller = useRef<EcctrlHandle>(null);
@@ -307,6 +312,7 @@ export function Player({
     THREE.FileLoader,
     "/assets/animations/character-actions.json",
   );
+  useAvatarWardrobe(object, appearance);
   const allAnimations = useMemo(
     () => characterClips(animations, String(supplemental)),
     [animations, supplemental],

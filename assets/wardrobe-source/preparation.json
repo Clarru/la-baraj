@@ -1,0 +1,17 @@
+{
+  "reason": "Publisher glTF names two existing normal maps with an extra _png suffix",
+  "fixes": [
+    {
+      "original": "assets/source-models/wardrobe/base/extracted/Universal Base Characters[Standard]/Base Characters/Godot - UE/T_Eye_Normal.png",
+      "alias": "assets/source-models/wardrobe/base/extracted/Universal Base Characters[Standard]/Base Characters/Godot - UE/T_Eye_Normal_png.png",
+      "sha256": "9ed61f7726a54fe346a78b9e5a18905d8e2b88f86235d97f53cd207a26f3f8c7"
+    },
+    {
+      "original": "assets/source-models/wardrobe/base/extracted/Universal Base Characters[Standard]/Base Characters/Godot - UE/T_Hair_1_Normal.png",
+      "alias": "assets/source-models/wardrobe/base/extracted/Universal Base Characters[Standard]/Base Characters/Godot - UE/T_Hair_1_Normal_png.png",
+      "sha256": "57fd0ad8c96a4d01b38769637e066cecaa285b456f6e48ce00863754a457affb"
+    }
+  ],
+  "validatedGLTFs": 42,
+  "geometryOrOriginalArchivesModified": false
+}

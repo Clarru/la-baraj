@@ -1,0 +1,25 @@
+{
+  "Lake_hair_dark_brown": {},
+  "MI_Eyes": {
+    "map": "d42243a254b9168f29d5b3cea7204be804b9889120d6f72cafb7312d6a4b8a67",
+    "normalMap": "c51332b0ae0e1a10aa0029979b3803c162b79187aa3b7f6ad75b456213b0c15f"
+  },
+  "Lake_workwear_Male_Peasant_Arms": {
+    "map": "7c70afecc46d54a2ad62950915e76b864e8e9e5bc6cf08f75d06a0f3a14ed5db",
+    "normalMap": "0f52335dd6c5ff480412bea7b9d0b16a028c71dc6076399b362f7be2db62ef83",
+    "roughnessMap": "183a72af954f641e30d1a41266960977aeea162d740cc1f585b78a39643963fe",
+    "metalnessMap": "183a72af954f641e30d1a41266960977aeea162d740cc1f585b78a39643963fe"
+  },
+  "MI_Regular_Male": {
+    "map": "8c6345a04f8f8030805ef717aa37e455302c32e4ff3bce0cad91d161584c4c60",
+    "normalMap": "1fa7465c6ee1dc2b15562b929851aa2c819d1e78ea49fed88f52ffafb4984652",
+    "roughnessMap": "b7a00917e508ded8b57a0468fe81efac5da9dadf66b12b3b6a80c9f0ec1b08e4",
+    "metalnessMap": "b7a00917e508ded8b57a0468fe81efac5da9dadf66b12b3b6a80c9f0ec1b08e4"
+  },
+  "MI_Superhero_Male": {
+    "map": "40c5bafdffcb54c428662f7ac6640426b8e6f069e77d5b2737afd848746c8b87",
+    "normalMap": "2c29726144c574ec1b6b90063beed6fc39fba5649e69d39c42994e8f5cf9c038",
+    "roughnessMap": "830546f0ce41f2b52ee1951329dbe432268cf89e4e185283546bfc6f8da7d9db",
+    "metalnessMap": "830546f0ce41f2b52ee1951329dbe432268cf89e4e185283546bfc6f8da7d9db"
+  }
+}

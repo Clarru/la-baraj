@@ -1,0 +1,20 @@
+{
+  "proof": "Actual optimized GLBs reimported, canonical bind applied, approved actor/Idle_Neutral retained",
+  "assets": [
+    {
+      "hair": "parted",
+      "actualOptimizedGLB": "assets/source-models/wardrobe/optimized/hair-parted.glb",
+      "sha256": "2802fff8c8b650af8171947c298c42cdcde4d66f5a647d06ad9fc2ec2ecaa020"
+    },
+    {
+      "hair": "buzzed",
+      "actualOptimizedGLB": "assets/source-models/wardrobe/optimized/hair-buzzed.glb",
+      "sha256": "15a3f96132338635333c2384f7ae950cbc60febfab82698580ee131354f85ce0"
+    },
+    {
+      "hair": "long",
+      "actualOptimizedGLB": "assets/source-models/wardrobe/optimized/hair-long.glb",
+      "sha256": "e8f61a4e0484fbccde498f086c68098e5ea84eeb15d9935abd4de04c2bddf54a"
+    }
+  ]
+}
