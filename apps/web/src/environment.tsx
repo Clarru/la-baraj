@@ -1,4 +1,5 @@
 import { mobileWaterReflection } from "./mobile-water";
+import { throttleWaterReflection } from "./water-reflection";
 import { currentLighting } from "./day-night";
 import { memo, useEffect, useMemo } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
@@ -254,16 +255,7 @@ export function LakeWater({
       };
       return w;
     }
-    // Waves still animate every frame. Re-render the reflected world at 20Hz,
-    // rather than drawing all houses and players again at 120Hz.
-    const reflect = w.onBeforeRender.bind(w);
-    let reflectedAt = -Infinity;
-    w.onBeforeRender = (...args) => {
-      const now = performance.now();
-      if (now - reflectedAt < 1000 / 20) return;
-      reflectedAt = now;
-      reflect(...args);
-    };
+    throttleWaterReflection(w);
     return w;
   }, [mobile]);
   let lastLightingUpdate = -Infinity;
