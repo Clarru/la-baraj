@@ -165,3 +165,41 @@
     max-height: calc(100dvh - 128px);
   }
 }
+.environment-lab-selectors {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 0 14px 12px;
+}
+.environment-lab-selectors label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: #b9cbd7;
+  font-size: 12px;
+}
+.environment-lab-selectors label:last-child {
+  grid-column: 1 / -1;
+}
+.environment-lab-selectors select {
+  width: 100%;
+  min-height: 36px;
+  border: 1px solid #465663;
+  border-radius: 4px;
+  background: #1e2c36;
+  color: #f0f4f6;
+  font:
+    500 14px Barlow,
+    sans-serif;
+  padding: 4px 6px;
+}
+.environment-lab-selectors select:focus-visible {
+  outline: 2px solid #efc47d;
+  outline-offset: 2px;
+}
+.environment-lab-panel > header,
+.environment-lab-selectors,
+.environment-lab-actions,
+.environment-lab-hint {
+  flex-shrink: 0;
+}

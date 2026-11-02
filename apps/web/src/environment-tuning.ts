@@ -7,7 +7,7 @@ export const environmentLabEnabled =
 
 export type EnvironmentTuning = {
   enabled: boolean;
-  clock: { liveTime: boolean; hour: number };
+  clock: { liveTime: boolean; hour: number; month?: number };
   weather: { liveWeather: boolean; cloudCover: number };
   light: {
     sun: number;

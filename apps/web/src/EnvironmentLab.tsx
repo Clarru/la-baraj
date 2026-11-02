@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import "@fontsource/barlow/latin-400.css";
 import "@fontsource/barlow/latin-500.css";
 import "@fontsource/barlow/latin-600.css";
@@ -26,6 +26,17 @@ import {
   setEnvironmentTimelineHour,
   weatherLooks,
 } from "./environment-tuning";
+import {
+  phaseHour,
+  profileId,
+  readProfileSelection,
+  rememberProfile,
+  exportProfiles,
+  timeProfiles,
+  weatherProfiles,
+  type ProfileSelection,
+} from "./environment-profiles";
+import { solarDay, solarPosition, solarPaletteHour } from "./solar";
 import "dialkit/styles.css";
 import "./environment-lab.css";
 
@@ -34,29 +45,9 @@ const config = {
   clock: {
     liveTime: true as boolean,
     hour: [12, 0, 23.99, 0.01],
-    dawn: { type: "action", label: "Dawn · 05:30" },
-    morning: { type: "action", label: "Morning · 08:00" },
-    noon: { type: "action", label: "Noon · 12:00" },
-    goldenHour: { type: "action", label: "Golden hour · 18:00" },
-    dusk: { type: "action", label: "Dusk · 20:00" },
-    midnight: { type: "action", label: "Midnight · 00:00" },
   },
   weather: {
     liveWeather: true as boolean,
-    look: {
-      type: "select",
-      options: [
-        { value: "clear", label: "Clear" },
-        { value: "partly", label: "Partly cloudy" },
-        { value: "overcast", label: "Overcast" },
-        { value: "mist", label: "Lakeside mist" },
-        { value: "rain", label: "Rain light" },
-        { value: "storm", label: "Storm light" },
-        { value: "snow", label: "Snow light" },
-      ],
-      default: "clear",
-    },
-    applyLook: { type: "action", label: "Apply weather look" },
     cloudCover: [0, 0, 1, 0.01],
   },
   light: {
@@ -111,17 +102,8 @@ const config = {
     },
   },
   exportSettings: { type: "action", label: "Export settings as JSON" },
-  reset: { type: "action", label: "Reset all controls" },
+  reset: { type: "action", label: "Reset this condition" },
 } satisfies DialConfig;
-
-const times: Record<string, number> = {
-  dawn: 5.5,
-  morning: 8,
-  noon: 12,
-  goldenHour: 18,
-  dusk: 20,
-  midnight: 0,
-};
 
 function DayTimeline() {
   const timeline = useDialTimeline(
@@ -149,50 +131,89 @@ function DayTimeline() {
   return <DialTimeline productionEnabled theme="dark" />;
 }
 
-export default function EnvironmentLab({
+function ProfileEditor({
   onEditing,
+  selection,
+  onSelect,
+  requested,
 }: {
   onEditing: (active: boolean) => void;
+  selection: ProfileSelection;
+  onSelect: (next: ProfileSelection) => void;
+  requested: number;
 }) {
   const [open, setOpen] = useState(true);
   const [timeline, setTimeline] = useState(false);
   const [status, setStatus] = useState("");
   const actions = useRef<(path: string) => void>(() => {});
-  const dial = useDialKitController("Lake lighting & weather", config, {
-    id: "la-baraj-environment-v1",
-    persist: true,
-    onAction: (path) => actions.current(path),
-  });
+  const profileConfig = useMemo(() => {
+    const look = weatherLooks[selection.weather],
+      hour = phaseHour(selection.time, worldNow(), selection.month);
+    const sun = solarPosition(hour, solarDay(worldNow(), selection.month));
+    const next = structuredClone(config);
+    next.clock.liveTime = false;
+    next.clock.hour[0] = hour;
+    next.weather.liveWeather = false;
+    next.weather.cloudCover[0] = look.cloudCover;
+    next.light.sun[0] = look.sun;
+    next.light.sunPosition.x[0] = (Math.atan2(sun.x, sun.z) * 180) / Math.PI;
+    next.light.sunPosition.y[0] = Math.max(2, sun.elevation);
+    next.atmosphere.fogNear[0] = look.fogNear;
+    next.atmosphere.fogFar[0] = look.fogFar;
+    next.atmosphere.wind.x[0] = look.wind.x;
+    next.atmosphere.wind.y[0] = look.wind.y;
+    next.water.distortion[0] = look.distortion;
+    return next;
+  }, [selection.time, selection.weather]);
+  const dial = useDialKitController(
+    `${timeProfiles[selection.time]} · ${weatherProfiles[selection.weather]}`,
+    profileConfig,
+    {
+      id: profileId(selection),
+      persist: true,
+      onAction: (path) => actions.current(path),
+    },
+  );
   const values = dial.values;
+  const previousMonth = useRef(selection.month);
+  useEffect(() => {
+    if (requested) dial.setValue("enabled", true);
+  }, [requested]);
+  useEffect(() => {
+    const prior = previousMonth.current;
+    const current = dial.getValues();
+    const followsPhase =
+      Math.abs(
+        current.clock.hour - phaseHour(selection.time, worldNow(), prior),
+      ) < 0.02;
+    const hour = followsPhase
+      ? phaseHour(selection.time, worldNow(), selection.month)
+      : current.clock.hour;
+    const sun = solarPosition(hour, solarDay(worldNow(), selection.month));
+    dial.setValues({
+      clock: { hour },
+      ...(!current.light.manualSun
+        ? {
+            light: {
+              sunPosition: {
+                x: (Math.atan2(sun.x, sun.z) * 180) / Math.PI,
+                y: Math.max(2, sun.elevation),
+              },
+            },
+          }
+        : {}),
+    });
+    previousMonth.current = selection.month;
+  }, [selection.month]);
   actions.current = (path) => {
-    if (path.startsWith("clock.")) {
-      const hour = times[path.slice(6)];
-      if (hour !== undefined) {
-        setTimeline(false);
-        dial.setValues({ enabled: true, clock: { liveTime: false, hour } });
-      }
-    }
-    if (path === "weather.applyLook") {
-      const look =
-        weatherLooks[values.weather.look as keyof typeof weatherLooks];
-      if (look)
-        dial.setValues({
-          enabled: true,
-          weather: { liveWeather: false, cloudCover: look.cloudCover },
-          light: { sun: look.sun },
-          atmosphere: {
-            fogNear: look.fogNear,
-            fogFar: look.fogFar,
-            wind: { ...look.wind },
-          },
-          water: { distortion: look.distortion },
-        });
-    }
     if (path === "palette.sampleTime") {
       const light = lightingAt(
-        values.clock.liveTime
-          ? gameMinutes(worldNow()) / 60
-          : values.clock.hour,
+        solarPaletteHour(
+          values.clock.liveTime
+            ? gameMinutes(worldNow()) / 60
+            : values.clock.hour,
+          solarDay(worldNow(), selection.month),
+        ),
       );
       dial.setValues({
         palette: {
@@ -209,11 +230,29 @@ export default function EnvironmentLab({
     if (path === "reset") {
       setTimeline(false);
       dial.resetValues();
-      setStatus("Controls reset. Live time and weather restored.");
+      dial.setValues({
+        enabled: true,
+        clock: { hour: phaseHour(selection.time, worldNow(), selection.month) },
+      });
+      setStatus("This condition reset.");
     }
     if (path === "exportSettings") {
       const blob = new Blob(
-        [JSON.stringify({ schema: 1, ...dial.getValues() }, null, 2)],
+        [
+          JSON.stringify(
+            {
+              schema: 2,
+              selection,
+              current: dial.getValues(),
+              profiles: exportProfiles(localStorage),
+              previousDraft: localStorage.getItem(
+                "dialkit:la-baraj-environment-v1",
+              ),
+            },
+            null,
+            2,
+          ),
+        ],
         { type: "application/json" },
       );
       const url = URL.createObjectURL(blob);
@@ -226,8 +265,11 @@ export default function EnvironmentLab({
     }
   };
   useEffect(() => {
-    setEnvironmentTuning(values);
-  }, [values]);
+    setEnvironmentTuning({
+      ...values,
+      clock: { ...values.clock, month: selection.month },
+    });
+  }, [values, selection.month]);
   useEffect(
     () => () => {
       setEnvironmentTuning(null);
@@ -267,6 +309,11 @@ export default function EnvironmentLab({
     dial.setValues({ enabled: false });
     setStatus("Live Romanian time and shared weather restored.");
   };
+  const selectCondition = (next: ProfileSelection) => {
+    setTimeline(false);
+    setStatus("");
+    onSelect(next);
+  };
   return (
     <>
       <div
@@ -300,8 +347,7 @@ export default function EnvironmentLab({
         >
           <header>
             <div>
-              <strong>Shape the atmosphere</strong>
-              <p>Local preview · edits saved in this browser</p>
+              <strong>Lighting</strong>
             </div>
             <button
               type="button"
@@ -314,6 +360,69 @@ export default function EnvironmentLab({
               <X size={18} />
             </button>
           </header>
+          <div className="environment-lab-selectors">
+            <label>
+              Time
+              <select
+                aria-label="Time profile"
+                value={selection.time}
+                onChange={(e) =>
+                  selectCondition({
+                    ...selection,
+                    time: e.target.value as ProfileSelection["time"],
+                  })
+                }
+              >
+                {Object.entries(timeProfiles).map(([key, label]) => (
+                  <option key={key} value={key}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Weather
+              <select
+                aria-label="Weather profile"
+                value={selection.weather}
+                onChange={(e) =>
+                  selectCondition({
+                    ...selection,
+                    weather: e.target.value as ProfileSelection["weather"],
+                  })
+                }
+              >
+                {Object.entries(weatherProfiles).map(([key, label]) => (
+                  <option key={key} value={key}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Month
+              <select
+                aria-label="Preview month"
+                value={selection.month}
+                onChange={(e) =>
+                  selectCondition({
+                    ...selection,
+                    month: Number(e.target.value),
+                  })
+                }
+              >
+                <option value={0}>Current date</option>
+                {Array.from({ length: 12 }, (_, i) => (
+                  <option key={i + 1} value={i + 1}>
+                    {new Intl.DateTimeFormat("en", {
+                      month: "long",
+                      timeZone: "UTC",
+                    }).format(Date.UTC(2026, i, 15))}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
           <div className="environment-lab-actions">
             <button type="button" onClick={restoreLive}>
               <ClockCounterClockwise size={16} /> Return to live
@@ -330,21 +439,20 @@ export default function EnvironmentLab({
             </button>
           </div>
           <p className="environment-lab-hint">
-            {values.enabled
-              ? timeline
-                ? "Timeline controls the time of day."
-                : values.clock.liveTime
-                  ? "Following Romanian time."
-                  : `Previewing ${formatClockMinutes(values.clock.hour * 60)}.`
-              : "Live world · enable edits below to resume tuning."}{" "}
-            Weather looks shape light, haze, clouds and waves.
+            Sunrise{" "}
+            {formatClockMinutes(
+              solarDay(worldNow(), selection.month).sunrise * 60,
+            )}{" "}
+            · Sunset{" "}
+            {formatClockMinutes(
+              solarDay(worldNow(), selection.month).sunset * 60,
+            )}
           </p>
           <div className="environment-lab-controls">
             <DialRoot mode="inline" theme="dark" productionEnabled />
           </div>
           <p className="environment-lab-status" role="status">
-            {status ||
-              "Save versions to compare moods. Copy or export to keep a recipe."}
+            {status || "Changes saved for this time and weather."}
           </p>
         </aside>
       )}
@@ -362,5 +470,34 @@ export default function EnvironmentLab({
       )}
       {timeline && <DayTimeline />}
     </>
+  );
+}
+
+export default function EnvironmentLab({
+  onEditing,
+}: {
+  onEditing: (active: boolean) => void;
+}) {
+  const [selection, setSelection] = useState<ProfileSelection>(() => {
+    try {
+      return readProfileSelection(localStorage, worldNow());
+    } catch {
+      return { time: "noon", weather: "clear", month: 0 };
+    }
+  });
+  const [requested, setRequested] = useState(0);
+  return (
+    <ProfileEditor
+      selection={selection}
+      requested={requested}
+      onEditing={onEditing}
+      onSelect={(next) => {
+        setRequested((v) => v + 1);
+        setSelection(next);
+        try {
+          rememberProfile(localStorage, next);
+        } catch {}
+      }}
+    />
   );
 }

@@ -33,15 +33,15 @@ describe("local environment overrides", () => {
     const edited = settings();
     edited.enabled = true;
     edited.clock.hour = 12;
+    setEnvironmentTuning(edited);
+    const baseSun = currentLighting(true).sunIntensity;
     edited.light.sun = 1.5;
     edited.weather.cloudCover = 1;
     setEnvironmentTuning(edited);
     const light = currentLighting(true);
     expect(light).not.toBe(live);
     expect(light.cloudCover).toBe(1);
-    expect(light.sunIntensity).toBeCloseTo(
-      lightingAt(12).sunIntensity * 0.5 * 1.5,
-    );
+    expect(light.sunIntensity).toBeCloseTo(baseSun * 0.5 * 1.5);
     edited.enabled = false;
     setEnvironmentTuning(edited);
     expect(currentLighting(true).sunIntensity).toBe(live.sunIntensity);

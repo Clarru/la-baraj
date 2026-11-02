@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { cloudiness } from "./weather-visual";
+import { solarDay, solarPaletteHour, solarPosition } from "./solar";
 import {
   environmentTuning,
   environmentHour,
@@ -234,10 +235,20 @@ export function currentLighting(evening = false, forceDay = false) {
     settings && !settings.weather.liveWeather
       ? settings.weather.cloudCover
       : cloudiness();
-  const key = `${hour.toFixed(3)}:${cover.toFixed(2)}:${environmentRevision()}`;
+  const day = solarDay(now, settings?.clock.month ?? 0);
+  const key = `${day.date}:${hour.toFixed(3)}:${cover.toFixed(2)}:${environmentRevision()}`;
   if (cacheKey !== key) {
     cacheKey = key;
-    cached = lightingAt(hour);
+    // Keep fixed noon/evening diagnostic fixtures stable; the live/editor world is seasonal.
+    const diagnostic = !settings && (evening || forceDay || override !== null);
+    cached = lightingAt(diagnostic ? hour : solarPaletteHour(hour, day));
+    if (!diagnostic) {
+      const sun = solarPosition(hour, day);
+      // Below the horizon this directional source becomes navigable moon fill.
+      cached.sunDirection
+        .set(sun.x, sun.y > 0 ? sun.y : Math.max(0.12, -sun.y), sun.z)
+        .normalize();
+    }
     cached.cloudCover = cover;
     const grey = new THREE.Color("#819199");
     cached.colors.sky.lerp(grey, cover * 0.4);
