@@ -32,6 +32,16 @@
       "path": ".impeccable/review/wardrobe/cleanup-b2e28ac.json",
       "bytes": 2216,
       "sha256": "c9bec530b3e1ff9a9255093f3e2735048d4ea727f80b3b6d323af59f198cda2a"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/men-game/report.json",
+      "bytes": 63602,
+      "sha256": "f925a473a5940f7a4491d42d6ab15acb451100760b7beaf32c4a9ac64dbb9342"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/cleanup-b2e28ac-completion.json",
+      "bytes": 2216,
+      "sha256": "8cf09d0cce831bdc7a5d4847e544e4cd2cfda5a83bfcca0a4d623705aef51ab6"
     }
   ],
   "actionCaptures": [
@@ -745,5 +755,67 @@
     "captures-b2/game/actual-crouch.png": "Initial toggle did not establish active posture",
     "captures-b2/game/verified-clear-grass-prone.png": "State asserted but tree obscures character",
     "captures-b2/game/verified-clear-grass-prone-orbit.png": "Camera occluded by tree; use -front instead"
-  }
+  },
+  "maleGameCaptures": [
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/men-game/classic-boat.png",
+      "bytes": 1003919,
+      "sha256": "8bdfb2d7f15313fbeedd657880f7e51d1840974543a19759fbe8cc1d1ba281e1"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/men-game/classic-campfire.png",
+      "bytes": 1306807,
+      "sha256": "5b0b545c079a0dd2618c07ce7c19e09f5b7e9066fa654370744cf5dd4de37b6a"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/men-game/classic-fishing.png",
+      "bytes": 1204526,
+      "sha256": "3b13234893df9e2c8d3d6f1e466977cf32f43bc19332947c9a9435e1515664bd"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/men-game/classic-scooter.png",
+      "bytes": 1887411,
+      "sha256": "535119ecb6d5eec5b6cf539cdaf3632851166f8b212afc5b915e7420f14cf72e"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/men-game/trail-boat.png",
+      "bytes": 1007980,
+      "sha256": "7773b219152126b30ce752c038fd4b8307ac21e9e5b561629cea37aba091fff1"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/men-game/trail-campfire.png",
+      "bytes": 1296966,
+      "sha256": "4879de047c84ad2eefc7a36305a989f380ed58d9bdcc98b93568c35967ac7b1a"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/men-game/trail-fishing.png",
+      "bytes": 1199733,
+      "sha256": "112f304d563ff5cd8d01349040c14e17b68d28792c7cdf288e44ab7d6cd1bb9a"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/men-game/trail-scooter.png",
+      "bytes": 1627635,
+      "sha256": "95c397f7ec5a1d7873feba3e2d7f9082a7f2d57cbb065a51546f13cacfd97f1d"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/men-game/weekend-boat.png",
+      "bytes": 1020772,
+      "sha256": "0a8e8a51b2db4fb249f8b9993d317bb9bf0ef34be818c6102e253d411eeb88a7"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/men-game/weekend-campfire.png",
+      "bytes": 1299362,
+      "sha256": "c842182e8ece3155b4234e2170548e070591b04f4e1a39ae5c87faad63a21579"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/men-game/weekend-fishing.png",
+      "bytes": 1201645,
+      "sha256": "b3e14d767bfd702266bf9558378fc2cf996674da20cb9abf51f27de9e9eac766"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/men-game/weekend-scooter.png",
+      "bytes": 1489793,
+      "sha256": "f88a5cf9d0626d6afee17e5008c83b753b94d09b2f3ae2bebb8051a48eb3d619"
+    }
+  ]
 }

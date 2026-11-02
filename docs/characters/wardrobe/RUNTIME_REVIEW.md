@@ -30,6 +30,15 @@ logic was changed. See final-activity-report.json and focused-prone-report.json.
 All successful runners closed their own contexts/browsers in finally blocks;
 reports contain zero page errors and zero sockets.
 
+The final bounded completion pass applied all three men's complete outfits through
+the same normal UI and asserted independent observer agreement. Each was captured
+in settled campfire sit, fishing wait, mounted scooter and mounted boat states:
+12 captures total. Recorded scooter speeds were9.59–9.85 and boat speeds1.08–1.12
+while mounted. No new material/garment/footwear/contact defect was observed at
+these gameplay camera scales. See `captures-b2/men-game/report.json` and its
+classic/trail/weekend screenshots. This is finite sampled contact evidence,
+not an exhaustive physics acceptance.
+
 ## Sampled model actions
 
 88 actual WebGL front/rear captures cover four looks in 11 clips. Three men's
@@ -67,3 +76,10 @@ verified, as was the HTTP index SHA256
 `16c499ab1c8235ad1322817d74cde81f9778e37b5ae443edff7523d5e496f21f`.
 ListenerPID35046 remained running and untouched. The cleanup report is
 `.impeccable/review/wardrobe/cleanup-b2e28ac.json`.
+
+A final short completion window reused the same frozen35-file packet solely for
+three men's outfits in actual activities/vehicles. It closed at
+monotonic246433.550570083, well before its action cutoff247005.329321166. All35
+additions were removed, all351 protected path/size/SHA entries and the HTTP index
+were verified again, and listener35046 remained untouched. Report:
+`.impeccable/review/wardrobe/cleanup-b2e28ac-completion.json`.

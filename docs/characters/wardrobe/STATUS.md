@@ -55,6 +55,11 @@ The runtime pack contains 24 selected GLBs; final acceptance packing remains gat
   fishing cast, mounted scooter/boat movement and walking were state checked.
   Prone was independently corroborated by the observer's remote posture and a
   visible settled capture (`verified-clear-grass-prone-front.png`).
+- Final men's actual-contact pass: all three complete outfits applied through
+  normal UI, with observer agreement; each captured in campfire sit, fishing wait,
+  scooter and boat movement. All12 captures showed no new material fit/contact
+  failure at gameplay scale; zero page errors/sockets. Offline review includes
+  these captures.
 - Earlier misleading `actual-prone.png`/`actual-crouch.png` and tree-occluded prone
   captures are explicitly excluded from visual acceptance. No physics or gameplay
   source was changed to make these tests pass.
@@ -63,17 +68,18 @@ The runtime pack contains 24 selected GLBs; final acceptance packing remains gat
   are recorded in RUNTIME_REVIEW.md; they do not establish iPhone performance.
 
 `REVIEW_EVIDENCE.json` pins local reports and all 88 adverse-pose capture hashes.
-Full frontend tests passed 581/581 before the added local-profile test; the focused
-local factory/catalogue checks subsequently passed 18/18. Protocol passed 182/182,
-material positive/negative controls 2/2, client/server TypeScript and production
-and isolated QA builds passed. Final integrated checks remain required.
+Final source checks passed: frontend **582/582** across100 files, protocol
+**182/182** across14 files, and server TypeScript. Material positive/negative
+controls2/2 and focused local factory/catalogue18/18 passed earlier. Client
+TypeScript and production/isolated QA builds passed for the frozen runtime;
+final accepted-pack production build remains required.
 
 ## Preview safety and remaining work
 
-Both bounded shared-preview sessions are closed. The B2 session removed exactly
+All three bounded shared-preview sessions are closed. The B2 session removed exactly
 35 authorized, hash-matching additions and verified all 351 original files plus
-the normal HTTP index. Listener PID35046 was untouched. The earlier C60 session
-also restored its protected baseline. No production connection, live world/home
+the normal HTTP index. Listener PID35046 was untouched. The earlier C60 session and final short B2 contact-completion session
+also restored their protected baselines. No production connection, live world/home
 write, Worker deployment or additional listener was made by these QA fixtures.
 
 Still required: independent full mesh/action disposition; coverage of any named
