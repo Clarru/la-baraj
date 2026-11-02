@@ -102,3 +102,65 @@ it("isolates real Dialkit controllers by time/weather, restores edits, and reset
     localStorage.clear();
   }
 });
+
+it("uses the authored Golden hour / Lakeside mist recipe as defaults and reset values without discarding later edits", async () => {
+  localStorage.clear();
+  const host = document.createElement("div");
+  document.body.append(host);
+  const root = createRoot(host);
+  const target = profileId({ time: "goldenHour", weather: "mist" });
+  const choose = async (label: string, value: string) => {
+    const el = host.querySelector<HTMLSelectElement>(
+      `select[aria-label="${label}"]`,
+    )!;
+    await act(async () => {
+      el.value = value;
+      el.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+  };
+  try {
+    await act(async () => root.render(<EnvironmentLab onEditing={() => {}} />));
+    await choose("Time profile", "goldenHour");
+    await choose("Weather profile", "mist");
+    let values = DialStore.getValues(target);
+    expect(values["clock.hour"]).toBe(16.5);
+    expect(values["light.sun"]).toBe(0.3);
+    expect(values["light.hemisphere"]).toBe(0.6);
+    expect(values["light.ambient"]).toBe(0.9);
+    expect(values["light.exposure"]).toBe(0.71);
+    expect(values["light.manualSun"]).toBe(false);
+    expect(values["palette.customColors"]).toBe(false);
+    expect(values["weather.cloudCover"]).toBe(0.8);
+    expect(values["water.distortion"]).toBe(0.3);
+    await act(async () =>
+      DialStore.updateValues(target, {
+        "light.sun": 0.41,
+        "light.exposure": 0.62,
+      }),
+    );
+    await choose("Weather profile", "clear");
+    expect(
+      DialStore.getValues(profileId({ time: "goldenHour", weather: "clear" }))[
+        "light.sun"
+      ],
+    ).toBe(1);
+    await choose("Weather profile", "mist");
+    expect(DialStore.getValues(target)["light.sun"]).toBe(0.41);
+    await choose("Preview month", "1");
+    expect(DialStore.getValues(target)["clock.hour"]).toBe(16.5);
+    await act(async () => DialStore.triggerAction(target, "reset"));
+    values = DialStore.getValues(target);
+    expect(values["clock.hour"]).toBe(16.5);
+    expect(values["light.sun"]).toBe(0.3);
+    expect(values["light.exposure"]).toBe(0.71);
+    expect(
+      DialStore.getValues(profileId({ time: "goldenHour", weather: "clear" }))[
+        "light.sun"
+      ],
+    ).toBe(1);
+  } finally {
+    await act(async () => root.unmount());
+    host.remove();
+    localStorage.clear();
+  }
+});

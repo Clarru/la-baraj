@@ -38,6 +38,10 @@ import {
   type ProfileSelection,
 } from "./environment-profiles";
 import { solarDay, solarPosition, solarPaletteHour } from "./solar";
+import {
+  applyAuthoredProfileDefaults,
+  authoredProfileHour,
+} from "./environment-profile-defaults";
 import "dialkit/styles.css";
 import "./environment-lab.css";
 
@@ -164,6 +168,7 @@ function ProfileEditor({
     next.atmosphere.wind.x[0] = look.wind.x;
     next.atmosphere.wind.y[0] = look.wind.y;
     next.water.distortion[0] = look.distortion;
+    applyAuthoredProfileDefaults(next, selection);
     return next;
   }, [selection.time, selection.weather]);
   const dial = useDialKitController(
@@ -190,6 +195,7 @@ function ProfileEditor({
       selection,
       current.clock.hour,
       worldNow(),
+      authoredProfileHour(selection),
     );
     const sun = solarPosition(hour, solarDay(worldNow(), selection.month));
     dial.setValues({
@@ -233,7 +239,11 @@ function ProfileEditor({
       dial.resetValues();
       dial.setValues({
         enabled: true,
-        clock: { hour: phaseHour(selection.time, worldNow(), selection.month) },
+        clock: {
+          hour:
+            authoredProfileHour(selection) ??
+            phaseHour(selection.time, worldNow(), selection.month),
+        },
       });
       setStatus("This condition reset.");
     }

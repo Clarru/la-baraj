@@ -147,6 +147,7 @@ export function syncProfileHour(
   selection: ProfileSelection,
   hour: number,
   now: number,
+  authoredHour?: number,
 ) {
   const id = profileId(selection),
     key = `la-baraj-environment-clock-v2:${selection.time}:${selection.weather}`;
@@ -162,7 +163,9 @@ export function syncProfileHour(
     /* Memory basis still supports this session. */
   }
   const phase = phaseHour(selection.time, now, selection.month);
-  const next = Math.abs(hour - (prior ?? phase)) < 0.02 ? phase : hour;
+  const fixedRecipeHour = authoredHour !== undefined && hour === authoredHour;
+  const next =
+    !fixedRecipeHour && Math.abs(hour - (prior ?? phase)) < 0.02 ? phase : hour;
   clockBases.set(id, phase);
   try {
     storage?.setItem(key, JSON.stringify({ phaseHour: phase }));

@@ -31,6 +31,27 @@ cloudy. Existing sun/manual-position values and native versions are retained.
 Old fixed phase hours are advanced to the corresponding seasonal phase; a custom
 clock hour is preserved. Corrupt/unavailable storage does not block the editor.
 
+## Authored defaults
+
+`environment-profile-defaults.json` stores approved copied Dialkit recipes by
+`time:weather`. The Golden hour / Lakeside mist entry now uses the owner’s
+16:30 recipe: Sun 0.30, hemisphere 0.60, ambient 0.90, exposure 0.71, cloud cover
+0.80, fog 20–360, and wave distortion 0.30. The complete supplied palette,
+reference and control defaults are retained in that entry. Native slider ranges,
+image/text/pad types and action buttons stay intact when applying it.
+
+Fresh condition controllers and **Reset this condition** use these defaults.
+Existing browser edits and saved versions retain precedence; a source-default
+update does not silently discard them. This recipe’s 16:30 is an authored fixed
+clock default, while other conditions retain their automatic seasonal phase time.
+Manual Sun remains off, so seasonal positioning still controls the rendered sun;
+the supplied manual-pad coordinates and disabled custom palette are not forced.
+
+Two regressions verify the adapter preserves native ranges/types and that the
+real controller starts/resets to this recipe, retains later edits across condition
+switches, and leaves Clear unchanged. Node24 tests now pass 105 files / 597 tests,
+with TypeScript and the production build passing.
+
 ## Seasonal daylight
 
 `solar.ts` uses NOAA's compact fractional-year equations at the existing weather
