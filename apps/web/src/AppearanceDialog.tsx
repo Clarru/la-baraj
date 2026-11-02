@@ -467,7 +467,7 @@ export function AppearanceDialog({
             <div className="appearance-female-details">
               <h3>Brunette</h3>
               <p>
-                A tailored black blazer, cropped top and shorts, with sheer
+                A tailored black blazer, high-neck top tucked into shorts, sheer
                 tights and pointed heels.
               </p>
               <button type="button" onClick={() => setFocus("full")}>

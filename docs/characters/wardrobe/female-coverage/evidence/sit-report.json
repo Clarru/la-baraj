@@ -1,0 +1,167 @@
+{
+  "errors": [],
+  "sockets": [],
+  "before": {
+    "status": "online",
+    "id": "2f8b7a65-1650-424c-b96a-671abb8213c7",
+    "home": 0,
+    "appearance": {
+      "version": 1,
+      "body": "female"
+    },
+    "available": true,
+    "position": [
+      40.003204345703125,
+      2.9111931324005127,
+      40.37622833251953
+    ],
+    "activity": {
+      "kind": "none",
+      "startedAt": 4491.100000023842
+    },
+    "scooter": {
+      "mounted": false,
+      "parked": [
+        53.68602158793589,
+        4.86688232421875,
+        63.42878752161689
+      ],
+      "yaw": 3.13660235889303,
+      "speed": 0
+    },
+    "boat": {
+      "mounted": false,
+      "parked": [
+        3.7,
+        0.05,
+        38.87531356447997
+      ],
+      "yaw": 3.141592653589793,
+      "speed": 0,
+      "velocity": [
+        0,
+        0
+      ],
+      "angularVelocity": 0,
+      "rudder": 0
+    },
+    "remotes": [
+      {
+        "id": "65462dff-b85b-422f-a20e-27ca03e1a915",
+        "nickname": "Mobile QA",
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "yaw": 0,
+        "animation": "idle",
+        "activity": "none",
+        "vehicle": "none",
+        "homeIndex": 1,
+        "appearance": {
+          "version": 1,
+          "body": "male",
+          "hair": "parted",
+          "hat": "none",
+          "hatColor": "original",
+          "top": "lake-workshirt",
+          "bottom": "classic",
+          "shoes": "lake-boots",
+          "beard": "full",
+          "hairColor": "brown",
+          "topColor": "original",
+          "bottomColor": "original"
+        }
+      }
+    ]
+  },
+  "after": {
+    "status": "online",
+    "id": "2f8b7a65-1650-424c-b96a-671abb8213c7",
+    "home": 0,
+    "appearance": {
+      "version": 1,
+      "body": "female"
+    },
+    "available": true,
+    "position": [
+      39.27000045776367,
+      2.314319610595703,
+      40.37621307373047
+    ],
+    "activity": {
+      "anchor": [
+        39.27,
+        1.364319674400397,
+        40.37621203413667
+      ],
+      "facing": 4.71238898038469,
+      "seatHeight": 1.914319674400397,
+      "kind": "sit",
+      "startedAt": 6337.5
+    },
+    "scooter": {
+      "mounted": false,
+      "parked": [
+        53.68602158793589,
+        4.86688232421875,
+        63.42878752161689
+      ],
+      "yaw": 3.13660235889303,
+      "speed": 0
+    },
+    "boat": {
+      "mounted": false,
+      "parked": [
+        3.7,
+        0.05,
+        38.87531356447997
+      ],
+      "yaw": 3.141592653589793,
+      "speed": 0,
+      "velocity": [
+        0,
+        0
+      ],
+      "angularVelocity": 0,
+      "rudder": 0
+    },
+    "remotes": [
+      {
+        "id": "65462dff-b85b-422f-a20e-27ca03e1a915",
+        "nickname": "Mobile QA",
+        "position": [
+          78.021,
+          5.277,
+          47.356
+        ],
+        "yaw": 3.139,
+        "animation": "Idle_Neutral",
+        "activity": "none",
+        "vehicle": "none",
+        "homeIndex": 1,
+        "posture": "standing",
+        "speed": 0,
+        "jumpPhase": "grounded",
+        "appearance": {
+          "version": 1,
+          "body": "male",
+          "hair": "parted",
+          "hat": "none",
+          "hatColor": "original",
+          "top": "lake-workshirt",
+          "bottom": "classic",
+          "shoes": "lake-boots",
+          "beard": "full",
+          "hairColor": "brown",
+          "topColor": "original",
+          "bottomColor": "original"
+        }
+      }
+    ]
+  },
+  "normalFireSeatInteraction": true,
+  "correctKey": "F",
+  "priorProbeFinding": "E controls the fire; the first probe used the wrong interaction key and did not prove sitting."
+}

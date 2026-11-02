@@ -1,0 +1,209 @@
+{
+  "head": "c38266e0a2497a20dad68f9f7310781747286aa0",
+  "poses": [
+    {
+      "pose": "Idle_Neutral",
+      "views": [
+        "front",
+        "side",
+        "rear"
+      ],
+      "pictures": [
+        "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/female-coverage/acceptance/pose-Idle_Neutral-front.png",
+        "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/female-coverage/acceptance/pose-Idle_Neutral-side.png",
+        "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/female-coverage/acceptance/pose-Idle_Neutral-rear.png"
+      ]
+    },
+    {
+      "pose": "Walk",
+      "views": [
+        "front",
+        "side",
+        "rear"
+      ],
+      "pictures": [
+        "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/female-coverage/acceptance/pose-Walk-front.png",
+        "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/female-coverage/acceptance/pose-Walk-side.png",
+        "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/female-coverage/acceptance/pose-Walk-rear.png"
+      ]
+    },
+    {
+      "pose": "Run",
+      "views": [
+        "front",
+        "side",
+        "rear"
+      ],
+      "pictures": [
+        "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/female-coverage/acceptance/pose-Run-front.png",
+        "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/female-coverage/acceptance/pose-Run-side.png",
+        "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/female-coverage/acceptance/pose-Run-rear.png"
+      ]
+    },
+    {
+      "pose": "Activity_Sit",
+      "views": [
+        "front",
+        "side",
+        "rear"
+      ],
+      "pictures": [
+        "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/female-coverage/acceptance/pose-Activity_Sit-front.png",
+        "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/female-coverage/acceptance/pose-Activity_Sit-side.png",
+        "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/female-coverage/acceptance/pose-Activity_Sit-rear.png"
+      ]
+    },
+    {
+      "pose": "Crouch_Idle",
+      "views": [
+        "front",
+        "side",
+        "rear"
+      ],
+      "pictures": [
+        "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/female-coverage/acceptance/pose-Crouch_Idle-front.png",
+        "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/female-coverage/acceptance/pose-Crouch_Idle-side.png",
+        "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/female-coverage/acceptance/pose-Crouch_Idle-rear.png"
+      ]
+    },
+    {
+      "pose": "Prone_Idle",
+      "views": [
+        "front",
+        "side",
+        "rear"
+      ],
+      "pictures": [
+        "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/female-coverage/acceptance/pose-Prone_Idle-front.png",
+        "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/female-coverage/acceptance/pose-Prone_Idle-side.png",
+        "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/female-coverage/acceptance/pose-Prone_Idle-rear.png"
+      ]
+    },
+    {
+      "pose": "Swim_Forward",
+      "views": [
+        "front",
+        "side",
+        "rear"
+      ],
+      "pictures": [
+        "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/female-coverage/acceptance/pose-Swim_Forward-front.png",
+        "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/female-coverage/acceptance/pose-Swim_Forward-side.png",
+        "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/female-coverage/acceptance/pose-Swim_Forward-rear.png"
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "portrait",
+      "bounds": {
+        "x": 16,
+        "y": 81,
+        "width": 361,
+        "height": 690
+      },
+      "copy": true
+    },
+    {
+      "name": "landscape",
+      "bounds": {
+        "x": 14,
+        "y": 8,
+        "width": 824,
+        "height": 377
+      },
+      "copy": true
+    },
+    {
+      "actualApply": true,
+      "observer": true,
+      "movement": true,
+      "reload": true,
+      "stagedCancel": true
+    }
+  ],
+  "errors": [],
+  "failed": [],
+  "sockets": [],
+  "femaleRequests": [
+    "http://127.0.0.1:4173/assets/female-coverage-qa/female-brunette-tailored-db918bb9b800467b.glb",
+    "http://127.0.0.1:4173/assets/female-coverage-qa/female-brunette-tailored-db918bb9b800467b.glb",
+    "http://127.0.0.1:4173/assets/female-coverage-qa/female-brunette-tailored-db918bb9b800467b.glb"
+  ],
+  "canonicalFemale": [],
+  "screens": [
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/female-coverage/acceptance/desktop-female-preview.png",
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/female-coverage/acceptance/pose-Idle_Neutral-front.png",
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/female-coverage/acceptance/pose-Idle_Neutral-side.png",
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/female-coverage/acceptance/pose-Idle_Neutral-rear.png",
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/female-coverage/acceptance/pose-Walk-front.png",
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/female-coverage/acceptance/pose-Walk-side.png",
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/female-coverage/acceptance/pose-Walk-rear.png",
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/female-coverage/acceptance/pose-Run-front.png",
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/female-coverage/acceptance/pose-Run-side.png",
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/female-coverage/acceptance/pose-Run-rear.png",
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/female-coverage/acceptance/pose-Activity_Sit-front.png",
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/female-coverage/acceptance/pose-Activity_Sit-side.png",
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/female-coverage/acceptance/pose-Activity_Sit-rear.png",
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/female-coverage/acceptance/pose-Crouch_Idle-front.png",
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/female-coverage/acceptance/pose-Crouch_Idle-side.png",
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/female-coverage/acceptance/pose-Crouch_Idle-rear.png",
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/female-coverage/acceptance/pose-Prone_Idle-front.png",
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/female-coverage/acceptance/pose-Prone_Idle-side.png",
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/female-coverage/acceptance/pose-Prone_Idle-rear.png",
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/female-coverage/acceptance/pose-Swim_Forward-front.png",
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/female-coverage/acceptance/pose-Swim_Forward-side.png",
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/female-coverage/acceptance/pose-Swim_Forward-rear.png",
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/female-coverage/acceptance/portrait-female-preview.png",
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/female-coverage/acceptance/landscape-female-preview.png",
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/female-coverage/acceptance/actual-game-female-preview.png",
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/female-coverage/acceptance/actual-game-female.png"
+  ],
+  "availableAnimations": [
+    "HitRecieve",
+    "Idle_Neutral",
+    "Jog",
+    "Jump_Land",
+    "Jump_Loop",
+    "Jump_Start",
+    "Punch_Left",
+    "Punch_Right",
+    "Run",
+    "Walk",
+    "Wave",
+    "Jump_RunStart",
+    "Jump_RunAir",
+    "Jump_RunLand",
+    "Activity_Catch",
+    "Activity_HoldRod",
+    "Activity_SitDown",
+    "Activity_StandUp",
+    "Activity_Sit",
+    "Activity_Cast",
+    "Activity_ScootLeft",
+    "Activity_ScootRight",
+    "Activity_LightFire",
+    "Swim_Forward",
+    "Swim_Idle",
+    "Punch_Jab",
+    "Punch_Hit",
+    "Crouch_Idle",
+    "Crouch_Walk",
+    "Prone_Idle",
+    "Prone_Crawl",
+    "Activity_BiteGesture",
+    "Activity_ReelGesture",
+    "Social_Wave"
+  ],
+  "identities": [
+    {
+      "id": "702080fb-286b-41fb-b7b9-262e1813edc9",
+      "home": 0
+    },
+    {
+      "id": "1c1ac4a6-a18e-44f1-8ef8-ce2ab78c8b2f",
+      "home": 1
+    }
+  ],
+  "movementMetres": 1.254372458689034
+}

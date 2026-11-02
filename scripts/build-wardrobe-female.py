@@ -69,8 +69,9 @@ def attach(obj,role_name):
     role(obj,role_name)
     pieces.append(obj)
     return obj
-# Keep exposed face/neck, hands and the narrow midriff only. Covered body is removed.
-for region in ["Head","Hands","Midriff"]:
+# The underlayer is tucked in: retain only exposed face/neck and hands.
+# Covered abdominal skin must not emerge through the waist in adverse poses.
+for region in ["Head","Hands"]:
     skin=duplicate(body,"Wardrobe_Female_"+region)
     skin.hide_render=False
     if region=="Head":
@@ -78,9 +79,6 @@ for region in ["Head","Hands","Midriff"]:
         select_faces(skin,lambda f:abs(centroid(f).x)<.13)
     elif region=="Hands":
         select_faces(skin,lambda f:abs(centroid(f).x)>.685)
-    else:
-        clip_height(skin,1.055,1.20)
-        select_faces(skin,lambda f:abs(centroid(f).x)<.18)
     role(skin,"skin")
     pieces.append(skin)
 for obj in meshes:
@@ -95,7 +93,7 @@ for obj in meshes:
 # a black sheer material without expensive transparent avatar sorting.
 tights=duplicate(body,"Wardrobe_Female_Tights")
 tights.hide_render=False
-clip_height(tights,.015,.825)
+clip_height(tights,.015,.785)
 for vertex in tights.data.vertices:
     p=vertex.co
     if p.z<.15:
@@ -186,8 +184,9 @@ for side in [-1,1]:
     bpy.ops.object.modifier_apply(modifier=shell.name)
     attach(welt,"top")
 
-# Fitted cropped high neck underlayer, separate from blazer.
-crop=rib_band("Wardrobe_Female_CropTop",[(1.175,.113,.106),(1.19,.116,.11),
+# High-neck underlayer extends below the waistband; shorts/belt overlap it.
+crop=rib_band("Wardrobe_Female_TuckedTop",[(1.015,.153,.119),
+    (1.055,.152,.120),(1.10,.137,.113),(1.175,.113,.106),(1.19,.116,.11),
     (1.29,.151,.161),(1.38,.154,.163),(1.44,.139,.128),
     (1.51,.078,.075),(1.56,.069,.070)],underlayer,center=(0,.015,0))
 attach(crop,"top")
@@ -211,6 +210,20 @@ bmesh.ops.bisect_plane(mesh,geom=list(mesh.verts)+list(mesh.edges)+list(mesh.fac
 mesh.to_mesh(shorts.data)
 mesh.free()
 clip_height(shorts,.765,1.075)
+# Fit the authored shorts topology outside the actual athletic female body,
+# then transfer that body's local skin field. The previous peasant-pant weights
+# and narrower thigh envelope could let the tights poke through the short hem.
+body.data.calc_loop_triangles()
+fit_tree=BVHTree.FromPolygons([v.co.copy() for v in body.data.vertices],
+    [tuple(t.vertices) for t in body.data.loop_triangles],all_triangles=True)
+for vertex in shorts.data.vertices:
+    point,normal,_,_=fit_tree.find_nearest(vertex.co)
+    if point is not None and (vertex.co-point).dot(normal)<.010:
+        vertex.co=point+normal*.010
+shorts.vertex_groups.clear()
+for modifier in list(shorts.modifiers):
+    if modifier.type=="ARMATURE":shorts.modifiers.remove(modifier)
+bind_surface(shorts,body,rig)
 shorts.hide_render=False
 role(shorts,"bottom")
 pieces.append(shorts)

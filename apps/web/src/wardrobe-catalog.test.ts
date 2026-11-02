@@ -17,6 +17,39 @@ import {
 import versions from "./wardrobe-asset-versions.json";
 
 describe("selected wardrobe downloads and garment fit", () => {
+  it("ships a tucked female top with no exposed abdominal skin geometry", async () => {
+    const { NodeIO } = await import("@gltf-transform/core");
+    const { ALL_EXTENSIONS } = await import("@gltf-transform/extensions");
+    const bytes = await readFile(
+      new URL(
+        "../public/assets/avatars/wardrobe/female-brunette-tailored.glb",
+        import.meta.url,
+      ),
+    );
+    const doc = await new NodeIO()
+      .registerExtensions(ALL_EXTENSIONS)
+      .readBinary(bytes);
+    const skin = doc
+      .getRoot()
+      .listNodes()
+      .filter((node) => node.getExtras().wardrobeRole === "skin");
+    expect(skin.length).toBeGreaterThan(0);
+    for (const node of skin)
+      for (const primitive of node.getMesh()!.listPrimitives())
+        expect(
+          primitive.getAttribute("POSITION")!.getMin([])[1],
+        ).toBeGreaterThan(1.2);
+    const top = doc
+      .getRoot()
+      .listMeshes()
+      .flatMap((mesh) => mesh.listPrimitives())
+      .find(
+        (primitive) =>
+          primitive.getMaterial()?.getName() === "Wardrobe_Female_Black_Crop",
+      );
+    expect(top).toBeDefined();
+    expect(top!.getAttribute("POSITION")!.getMin([])[1]).toBeLessThan(1.035);
+  });
   it("serves each allowlisted export with a content version matching its actual bytes", async () => {
     for (const id of WARDROBE_ASSETS) {
       const bytes = await readFile(

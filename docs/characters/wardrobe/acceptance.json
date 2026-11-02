@@ -91,9 +91,9 @@
     },
     {
       "id": "female-brunette-tailored",
-      "sha256": "4e348f26e1b0daefb389d2d24974a8c0f498af845df4ea45c5cb39afd01e94e1",
+      "sha256": "db918bb9b800467b3029fc580eb09f2d3918eb66090dcacafe2c42ecf8a547cf",
       "accepted": true,
-      "evidence": "MESH_ACTION_REVIEW.md; NEUTRAL_FIT_REVIEW.md; REVIEW_EVIDENCE.json"
+      "evidence": "female-coverage/evidence/summary.json; female-coverage/REVIEW.md"
     },
     {
       "id": "hair-buzzed",
@@ -178,5 +178,10 @@
     "frozenRuntimeHead": "0b461639931fa784b284539d974ddcf13a5b26c9",
     "evidence": "quality-rework/accepted-hats/summary.json",
     "scope": "Nine hat/hair fits; six colours per hat; staged UI and two-client actual Game checks; other clothing acceptance unchanged"
+  },
+  "femaleCoverage": {
+    "frozenHead": "c38266e0a2497a20dad68f9f7310781747286aa0",
+    "evidence": "female-coverage/evidence/summary.json",
+    "scope": "Covered waist and shorts/thigh fitting only; jacket/heels redesign excluded"
   }
 }
