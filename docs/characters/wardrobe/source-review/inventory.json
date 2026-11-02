@@ -1,0 +1,381 @@
+[
+  {
+    "name": "Male_Peasant",
+    "source": "assets/source-models/wardrobe/outfits/extracted/Modular Character Outfits - Fantasy[Standard]/Exports/glTF (Godot-Unreal)/Outfits/Male_Peasant.gltf",
+    "meshes": [
+      {
+        "name": "SuperHero_Male",
+        "vertices": 1598,
+        "triangles": 2900,
+        "materials": [
+          "MI_Superhero_Male"
+        ]
+      },
+      {
+        "name": "Eyes",
+        "vertices": 556,
+        "triangles": 768,
+        "materials": [
+          "MI_Eyes"
+        ]
+      },
+      {
+        "name": "Icosphere",
+        "vertices": 42,
+        "triangles": 80,
+        "materials": []
+      },
+      {
+        "name": "Eyebrows",
+        "vertices": 646,
+        "triangles": 984,
+        "materials": [
+          "MI_Hair_1"
+        ]
+      },
+      {
+        "name": "Male_Peasant_Feet",
+        "vertices": 1878,
+        "triangles": 2588,
+        "materials": [
+          "MI_Peasant"
+        ]
+      },
+      {
+        "name": "Male_Peasant_Body",
+        "vertices": 3006,
+        "triangles": 3856,
+        "materials": [
+          "MI_Peasant"
+        ]
+      },
+      {
+        "name": "Male_Peasant_Legs",
+        "vertices": 656,
+        "triangles": 1112,
+        "materials": [
+          "MI_Peasant"
+        ]
+      },
+      {
+        "name": "Male_Peasant_Arms",
+        "vertices": 3315,
+        "triangles": 5338,
+        "materials": [
+          "MI_Peasant",
+          "MI_Regular_Male"
+        ]
+      },
+      {
+        "name": "Icosphere.001",
+        "vertices": 42,
+        "triangles": 80,
+        "materials": []
+      }
+    ]
+  },
+  {
+    "name": "Male_Ranger",
+    "source": "assets/source-models/wardrobe/outfits/extracted/Modular Character Outfits - Fantasy[Standard]/Exports/glTF (Godot-Unreal)/Outfits/Male_Ranger.gltf",
+    "meshes": [
+      {
+        "name": "Eyebrows.001",
+        "vertices": 646,
+        "triangles": 984,
+        "materials": [
+          "MI_Hair_1.001"
+        ]
+      },
+      {
+        "name": "Icosphere.002",
+        "vertices": 42,
+        "triangles": 80,
+        "materials": []
+      },
+      {
+        "name": "Eyes.001",
+        "vertices": 556,
+        "triangles": 768,
+        "materials": [
+          "MI_Eyes.001"
+        ]
+      },
+      {
+        "name": "SuperHero_Male.001",
+        "vertices": 1598,
+        "triangles": 2900,
+        "materials": [
+          "MI_Superhero_Male.001"
+        ]
+      },
+      {
+        "name": "Male_Ranger_Body",
+        "vertices": 2825,
+        "triangles": 2998,
+        "materials": [
+          "MI_Ranger.001"
+        ]
+      },
+      {
+        "name": "Icosphere.003",
+        "vertices": 42,
+        "triangles": 80,
+        "materials": []
+      },
+      {
+        "name": "Male_Ranger_Body_Belt_1",
+        "vertices": 928,
+        "triangles": 804,
+        "materials": [
+          "MI_Ranger"
+        ]
+      },
+      {
+        "name": "Male_Ranger_Legs",
+        "vertices": 644,
+        "triangles": 1128,
+        "materials": [
+          "MI_Ranger.001"
+        ]
+      },
+      {
+        "name": "Male_Ranger_Arms",
+        "vertices": 3042,
+        "triangles": 4928,
+        "materials": [
+          "MI_Ranger.001",
+          "MI_Regular_Male.001"
+        ]
+      },
+      {
+        "name": "Male_Ranger_Head_Hood",
+        "vertices": 1240,
+        "triangles": 2136,
+        "materials": [
+          "MI_Ranger.001"
+        ]
+      },
+      {
+        "name": "Male_Ranger_Arms_Bracer",
+        "vertices": 4000,
+        "triangles": 3636,
+        "materials": [
+          "MI_Ranger.001"
+        ]
+      },
+      {
+        "name": "Male_Ranger_Feet_Boots",
+        "vertices": 10174,
+        "triangles": 9172,
+        "materials": [
+          "MI_Ranger.001"
+        ]
+      },
+      {
+        "name": "Male_Ranger_Body_Belt_2",
+        "vertices": 928,
+        "triangles": 804,
+        "materials": [
+          "MI_Ranger"
+        ]
+      },
+      {
+        "name": "Male_Ranger_Acc_Pauldron",
+        "vertices": 1092,
+        "triangles": 1376,
+        "materials": [
+          "MI_Ranger"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Female_Peasant",
+    "source": "assets/source-models/wardrobe/outfits/extracted/Modular Character Outfits - Fantasy[Standard]/Exports/glTF (Godot-Unreal)/Outfits/Female_Peasant.gltf",
+    "meshes": [
+      {
+        "name": "Eyes.002",
+        "vertices": 556,
+        "triangles": 768,
+        "materials": [
+          "MI_Eyes.002"
+        ]
+      },
+      {
+        "name": "Superhero_Female",
+        "vertices": 1673,
+        "triangles": 3078,
+        "materials": [
+          "MI_Superhero_Female"
+        ]
+      },
+      {
+        "name": "Eyebrows.002",
+        "vertices": 912,
+        "triangles": 1480,
+        "materials": [
+          "MI_Hair_2"
+        ]
+      },
+      {
+        "name": "Icosphere.004",
+        "vertices": 42,
+        "triangles": 80,
+        "materials": []
+      },
+      {
+        "name": "Female_Peasant_Body",
+        "vertices": 1730,
+        "triangles": 2188,
+        "materials": [
+          "MI_Peasant.002"
+        ]
+      },
+      {
+        "name": "Icosphere.005",
+        "vertices": 42,
+        "triangles": 80,
+        "materials": []
+      },
+      {
+        "name": "Female_Peasant_Legs",
+        "vertices": 1126,
+        "triangles": 1944,
+        "materials": [
+          "MI_Peasant.001"
+        ]
+      },
+      {
+        "name": "Female_Peasant_Arms",
+        "vertices": 5436,
+        "triangles": 6848,
+        "materials": [
+          "MI_Peasant.001"
+        ]
+      },
+      {
+        "name": "Female_Peasant_Feet",
+        "vertices": 1892,
+        "triangles": 2588,
+        "materials": [
+          "MI_Peasant.002"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Female_Ranger",
+    "source": "assets/source-models/wardrobe/outfits/extracted/Modular Character Outfits - Fantasy[Standard]/Exports/glTF (Godot-Unreal)/Outfits/Female_Ranger.gltf",
+    "meshes": [
+      {
+        "name": "Superhero_Female.001",
+        "vertices": 1673,
+        "triangles": 3078,
+        "materials": [
+          "MI_Superhero_Female.001"
+        ]
+      },
+      {
+        "name": "Icosphere.006",
+        "vertices": 42,
+        "triangles": 80,
+        "materials": []
+      },
+      {
+        "name": "Eyes.003",
+        "vertices": 556,
+        "triangles": 768,
+        "materials": [
+          "MI_Eyes.003"
+        ]
+      },
+      {
+        "name": "Eyebrows.003",
+        "vertices": 912,
+        "triangles": 1480,
+        "materials": [
+          "MI_Hair_2.001"
+        ]
+      },
+      {
+        "name": "Female_Ranger_Acc_Pauldrons",
+        "vertices": 1092,
+        "triangles": 1376,
+        "materials": [
+          "MI_Ranger.002"
+        ]
+      },
+      {
+        "name": "Female_Ranger_Body_Belt_1",
+        "vertices": 928,
+        "triangles": 804,
+        "materials": [
+          "MI_Ranger.002"
+        ]
+      },
+      {
+        "name": "Female_Ranger_Body",
+        "vertices": 2785,
+        "triangles": 2962,
+        "materials": [
+          "MI_Ranger.002"
+        ]
+      },
+      {
+        "name": "Female_Ranger_Legs",
+        "vertices": 685,
+        "triangles": 1204,
+        "materials": [
+          "MI_Ranger.002"
+        ]
+      },
+      {
+        "name": "Female_Ranger_Arms",
+        "vertices": 2976,
+        "triangles": 4872,
+        "materials": [
+          "MI_Ranger.002",
+          "MI_Regular_Female"
+        ]
+      },
+      {
+        "name": "Female_Ranger_Body_Belt_2",
+        "vertices": 928,
+        "triangles": 804,
+        "materials": [
+          "MI_Ranger.002"
+        ]
+      },
+      {
+        "name": "Icosphere.007",
+        "vertices": 42,
+        "triangles": 80,
+        "materials": []
+      },
+      {
+        "name": "Female_Ranger_Head_Hood",
+        "vertices": 1240,
+        "triangles": 2136,
+        "materials": [
+          "MI_Ranger.002"
+        ]
+      },
+      {
+        "name": "Female_Ranger_Feet",
+        "vertices": 10174,
+        "triangles": 9172,
+        "materials": [
+          "MI_Ranger.002"
+        ]
+      },
+      {
+        "name": "Female_Ranger_Arms_Bracer",
+        "vertices": 4000,
+        "triangles": 3636,
+        "materials": [
+          "MI_Ranger.002"
+        ]
+      }
+    ]
+  }
+]

@@ -1,0 +1,18 @@
+{
+  "tool": "built-in image_gen",
+  "providerModel": "unknown",
+  "role": "female design/turnaround reference, not an actual Blender render",
+  "prompt": "Create one precise GAME CHARACTER TURNAROUND reference sheet, front, left side, back and three-quarter views at equal scale, showing the SAME adult brunette woman in every view, arms comfortably 30 degrees away from torso and hands fully visible for 3D reconstruction. Reference 1 (the male game character render) is the ONLY art-style/quality anchor: preserve its polished stylized adult proportions, believable anatomy, sculpted garment volume, restrained textured PBR surfaces, natural face and hands, soft edge treatment and realistic clothing detail. Match that existing game's finish; avoid chibi, doll proportions or simplified tube clothing. Reference 2 (the female fashion photo sheet) supplies ONLY the outfit silhouette and garment details: oversized structured black blazer with tailored lapels, long sleeves, cuffs and subtle buttons; fitted sleeveless cropped black high-neck top underneath; high-waisted tailored black shorts with hem, slim black leather belt and small gold rectangular buckle; sheer black tights showing natural leg tone beneath; elegant black pointed closed-toe pumps with actual slender heels. Long straight dark chestnut brunette hair, center/soft side part, no hat. A coherent adult female base in the same character family, composed neutral expression; reference model's exact identity is not a requirement. Dark blazer lapels, underlayer, shorts, tights and shoes must remain distinct through material/roughness differences and clear construction, not merge into one black silhouette. Consistent neutral light-grey studio background, soft neutral illumination, full unobstructed body in all views, feet and heels fully on ground, no props/scenery, no pose changes, no hands in pockets, no floating garments, no logos. Labels Front / Side / Back / Three-quarter only. This is a design reference for subsequent actual Blender modeling, not a screenshot of the game.",
+  "references": [
+    {
+      "role": "approved live character style and finish",
+      "path": "docs/feasibility/character-v2.png"
+    },
+    {
+      "role": "user supplied outfit construction and silhouette",
+      "path": "/Users/claumarin/.codex/attachments/ff5e757e-5eef-41bd-9f2c-af9aaeb28650/image-1.png"
+    }
+  ],
+  "output": "docs/characters/wardrobe/references/female-turnaround-v1.png",
+  "review": "Readable separate black blazer/lapels/cuffs, cropped high-neck underlayer, tailored shorts, gold buckle, sheer tights and pointed heels; brunette long hair. Use as construction guidance; source rig/face remains Quaternius family."
+}

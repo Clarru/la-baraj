@@ -1,0 +1,37 @@
+{
+  "asset": "assets/source-models/wardrobe/optimized/top-weekend-knit.glb",
+  "sha256": "98f20b4e55481b9e2277d583103c14e0c52b9adfbacbc24cd2d8a4050a5b1942",
+  "proof": "Exported GLB on unchanged approved animated skeleton; not a concept image",
+  "poses": [
+    {
+      "view": "Front",
+      "clip": "Idle_Neutral",
+      "frameOffset": 1
+    },
+    {
+      "view": "Side",
+      "clip": "Idle_Neutral",
+      "frameOffset": 1
+    },
+    {
+      "view": "Rear",
+      "clip": "Idle_Neutral",
+      "frameOffset": 1
+    },
+    {
+      "view": "Walk",
+      "clip": "Walk",
+      "frameOffset": 10
+    },
+    {
+      "view": "Run",
+      "clip": "Run",
+      "frameOffset": 8
+    },
+    {
+      "view": "Jump",
+      "clip": "Jump_Loop",
+      "frameOffset": 10
+    }
+  ]
+}

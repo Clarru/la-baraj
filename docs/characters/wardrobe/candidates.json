@@ -1,0 +1,203 @@
+{
+  "stage": "optimized candidates; visual and deformation review required",
+  "assets": [
+    {
+      "id": "beard-full",
+      "candidate": "assets/source-models/wardrobe/optimized/beard-full.glb",
+      "bytes": 51588,
+      "triangles": 1034,
+      "meshes": 1,
+      "textures": 0,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.08075305074453354,
+          1.5495364665985107,
+          -0.008104443550109863
+        ],
+        "max": [
+          0.08075305074453354,
+          1.6893519163131714,
+          0.09683027118444443
+        ]
+      },
+      "sha256": "002545288c415fb31f9f1f488f1c42a2f04ece3f14e13da4934d40326a374ed3"
+    },
+    {
+      "id": "female-brunette-tailored",
+      "candidate": "assets/source-models/wardrobe/optimized/female-brunette-tailored.glb",
+      "bytes": 1659320,
+      "triangles": 37284,
+      "meshes": 25,
+      "textures": 7,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.9316649436950684,
+          0,
+          -0.2236868292093277
+        ],
+        "max": [
+          0.9316649436950684,
+          1.8274903297424316,
+          0.18199999630451202
+        ]
+      },
+      "sha256": "3ce04c9180cb1619e8fbf2557c035072fff2020968a6d49d89f15503839c15eb"
+    },
+    {
+      "id": "hair-buzzed",
+      "candidate": "assets/source-models/wardrobe/optimized/hair-buzzed.glb",
+      "bytes": 153920,
+      "triangles": 830,
+      "meshes": 1,
+      "textures": 2,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.07729528844356537,
+          1.6441491842269897,
+          -0.10803259164094925
+        ],
+        "max": [
+          0.0772952064871788,
+          1.8135133981704712,
+          0.08289118111133575
+        ]
+      },
+      "sha256": "15a3f96132338635333c2384f7ae950cbc60febfab82698580ee131354f85ce0"
+    },
+    {
+      "id": "hair-long",
+      "candidate": "assets/source-models/wardrobe/optimized/hair-long.glb",
+      "bytes": 334308,
+      "triangles": 2906,
+      "meshes": 1,
+      "textures": 2,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.12235528230667114,
+          1.5521847009658813,
+          -0.16805945336818695
+        ],
+        "max": [
+          0.12235528230667114,
+          1.8274903297424316,
+          0.10401826351881027
+        ]
+      },
+      "sha256": "e8f61a4e0484fbccde498f086c68098e5ea84eeb15d9935abd4de04c2bddf54a"
+    },
+    {
+      "id": "hair-parted",
+      "candidate": "assets/source-models/wardrobe/optimized/hair-parted.glb",
+      "bytes": 60212,
+      "triangles": 1301,
+      "meshes": 1,
+      "textures": 0,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.08542495965957642,
+          1.6605604887008667,
+          -0.10815347731113434
+        ],
+        "max": [
+          0.089996337890625,
+          1.8397220373153687,
+          0.07879601418972015
+        ]
+      },
+      "sha256": "2802fff8c8b650af8171947c298c42cdcde4d66f5a647d06ad9fc2ec2ecaa020"
+    },
+    {
+      "id": "hat-knit-beanie",
+      "candidate": "assets/source-models/wardrobe/optimized/hat-knit-beanie.glb",
+      "bytes": 401964,
+      "triangles": 3328,
+      "meshes": 1,
+      "textures": 1,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.12300000339746475,
+          1.75,
+          -0.15700000524520874
+        ],
+        "max": [
+          0.12300000339746475,
+          1.9529999494552612,
+          0.11299999803304672
+        ]
+      },
+      "sha256": "fa147828cb58d4f36496d022d12acb2ab3f4ffc36c6b249b4b503e4822131884"
+    },
+    {
+      "id": "hat-panel-cap",
+      "candidate": "assets/source-models/wardrobe/optimized/hat-panel-cap.glb",
+      "bytes": 343288,
+      "triangles": 2120,
+      "meshes": 1,
+      "textures": 1,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.12517134845256805,
+          1.7519999742507935,
+          -0.15066497027873993
+        ],
+        "max": [
+          0.12517134845256805,
+          1.9149999618530273,
+          0.1946052759885788
+        ]
+      },
+      "sha256": "1be9d883799fcbfa23b347498b790d0aeac7e4c9e48f288b5605d8b6a998876d"
+    },
+    {
+      "id": "hat-stitched-bucket",
+      "candidate": "assets/source-models/wardrobe/optimized/hat-stitched-bucket.glb",
+      "bytes": 440920,
+      "triangles": 5248,
+      "meshes": 1,
+      "textures": 1,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.1709488332271576,
+          1.75,
+          -0.20394858717918396
+        ],
+        "max": [
+          0.1709488332271576,
+          1.9129999876022339,
+          0.15994858741760254
+        ]
+      },
+      "sha256": "4823587b5f90bc0ece498802e66b01324355d375d60c25cd4f5c962f82062099"
+    },
+    {
+      "id": "top-weekend-knit",
+      "candidate": "assets/source-models/wardrobe/optimized/top-weekend-knit.glb",
+      "bytes": 1011536,
+      "triangles": 22064,
+      "meshes": 1,
+      "textures": 1,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.7139999866485596,
+          0.9869999885559082,
+          -0.20579999685287476
+        ],
+        "max": [
+          0.7143986225128174,
+          1.5829999446868896,
+          0.13037629425525665
+        ]
+      },
+      "sha256": "98f20b4e55481b9e2277d583103c14e0c52b9adfbacbc24cd2d8a4050a5b1942"
+    }
+  ]
+}

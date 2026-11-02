@@ -1,0 +1,27 @@
+{
+  "stage": "rigged foundation \u2014 not final wardrobe acceptance",
+  "canonicalBones": 65,
+  "approvedMaleModified": false,
+  "assets": [
+    {
+      "path": "assets/source-models/wardrobe/build/hair-parted.glb",
+      "bytes": 62724,
+      "sha256": "9e4c06a69cd9e5f711d005af203985f7525e5418a815ff54ad80ca0c89f9ed5f"
+    },
+    {
+      "path": "assets/source-models/wardrobe/build/beard-full.glb",
+      "bytes": 54044,
+      "sha256": "925d7a26f1a676fcd0b65934a82cb399587ccdd4099da925bb0196e09ae4fceb"
+    },
+    {
+      "path": "assets/source-models/wardrobe/build/hair-buzzed.glb",
+      "bytes": 5947764,
+      "sha256": "63fae8a35fa5b3804fc22e81a28100b6ef848f0bec45441f5808c9b7bb5fee0a"
+    },
+    {
+      "path": "assets/source-models/wardrobe/build/hair-long.glb",
+      "bytes": 6639176,
+      "sha256": "e0864ce2c3458a99828ec3d3bb66d06b3da5ddde170480bf414abe6cf9621b48"
+    }
+  ]
+}

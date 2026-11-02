@@ -54,3 +54,6 @@ experiments/asset-skill-lab/arcade/qa/
 
 # Asset Forge build jobs are reproducible local authoring output.
 .forge/
+
+# Blender Python authoring cache.
+scripts/__pycache__/
