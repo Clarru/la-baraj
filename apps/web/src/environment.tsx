@@ -1,6 +1,6 @@
 import { mobileWaterReflection } from "./mobile-water";
-import { currentLighting } from "./day-night";
-import { environmentDefaults, environmentTuning } from "./environment-tuning";
+import { currentLighting, lastLighting } from "./day-night";
+import { environmentDefaults } from "./environment-tuning";
 import { memo, useEffect, useMemo } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { RigidBody } from "@react-three/rapier";
@@ -269,7 +269,7 @@ export function LakeWater({
   }, [mobile]);
   let lastLightingUpdate = -Infinity;
   useFrame((_, dt) => {
-    const settings = environmentTuning() ?? environmentDefaults;
+    const settings = lastLighting().renderSettings ?? environmentDefaults;
     water.material.uniforms.time.value += dt * settings.water.waveSpeed;
     const now = performance.now();
     if (now - lastLightingUpdate < 250) return;

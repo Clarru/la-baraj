@@ -4,7 +4,9 @@ import { type LakeWeather } from "../../../packages/shared/weather";
 const TRANSITION_MS = 25_000;
 let start = 0,
   target = 0,
-  startedAt = 0;
+  startedAt = 0,
+  startFog = 0,
+  targetFog = 0;
 function sample(now: number) {
   const t = Math.min(1, Math.max(0, (now - startedAt) / TRANSITION_MS));
   const smooth = t * t * (3 - 2 * t);
@@ -24,7 +26,11 @@ export function setWorldWeather(
   now = performance.now(),
 ) {
   const next = cloudinessForWeather(weather);
-  if (next === target) return;
+  const nextFog =
+    weather?.weatherCode === 45 || weather?.weatherCode === 48 ? 1 : 0;
+  if (next === target && nextFog === targetFog) return;
+  startFog = fogPresence(now);
+  targetFog = nextFog;
   start = sample(now);
   target = next;
   startedAt = now;
@@ -37,4 +43,11 @@ export function cloudiness(now = performance.now()) {
     if (view === "cloudy") return 1;
   }
   return sample(now);
+}
+
+/** Real WMO fog/mist classification, blended on the same clock as cloud cover. */
+export function fogPresence(now = performance.now()) {
+  const t = Math.min(1, Math.max(0, (now - startedAt) / TRANSITION_MS));
+  const smooth = t * t * (3 - 2 * t);
+  return startFog + (targetFog - startFog) * smooth;
 }

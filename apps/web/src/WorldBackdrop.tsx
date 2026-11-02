@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
-import { currentLighting } from "./day-night";
-import { environmentDefaults, environmentTuning } from "./environment-tuning";
+import { currentLighting, lastLighting } from "./day-night";
+import { environmentDefaults } from "./environment-tuning";
 import * as THREE from "three";
 import { makeHorizonLand } from "./landscape-geometry";
 
@@ -127,7 +127,7 @@ export function WorldBackdrop({
   );
   const last = useRef(-Infinity);
   useFrame((_, delta) => {
-    const settings = environmentTuning() ?? environmentDefaults;
+    const settings = lastLighting().renderSettings ?? environmentDefaults;
     sky.uniforms.cloudOffset.value.x +=
       delta * settings.atmosphere.wind.x * 0.003;
     sky.uniforms.cloudOffset.value.y +=

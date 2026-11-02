@@ -85,6 +85,32 @@ These are approximate astronomical-horizon times. Lake hills, trees, clouds and
 atmospheric conditions can make the visible sun disappear sooner. Weather looks
 shape light/haze/clouds/waves; precipitation and snow accumulation are not added.
 
+## Production rendering
+
+Production release is now authorized by the owner. The editor remains restricted
+by hostname to localhost/127.0.0.1. Browser recipes, notes, actions, the preview
+month and the fixed16:30 authoring clock are not read by the production world.
+
+The approved Golden hour / Lakeside mist rendering values apply only when actual
+shared WMO weather code45 or48 indicates fog/mist and the solar palette phase is
+17–19, the final hour before the calculated local sunset. The phase edges ease
+in/out over a quarter of a palette hour; changing fog presence blends over the
+existing25-second weather transition. All other time/weather combinations retain
+the existing rendering settings. Actual cloud coverage and server-corrected time
+remain authoritative rather than being replaced by preview values.
+
+The shared lighting sample carries effective rendering settings into sun/fill,
+exposure, fog, cloud drift/opacity and water waves. Local editor overrides keep
+precedence for local authoring. Mobile shadow limits and cheaper reflection paths
+are retained. Fixed diagnostic day/evening fixtures do not activate the live look.
+
+Runtime tests cover the exact mapping/approved values, smooth boundaries,
+night/clear/unavailable-weather fallback, the same-cloud-cover fog-to-overcast
+case, local override precedence and exclusion of preview clock/weather/reference
+fields. Node24.22.2:106 files /599 tests, TypeScript and production build pass.
+Publication/deployment evidence is supplied by the release owner after merge;
+release authorization alone is not a claim that production has updated.
+
 ## Verification
 
 - Real Dialkit controller tests reproduce Dawn/Partly → lowered sun/manual
@@ -100,7 +126,7 @@ shape light/haze/clouds/waves; precipitation and snow accumulation are not added
 - Acceptance must use the single coordinated 4173 preview, with isolated QA
   storage so the owner's existing draft is not changed by tests.
 
-The editor remains localhost-only. PR62 stays draft/production hold. Shared
+The editor remains localhost-only. PR62 is now authorized for release. Shared
 preview publication belongs to the integration owner. Existing design-system
 files and the known stale design sidecar are preserved.
 

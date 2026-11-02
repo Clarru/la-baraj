@@ -29,7 +29,7 @@ export function WorldLighting({
     last.current = now;
     const light = currentLighting(evening, forceDay);
     const tuning = environmentTuning();
-    const settings = tuning ?? environmentDefaults;
+    const settings = light.renderSettings ?? environmentDefaults;
     gl.toneMappingExposure = settings.light.exposure;
     if (scene.background instanceof THREE.Color)
       scene.background.copy(light.colors.fog);

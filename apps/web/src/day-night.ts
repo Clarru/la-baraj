@@ -1,6 +1,7 @@
 import * as THREE from "three";
-import { cloudiness } from "./weather-visual";
+import { cloudiness, fogPresence } from "./weather-visual";
 import { solarDay, solarPaletteHour, solarPosition } from "./solar";
+import { liveEnvironment, type RenderSettings } from "./live-environment";
 import {
   environmentTuning,
   environmentHour,
@@ -180,6 +181,7 @@ export type Lighting = {
   sunIntensity: number;
   hemiIntensity: number;
   cloudCover: number;
+  renderSettings?: RenderSettings;
 };
 export function lightingAt(hour: number): Lighting {
   hour = ((hour % 24) + 24) % 24;
@@ -236,12 +238,16 @@ export function currentLighting(evening = false, forceDay = false) {
       ? settings.weather.cloudCover
       : cloudiness();
   const day = solarDay(now, settings?.clock.month ?? 0);
-  const key = `${day.date}:${hour.toFixed(3)}:${cover.toFixed(2)}:${environmentRevision()}`;
+  const diagnostic = !settings && (evening || forceDay || override !== null);
+  const phase = solarPaletteHour(hour, day);
+  const fog = fogPresence();
+  const key = `${day.date}:${hour.toFixed(3)}:${cover.toFixed(2)}:${fog.toFixed(3)}:${diagnostic}:${environmentRevision()}`;
   if (cacheKey !== key) {
     cacheKey = key;
     // Keep fixed noon/evening diagnostic fixtures stable; the live/editor world is seasonal.
-    const diagnostic = !settings && (evening || forceDay || override !== null);
-    cached = lightingAt(diagnostic ? hour : solarPaletteHour(hour, day));
+    cached = lightingAt(diagnostic ? hour : phase);
+    const render = settings ?? liveEnvironment(phase, diagnostic ? 0 : fog);
+    cached.renderSettings = render;
     if (!diagnostic) {
       const sun = solarPosition(hour, day);
       // Below the horizon this directional source becomes navigable moon fill.
@@ -258,9 +264,9 @@ export function currentLighting(evening = false, forceDay = false) {
     cached.colors.sun.lerp(new THREE.Color("#d5dfdf"), cover * 0.45);
     cached.colors.water.lerp(new THREE.Color("#3d5960"), cover * 0.22);
     cached.sunIntensity *= 1 - cover * 0.5;
+    cached.sunIntensity *= render.light.sun;
+    cached.hemiIntensity *= render.light.hemisphere;
     if (settings) {
-      cached.sunIntensity *= settings.light.sun;
-      cached.hemiIntensity *= settings.light.hemisphere;
       if (settings.palette.customColors) {
         const overrides = environmentColors();
         for (const name of colorNames) {
