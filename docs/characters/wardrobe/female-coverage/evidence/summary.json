@@ -1,0 +1,131 @@
+{
+  "frozenHead": "c38266e0a2497a20dad68f9f7310781747286aa0",
+  "base": "d4643f85a209c5f6a2bff8e1a4b75ce27dedf031",
+  "asset": "female-brunette-tailored",
+  "sha256": "db918bb9b800467b3029fc580eb09f2d3918eb66090dcacafe2c42ecf8a547cf",
+  "scope": "Covered waist and shorts/thigh fitting only; jacket/heels redesign excluded",
+  "previewPoses": [
+    "Idle_Neutral",
+    "Walk",
+    "Run",
+    "Activity_Sit",
+    "Crouch_Idle",
+    "Prone_Idle",
+    "Swim_Forward"
+  ],
+  "views": [
+    "front",
+    "side",
+    "rear"
+  ],
+  "UI": [
+    {
+      "name": "portrait",
+      "bounds": {
+        "x": 16,
+        "y": 81,
+        "width": 361,
+        "height": 690
+      },
+      "copy": true
+    },
+    {
+      "name": "landscape",
+      "bounds": {
+        "x": 14,
+        "y": 8,
+        "width": 824,
+        "height": 377
+      },
+      "copy": true
+    },
+    {
+      "actualApply": true,
+      "observer": true,
+      "movement": true,
+      "reload": true,
+      "stagedCancel": true
+    }
+  ],
+  "actualGameMovementMetres": 1.254372458689034,
+  "distinctIdentities": [
+    {
+      "id": "702080fb-286b-41fb-b7b9-262e1813edc9",
+      "home": 0
+    },
+    {
+      "id": "1c1ac4a6-a18e-44f1-8ef8-ce2ab78c8b2f",
+      "home": 1
+    }
+  ],
+  "actualControllerPostures": [
+    {
+      "posture": "crouching",
+      "observedByPeer": true,
+      "groundedGuard": "Keyboard transition accepted by normal controller isOnGround guard"
+    },
+    {
+      "posture": "prone",
+      "observedByPeer": true,
+      "groundedGuard": "Keyboard transition accepted by normal controller isOnGround guard"
+    },
+    {
+      "posture": "standing",
+      "observedByPeer": true,
+      "groundedGuard": "Keyboard transition accepted by normal controller isOnGround guard"
+    }
+  ],
+  "actualSitting": {
+    "normalFireSeatInteraction": true,
+    "key": "F",
+    "activity": {
+      "anchor": [
+        39.27,
+        1.364319674400397,
+        40.37621203413667
+      ],
+      "facing": 4.71238898038469,
+      "seatHeight": 1.914319674400397,
+      "kind": "sit",
+      "startedAt": 6337.5
+    }
+  },
+  "defaultMale": {
+    "femaleRequests": [],
+    "errors": [],
+    "body": "male"
+  },
+  "cleanup": {
+    "removed": 13,
+    "baselineFiles": 419,
+    "allBaselineBytesIdentical": true,
+    "normalHTTPIndexIdentical": true,
+    "listenerPID": 2669,
+    "elapsedSeconds": 944.0822451250278
+  },
+  "actionsWithinGrant": true,
+  "knownFindings": [
+    "An initial seat probe used E, which toggles the fire. It did not prove sitting. The corrected normal F interaction reached actual sit.",
+    "The initial bone-centred framing obscured some waist views. Deformed garment/shorts vertex bounds were used for supplementary captures. Front prone/swim views can remain head/coat-occluded; side/rear and GLB coverage invariant are separate evidence.",
+    "waist-report.defaultFemaleDownloads was a placeholder, not a measurement. default-report.json is the authoritative measured zero-request result."
+  ],
+  "limits": [
+    "Sampled clip/stance views, not every possible animation frame or physical swim transition.",
+    "The original jacket/heels shape remains for the separately requested aesthetic rebuild.",
+    "Live publication remains owned by Main."
+  ],
+  "evidenceHashes": {
+    "report.json": "26954eabb895b3c7566838c1951918768b8a1f030daa6347191c2d12dcaa7d5e",
+    "waist-report.json": "93a1c0605a5855c30a30bd00147fe662041dd8fcd79b73df350c486c2daea001",
+    "sit-report.json": "a812be5678dcaf689ef172bfbc7313c9c0cc424567b2002a23598517fe8dcf90",
+    "default-report.json": "e3dbd851aeb6101c6868781c5a4a5d65c4126d2f1dd4908f7646aa53beaa864c",
+    "waist-upright-sheet.png": "c0179913384d85601191f1e0c80b6371acea32c73d6610df30ff7103a1260431",
+    "waist-low-poses-sheet.png": "588837e457f9caf5f2a8b571a2d63b54a3045536d84be1c5e5eeadc054e0ef17",
+    "desktop-female-preview.png": "c8e15ce899a8854dab1e75302902248ea3779fbc7917ceb59714e1e88357db8d",
+    "portrait-female-preview.png": "57e3e9f7cdfd0961d5438796c393f2373073ca8d66169f8db501c199653702a3",
+    "landscape-female-preview.png": "19bb8f02c00b3cb87f2f53e67df943236888bd906bb2d749e23a25c5a00224d7",
+    "actual-game-female-preview.png": "9dbc8864ae9912733d15e419dfc222d2fd905032b8eb557edd4389220979b4a2",
+    "actual-game-female.png": "6caa3ba75c29d3e9a8af01d28b8e0aafb337c769fb434a2bb262c5708adccf33",
+    "actual-female-sit.png": "33280ffa24980e91d9ace4a38862ccd9d000020e404f6919e38c22268bb53900"
+  }
+}

@@ -17,5 +17,7 @@ A regression test reads the actual shipped GLB: exposed skin must remain above
 1.2m in the bind pose, and the underlayer must extend below 1.035m. This rejects
 the previous cropped asset even if authoring-source code is fixed but not packed.
 
-Visual checks and bounded shared-preview acceptance are pending. No backend,
+Bounded published UI/pose/actual-Game coverage checks passed; see evidence/summary.json
+for exact scope, raw findings and cleanup proof. The torso/jacket/heel aesthetic
+rebuild is separate. No backend,
 protocol, identity, home allocation or storage migration change is required.
