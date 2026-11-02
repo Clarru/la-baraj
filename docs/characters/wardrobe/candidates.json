@@ -349,8 +349,8 @@
     {
       "id": "female-brunette-tailored",
       "candidate": "assets/source-models/wardrobe/optimized/female-brunette-tailored.glb",
-      "bytes": 2433580,
-      "triangles": 30254,
+      "bytes": 2436068,
+      "triangles": 30800,
       "meshes": 8,
       "textures": 9,
       "retainedApprovedTextures": 0,
@@ -367,7 +367,7 @@
           0.14880000054836273
         ]
       },
-      "sha256": "4e348f26e1b0daefb389d2d24974a8c0f498af845df4ea45c5cb39afd01e94e1"
+      "sha256": "db918bb9b800467b3029fc580eb09f2d3918eb66090dcacafe2c42ecf8a547cf"
     },
     {
       "id": "hair-buzzed",
