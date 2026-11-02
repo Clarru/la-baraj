@@ -1,4 +1,8 @@
-# Next clothing reconstruction — user rejection evidence
+# Historical clothing rejection evidence
+
+This note records the initial diagnosis and proposed routes before the current
+headless reconstruction. The final route and remaining acceptance gate are in
+REVIEW.md. The separate female coverage hotfix is already live.
 
 User supplied side views of overshirt/knit showing a protruding chest and floating
 collar, and requested female jacket/heels reconstruction. Preserve the urgent
@@ -10,7 +14,7 @@ Static sections at chest height1.37m (|x|<.15m): approved workshirt front .105/b
 about6cm forward of the approved shirt. This is a garment-shape error, not a need
 to change the character's body or the animation.
 
-Preferred starting route: reuse the approved artist-authored shirt torso and
+Initial proposed starting route: reuse the approved artist-authored shirt torso and
 upper-sleeve cloth topology, remove disconnected lace/trim pieces, extend sleeves
 from the actual source opening, fit/skin to the retained rig, and add material/
 collar differences only after the plain silhouette passes front/side/back review.
