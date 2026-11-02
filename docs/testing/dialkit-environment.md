@@ -69,6 +69,48 @@ The editor remains localhost-only. PR62 stays draft/production hold. Shared
 preview publication belongs to the integration owner. Existing design-system
 files and the known stale design sidecar are preserved.
 
+## Acceptance — November 2, 2026
+
+Final QA used source `58f3684` (based on `171cea4`) with the mobile and wardrobe
+surfaces preserved. The browser run used the exact `58` alias, isolated
+namespaced editor storage (legacy v1, new v2 profiles, selection, timeline, and
+clock metadata), and the unique local SharedWorker.
+
+- Source consistency: all 6 × 7 time/weather conditions use independent native
+  Dialkit controllers with persistence/autosave. The v1 draft is copied once
+  and left untouched; the per-condition clock metadata keeps the seasonal
+  phase basis across month switches while a custom hour and manual sun position
+  remain deliberate overrides. Export includes readable saved profiles and the
+  previous draft; if storage is unavailable, it still downloads the current recipe.
+- The isolated browser storage was seeded with the old v1 Dawn/Partly draft
+  (`sun=.43`, manual `y=9`). The UI changed it to `sun=.27`, elevation `12`;
+  Clear showed defaults (`sun=1`, exposure `.92`), then returning to Dawn/Partly
+  and doing a full reload restored `.27` / `12`.
+- Seasonal checks passed: January Dawn resolved to `7.6833`, June to `5.15`;
+  saved weather conditions followed the selected month. A custom hour `17.5`
+  held across month/weather changes. With manual sun off, the calculated
+  seasonal path is used; with the override on, the manual position stays fixed.
+  Monthly previews use the 15th, while month `0` uses the actual current date.
+- The January `17.5` preview was visibly dark and the June `17.5` preview
+  visibly daylight. Valid captures are
+  `.impeccable/review/profiles/winter.jpg`,
+  `.impeccable/review/profiles/desktop.jpg` (`1280×720`), and
+  `.impeccable/review/profiles/mobile.jpg` (`391×844`).
+- Resetting Noon/Clear restored `13.4667` without changing Dawn/Partly’s
+  `.27` / `12`. The real-storage comparison stayed `TRUE` throughout, and the
+  browser reported no console errors.
+- Cleanup closed the owned QA tab and reset the viewport. After a hash check,
+  only the eight authorized additions were deleted; all 384 normal-baseline
+  paths, SHA values, and sizes were restored, with PID `2669` unchanged.
+- The reviewer returned `SHIP` with no findings for both source and captures.
+  The publisher then integrated the exact source into local combined `a00cd6f`
+  and published the normal URL without changing main/production. The final owned
+  normal tab shows the new selectors with the previous disabled Noon/Clear draft.
+  UI exports before/after a normal reload contain the same original v1 raw draft
+  (SHA256 `343c3cca7b23fe22e214ac4c10e5882d0335fc405a4e48f3b0177bc550994e70`).
+  No recipe values were edited during that normal check, and no console errors
+  were reported. PR62 remains on production hold.
+
 ## Sources
 
 - https://www.dialkit.dev/
