@@ -1,0 +1,12 @@
+Create a construction reference for ONE ORIGINAL new La Baraj game prop described in OBJECT BRIEF.
+
+FIXED STYLE AUTHORITY — these three attached boards are always supplied, in this order:
+1. Family board: match its stylized proportions, simple substantial silhouettes and painted timber/iron finish. The crate and lantern are STYLE EXAMPLES, not the requested object.
+2. Material board: retain warm medium-brown directional wood grain, visible end grain, muted iron, restrained light edge wear, real-looking bevel highlights, and controlled surface variation.
+3. Contact board: retain depth around inset panels, dark narrow closed joints, contact shading under rails and around fittings. Avoid white slits through supposedly solid parts, soft shapeless wood, or a uniformly flat/chalky surface.
+
+Do not reproduce any crate, lantern, wall bracket, chains or cage unless the OBJECT BRIEF asks for them. Design the new item's geometry from its own function and component list. Style and construction quality transfer; silhouette identity does not.
+
+Stay within this visual world: hand-authored low-detail game geometry with convincing mapped surfaces, broad readable parts, restrained small details, timber and iron. No photoreal scanning noise, plastic, neon, glossy chrome, decorative fantasy spikes, extra accessories, scenery, logos, text or watermarks. Keep the color family and texture scale coherent with the boards. Light edge wear must follow physical edges; darker creases describe construction contact rather than arbitrary painted directional shadows.
+
+Show one consistent design in a clean 2x2 sheet: front, side, rear and three-quarter. Use neutral gray background, soft neutral studio lighting, full uncropped object and comparable scale. Keep every view structurally consistent and usable for Blender construction. Do not add dimension labels. Numerical dimensions below are intended modeling constraints; the generated image is guidance, never a measurement or a completed 3D asset.

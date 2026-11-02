@@ -1,0 +1,106 @@
+{
+  "version": 1,
+  "id": "la-baraj-forge-final-lantern",
+  "style": "la-baraj-timber-iron-v1",
+  "styleVersion": 1,
+  "styleHash": "675c92bb3ca98ef0c02c335248d64bb1fb9b6d716ded81dfd08379c1eb6fcfc3",
+  "model": "model.glb",
+  "modelHash": "1c347e05028cbcb529a3dbf1b07fa28d566ae44b420dbc766255d8f2a7471eec",
+  "buildHash": "bbb6d607eb545bf7b74896ebd8c6a3866271fa401ffa2dbd083dec46457e1a87",
+  "units": "metres",
+  "up": "+Y",
+  "forward": "+Z",
+  "pivot": "floor-center",
+  "report": {
+    "technicalPass": true,
+    "errors": [],
+    "triangles": 2490,
+    "bytes": 141416,
+    "primitives": 1,
+    "dimensions": [
+      0.357321967310467,
+      1.335200011730194,
+      1.3048017693292808
+    ],
+    "bounds": {
+      "min": [
+        -0.1786609836552335,
+        0,
+        -0.6524008893212533
+      ],
+      "max": [
+        0.1786609836552335,
+        1.335200011730194,
+        0.6524008800080275
+      ]
+    },
+    "textures": [
+      {
+        "name": "trim-normal",
+        "size": [
+          512,
+          512
+        ],
+        "sha256": "acf251b016592e376c74a488cb221ade7b23688b7933859614c6a363d2e4f82a",
+        "bytes": 55468
+      },
+      {
+        "name": "trim-base-color",
+        "size": [
+          512,
+          512
+        ],
+        "sha256": "c84b1005afe4c9d736bd961ecaddc513f07dec9a903ac870497e36fb0163c673",
+        "bytes": 19612
+      },
+      {
+        "name": "trim-metallic-roughness",
+        "size": [
+          512,
+          512
+        ],
+        "sha256": "18fe90c43eb6444f5ebd8d3fa9c9fd56937c267e500c0de26958a14b48341409",
+        "bytes": 15436
+      }
+    ],
+    "materials": [
+      {
+        "name": "LaBaraj iron",
+        "baseColor": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "normal": true,
+        "metallicRoughness": true
+      }
+    ],
+    "sockets": {
+      "WallMount": [
+        0,
+        0.7182000279426575,
+        -0.648900032043457
+      ]
+    },
+    "runtimePerformance": "Not benchmarked; these are resource budgets, not FPS."
+  },
+  "sockets": {
+    "WallMount": [
+      0,
+      0.7182000279426575,
+      -0.648900032043457
+    ]
+  },
+  "collision": {
+    "type": "none"
+  },
+  "lods": [],
+  "visualReview": {
+    "artifactHash": "2e282c7d287a4a12194c2ebad06743a2912769b2853ae0dae5529db208c1f40c",
+    "note": "Inspected four matched views and both lighting angles: bracket, open cage, chains and PBR finish fit the retained prototype. Chain contours, pointed ends and cage shoulders still differ. Game collision and day/night integration remain untested.",
+    "reviewedAt": "2026-10-31T10:25:40.490Z",
+    "scope": "Visual review of retained views; collision and actual game performance still require integration checks."
+  },
+  "gameIntegrationReviewRequired": true
+}

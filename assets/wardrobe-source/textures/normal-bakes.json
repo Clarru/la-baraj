@@ -1,0 +1,32 @@
+[
+  {
+    "fabric": "knit",
+    "source": "assets/wardrobe-source/textures/knit-albedo.png",
+    "sourceSHA256": "d8fb5ceef1e6c721ff255890b5654e1b546461869ce3d214b2fa90c68d2a8bba",
+    "bake": "Blender Cycles tangent-space NORMAL on 0.24 m UV plane",
+    "resolution": 512,
+    "bumpDistance": 0.0005499999970197678,
+    "bumpStrength": 0.55,
+    "output": "assets/wardrobe-source/textures/knit-normal.png"
+  },
+  {
+    "fabric": "twill",
+    "source": "assets/wardrobe-source/textures/twill-albedo.png",
+    "sourceSHA256": "def97c7632ebebde2dc174f621064eb2fa750b5867279819f6c36121bc4601c3",
+    "bake": "Blender Cycles tangent-space NORMAL on 0.24 m UV plane",
+    "resolution": 512,
+    "bumpDistance": 0.0001500000071246177,
+    "bumpStrength": 0.55,
+    "output": "assets/wardrobe-source/textures/twill-normal.png"
+  },
+  {
+    "fabric": "hair",
+    "source": "assets/wardrobe-source/textures/hair-albedo.png",
+    "sourceSHA256": "0dac4b611ed64cbc212892f17d35352b7dc2ab6c6266bdc9416ad537516e3a56",
+    "bake": "Blender Cycles tangent-space NORMAL on 0.24 m UV plane",
+    "resolution": 512,
+    "bumpDistance": 0.00019999999494757503,
+    "bumpStrength": 0.55,
+    "output": "assets/wardrobe-source/textures/hair-normal.png"
+  }
+]

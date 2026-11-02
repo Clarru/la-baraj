@@ -1,0 +1,62 @@
+[
+  {
+    "id": "bottom-classic-tucked",
+    "artifact": "assets/source-models/wardrobe/build/bottom-classic-tucked.glb",
+    "accepted": false
+  },
+  {
+    "id": "bottom-classic-full",
+    "artifact": "assets/source-models/wardrobe/build/bottom-classic-full.glb",
+    "accepted": false
+  },
+  {
+    "id": "bottom-classic-ankle",
+    "artifact": "assets/source-models/wardrobe/build/bottom-classic-ankle.glb",
+    "accepted": false
+  },
+  {
+    "id": "bottom-trail-cargo-full",
+    "artifact": "assets/source-models/wardrobe/build/bottom-trail-cargo-full.glb",
+    "accepted": false
+  },
+  {
+    "id": "bottom-trail-cargo-tucked",
+    "artifact": "assets/source-models/wardrobe/build/bottom-trail-cargo-tucked.glb",
+    "accepted": false
+  },
+  {
+    "id": "bottom-trail-cargo-ankle",
+    "artifact": "assets/source-models/wardrobe/build/bottom-trail-cargo-ankle.glb",
+    "accepted": false
+  },
+  {
+    "id": "bottom-weekend-shorts",
+    "artifact": "assets/source-models/wardrobe/build/bottom-weekend-shorts.glb",
+    "accepted": false
+  },
+  {
+    "id": "bottom-weekend-shorts-tucked",
+    "artifact": "assets/source-models/wardrobe/build/bottom-weekend-shorts-tucked.glb",
+    "accepted": false
+  },
+  {
+    "id": "bottom-weekend-shorts-ankle",
+    "artifact": "assets/source-models/wardrobe/build/bottom-weekend-shorts-ankle.glb",
+    "accepted": false
+  },
+  {
+    "id": "bottom-classic-dyed-tucked",
+    "artifact": "assets/source-models/wardrobe/build/bottom-classic-dyed-tucked.glb",
+    "accepted": false
+  },
+  {
+    "id": "bottom-classic-dyed-full",
+    "artifact": "assets/source-models/wardrobe/build/bottom-classic-dyed-full.glb",
+    "accepted": false
+  },
+  {
+    "id": "bottom-classic-dyed-ankle",
+    "artifact": "assets/source-models/wardrobe/build/bottom-classic-dyed-ankle.glb",
+    "accepted": false
+  }
+]

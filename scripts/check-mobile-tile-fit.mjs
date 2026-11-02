@@ -39,7 +39,12 @@ const font = (
     resolve(root, "apps/web/public/fonts/alegreya-sans-latin-700-normal.woff2"),
   )
 ).toString("base64");
-const html = `<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><style>@font-face{font-family:"Alegreya Sans";font-weight:700;src:url(data:font/woff2;base64,${font})}:root{--font-body:"Alegreya Sans",sans-serif;--font-heading:"Alegreya Sans",sans-serif}*{box-sizing:border-box}body{margin:0}${css}</style><div id="root"></div><script>${js.replaceAll("</script", "<\\/script")}</script>`;
+const serif = (
+  await readFile(
+    resolve(root, "apps/web/public/fonts/bree-serif-latin-400-normal.woff2"),
+  )
+).toString("base64");
+const html = `<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><style>@font-face{font-family:"Alegreya Sans";font-weight:700;src:url(data:font/woff2;base64,${font})}@font-face{font-family:"Bree Serif";font-weight:400;src:url(data:font/woff2;base64,${serif})}:root{--font-body:"Alegreya Sans",sans-serif;--font-heading:"Bree Serif",serif}*{box-sizing:border-box}html,body,#root{margin:0;width:100%;height:100%}${css}</style><div id="root"></div><script>window.__tiles=[];const fill=CanvasRenderingContext2D.prototype.fillText;CanvasRenderingContext2D.prototype.fillText=function(s,x,y,...a){if(x===0&&y===1&&/^\\d+$/.test(s)){window.__tiles.push({value:s,width:this.measureText(s).width,font:this.font});if(window.__tiles.length>16)window.__tiles.shift()}return fill.call(this,s,x,y,...a)};</script><script>${js.replaceAll("</script", "<\\/script")}</script>`;
 const browser = await chromium.launch({
   executablePath: process.env.CHROME_EXECUTABLE || undefined,
   headless: true,
@@ -47,14 +52,17 @@ const browser = await chromium.launch({
 const evidence = {
   browser: browser.version(),
   scope:
-    "In-memory actual MobileArcade2048 DOM/CSS with authored legal values; Chromium emulation, no earned game or OS/hardware claim.",
+    "Actual mobile canvas, shared desktop renderer, authored legal values and real fonts; portrait Chromium layout/input, not phone acceptance",
   cases: [],
 };
 try {
-  for (const viewport of [
-    { width: 320, height: 740 },
-    { width: 844, height: 390 },
+  for (const spec of [
+    { width: 320, height: 740, turn: 0 },
+    { width: 393, height: 852, turn: 0 },
+    { width: 430, height: 932, turn: 0 },
   ]) {
+    const { width, height, turn } = spec;
+    const viewport = { width, height };
     const context = await browser.newContext({
       viewport,
       isMobile: true,
@@ -64,78 +72,89 @@ try {
     try {
       const page = await context.newPage();
       await page.setContent(html);
-      await page.locator(".mobile-tile").first().waitFor();
+      await page.locator("canvas.mobile-arcade-board").waitFor();
       await page.evaluate(async () => {
-        await document.fonts.load('700 42px "Alegreya Sans"');
+        await Promise.all([
+          document.fonts.load('400 49px "Bree Serif"'),
+          document.fonts.load('700 21px "Alegreya Sans"'),
+        ]);
         await document.fonts.ready;
       });
-      const measure = () =>
-        page.locator(".mobile-tile").evaluateAll((tiles) =>
-          tiles.map((tile) => {
-            const cell = tile.getBoundingClientRect(),
-              range = document.createRange();
-            range.selectNodeContents(tile);
-            const text = range.getBoundingClientRect();
-            return {
-              value: tile.textContent,
-              aria: tile.getAttribute("aria-label"),
-              cellWidth: cell.width,
-              cellHeight: cell.height,
-              textWidth: text.width,
-              textLeft: text.left,
-              textRight: text.right,
-              cellLeft: cell.left,
-              cellRight: cell.right,
-              fontSize: getComputedStyle(tile).fontSize,
-              fits:
-                text.left >= cell.left - 0.5 && text.right <= cell.right + 0.5,
-            };
-          }),
-        );
-      const after = await measure();
+      await page.waitForTimeout(80);
+      const tiles = await page.evaluate(() => window.__tiles);
+      assert.equal(tiles.length, 16);
       assert(
-        after.every((r) => r.fits),
-        `Current text overflow at ${viewport.width}: ${JSON.stringify(after.filter((r) => !r.fits))}`,
+        tiles.every((t) => t.width <= 86.1),
+        JSON.stringify(tiles.filter((t) => t.width > 86.1)),
       );
+      const board = await page.locator("canvas").boundingBox();
       assert(
-        after.every(
-          (r) => r.cellWidth > 40 && Math.abs(r.cellWidth - r.cellHeight) < 1,
-        ),
-        "Board containment changed/collapsed square cells",
+        board.x >= 0 &&
+          board.y >= 0 &&
+          board.x + board.width <= viewport.width + 1 &&
+          board.y + board.height <= viewport.height + 1,
       );
-      assert(
-        after.every((r) => r.aria.endsWith(`: ${r.value}`)),
-        "Tile value/ARIA semantics changed",
-      );
-      await page.screenshot({
-        path: resolve(out, `after-${viewport.width}.png`),
+      assert(Math.abs(board.width / board.height - 0.8) < 0.01);
+      const xy = (u, v) => ({
+        x: board.x + (u / 512) * board.width,
+        y: board.y + (v / 640) * board.height,
       });
-      await page.locator(".mobile-tile").evaluateAll((tiles) =>
-        tiles.forEach((tile) => {
-          tile.dataset.fitStyle = tile.style.fontSize;
-          tile.style.fontSize = "clamp(22px, 7vw, 42px)";
+      await page.evaluate(() => {
+        window.__pointerProof = [];
+        for (const type of [
+          "pointerdown",
+          "pointerup",
+          "pointercancel",
+          "lostpointercapture",
+        ])
+          document.addEventListener(
+            type,
+            (e) =>
+              window.__pointerProof.push({
+                type,
+                id: e.pointerId,
+                x: e.clientX,
+                y: e.clientY,
+                target: e.target.className,
+              }),
+            true,
+          );
+      });
+      const cdp = await context.newCDPSession(page);
+      const start = xy(400, 360),
+        end = xy(100, 360);
+      await cdp.send("Input.dispatchTouchEvent", {
+        type: "touchStart",
+        touchPoints: [{ ...start, id: 1 }],
+      });
+      await cdp.send("Input.dispatchTouchEvent", {
+        type: "touchMove",
+        touchPoints: [{ ...end, id: 1 }],
+      });
+      await cdp.send("Input.dispatchTouchEvent", {
+        type: "touchEnd",
+        touchPoints: [],
+      });
+      const tap = xy(240, 110);
+      await page.touchscreen.tap(tap.x, tap.y);
+      const touchHeight = (44 * 640) / board.height;
+      const leave = xy(430, 615 + Math.max(50, touchHeight) / 2 - 1);
+      await page.touchscreen.tap(leave.x, leave.y);
+      const events = await page.evaluate(() => window.__mobileArcadeEvents);
+      assert.deepEqual(
+        events,
+        ["move:left", "new", "leave"],
+        JSON.stringify({
+          spec,
+          board,
+          events,
+          pointers: await page.evaluate(() => window.__pointerProof),
         }),
       );
-      const before = await measure();
-      if (viewport.width === 844)
-        assert(
-          before.some((r) => r.value === "2048" && !r.fits),
-          "Probe did not reproduce the released 2048 overflow",
-        );
       await page.screenshot({
-        path: resolve(out, `before-${viewport.width}.png`),
+        path: resolve(out, `surface-${viewport.width}-${turn}.png`),
       });
-      await page.locator(".mobile-tile").evaluateAll((tiles) =>
-        tiles.forEach((tile) => {
-          tile.style.fontSize = "calc(88px / var(--tile-digits, 4))";
-        }),
-      );
-      const fallback = await measure();
-      assert(
-        fallback.every((r) => r.fits),
-        `Pixel fallback overflow at ${viewport.width}`,
-      );
-      evidence.cases.push({ viewport, before, after, fallback });
+      evidence.cases.push({ viewport, turn, board, tiles, events });
     } finally {
       await context.close();
     }
@@ -145,21 +164,14 @@ try {
 }
 await writeFile(
   resolve(out, "results.json"),
-  JSON.stringify(evidence, null, 2) + "\n",
+  JSON.stringify(evidence, null, 2),
 );
 console.log(
-  JSON.stringify(
-    {
-      browser: evidence.browser,
-      cases: evidence.cases.map((c) => ({
-        viewport: c.viewport,
-        beforeOverflow: c.before.filter((r) => !r.fits).map((r) => r.value),
-        afterFit: c.after.length,
-        fallbackFit: c.fallback.length,
-      })),
-      output: out,
-    },
-    null,
-    2,
-  ),
+  JSON.stringify({
+    cases: evidence.cases.map((c) => ({
+      viewport: c.viewport,
+      fit: c.tiles.length,
+    })),
+    output: out,
+  }),
 );

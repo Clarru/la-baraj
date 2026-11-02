@@ -17,6 +17,7 @@ import { HomeAssignments, type HomeLedger } from "./home-assignments";
 import { PlanesTable, type PlanesRecord } from "./planes-table";
 import { nextWorldDeadline } from "./world-alarm";
 import { LakeWeatherService } from "./lake-weather";
+import { AppearanceProfiles } from "./appearance-profiles";
 
 export interface Env {
   WorldRoom: DurableObjectNamespace<WorldRoom>;
@@ -95,6 +96,25 @@ export class WorldRoom extends Server<Env> {
     );
     this.cruce = cruce;
     let arcade: Arcade2048Service | undefined;
+    let appearances: AppearanceProfiles | undefined;
+    try {
+      const prefix = `appearance-v1:${HOUSING_EPOCH}:`;
+      const records = await this.ctx.storage.list({ prefix });
+      appearances = new AppearanceProfiles(
+        {
+          save: (owner, appearance) =>
+            this.ctx.storage.put(prefix + owner, appearance),
+        },
+        [...records].map(
+          ([key, value]) =>
+            [Number(key.slice(prefix.length)), value] as [number, unknown],
+        ),
+      );
+    } catch {
+      console.error(
+        "Appearance storage unavailable; optional wardrobe saving disabled.",
+      );
+    }
     try {
       const prefix = `arcade2048-v1:${HOUSING_EPOCH}:`;
       const records = await this.ctx.storage.list<ArcadeRecord>({ prefix });
@@ -118,6 +138,7 @@ export class WorldRoom extends Server<Env> {
         planes,
         cruce,
         arcade,
+        appearances,
         retryPlaneCleanup: () => this.retryPlaneCleanup(),
         requestWeather: () => this.scheduleWeather(),
       },

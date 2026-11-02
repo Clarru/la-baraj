@@ -1,0 +1,22 @@
+{
+  "asset": "assets/source-models/wardrobe/optimized/beard-moustache.glb",
+  "sha256": "7908187322d595873f70369cd0ad31f1fdca06327cee4ce8b9ff8ce35a8cf30d",
+  "proof": "Exported GLB on unchanged approved animated skeleton; not a concept image",
+  "poses": [
+    {
+      "view": "Front",
+      "clip": "Idle_Neutral",
+      "frameOffset": 1
+    },
+    {
+      "view": "Side",
+      "clip": "Idle_Neutral",
+      "frameOffset": 1
+    },
+    {
+      "view": "Rear",
+      "clip": "Idle_Neutral",
+      "frameOffset": 1
+    }
+  ]
+}

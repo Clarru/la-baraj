@@ -1,0 +1,37 @@
+{
+  "asset": "assets/source-models/wardrobe/optimized/hat-panel-cap.glb",
+  "sha256": "75f8649357c14fcf0ad5b041d39c6c8dfdfa6d80c52bfa0c8996cff3da9f7a8c",
+  "proof": "Exported GLB on unchanged approved animated skeleton; not a concept image",
+  "poses": [
+    {
+      "view": "Front",
+      "clip": "Idle_Neutral",
+      "frameOffset": 1
+    },
+    {
+      "view": "Side",
+      "clip": "Idle_Neutral",
+      "frameOffset": 1
+    },
+    {
+      "view": "Rear",
+      "clip": "Idle_Neutral",
+      "frameOffset": 1
+    },
+    {
+      "view": "Walk",
+      "clip": "Walk",
+      "frameOffset": 10
+    },
+    {
+      "view": "Run",
+      "clip": "Run",
+      "frameOffset": 8
+    },
+    {
+      "view": "Jump",
+      "clip": "Jump_Loop",
+      "frameOffset": 10
+    }
+  ]
+}

@@ -1,0 +1,448 @@
+{
+  "technicalPass": true,
+  "errors": [],
+  "surfaceResults": [
+    {
+      "name": "face--1-0-0.38",
+      "pass": true,
+      "distance": 0.012739728482623003
+    },
+    {
+      "name": "face--1-0-0.5",
+      "pass": true,
+      "distance": 0.012739728482623003
+    },
+    {
+      "name": "face--1-1-0.38",
+      "pass": true,
+      "distance": 0.03340060658081917
+    },
+    {
+      "name": "face--1-1-0.5",
+      "pass": true,
+      "distance": 0.03340060658081917
+    },
+    {
+      "name": "face--1-2-0.38",
+      "pass": true,
+      "distance": 0.03340060658081917
+    },
+    {
+      "name": "face--1-2-0.5",
+      "pass": true,
+      "distance": 0.03340060658081917
+    },
+    {
+      "name": "face--1-3-0.38",
+      "pass": true,
+      "distance": 0.012739728482623003
+    },
+    {
+      "name": "face--1-3-0.5",
+      "pass": true,
+      "distance": 0.012739728482623003
+    },
+    {
+      "name": "face--1-4-0.38",
+      "pass": true,
+      "distance": 0.012739728482623003
+    },
+    {
+      "name": "face--1-4-0.5",
+      "pass": true,
+      "distance": 0.012739728482623003
+    },
+    {
+      "name": "face--1-5-0.38",
+      "pass": true,
+      "distance": 0.04134484016090184
+    },
+    {
+      "name": "face--1-5-0.5",
+      "pass": true,
+      "distance": 0.04134484016090184
+    },
+    {
+      "name": "face--1-6-0.38",
+      "pass": true,
+      "distance": 0.041363007983388766
+    },
+    {
+      "name": "face--1-6-0.5",
+      "pass": true,
+      "distance": 0.041363007983388766
+    },
+    {
+      "name": "face--1-7-0.38",
+      "pass": true,
+      "distance": 0.04138846552687214
+    },
+    {
+      "name": "face--1-7-0.5",
+      "pass": true,
+      "distance": 0.04138846552687214
+    },
+    {
+      "name": "face--1-8-0.38",
+      "pass": true,
+      "distance": 0.012739728482623003
+    },
+    {
+      "name": "face--1-8-0.5",
+      "pass": true,
+      "distance": 0.012739728482623003
+    },
+    {
+      "name": "face-1-0-0.38",
+      "pass": true,
+      "distance": 0.016553213496241947
+    },
+    {
+      "name": "face-1-0-0.5",
+      "pass": true,
+      "distance": 0.016553213496241947
+    },
+    {
+      "name": "face-1-1-0.38",
+      "pass": true,
+      "distance": 0.03340065128430275
+    },
+    {
+      "name": "face-1-1-0.5",
+      "pass": true,
+      "distance": 0.03340065128430275
+    },
+    {
+      "name": "face-1-2-0.38",
+      "pass": true,
+      "distance": 0.03340065128430275
+    },
+    {
+      "name": "face-1-2-0.5",
+      "pass": true,
+      "distance": 0.03340065128430275
+    },
+    {
+      "name": "face-1-3-0.38",
+      "pass": true,
+      "distance": 0.016553213496241947
+    },
+    {
+      "name": "face-1-3-0.5",
+      "pass": true,
+      "distance": 0.016553213496241947
+    },
+    {
+      "name": "face-1-4-0.38",
+      "pass": true,
+      "distance": 0.016553213496241947
+    },
+    {
+      "name": "face-1-4-0.5",
+      "pass": true,
+      "distance": 0.016553213496241947
+    },
+    {
+      "name": "face-1-5-0.38",
+      "pass": true,
+      "distance": 0.04134488486438537
+    },
+    {
+      "name": "face-1-5-0.5",
+      "pass": true,
+      "distance": 0.04134488486438542
+    },
+    {
+      "name": "face-1-6-0.38",
+      "pass": true,
+      "distance": 0.04136305268687235
+    },
+    {
+      "name": "face-1-6-0.5",
+      "pass": true,
+      "distance": 0.04136305268687235
+    },
+    {
+      "name": "face-1-7-0.38",
+      "pass": true,
+      "distance": 0.041388510230355724
+    },
+    {
+      "name": "face-1-7-0.5",
+      "pass": true,
+      "distance": 0.041388510230355724
+    },
+    {
+      "name": "face-1-8-0.38",
+      "pass": true,
+      "distance": 0.016553213496241947
+    },
+    {
+      "name": "face-1-8-0.5",
+      "pass": true,
+      "distance": 0.016553213496241947
+    },
+    {
+      "name": "side--1-0-0.38",
+      "pass": true,
+      "distance": 0.033396277991313505
+    },
+    {
+      "name": "side--1-0-0.5",
+      "pass": true,
+      "distance": 0.033396277991313505
+    },
+    {
+      "name": "side--1-1-0.38",
+      "pass": true,
+      "distance": 0.033396277991313505
+    },
+    {
+      "name": "side--1-1-0.5",
+      "pass": true,
+      "distance": 0.033396277991313505
+    },
+    {
+      "name": "side--1-2-0.38",
+      "pass": true,
+      "distance": 0.033396277991313505
+    },
+    {
+      "name": "side--1-2-0.5",
+      "pass": true,
+      "distance": 0.033396277991313505
+    },
+    {
+      "name": "side--1-3-0.38",
+      "pass": true,
+      "distance": 0.033396277991313505
+    },
+    {
+      "name": "side--1-3-0.5",
+      "pass": true,
+      "distance": 0.033396277991313505
+    },
+    {
+      "name": "side--1-4-0.38",
+      "pass": true,
+      "distance": 0.04134177420409274
+    },
+    {
+      "name": "side--1-4-0.5",
+      "pass": true,
+      "distance": 0.04134177420409274
+    },
+    {
+      "name": "side--1-5-0.38",
+      "pass": true,
+      "distance": 0.04136735825886245
+    },
+    {
+      "name": "side--1-5-0.5",
+      "pass": true,
+      "distance": 0.04136735825886245
+    },
+    {
+      "name": "side--1-6-0.38",
+      "pass": true,
+      "distance": 0.0413929397861314
+    },
+    {
+      "name": "side--1-6-0.5",
+      "pass": true,
+      "distance": 0.0413929397861314
+    },
+    {
+      "name": "side--1-7-0.38",
+      "pass": true,
+      "distance": 0.041367712108971944
+    },
+    {
+      "name": "side--1-7-0.5",
+      "pass": true,
+      "distance": 0.041367712108971944
+    },
+    {
+      "name": "side--1-8-0.38",
+      "pass": true,
+      "distance": 0.04134212805420223
+    },
+    {
+      "name": "side--1-8-0.5",
+      "pass": true,
+      "distance": 0.04134212805420223
+    },
+    {
+      "name": "side-1-0-0.38",
+      "pass": true,
+      "distance": 0.03340497987380847
+    },
+    {
+      "name": "side-1-0-0.5",
+      "pass": true,
+      "distance": 0.03340497987380847
+    },
+    {
+      "name": "side-1-1-0.38",
+      "pass": true,
+      "distance": 0.03340497987380847
+    },
+    {
+      "name": "side-1-1-0.5",
+      "pass": true,
+      "distance": 0.03340497987380847
+    },
+    {
+      "name": "side-1-2-0.38",
+      "pass": true,
+      "distance": 0.03340497987380847
+    },
+    {
+      "name": "side-1-2-0.5",
+      "pass": true,
+      "distance": 0.03340497987380847
+    },
+    {
+      "name": "side-1-3-0.38",
+      "pass": true,
+      "distance": 0.03340497987380847
+    },
+    {
+      "name": "side-1-3-0.5",
+      "pass": true,
+      "distance": 0.03340497987380847
+    },
+    {
+      "name": "side-1-4-0.38",
+      "pass": true,
+      "distance": 0.041350476086587706
+    },
+    {
+      "name": "side-1-4-0.5",
+      "pass": true,
+      "distance": 0.041350476086587706
+    },
+    {
+      "name": "side-1-5-0.38",
+      "pass": true,
+      "distance": 0.04137606014135742
+    },
+    {
+      "name": "side-1-5-0.5",
+      "pass": true,
+      "distance": 0.04137606014135742
+    },
+    {
+      "name": "side-1-6-0.38",
+      "pass": true,
+      "distance": 0.041401641668626366
+    },
+    {
+      "name": "side-1-6-0.5",
+      "pass": true,
+      "distance": 0.041401641668626366
+    },
+    {
+      "name": "side-1-7-0.38",
+      "pass": true,
+      "distance": 0.04137641399146691
+    },
+    {
+      "name": "side-1-7-0.5",
+      "pass": true,
+      "distance": 0.04137641399146691
+    },
+    {
+      "name": "side-1-8-0.38",
+      "pass": true,
+      "distance": 0.0413508299366972
+    },
+    {
+      "name": "side-1-8-0.5",
+      "pass": true,
+      "distance": 0.0413508299366972
+    }
+  ],
+  "jointResults": {},
+  "triangles": 1440,
+  "bytes": 124376,
+  "primitives": 2,
+  "dimensions": [
+    0.842258055363932,
+    0.9324999898672104,
+    0.9087940512228613
+  ],
+  "bounds": {
+    "min": [
+      -0.421129027681966,
+      0,
+      -0.45439700325968885
+    ],
+    "max": [
+      0.421129027681966,
+      0.9324999898672104,
+      0.45439704796317243
+    ]
+  },
+  "textures": [
+    {
+      "name": "trim-normal",
+      "size": [
+        512,
+        512
+      ],
+      "sha256": "acf251b016592e376c74a488cb221ade7b23688b7933859614c6a363d2e4f82a",
+      "bytes": 55468
+    },
+    {
+      "name": "trim-base-color",
+      "size": [
+        512,
+        512
+      ],
+      "sha256": "c84b1005afe4c9d736bd961ecaddc513f07dec9a903ac870497e36fb0163c673",
+      "bytes": 19612
+    },
+    {
+      "name": "trim-metallic-roughness",
+      "size": [
+        512,
+        512
+      ],
+      "sha256": "18fe90c43eb6444f5ebd8d3fa9c9fd56937c267e500c0de26958a14b48341409",
+      "bytes": 15436
+    }
+  ],
+  "materials": [
+    {
+      "name": "LaBaraj timber",
+      "baseColor": [
+        0.8,
+        0.8,
+        0.8,
+        1
+      ],
+      "normal": true,
+      "metallicRoughness": true
+    },
+    {
+      "name": "LaBaraj iron",
+      "baseColor": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "normal": true,
+      "metallicRoughness": true
+    }
+  ],
+  "sockets": {
+    "CarryGrip": [
+      0.004700005054473877,
+      0.5532000064849854,
+      0
+    ]
+  },
+  "runtimePerformance": "Not benchmarked; these are resource budgets, not FPS."
+}

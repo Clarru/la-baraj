@@ -1,0 +1,194 @@
+{
+  "driver": "26.5",
+  "scope": "Playwright WebKit 26.5 desktop engine with mobile emulation and trusted mouse pointer drags; not native iOS/two-finger/phone heat",
+  "lookDuring": {
+    "homeIndex": 0,
+    "boat": {
+      "position": [
+        3.7,
+        38.87531356447997
+      ],
+      "yaw": 3.141592653589793,
+      "velocity": [
+        0,
+        0
+      ],
+      "angularVelocity": 0,
+      "rudder": 0
+    },
+    "vehicle": null,
+    "vehicleSpeed": 0,
+    "jumpPhase": "grounded",
+    "jumpStyle": "walk",
+    "animationHistory": [
+      {
+        "animation": "Idle_Neutral",
+        "at": 3242,
+        "y": 5.981523513793945
+      }
+    ],
+    "position": [
+      55.384254455566406,
+      6.049016952514648,
+      63.78726577758789
+    ],
+    "feet": [
+      55.384254455566406,
+      4.973705782884,
+      63.78726577758789
+    ],
+    "contact": [
+      55.384254455566406,
+      4.959188461303711,
+      63.798954010009766
+    ],
+    "grounded": true,
+    "activity": "none",
+    "canWave": true,
+    "animation": "Idle_Neutral",
+    "posture": "standing",
+    "groundY": 4.95870578289032,
+    "velocity": [
+      0,
+      0.000036014393117511645,
+      0
+    ],
+    "facing": [
+      0.004990273984536804,
+      0,
+      -0.9999875485052598
+    ],
+    "inWater": false,
+    "touchMovement": [
+      0,
+      0
+    ],
+    "touchLook": [
+      0.8184523809523809,
+      0
+    ],
+    "cameraPosition": [
+      54.73899317490627,
+      9.449016952514679,
+      55.2091752045244
+    ],
+    "pressedKeys": [],
+    "movementActive": true,
+    "controllerEnabled": true,
+    "movementMode": "walk",
+    "paused": false,
+    "holding": false,
+    "stunned": false,
+    "frameDt": 0.016666666666666607,
+    "boatRenderCorrection": null,
+    "bodyLinearDamping": 0,
+    "cameraDirection": [
+      0.07144804357794639,
+      -0.30450009279704976,
+      0.9498288638252008
+    ],
+    "lastMovingAlignment": null,
+    "facingDot": null
+  },
+  "after": {
+    "homeIndex": 0,
+    "boat": {
+      "position": [
+        3.7,
+        38.87531356447997
+      ],
+      "yaw": 3.141592653589793,
+      "velocity": [
+        0,
+        0
+      ],
+      "angularVelocity": 0,
+      "rudder": 0
+    },
+    "vehicle": null,
+    "vehicleSpeed": 0,
+    "jumpPhase": "grounded",
+    "jumpStyle": "walk",
+    "animationHistory": [
+      {
+        "animation": "Idle_Neutral",
+        "at": 3242,
+        "y": 5.981523513793945
+      },
+      {
+        "animation": "Walk",
+        "at": 7066,
+        "y": 6.049434661865234
+      },
+      {
+        "animation": "Idle_Neutral",
+        "at": 7565,
+        "y": 6.317834854125977
+      }
+    ],
+    "position": [
+      55.40410614013672,
+      6.330423355102539,
+      65.10401153564453
+    ],
+    "feet": [
+      55.40410614013672,
+      5.243398242758481,
+      65.10401153564453
+    ],
+    "contact": [
+      55.40317916870117,
+      5.353335380554199,
+      65.29765319824219
+    ],
+    "grounded": true,
+    "activity": "none",
+    "canWave": true,
+    "animation": "Idle_Neutral",
+    "posture": "standing",
+    "groundY": 5.2286072969436646,
+    "velocity": [
+      0.00017320693586952984,
+      -0.06388471275568008,
+      0.011499659158289433
+    ],
+    "facing": [
+      0.022796695513066234,
+      0,
+      0.9997401215684427
+    ],
+    "inWater": false,
+    "touchMovement": [
+      0,
+      0
+    ],
+    "touchLook": [
+      0,
+      0
+    ],
+    "cameraPosition": [
+      55.27455332176113,
+      9.731487655639684,
+      56.50247876473078
+    ],
+    "pressedKeys": [],
+    "movementActive": true,
+    "controllerEnabled": true,
+    "movementMode": "walk",
+    "paused": false,
+    "holding": false,
+    "stunned": false,
+    "frameDt": 0.016666666666666607,
+    "boatRenderCorrection": null,
+    "bodyLinearDamping": 0,
+    "cameraDirection": [
+      0.014345034624539975,
+      -0.30450009279705037,
+      0.9524042804755808
+    ],
+    "lastMovingAlignment": 0.9992656780926739,
+    "facingDot": null
+  },
+  "work": "{\"updates\":102,\"draws\":51,\"simulationTime\":1.6999999999999988,\"covered\":false,\"stopped\":false,\"width\":353,\"height\":766}",
+  "errors": []
+}

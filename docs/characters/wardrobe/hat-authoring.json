@@ -1,0 +1,20 @@
+[
+  {
+    "id": "hat-panel-cap",
+    "raw": "assets/source-models/wardrobe/build/hat-panel-cap.glb",
+    "vertices": 1250,
+    "accepted": false
+  },
+  {
+    "id": "hat-knit-beanie",
+    "raw": "assets/source-models/wardrobe/build/hat-knit-beanie.glb",
+    "vertices": 1804,
+    "accepted": false
+  },
+  {
+    "id": "hat-stitched-bucket",
+    "raw": "assets/source-models/wardrobe/build/hat-stitched-bucket.glb",
+    "vertices": 2770,
+    "accepted": false
+  }
+]

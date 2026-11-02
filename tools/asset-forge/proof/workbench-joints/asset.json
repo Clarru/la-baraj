@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "id": "la-baraj-forge-final-workbench",
+  "profile": "la-baraj-timber-iron-v1",
+  "recipe": "custom",
+  "dimensions": [
+    1,
+    0.8,
+    0.6
+  ],
+  "budgets": {
+    "triangles": 3000,
+    "bytes": 180000,
+    "primitives": 2,
+    "textures": 3,
+    "textureEdge": 512
+  },
+  "seed": 0,
+  "parameters": {},
+  "requiredSockets": [],
+  "collision": "none",
+  "reference": null,
+  "requiredJoints": [
+    "Leg_L_F",
+    "Leg_L_B",
+    "Leg_R_F",
+    "Leg_R_B"
+  ]
+}

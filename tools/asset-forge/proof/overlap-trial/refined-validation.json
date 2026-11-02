@@ -1,0 +1,301 @@
+{
+  "technicalPass": true,
+  "errors": [],
+  "warnings": [],
+  "overlapDiagnostics": {
+    "scope": "axis-aligned, co-facing, exposed coplanar surfaces",
+    "planeToleranceMetres": 0.00002,
+    "minimumAreaSquareMetres": 0.000002,
+    "complete": true,
+    "testedPairs": 458,
+    "findings": []
+  },
+  "surfaceResults": [
+    {
+      "name": "Corner_L_F/corner_depth_0",
+      "pass": true,
+      "distance": 0.0038883327609099856
+    },
+    {
+      "name": "Corner_L_F/corner_depth_1",
+      "pass": true,
+      "distance": 0.0038883327609099856
+    },
+    {
+      "name": "Corner_L_F/corner_depth_2",
+      "pass": true,
+      "distance": 0.0038883327609099856
+    },
+    {
+      "name": "Corner_L_B/corner_depth_0",
+      "pass": true,
+      "distance": 0.003890123252437232
+    },
+    {
+      "name": "Corner_L_B/corner_depth_1",
+      "pass": true,
+      "distance": 0.003890123252437232
+    },
+    {
+      "name": "Corner_L_B/corner_depth_2",
+      "pass": true,
+      "distance": 0.003890123252437232
+    },
+    {
+      "name": "Corner_R_F/corner_depth_0",
+      "pass": true,
+      "distance": 0.0038883327609099856
+    },
+    {
+      "name": "Corner_R_F/corner_depth_1",
+      "pass": true,
+      "distance": 0.0038883327609099856
+    },
+    {
+      "name": "Corner_R_F/corner_depth_2",
+      "pass": true,
+      "distance": 0.0038883327609099856
+    },
+    {
+      "name": "Corner_R_B/corner_depth_0",
+      "pass": true,
+      "distance": 0.003890123252437232
+    },
+    {
+      "name": "Corner_R_B/corner_depth_1",
+      "pass": true,
+      "distance": 0.003890123252437232
+    },
+    {
+      "name": "Corner_R_B/corner_depth_2",
+      "pass": true,
+      "distance": 0.003890123252437232
+    },
+    {
+      "name": "Lid_Rabbet/closed_front_0",
+      "pass": true,
+      "distance": 0.012499257934792174
+    },
+    {
+      "name": "Lid_Rabbet/closed_front_1",
+      "pass": true,
+      "distance": 0.012499257934792174
+    },
+    {
+      "name": "Lid_Rabbet/closed_front_2",
+      "pass": true,
+      "distance": 0.012499257934792174
+    },
+    {
+      "name": "Latch_L/leaf_contact_0",
+      "pass": true,
+      "distance": 0.0029968396376051365
+    },
+    {
+      "name": "Latch_L/leaf_contact_1",
+      "pass": true,
+      "distance": 0.0029968396376051365
+    },
+    {
+      "name": "Latch_L/leaf_contact_2",
+      "pass": true,
+      "distance": 0.004000593432479299
+    },
+    {
+      "name": "Latch_R/leaf_contact_0",
+      "pass": true,
+      "distance": 0.0029968396376051365
+    },
+    {
+      "name": "Latch_R/leaf_contact_1",
+      "pass": true,
+      "distance": 0.0029968396376051365
+    },
+    {
+      "name": "Latch_R/leaf_contact_2",
+      "pass": true,
+      "distance": 0.004000593432479299
+    },
+    {
+      "name": "Hinge_L/leaf_contact_0",
+      "pass": true,
+      "distance": 0.0010028490302416704
+    },
+    {
+      "name": "Hinge_L/leaf_contact_1",
+      "pass": true,
+      "distance": 0.0019995835678090212
+    },
+    {
+      "name": "Hinge_L/leaf_contact_2",
+      "pass": true,
+      "distance": 0.0010028490302416704
+    },
+    {
+      "name": "Hinge_R/leaf_contact_0",
+      "pass": true,
+      "distance": 0.0010028490302416704
+    },
+    {
+      "name": "Hinge_R/leaf_contact_1",
+      "pass": true,
+      "distance": 0.0019995835678090212
+    },
+    {
+      "name": "Hinge_R/leaf_contact_2",
+      "pass": true,
+      "distance": 0.0010028490302416704
+    },
+    {
+      "name": "Handle_L/foot_attachment_0",
+      "pass": true,
+      "distance": 0.0010023484532967197
+    },
+    {
+      "name": "Handle_L/foot_attachment_1",
+      "pass": true,
+      "distance": 0.00399957132330564
+    },
+    {
+      "name": "Handle_L/foot_attachment_2",
+      "pass": true,
+      "distance": 0.0019990829908640984
+    },
+    {
+      "name": "Handle_R/foot_attachment_0",
+      "pass": true,
+      "distance": 0.00399957132330564
+    },
+    {
+      "name": "Handle_R/foot_attachment_1",
+      "pass": true,
+      "distance": 0.0010023484532967197
+    },
+    {
+      "name": "Handle_R/foot_attachment_2",
+      "pass": true,
+      "distance": 0.0019990829908640984
+    }
+  ],
+  "jointResults": {
+    "Corner_L_F": {
+      "pass": true
+    },
+    "Corner_R_F": {
+      "pass": true
+    },
+    "Corner_L_B": {
+      "pass": true
+    },
+    "Corner_R_B": {
+      "pass": true
+    },
+    "Lid_Rabbet": {
+      "pass": true
+    },
+    "Handle_L": {
+      "pass": true
+    },
+    "Handle_R": {
+      "pass": true
+    },
+    "Latch_L": {
+      "pass": true
+    },
+    "Latch_R": {
+      "pass": true
+    },
+    "Hinge_L": {
+      "pass": true
+    },
+    "Hinge_R": {
+      "pass": true
+    }
+  },
+  "triangles": 2356,
+  "bytes": 144596,
+  "primitives": 2,
+  "dimensions": [
+    0.46000000834465027,
+    0.31600696395269867,
+    0.27599719730386746
+  ],
+  "bounds": {
+    "min": [
+      -0.23000000417232513,
+      -0.0000034821551632702175,
+      -0.13799860237722403
+    ],
+    "max": [
+      0.23000000417232513,
+      0.3160034817975354,
+      0.13799859492664343
+    ]
+  },
+  "textures": [
+    {
+      "name": "trim-normal",
+      "size": [
+        512,
+        512
+      ],
+      "sha256": "acf251b016592e376c74a488cb221ade7b23688b7933859614c6a363d2e4f82a",
+      "bytes": 55468
+    },
+    {
+      "name": "trim-base-color",
+      "size": [
+        512,
+        512
+      ],
+      "sha256": "c84b1005afe4c9d736bd961ecaddc513f07dec9a903ac870497e36fb0163c673",
+      "bytes": 19612
+    },
+    {
+      "name": "trim-metallic-roughness",
+      "size": [
+        512,
+        512
+      ],
+      "sha256": "18fe90c43eb6444f5ebd8d3fa9c9fd56937c267e500c0de26958a14b48341409",
+      "bytes": 15436
+    }
+  ],
+  "materials": [
+    {
+      "name": "LaBaraj timber",
+      "baseColor": [
+        0.8,
+        0.8,
+        0.8,
+        1
+      ],
+      "normal": true,
+      "metallicRoughness": true
+    },
+    {
+      "name": "LaBaraj iron",
+      "baseColor": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "normal": true,
+      "metallicRoughness": true
+    }
+  ],
+  "sockets": {
+    "CarryGrip": [
+      0,
+      0.3009999990463257,
+      -0.001999996602535248
+    ],
+    "Placement": [
+      0,
+      0,
+      3.4924596548080444e-9
+    ]
+  },
+  "runtimePerformance": "Not benchmarked; these are resource budgets, not FPS."
+}

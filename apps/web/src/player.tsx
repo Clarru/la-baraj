@@ -45,6 +45,9 @@ import {
 } from "./character-resources";
 import { assetUrl } from "./assets";
 import { currentMultiplayerRoom } from "./multiplayer";
+import type { Appearance } from "../../../packages/shared/appearance";
+import { DEFAULT_APPEARANCE } from "../../../packages/shared/appearance";
+import { useAvatarWardrobe } from "./use-avatar-wardrobe";
 import { createTableReactionRig } from "./table-reactions";
 import {
   PLANES_TABLE,
@@ -203,6 +206,7 @@ export function Player({
   doorTransition = false,
   waveRequest = 0,
   arcadeStationId = null,
+  appearance = DEFAULT_APPEARANCE,
 }: {
   homeIndex: number;
   mode: ViewMode;
@@ -218,6 +222,7 @@ export function Player({
   doorTransition?: boolean;
   waveRequest?: number;
   arcadeStationId?: number | null;
+  appearance?: Appearance;
 }) {
   const arrival = useMemo(() => homeSpawn(homeIndex), [homeIndex]);
   const controller = useRef<EcctrlHandle>(null);
@@ -307,6 +312,7 @@ export function Player({
     THREE.FileLoader,
     "/assets/animations/character-actions.json",
   );
+  useAvatarWardrobe(object, appearance);
   const allAnimations = useMemo(
     () => characterClips(animations, String(supplemental)),
     [animations, supplemental],
@@ -1899,6 +1905,8 @@ export function CameraRig({
       camera.position.copy(focus.position);
     } else if (leavingArcade) {
       const exit = arcadeExitCamera(from, fromTarget, playerViewPosition);
+      if (touch && exit.position.distanceTo(exit.target) < 11)
+        exit.position.sub(exit.target).setLength(11).add(exit.target);
       camera.position.copy(exit.position);
       c.target.copy(exit.target);
     } else if (cardTableSeat !== null) {
@@ -1945,9 +1953,9 @@ export function CameraRig({
         .copy(p)
         .add(
           new THREE.Vector3(
-            5 * Math.cos(yaw) + 7 * Math.sin(yaw),
-            3.4,
-            -5 * Math.sin(yaw) + 7 * Math.cos(yaw),
+            (5 * Math.cos(yaw) + 7 * Math.sin(yaw)) * (touch ? 1.25 : 1),
+            touch ? 3.7 : 3.4,
+            (-5 * Math.sin(yaw) + 7 * Math.cos(yaw)) * (touch ? 1.25 : 1),
           ),
         );
       c.target.copy(p).add(new THREE.Vector3(0, 0.65, 0));
@@ -1973,9 +1981,13 @@ export function CameraRig({
         .add(new THREE.Vector3(4, 1.4, 5));
       c.target.copy(playerViewPosition).add(new THREE.Vector3(0, 0.1, 0));
     } else {
-      camera.position
-        .copy(playerViewPosition)
-        .add(new THREE.Vector3(...homeWalkCameraOffset(homeIndex)));
+      const offset = new THREE.Vector3(...homeWalkCameraOffset(homeIndex));
+      if (touch) {
+        offset.x *= 1.25;
+        offset.z *= 1.25;
+        offset.y += 0.3;
+      }
+      camera.position.copy(playerViewPosition).add(offset);
       c.target.copy(playerViewPosition).add(new THREE.Vector3(0, 0.8, 0));
     }
     if (changingRoom || changingTable || changingArcade) {
@@ -1994,6 +2006,7 @@ export function CameraRig({
     if (changingArcade || arcadeFocus) camera.lookAt(c.target);
     else c.update();
   }, [
+    touch,
     arcadeFocus,
     arcadeStationId,
     focusAspect,

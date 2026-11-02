@@ -1,0 +1,37 @@
+{
+  "asset": "assets/source-models/wardrobe/optimized/bottom-weekend-shorts.glb",
+  "sha256": "1534f494cb742aa4ace58e0631763567eb3e6e9b2b39a409608089a9c09753c7",
+  "proof": "Exported GLB on unchanged approved animated skeleton; not a concept image",
+  "poses": [
+    {
+      "view": "Front",
+      "clip": "Idle_Neutral",
+      "frameOffset": 1
+    },
+    {
+      "view": "Side",
+      "clip": "Idle_Neutral",
+      "frameOffset": 1
+    },
+    {
+      "view": "Rear",
+      "clip": "Idle_Neutral",
+      "frameOffset": 1
+    },
+    {
+      "view": "Walk",
+      "clip": "Walk",
+      "frameOffset": 10
+    },
+    {
+      "view": "Run",
+      "clip": "Run",
+      "frameOffset": 8
+    },
+    {
+      "view": "Jump",
+      "clip": "Jump_Loop",
+      "frameOffset": 10
+    }
+  ]
+}

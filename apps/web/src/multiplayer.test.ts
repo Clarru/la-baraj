@@ -135,6 +135,106 @@ afterEach(() => {
 });
 
 describe("friends room client", () => {
+  it("does not re-read cosmetic configuration on ordinary movement packets", () => {
+    const room = new MultiplayerRoom(),
+      stop = room.connect(),
+      socket = sockets[0];
+    socket.open();
+    snapshot(socket);
+    socket.receive({
+      type: "appearance",
+      id: friend.id,
+      appearance: { version: 1, body: "male" },
+    });
+    const value = room.remotes.get(friend.id)!.player.appearance!;
+    let reads = 0;
+    Object.defineProperty(value, "hair", {
+      get() {
+        reads++;
+        return "parted";
+      },
+    });
+    for (let index = 0; index < 20; index++)
+      socket.receive({
+        type: "pose",
+        player: { ...friend, yaw: index * 0.01 },
+      });
+    expect(reads).toBe(0);
+    expect(room.remotes.get(friend.id)!.player.appearance).toBe(value);
+    stop();
+  });
+  it("applies an appearance only after an acknowledged save and retains remote cosmetics across poses", async () => {
+    const room = new MultiplayerRoom(),
+      stop = room.connect(),
+      socket = sockets[0];
+    socket.open();
+    snapshot(socket);
+    socket.receive({
+      type: "snapshot",
+      version: 1,
+      selfId: "self-1",
+      players: [self, friend],
+      fire: { lit: true, revision: 0 },
+      seats: {},
+      features: { appearance: true },
+    });
+    const pending = room.setAppearance({ version: 1, body: "female" });
+    const sent = socket.sent.at(-1)!;
+    expect(sent.type).toBe("appearance");
+    expect(room.getSnapshot().appearance.body).toBe("male");
+    socket.receive({
+      type: "appearance",
+      id: "self-1",
+      requestId: sent.requestId,
+      appearance: { version: 1, body: "female" },
+    });
+    expect(await pending).toBeNull();
+    expect(room.getSnapshot().appearance).toEqual({
+      version: 1,
+      body: "female",
+    });
+    socket.receive({
+      type: "appearance",
+      id: friend.id,
+      appearance: { version: 1, body: "female" },
+    });
+    socket.receive({ type: "pose", player: { ...friend, animation: "Walk" } });
+    expect(room.remotes.get(friend.id)?.player.appearance).toEqual({
+      version: 1,
+      body: "female",
+    });
+    stop();
+  });
+  it("leaves the previous appearance visible on failed saves and resolves pending saves on disconnect", async () => {
+    const room = new MultiplayerRoom(),
+      stop = room.connect(),
+      socket = sockets[0];
+    socket.open();
+    snapshot(socket);
+    socket.receive({
+      type: "snapshot",
+      version: 1,
+      selfId: "self-1",
+      players: [self],
+      fire: { lit: true, revision: 0 },
+      seats: {},
+      features: { appearance: true },
+    });
+    const failed = room.setAppearance({ version: 1, body: "female" });
+    const sent = socket.sent.at(-1)!;
+    socket.receive({
+      type: "appearance",
+      id: "self-1",
+      requestId: sent.requestId,
+      appearance: { version: 1, body: "male" },
+      error: "Try again",
+    });
+    expect(await failed).toBe("Try again");
+    expect(room.getSnapshot().appearance.body).toBe("male");
+    const pending = room.setAppearance({ version: 1, body: "female" });
+    stop();
+    expect(await pending).toContain("Connection lost");
+  });
   it("publishes quantized physical boat yaw and rotation rather than cosmetic facing", () => {
     const room = new MultiplayerRoom(),
       stop = room.connect(),

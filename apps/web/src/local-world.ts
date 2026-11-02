@@ -5,6 +5,7 @@ import {
   type SessionState,
 } from "../../server/room-core";
 import { HomeAssignments } from "../../server/home-assignments";
+import { AppearanceProfiles } from "../../server/appearance-profiles";
 import type { ServerMessage } from "../../../packages/shared/protocol";
 /** A browser-local authority for the shared localhost world. No production credentials/storage. */
 export function createLocalWorld() {
@@ -14,6 +15,7 @@ export function createLocalWorld() {
     homes: new HomeAssignments({ save: async () => {} }),
     saveFire: async () => {},
     arcade: new Arcade2048Service({ save: async () => {}, ranked: false }),
+    appearances: new AppearanceProfiles({ save: async () => {} }),
   });
   return {
     connect(send: (m: ServerMessage) => void) {

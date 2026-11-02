@@ -1,0 +1,13 @@
+# La Baraj wardrobe — authoring contract
+
+User scope: at least three distinct modeled options in EACH men's slot: hair, hats, tops, bottoms, shoes. None/bald and recolours do not count toward the three modeled options. Provide one selectable adult female character with brunette hair and the supplied outfit. Integrate through an optional Appearance entry in Menu, with a preview, Apply/Cancel, persistent appearance and consistent local/remote rendering.
+
+Female reference: image-1.png supplied in this chat. Long straight brunette hair, oversized structured black blazer with lapels and long sleeves, fitted black cropped high-neck underlayer, high-waisted tailored black shorts, slim black belt with gold buckle, sheer black tights, pointed closed-toe black pumps with heels. Preserve these separate readable garment features in La Baraj's existing stylized adult character finish.
+
+Male quality anchor: existing approved Lakeside_Man.glb (SHA256 1c89c5710998736679a7a10403e89f998a912624c1fe674959668364bd2ba520), its face/proportions/detail, existing Blender rig/animations. The rejected October28 procedural clothing draft is evidence of failure and must not be republished or counted toward completion.
+
+Asset process: retain exact ImageGen prompts/reference roles/results; reuse licensed authored character parts first; author/fix geometry in Blender; fit and bind to the existing animation skeleton; reimport optimized GLB and render front/side/back and action poses. Static timber/iron AssetForge is not a valid skin/cloth profile; its doctor validates tooling only. Character-specific skinning, garment coverage, fit, exported materials and animation checks are required.
+
+Acceptance: inspect all 243 minimum male slot combinations (3^5) for neutral-pose fit, plus adverse combinations and each new item in walking/running/jumping/seated/crouch/prone/swim/riding/fishing poses. Validate female silhouette and all outfit components against reference, brunette colour, deformation and contacts. Validate preview/Apply/Cancel, reconnect persistence, two-player appearance agreement, original-owner/default compatibility and owned-resource cleanup. Test and render evidence are separate from ImageGen concepts. Preserve current world, home ownership, movement and the single coordinated4173 preview.
+
+Quality steering: user delegated all choices and review, requiring finish close to the live character and ImageGen throughout named-defect reference/paintover iterations. Do not stop for routine design approval. Generated sheets are references only; inspect and improve the actual exported models and combinations before accepting.

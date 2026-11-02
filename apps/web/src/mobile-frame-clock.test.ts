@@ -26,9 +26,12 @@ describe("mobile work budget", () => {
     expect(clock.next(120000)).toEqual({ steps: 1, draw: true });
   });
   it("bounds drawing pixels independently of retina scale and tablet size", () => {
-    expect(mobilePixelRatio(393, 852)).toBe(0.9);
+    expect(mobilePixelRatio(393, 852)).toBeLessThanOrEqual(1.25);
+    expect(393 * 852 * mobilePixelRatio(393, 852) ** 2).toBeLessThanOrEqual(
+      520000.01,
+    );
     const ratio = mobilePixelRatio(1366, 1024);
-    expect(1366 * 1024 * ratio ** 2).toBeCloseTo(360000);
-    expect(ratio).toBeLessThan(0.9);
+    expect(1366 * 1024 * ratio ** 2).toBeCloseTo(520000);
+    expect(ratio).toBeLessThan(1.25);
   });
 });

@@ -1,0 +1,9 @@
+{
+  "alpha_iou": {
+    "three-quarter": 0.9855556746042375,
+    "front": 0.9900070676927909,
+    "side": 0.9958630013519604,
+    "rear": 0.989928340041229
+  },
+  "meaning": "Fixed-camera silhouette overlap only; not a material, style or full 3D similarity score"
+}

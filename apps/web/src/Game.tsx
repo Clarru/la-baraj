@@ -1,8 +1,13 @@
+import { preloadMobileJoysticks } from "./mobile-joystick";
 import { mobilePixelRatio } from "./mobile-frame-clock";
 import { MobileFrameDriver } from "./MobileFrameDriver";
 import { MobileArcade2048 } from "./MobileArcade2048";
 import { MobileControls } from "./MobileControls";
-import { useMobileBlocked } from "./mobile-display";
+import {
+  useMobileBlocked,
+  setMobileOrientation,
+  requestGameOrientation,
+} from "./mobile-display";
 import { useTouchDevice } from "./mobile-device";
 import { arcadeControlledStation } from "../../../packages/shared/arcade2048-station";
 import {
@@ -69,7 +74,10 @@ import { Player, CameraRig, Crowd, type ViewMode } from "./player";
 import { MultiplayerRoom } from "./multiplayer";
 import { MultiplayerPlayers } from "./multiplayer-players";
 import { LocalBubbleChat } from "./BubbleChat";
+import { useBubbleChat } from "./use-bubble-chat";
+import { MobileChatComposer, focusMobileChat } from "./MobileChatComposer";
 import { ControlsHelp, GameHeader, GameMenu } from "./GameMenu";
+import { AppearanceDialog } from "./AppearanceDialog";
 import { captureGameKey, type GamePanel } from "./game-input";
 import { planesSeatSide } from "../../../packages/shared/planes-station";
 import { requestTableStand } from "./planes-activity";
@@ -180,9 +188,12 @@ export default function Game({ initialName }: { initialName: string }) {
   const hasHome = roomView.status === "offline" || roomView.homeIndex !== null;
   const mobileBlocked = useMobileBlocked();
   const touch = useTouchDevice();
+  useEffect(() => {
+    if (touch) void preloadMobileJoysticks().catch(() => {});
+  }, [touch]);
   const [mobileDpr, setMobileDpr] = useState(() =>
     typeof window === "undefined"
-      ? 0.9
+      ? 1.25
       : mobilePixelRatio(window.innerWidth, window.innerHeight),
   );
   const [mode, setMode] = useState<ViewMode>("walk");
@@ -207,6 +218,18 @@ export default function Game({ initialName }: { initialName: string }) {
     }
   }, [mobileBlocked, closeChat]);
   const finishChat = useCallback(() => setChatMode("display"), []);
+  const chatDraft = useBubbleChat(
+    room,
+    chatMode !== "closed",
+    chatOpen,
+    finishChat,
+    closeChat,
+    touch,
+  );
+  const mobileChatInput = useRef<HTMLTextAreaElement>(null);
+  const openMobileChat = useCallback(() => {
+    focusMobileChat(mobileChatInput, () => setChatMode("editing"));
+  }, []);
   const [planesOpen, setPlanesOpen] = useState(false);
   const ownGameSide = planesSeatSide(room.ownSeatId());
   const ownCruceSeat = cruceSeatSide(room.ownSeatId());
@@ -314,6 +337,13 @@ export default function Game({ initialName }: { initialName: string }) {
     roomView,
   );
   const arcadeOpen = arcadeStationId !== null;
+  useEffect(() => {
+    if (!touch) return;
+    const orientation = arcadeOpen ? "portrait" : "landscape";
+    setMobileOrientation(orientation, arcadeOpen ? closeArcade : undefined);
+    void requestGameOrientation(orientation);
+    return () => setMobileOrientation("landscape");
+  }, [touch, arcadeOpen, closeArcade]);
   const arcadeControlledId = arcadeControlledStation(
     arcadeStationId,
     roomView.selfId,
@@ -325,7 +355,7 @@ export default function Game({ initialName }: { initialName: string }) {
     arcadeOpen,
     closeArcade,
     arcadeStationId ?? undefined,
-    arcadeControlledId !== null,
+    arcadeControlledId !== null && !mobileBlocked,
   );
 
   const [waveAvailable, setWaveAvailable] = useState(false);
@@ -700,6 +730,7 @@ export default function Game({ initialName }: { initialName: string }) {
               {hasHome && (
                 <group visible={!arcadeOpen}>
                   <Player
+                    appearance={roomView.appearance}
                     homeIndex={homeIndex}
                     mode={mode}
                     resetKey={resetKey}
@@ -729,10 +760,8 @@ export default function Game({ initialName }: { initialName: string }) {
               )}
               {chatMode !== "closed" && (
                 <LocalBubbleChat
-                  room={room}
-                  editing={chatOpen}
-                  onFinishEditing={finishChat}
-                  onClose={closeChat}
+                  draft={chatDraft}
+                  editing={chatOpen && !touch}
                 />
               )}
               <group>
@@ -816,6 +845,13 @@ export default function Game({ initialName }: { initialName: string }) {
               <EnvironmentLab onEditing={setEnvironmentEditing} />
             </Suspense>
           )}
+          {touch && (
+            <MobileChatComposer
+              inputRef={mobileChatInput}
+              editing={chatOpen}
+              draft={chatDraft}
+            />
+          )}
           <MobileControls
             enabled={
               hasHome &&
@@ -846,7 +882,7 @@ export default function Game({ initialName }: { initialName: string }) {
                 setCruceLeaveRequest((n) => n + 1);
               } else requestTableStand();
             }}
-            onChat={() => setChatMode("editing")}
+            onChat={openMobileChat}
           />
           <GameHeader
             room={room}
@@ -1001,6 +1037,7 @@ export default function Game({ initialName }: { initialName: string }) {
               canLookHome={interiorIndex === null}
               onRename={(name) => room.rename(name)}
               onControls={() => setPanel("controls")}
+              onAppearance={() => setPanel("appearance")}
               onHome={lookHome}
               canWave={
                 !activityBusy &&
@@ -1023,6 +1060,13 @@ export default function Game({ initialName }: { initialName: string }) {
             <ControlsHelp
               onClose={() => setPanel(null)}
               onMenu={() => setPanel("menu")}
+            />
+          )}
+          {panel === "appearance" && (
+            <AppearanceDialog
+              room={room}
+              initial={roomView.appearance}
+              onClose={() => setPanel(null)}
             />
           )}
           {(import.meta.env.DEV ||
