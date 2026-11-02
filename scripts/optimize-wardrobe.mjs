@@ -6,6 +6,7 @@ import sharp from "sharp";
 import fs from "node:fs/promises";
 import path from "node:path";
 import crypto from "node:crypto";
+import {validateWardrobeMaterial} from "./wardrobe-material-contracts.mjs";
 
 const root = path.resolve(import.meta.dirname, "..");
 const source = path.join(root, "assets/source-models/wardrobe/build");
@@ -105,6 +106,7 @@ for (const filename of (await fs.readdir(source)).filter((name) => name.endsWith
       material.setBaseColorFactor([0.045, 0.021, 0.011, 1]);
     if (filename === "shoes-trail-hikers.glb" && material.getName().includes("Hiking_Leather"))
       material.setBaseColorFactor([0.30, 0.19, 0.12, 1]);
+    validateWardrobeMaterial(filename.replace(/\.glb$/,""),material.getName(),material.getBaseColorFactor());
     const hashes = {};
     for (const [slot, texture] of [
       ["map", material.getBaseColorTexture()], ["normalMap", material.getNormalTexture()],

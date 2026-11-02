@@ -30,18 +30,109 @@
     "Wardrobe_Female_SlenderHeel",
     "Wardrobe_Female_PointedPump.001",
     "Wardrobe_Female_SlenderHeel.001",
-    "Wardrobe_Female_LongBrunette",
-    "Wardrobe_Female_FrontLock",
-    "Wardrobe_Female_FrontLock.001",
-    "Wardrobe_Female_FrontLock.002",
-    "Wardrobe_Female_FrontLock.003",
-    "Wardrobe_Female_FrontLock.004",
-    "Wardrobe_Female_FrontLock.005",
-    "Wardrobe_Female_FrontLock.006",
-    "Wardrobe_Female_FrontLock.007",
-    "Wardrobe_Female_FrontLock.008",
-    "Wardrobe_Female_FrontLock.009"
+    "Wardrobe_Female_LongBrunette"
   ],
   "canonicalBones": 65,
+  "hairConstruction": "Measured publisher islands: unchanged inner scalp/crown; fitted back drape and paired authored front locks; no added tubes",
+  "hairIslands": [
+    {
+      "role": "back-drape",
+      "vertices": 1674,
+      "min": [
+        -0.12235528230667114,
+        -0.03508361428976059,
+        1.5521847009658813
+      ],
+      "max": [
+        0.12235528230667114,
+        0.16805945336818695,
+        1.8274903297424316
+      ]
+    },
+    {
+      "role": "retained-crown",
+      "vertices": 220,
+      "min": [
+        -0.09261161088943481,
+        -0.10401826351881027,
+        1.664851427078247
+      ],
+      "max": [
+        0.0030492241494357586,
+        -0.03770964965224266,
+        1.7982856035232544
+      ]
+    },
+    {
+      "role": "retained-crown",
+      "vertices": 188,
+      "min": [
+        -0.023812975734472275,
+        -0.07333662360906601,
+        1.6421388387680054
+      ],
+      "max": [
+        0.10944212228059769,
+        -0.013179220259189606,
+        1.8057687282562256
+      ]
+    },
+    {
+      "role": "front-lock",
+      "vertices": 180,
+      "min": [
+        -0.006696254480630159,
+        -0.0999823659658432,
+        1.6223673820495605
+      ],
+      "max": [
+        0.08738511800765991,
+        -0.005798276048153639,
+        1.7913589477539062
+      ]
+    },
+    {
+      "role": "front-lock",
+      "vertices": 172,
+      "min": [
+        -0.08673095703125,
+        -0.09504225850105286,
+        1.622829556465149
+      ],
+      "max": [
+        0.006696256343275309,
+        -0.006907752249389887,
+        1.7906488180160522
+      ]
+    },
+    {
+      "role": "retained-crown",
+      "vertices": 212,
+      "min": [
+        -0.09808886051177979,
+        -0.08719643205404282,
+        1.6942204236984253
+      ],
+      "max": [
+        0.008948588743805885,
+        -0.032486435025930405,
+        1.8066058158874512
+      ]
+    },
+    {
+      "role": "retained-crown",
+      "vertices": 434,
+      "min": [
+        -0.093963623046875,
+        -0.05755449831485748,
+        1.5628489255905151
+      ],
+      "max": [
+        0.093963623046875,
+        0.0769609659910202,
+        1.814512848854065
+      ]
+    }
+  ],
   "accepted": false
 }

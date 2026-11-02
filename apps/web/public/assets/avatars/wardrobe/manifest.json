@@ -291,25 +291,25 @@
     },
     {
       "id": "female-brunette-tailored",
-      "bytes": 2819188,
-      "triangles": 35310,
-      "meshes": 7,
-      "textures": 11,
+      "bytes": 2433580,
+      "triangles": 30254,
+      "meshes": 8,
+      "textures": 9,
       "retainedApprovedTextures": 0,
       "joints": 65,
       "bounds": {
         "min": [
           -0.9316649436950684,
           0,
-          -0.22386154532432556
+          -0.2470073252916336
         ],
         "max": [
           0.9316649436950684,
           1.8274903297424316,
-          0.19291599094867706
+          0.14880000054836273
         ]
       },
-      "sha256": "62d67be4ac6e9dbe937a046c620be6a0f778007bd39e9f23e5ce048b98d50376"
+      "sha256": "4e348f26e1b0daefb389d2d24974a8c0f498af845df4ea45c5cb39afd01e94e1"
     },
     {
       "id": "hair-buzzed",

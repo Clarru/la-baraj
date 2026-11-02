@@ -102,12 +102,16 @@ type QA = {
   animations(): string[];
   crowd(count: number): void;
   stats(): unknown;
+  view(kind: "full" | "head" | "rear" | "side"): void;
+  models(): unknown;
 };
 declare global {
   interface Window {
     __wardrobeQA: QA;
   }
 }
+let setView = (_kind: "full" | "head" | "rear" | "side") => {};
+const actorRoots = new Map<number, THREE.Object3D>();
 let openEditor = () => {},
   setAnimation = (_name: string) => {},
   setCrowd = (_count: number) => {};
@@ -130,13 +134,37 @@ window.__wardrobeQA = {
   animations: () => animationNames,
   crowd: (count) => setCrowd(Math.max(2, Math.min(50, Math.round(count)))),
   stats: () => rendererStats,
+  view: (kind) => setView(kind),
+  models: () =>
+    [...actorRoots].map(([id, object]) => {
+      const skeletons = new Set<THREE.Skeleton>();
+      const materials: { name: string; color: number[] }[] = [];
+      object.traverse((node) => {
+        if (!(node instanceof THREE.SkinnedMesh) || !node.visible) return;
+        skeletons.add(node.skeleton);
+        for (const material of Array.isArray(node.material)
+          ? node.material
+          : [node.material])
+          if (
+            material instanceof THREE.MeshStandardMaterial &&
+            /Hair|hair|Brunette/.test(material.name)
+          )
+            materials.push({
+              name: material.name,
+              color: material.color.toArray(),
+            });
+      });
+      return { id, skeletons: skeletons.size, materials };
+    }),
 };
 function Actor({
+  id,
   appearance,
   x,
   z,
   animation,
 }: {
+  id: number;
   appearance: Appearance;
   x: number;
   z: number;
@@ -169,11 +197,36 @@ function Actor({
     };
   }, [actions, animation]);
   useEffect(() => () => disposeCharacterSkeletons(object), [object]);
+  useEffect(() => {
+    actorRoots.set(id, object);
+    return () => {
+      actorRoots.delete(id);
+    };
+  }, [id, object]);
   return (
     <group position={[x, 0, z]}>
       <primitive object={object} dispose={null} />
     </group>
   );
+}
+function InspectionCamera({
+  kind,
+}: {
+  kind: "full" | "head" | "rear" | "side";
+}) {
+  const { camera } = useThree();
+  useEffect(() => {
+    const position: Record<typeof kind, [number, number, number]> = {
+      full: [0, 2.5, 5.7],
+      head: [0, 1.7, 2],
+      rear: [0, 2.4, -5.7],
+      side: [4.5, 1.7, 0],
+    };
+    camera.position.set(...position[kind]);
+    camera.lookAt(0, kind === "head" ? 1.65 : kind === "full" ? 0 : 0.9, 0);
+    camera.updateProjectionMatrix();
+  }, [kind, camera]);
+  return null;
 }
 function Metrics() {
   const { gl } = useThree();
@@ -196,6 +249,10 @@ function Metrics() {
 }
 function Lab() {
   const localView = useSyncExternalStore(local.subscribe, local.getSnapshot);
+  const otherView = useSyncExternalStore(
+    observer.subscribe,
+    observer.getSnapshot,
+  );
   const remoteAppearance = useSyncExternalStore(
     observer.subscribeWorld,
     () =>
@@ -204,6 +261,10 @@ function Lab() {
   const [open, setOpen] = useState(false),
     [animation, setPose] = useState("Idle_Neutral"),
     [count, updateCount] = useState(2);
+  const [view, updateView] = useState<"full" | "head" | "rear" | "side">(
+    "full",
+  );
+  setView = updateView;
   openEditor = () => setOpen(true);
   setAnimation = setPose;
   setCrowd = updateCount;
@@ -217,21 +278,36 @@ function Lab() {
         <color attach="background" args={["#c7cebc"]} />
         <ambientLight intensity={1.2} />
         <directionalLight position={[3, 6, 4]} intensity={2.2} />
+        {(view === "rear" || view === "side") && (
+          <directionalLight position={[-3, 3, -4]} intensity={1.5} />
+        )}
         <Suspense fallback={null}>
           {Array.from({ length: count }, (_, index) => (
             <Actor
               key={index}
-              appearance={index === 1 ? remoteAppearance : localView.appearance}
-              x={
-                count === 2 ? (index - 0.5) * 1.7 : ((index % 10) - 4.5) * 0.44
+              id={index}
+              appearance={
+                index === 1
+                  ? remoteAppearance
+                  : index === 2 && count === 3
+                    ? otherView.appearance
+                    : localView.appearance
               }
-              z={count === 2 ? 0 : Math.floor(index / 10) * -0.55}
+              x={
+                count === 2
+                  ? (index - 0.5) * 1.7
+                  : count === 3
+                    ? (index - 1) * 1.4
+                    : ((index % 10) - 4.5) * 0.44
+              }
+              z={count <= 3 ? 0 : Math.floor(index / 10) * -0.55}
               animation={animation}
             />
           ))}
         </Suspense>
         <gridHelper args={[12, 12, "#a9b49c", "#b5bfaa"]} />
         <Metrics />
+        <InspectionCamera kind={view} />
       </Canvas>
       <div className="wardrobe-qa-controls">
         <button

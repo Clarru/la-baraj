@@ -6,6 +6,7 @@ import math
 import sys
 from pathlib import Path
 from mathutils import Vector
+from mathutils.bvhtree import BVHTree
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/"scripts"))
 from wardrobe_rig import RAW,approved_rig,import_model,rebind,remove_source_rig,duplicate,export_item,role
@@ -40,6 +41,7 @@ leather=mat("Wardrobe_Female_Black_Leather",(.006,.007,.009),.44)
 leather.node_tree.nodes.get("Principled BSDF").inputs["Specular IOR Level"].default_value=.27
 gold=mat("Wardrobe_Female_Buckle_Brass",(.48,.30,.09),.35,.75)
 hair_mat=mat("Wardrobe_Female_Brunette",(.045,.021,.011),.72)
+brows_mat=mat("Wardrobe_Female_Brunette_Brows",(.045,.021,.011),.8)
 pieces=[]
 def select_faces(obj,keep):
     mesh=bmesh.new()
@@ -83,6 +85,10 @@ for region in ["Head","Hands","Midriff"]:
     pieces.append(skin)
 for obj in meshes:
     if obj!=body:
+        if "Eyebrow" in obj.name:
+            obj.data.materials.clear()
+            obj.data.materials.append(brows_mat)
+            role(obj,"facialHair")
         obj.hide_render=False
         pieces.append(obj)
 # Sheer tights retain the original leg shape/weights; opaque tint approximates
@@ -108,7 +114,7 @@ profiles=[(.79,.225,.170,.175),(.807,.228,.173,.178),(.87,.226,.174,.175),
     (1.03,.209,.178,.170),(1.24,.215,.213,.164),(1.37,.228,.207,.155),
     (1.43,.238,.180,.149),(1.48,.243,.160,.145),(1.52,.232,.135,.131),
     (1.555,.092,.083,.080),(1.575,.086,.079,.077)]
-blazer=knit_surface(cloth,profiles,[.52,.52,.49,.38,.43,.57,.62,.53,.39,.32,.28],
+blazer=knit_surface(cloth,profiles,[.52,.52,.49,.38,.43,.57,.62,.53,.45,1.15,1.20],
                     name="Wardrobe_Female_Blazer")
 finish_garment(blazer,.004)
 reduce_garment(blazer,.4)
@@ -124,13 +130,31 @@ for vertex in blazer.data.vertices:
             group.remove([vertex.index])
         pelvis.add([vertex.index],1,"REPLACE")
 
-# Lapels have their own crisp fold line, rather than a painted triangle.
+# Project the folded collar/lapels onto the measured outer chest, instead of
+# spanning the opening as the previous cravat-like six-point polygon did.
+def blazer_front_y(x,z):
+    low,high=profiles[0],profiles[-1]
+    for a,b in zip(profiles,profiles[1:]):
+        if a[0]<=z<=b[0]:
+            low,high=a,b
+            break
+    t=max(0,min(1,(z-low[0])/(high[0]-low[0])))
+    width=low[1]*(1-t)+high[1]*t
+    front=low[2]*(1-t)+high[2]*t
+    return .045-front*math.sqrt(max(0,1-(x/width)**2))
 for side in [-1,1]:
     s=Surface()
-    points=[(.055,-.056,1.566),(.145,-.096,1.486),(.103,-.155,1.389),
-            (.122,-.161,1.355),(.065,-.168,1.220),(.073,-.146,1.388)]
-    indices=[s.point((side*x,y,z)) for x,y,z in points]
-    s.face(indices,[(0,1),(.4,1),(.65,.7),(1,.65),(.4,0),(0,.6)])
+    for pattern in [
+        [(.085,1.566),(.150,1.500),(.125,1.435),(.078,1.530)],
+        [(.112,1.442),(.124,1.420),(.157,1.425),(.186,1.340),(.095,1.160),(.118,1.360)],
+    ]:
+        indices=[s.point((side*x,blazer_front_y(x,z)-(.012 if z>1.55 else .006),z))
+                 for x,z in pattern]
+        uvs=[(x/.24,z/.24) for x,z in pattern]
+        if side==1:
+            indices.reverse()
+            uvs.reverse()
+        s.face(indices,uvs)
     lapel=s.object("Blazer notched lapel",cloth)
     bpy.context.view_layer.objects.active=lapel
     shell=lapel.modifiers.new("Lapel folded thickness","SOLIDIFY")
@@ -278,6 +302,8 @@ for side in [-1,1]:
 # locks in Blender to the chest/back length required by the reference.
 hair_rig,hair_meshes=import_model(next(p for p in (RAW/"base/extracted").rglob("Hair_Long.gltf")
     if "Rigged to Head Bone" in str(p)))
+coat_tree=BVHTree.FromPolygons([v.co.copy() for v in blazer.data.vertices],
+    [tuple(face.vertices) for face in blazer.data.polygons],all_triangles=False)
 for hair in hair_meshes:
     rebind(hair,hair_rig,rig)
     hair_mat=hair.data.materials[0].copy()
@@ -285,80 +311,137 @@ for hair in hair_meshes:
     hair.data.materials.clear()
     hair.data.materials.append(hair_mat)
     hair.name="Wardrobe_Female_LongBrunette"
+    # Inspect the authored islands, including coincident UV-seam vertices.
+    # The inner scalp must stay unchanged; growing it onto the outer drape caused
+    # the previous shoulder flange and overlapping layers in adverse poses.
+    parent=list(range(len(hair.data.vertices)))
+    def find(index):
+        while parent[index]!=index:
+            parent[index]=parent[parent[index]]
+            index=parent[index]
+        return index
+    def union(a,b):
+        parent[find(a)]=find(b)
+    coincident={}
     for vertex in hair.data.vertices:
-        if vertex.co.z<1.68:
-            t=max(0,min(1,(1.68-vertex.co.z)/.13))
-            vertex.co.z-=.32*t**1.1
-            vertex.co.x*=1+.19*t
-            if vertex.co.y>.04:
-                vertex.co.y+=.07*t
-            else:
-                vertex.co.y-=.065*t
-    # Neck and torso share motion for the lower tips; crown stays head-weighted.
+        key=tuple(round(value,5) for value in vertex.co)
+        union(vertex.index,coincident.setdefault(key,vertex.index))
+    for face in hair.data.polygons:
+        for index in face.vertices:
+            union(face.vertices[0],index)
+    islands={}
+    for vertex in hair.data.vertices:
+        islands.setdefault(find(vertex.index),[]).append(vertex.index)
+    island_roles={}
+    hair_islands=[]
+    def smooth(value):
+        value=max(0,min(1,value))
+        return value*value*(3-2*value)
+    for indices in islands.values():
+        points=[hair.data.vertices[index].co.copy() for index in indices]
+        minimum=[min(point[axis] for point in points) for axis in range(3)]
+        maximum=[max(point[axis] for point in points) for axis in range(3)]
+        kind=("back-drape" if maximum[1]>.13 else
+              "front-lock" if maximum[1]<0 and 1.61<minimum[2]<1.635 else "retained-crown")
+        side=1 if sum(point.x for point in points)>=0 else -1
+        hair_islands.append({"role":kind,"vertices":len(indices),"min":minimum,"max":maximum})
+        for index in indices:
+            island_roles[index]=kind
+        if kind=="retained-crown":
+            continue
+        for index in indices:
+            vertex=hair.data.vertices[index]
+            old=vertex.co.copy()
+            if kind=="back-drape":
+                t=max(0,min(1,(1.70-old.z)/(1.70-minimum[2])))
+                vertex.co.z=old.z-.32*t**1.1
+                if vertex.co.z<1.565:
+                    # Drape behind the actual coat without widening the head
+                    # into a shoulder cape or moving the inner scalp layer.
+                    origin=Vector((old.x,-1,vertex.co.z))
+                    back_hit=None
+                    for _ in range(16):
+                        hit,_,_,_=coat_tree.ray_cast(origin,Vector((0,1,0)),3)
+                        if hit is None:break
+                        back_hit=hit
+                        origin=hit+Vector((0,.0001,0))
+                    if back_hit is not None:
+                        # A hard max collapses inner/outer strand surfaces onto
+                        # the same plane. Preserve ordered depth instead.
+                        vertex.co.y=back_hit.y+.012+(old.y-minimum[1])*.15
+            elif old.z<1.735:
+                t=max(0,min(1,(1.735-old.z)/(1.735-minimum[2])))
+                near=sorted(points,key=lambda point:abs(point.z-old.z))[:8]
+                center=sum(near,Vector())/len(near)
+                roots=sorted(points,key=lambda point:abs(point.z-1.735))[:8]
+                start=sum(roots,Vector())/len(roots)
+                # Retain the artist's tapered cross section and integrated root.
+                # Only its longitudinal path grows into the front chest drape.
+                p0=Vector((start.x,start.y,1.735))
+                p1=Vector((side*.105,-.105,1.59))
+                p2=Vector((side*.153,blazer_front_y(.153,1.36)-.020,1.36))
+                end=1.25 if side==1 else 1.27
+                p3=Vector((side*.135,blazer_front_y(.135,end)-.020,end))
+                target=(1-t)**3*p0+3*(1-t)**2*t*p1+3*(1-t)*t*t*p2+t**3*p3
+                if target.z<1.52:
+                    target.y=min(target.y,blazer_front_y(abs(target.x),target.z)-.014)
+                width=1+smooth(t)
+                vertex.co=(target.x+(old.x-center.x)*width,
+                           target.y+(old.y-center.y)*1.1,target.z)
+    if (sum(item["role"]=="back-drape" for item in hair_islands)!=1 or
+        sum(item["role"]=="front-lock" for item in hair_islands)!=2):
+        raise RuntimeError("Publisher hair component contract changed; inspect before fitting")
+    # The original bob has long sparse faces once grown. Add only the longitudinal
+    # support needed by the unchanged head/torso skin, preserving the rest shape.
+    mesh=bmesh.new()
+    mesh.from_mesh(hair.data)
+    mesh.verts.ensure_lookup_table()
+    tags=mesh.verts.layers.int.new("HairFitRole")
+    role_ids={"retained-crown":0,"back-drape":1,"front-lock":2}
+    for vertex in mesh.verts:vertex[tags]=role_ids[island_roles[vertex.index]]
+    for _ in range(3):
+        edges=[edge for edge in mesh.edges if edge.verts[0][tags]>0
+            and edge.verts[0][tags]==edge.verts[1][tags]
+            and abs(edge.verts[0].co.z-edge.verts[1].co.z)>.055]
+        if not edges:break
+        bmesh.ops.subdivide_edges(mesh,edges=edges,cuts=1,use_grid_fill=True,smooth=0)
+    mesh.verts.index_update()
+    role_names={value:key for key,value in role_ids.items()}
+    island_roles={vertex.index:role_names[vertex[tags]] for vertex in mesh.verts}
+    mesh.to_mesh(hair.data)
+    mesh.free()
+    bpy.context.view_layer.objects.active=hair
+    if hair.data.has_custom_normals:
+        bpy.ops.mesh.customdata_custom_splitnormals_clear()
+    for polygon in hair.data.polygons:
+        polygon.use_smooth=True
+    hair.data.update()
+    # Low drapes follow the same skin field as the actual coat, rather than
+    # rotating through it when the head and chest diverge in idle/prone poses.
+    sample=duplicate(hair,"__hair_coat_weight_sample")
+    sample.vertex_groups.clear()
+    for modifier in list(sample.modifiers):
+        if modifier.type=="ARMATURE":sample.modifiers.remove(modifier)
+    bind_surface(sample,blazer,rig)
+    sample_names={group.index:group.name for group in sample.vertex_groups}
     hair.vertex_groups.clear()
-    head=hair.vertex_groups.new(name="Head")
-    chest=hair.vertex_groups.new(name="spine_03")
+    groups={bone.name:hair.vertex_groups.new(name=bone.name) for bone in rig.data.bones}
     for v in hair.data.vertices:
-        t=max(0,min(.65,(1.55-v.co.z)/.28))
-        head.add([v.index],1-t,"REPLACE")
-        if t:chest.add([v.index],t,"REPLACE")
+        blend=.8*smooth((1.68-v.co.z)/.43) if island_roles[v.index]!="retained-crown" else 0
+        weights={"Head":1-blend}
+        for group in sample.data.vertices[v.index].groups:
+            name=sample_names[group.group]
+            weights[name]=weights.get(name,0)+group.weight*blend
+        values=sorted(weights.items(),key=lambda item:item[1],reverse=True)[:4]
+        total=sum(weight for _,weight in values)
+        for name,weight in values:
+            if weight:groups[name].add([v.index],weight/total,"REPLACE")
+    sample_data=sample.data
+    bpy.data.objects.remove(sample,do_unlink=True)
+    bpy.data.meshes.remove(sample_data)
     role(hair,"hair")
     pieces.append(hair)
 remove_source_rig(hair_rig)
-front_hair=mat("Wardrobe_Female_Brunette_FrontFibers",(.045,.021,.011),.68)
-node=front_hair.node_tree.nodes.new("ShaderNodeTexImage")
-node.image=bpy.data.images.load(str(ROOT/"assets/wardrobe-source/textures/hair-albedo.png"))
-front_hair.node_tree.links.new(node.outputs["Color"],front_hair.node_tree.nodes.get("Principled BSDF").inputs["Base Color"])
-fabric_normal(front_hair,"hair")
-
-# Independent tapered front locks bridge the publisher bob into chest-length
-# hair. Their curved ridges preserve the sculpted style of the retained crown.
-for side in [-1,1]:
-    for strand in range(5):
-        s=Surface()
-        rows=[]
-        offset=(strand-2)*.010
-        end=[1.30,1.24,1.28,1.34,1.31][strand]
-        controls=[(.091+offset*.5,-.050,1.72,.005),(.118+offset,-.095,1.62,.008),
-              (.132+offset,-.160,1.51,.007),(.145+offset,-.185,1.40,.005),
-              (.139+offset,-.190,1.34,.003),(.121+offset,-.181,end,.0004)]
-        path=[]
-        for segment in range(len(controls)-1):
-            p0=Vector(controls[max(0,segment-1)])
-            p1=Vector(controls[segment])
-            p2=Vector(controls[segment+1])
-            p3=Vector(controls[min(len(controls)-1,segment+2)])
-            for sample in range(5):
-                t=sample/5
-                point=.5*((2*p1)+(-p0+p2)*t+(2*p0-5*p1+4*p2-p3)*t*t+
-                          (-p0+3*p1-3*p2+p3)*t*t*t)
-                path.append(tuple(point))
-        path.append(controls[-1])
-        for level,(x,y,z,width) in enumerate(path):
-            ids=[]
-            for j in range(12):
-                angle=j*math.tau/12
-                ridge=.0003*math.cos(angle*3)
-                ids.append(s.point((side*x+(width+ridge)*math.sin(angle),
-                    y+(.003+ridge)*math.cos(angle),z)))
-            rows.append(ids)
-        for level in range(len(rows)-1):
-            for j in range(12):
-                n=(j+1)%12
-                s.face((rows[level][j],rows[level][n],rows[level+1][n],rows[level+1][j]),
-                    [(j/12,level/25),((j+1)/12,level/25),((j+1)/12,(level+1)/25),(j/12,(level+1)/25)])
-        lock=s.object("Wardrobe_Female_FrontLock",front_hair)
-        lock.parent=rig
-        head=lock.vertex_groups.new(name="Head")
-        chest=lock.vertex_groups.new(name="spine_03")
-        for v in lock.data.vertices:
-            t=max(0,min(.7,(1.56-v.co.z)/.30))
-            head.add([v.index],1-t,"REPLACE")
-            if t:chest.add([v.index],t,"REPLACE")
-        modifier=lock.modifiers.new("Hair head and chest flow","ARMATURE")
-        modifier.object=rig
-        role(lock,"hair")
-        pieces.append(lock)
 
 for obj in bpy.context.scene.objects:
     if obj.type=="MESH" and not obj.vertex_groups:obj.hide_render=True
@@ -368,4 +451,6 @@ bpy.ops.wm.save_as_mainfile(filepath=str(RAW/"female-tailored-source.blend"))
     "stage":"Complete-component rigged prototype; fit and visual review required",
     "artifact":str(artifact.relative_to(ROOT)),
     "components":[o.name for o in pieces],"canonicalBones":len(rig.data.bones),
+    "hairConstruction":"Measured publisher islands: unchanged inner scalp/crown; fitted back drape and paired authored front locks; no added tubes",
+    "hairIslands":hair_islands,
     "accepted":False},indent=2)+"\n")

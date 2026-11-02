@@ -18,9 +18,35 @@ const entry="__wardrobe-qa.html";
 const html=await fs.readFile(path.join(build,entry),"utf8");
 const required=new Set([entry,...[...html.matchAll(/(?:src|href)="([^"]+)"/g)]
   .map(match=>match[1].replace(/^\//,"")).filter(name=>name.startsWith("assets/"))]);
+// Multi-entry actual-Game checks include shared generated chunks and the new
+// hashed SharedWorker. Public/baseline JS is not an additive payload.
+try{await fs.access(path.join(build,"__wardrobe-game-qa.html"));required.add("__wardrobe-game-qa.html");}catch{}
+async function generated(directory){
+  for(const item of await fs.readdir(directory,{withFileTypes:true})){
+    const full=path.join(directory,item.name);
+    if(item.isDirectory()){await generated(full);continue;}
+    if(!/\.(?:js|css)$/.test(item.name))continue;
+    const relative=path.relative(build,full);
+    try{await fs.access(path.join(root,"apps/web/public",relative));}
+    catch{required.add(relative);}
+  }
+}
+await generated(path.join(build,"assets"));
 for(const name of await fs.readdir(path.join(build,"assets/avatars/wardrobe")))
   required.add("assets/avatars/wardrobe/"+name);
 const shared=new Set(["assets/optimized/Lakeside_Man.glb","assets/animations/character-actions.json"]);
+async function publicDependencies(directory){
+  for(const item of await fs.readdir(directory,{withFileTypes:true})){
+    if(item.name.startsWith("."))continue;
+    const full=path.join(directory,item.name);
+    const relative=path.relative(path.join(root,"apps/web/public"),full);
+    if(relative.startsWith("assets/avatars/wardrobe"))continue;
+    if(item.isDirectory())await publicDependencies(full);
+    else shared.add(relative);
+  }
+}
+if(required.has("__wardrobe-game-qa.html"))
+  await publicDependencies(path.join(root,"apps/web/public"));
 for(const name of required)if(name.endsWith(".css")){
   const css=await fs.readFile(path.join(build,name),"utf8");
   for(const match of css.matchAll(/url\(["']?(\/assets\/[^)"']+)["']?\)/g))shared.add(match[1].slice(1));
@@ -30,7 +56,7 @@ for(const name of required){
   const bytes=await fs.readFile(path.join(build,name)),sha256=hash(bytes),live=await served(name);
   const missing=live.status===404 || live.sha256===baseline.sha256;
   const disposition=missing?"new":live.status===200&&live.sha256===sha256?"identical":"conflict";
-  payload.push({path:name,bytes:bytes.length,sha256,disposition});
+  if(disposition!=="identical")payload.push({path:name,bytes:bytes.length,sha256,disposition});
 }
 for(const name of shared){
   const source=await fs.readFile(path.join(build,name)),live=await served(name);

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { createLocalWorld } from "./local-world";
 import { localWorldEnabled } from "./LocalWorldRoom";
+import { DEFAULT_APPEARANCE } from "../../../packages/shared/appearance";
 import {
   CRUCE_MODES,
   activeCruceSeats,
@@ -59,6 +60,80 @@ function client(world: ReturnType<typeof createLocalWorld>, token: string) {
 }
 afterEach(() => vi.useRealTimers());
 describe("local authority on the existing 4173 origin", () => {
+  it("shares bounded appearances between authenticated local clients and restores within the same worker lifetime", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(100_000);
+    const world = createLocalWorld(),
+      a = client(world, "A".repeat(43)),
+      b = client(world, "B".repeat(43));
+    await a.hello();
+    await b.hello();
+    const first = a.messages.filter((m) => m.type === "snapshot").at(-1);
+    expect(first?.type).toBe("snapshot");
+    if (first?.type !== "snapshot") throw Error("missing local snapshot");
+    expect(first.features).toMatchObject({
+      appearance: true,
+      arcade2048: true,
+      arcadeStations: true,
+    });
+    const home = first.home!.index,
+      id = first.selfId;
+    expect(first.players.find((p) => p.id === id)?.appearance).toEqual(
+      DEFAULT_APPEARANCE,
+    );
+    await a.send({
+      type: "appearance",
+      requestId: "local-look",
+      appearance: { version: 1, body: "female" },
+    });
+    expect(a.messages.at(-1)).toMatchObject({
+      type: "appearance",
+      id,
+      requestId: "local-look",
+      appearance: { body: "female" },
+    });
+    expect(b.messages.at(-1)).toMatchObject({
+      type: "appearance",
+      id,
+      appearance: { body: "female" },
+    });
+    await b.send({
+      type: "appearance",
+      requestId: "bounded",
+      appearance: {
+        ...DEFAULT_APPEARANCE,
+        hair: "https://example.test/model.glb",
+        owner: home,
+      } as never,
+    });
+    expect(b.messages.at(-1)).toMatchObject({
+      type: "appearance",
+      appearance: DEFAULT_APPEARANCE,
+    });
+    expect(JSON.stringify(b.messages.at(-1))).not.toContain("example.test");
+    await a.disconnect();
+    const resumed = client(world, "A".repeat(43));
+    await resumed.hello();
+    const snapshot = resumed.messages
+      .filter((m) => m.type === "snapshot")
+      .at(-1);
+    expect(snapshot?.type).toBe("snapshot");
+    if (snapshot?.type !== "snapshot") throw Error("missing resumed snapshot");
+    expect(snapshot.home?.index).toBe(home);
+    expect(
+      snapshot.players.find((p) => p.id === snapshot.selfId),
+    ).toMatchObject({
+      nickname: "Jucător A",
+      appearance: { version: 1, body: "female" },
+    });
+    const fresh = client(createLocalWorld(), "A".repeat(43));
+    await fresh.hello();
+    const clean = fresh.messages.filter((m) => m.type === "snapshot").at(-1);
+    if (clean?.type !== "snapshot") throw Error("missing fresh snapshot");
+    expect(
+      clean.players.find((p) => p.id === clean.selfId)?.appearance,
+    ).toEqual(DEFAULT_APPEARANCE);
+  });
   it("never enables local simulation on production or a configured multiplayer target", () => {
     expect(localWorldEnabled("la-baraj.vercel.app", undefined)).toBe(false);
     expect(localWorldEnabled("localhost", "https://example.test")).toBe(false);

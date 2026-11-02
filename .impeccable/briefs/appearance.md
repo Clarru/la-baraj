@@ -11,7 +11,7 @@ THESIS: Let people inspect a real character and deliberately apply a coherent lo
 The exported animated model leads; option labels remain quiet and unambiguous.
 
 OWN-WORLD: Inherit the current ImageGen paper-and-timber dialog frame, warm cream,
-forest ink, Bree Serif headings and Barlow controls. Selection uses forest fill.
+forest ink, Bree Serif headings and Alegreya Sans controls. Selection uses forest fill.
 
 STORY: Open Menu → Appearance, select the body and modeled pieces, turn the preview,
 then Apply or Cancel. A failed preview/save retains the previously applied look.
