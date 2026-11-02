@@ -3,5 +3,7 @@
   "author": "MRT / Margaret Toigo",
   "license": "CC0 (verified OBJ header)",
   "adaptation": "Authored curved toe, arch and stiletto last; shaft reshaped into a low-cut pump and fitted to canonical feet.",
-  "stage": "Unaccepted visual study"
+  "stage": "Accepted runtime export at documented sampled scope",
+  "acceptedRuntimeSHA256": "110b0bdbea545c5dd23865118d81030c47e3644cf1acb1868b8323e11555cf7b",
+  "clearance": "release-clearance.json"
 }

@@ -92,3 +92,13 @@ All owned browsers/contexts closed. Exactly 18 hash-matching additions were
 removed at 18.74 minutes; all 425 baseline paths/sizes/hashes, normal HTTP index
 and PID6159 were verified unchanged. No source, packet, canonical GLB or normal
 index was changed inside either QA window.
+
+## Release-owner clearance
+
+Main independently inspected the final daylight paired-colour, grounded crouch
+and seated frames, matched close-ups and unchanged female/canvas evidence, and
+cleared the reported chest/waist/rib fit issues at that sampled scope. Five exact
+accepted hashes are recorded in release-clearance.json and acceptance.json.
+This is not an all-frame, physical-iPhone or perfect-fashion claim. No model,
+tint or UI code changed after the frozen visual head; final metadata and credits
+remain subject to green final CI and Main's integration/publication checks.

@@ -1,5 +1,5 @@
 {
-  "stage": "Headless clothing candidate; world acceptance pending",
+  "stage": "Authoring source for accepted runtime export at documented sampled scope",
   "artifact": "assets/source-models/wardrobe/build/female-brunette-tailored.glb",
   "components": [
     "Wardrobe_Female_Head",
@@ -126,6 +126,8 @@
       ]
     }
   ],
-  "accepted": false,
-  "footwearSource": "MRT / Margaret Toigo, MakeHuman CC0 stiletto last; see clothing-fit/heels-source.json"
+  "accepted": true,
+  "footwearSource": "MRT / Margaret Toigo, MakeHuman CC0 stiletto last; see clothing-fit/heels-source.json",
+  "acceptedRuntimeSHA256": "110b0bdbea545c5dd23865118d81030c47e3644cf1acb1868b8323e11555cf7b",
+  "evidence": "clothing-fit/release-clearance.json; clothing-fit/WORLD_REVIEW.md"
 }

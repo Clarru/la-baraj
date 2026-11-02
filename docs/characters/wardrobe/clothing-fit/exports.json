@@ -1,5 +1,5 @@
 {
-  "stage": "Candidate \u2014 world acceptance pending",
+  "stage": "Accepted at release-owner documented sampled world/design scope",
   "originalMaleSHA256": "1c89c5710998736679a7a10403e89f998a912624c1fe674959668364bd2ba520",
   "assets": [
     {
@@ -112,5 +112,6 @@
       },
       "sha256": "6f9cb27c191251e9498348c9dcbbbba5341fe8a518dd5d3655b76964add54204"
     }
-  ]
+  ],
+  "clearance": "release-clearance.json"
 }

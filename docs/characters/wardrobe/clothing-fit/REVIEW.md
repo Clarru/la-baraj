@@ -1,9 +1,10 @@
 # Headless clothing reconstruction
 
-Status: **author world/design review passed; release-owner clearance pending**.
-These replace the earlier rejected studies. The frozen 48b69e2 delta passed its
-scoped final world review. Production remains on hold pending release-owner
-clearance; no new asset is marked accepted. Approved hats and Lakeside_Man.glb are unchanged.
+Status: **release-owner sampled visual clearance recorded**. The five exact
+accepted hashes are in exports.json and release-clearance.json. This replaces
+the earlier rejected studies at the documented finite review scope. Main owns
+normal publication and deployment.
+Approved hats and Lakeside_Man.glb are unchanged.
 
 ## Authoring
 
