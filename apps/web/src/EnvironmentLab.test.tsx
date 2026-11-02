@@ -64,6 +64,27 @@ it("isolates real Dialkit controllers by time/weather, restores edits, and reset
     expect(DialStore.getValues(id("dawn", "partly"))["light.exposure"]).toBe(
       0.51,
     );
+    await choose("Preview month", "1");
+    const january = DialStore.getValues(id("dawn", "partly"))[
+      "clock.hour"
+    ] as number;
+    await choose("Weather profile", "clear");
+    await choose("Preview month", "6");
+    const june = DialStore.getValues(id("dawn", "clear"))[
+      "clock.hour"
+    ] as number;
+    expect(june).toBeLessThan(january - 1);
+    await choose("Weather profile", "partly");
+    expect(DialStore.getValues(id("dawn", "partly"))["clock.hour"]).toBeCloseTo(
+      june,
+    );
+    await act(async () =>
+      DialStore.updateValue(id("dawn", "partly"), "clock.hour", 17.5),
+    );
+    await choose("Preview month", "12");
+    await choose("Weather profile", "clear");
+    await choose("Weather profile", "partly");
+    expect(DialStore.getValues(id("dawn", "partly"))["clock.hour"]).toBe(17.5);
     const stored = JSON.parse(
       localStorage.getItem(`dialkit:${id("dawn", "partly")}`)!,
     );

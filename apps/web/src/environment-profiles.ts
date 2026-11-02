@@ -139,3 +139,35 @@ export function exportProfiles(storage: Storage) {
     }
   return profiles;
 }
+
+const clockBases = new Map<string, number>();
+/** Remember the automatic phase basis separately from a deliberately edited hour. */
+export function syncProfileHour(
+  storage: Storage | null,
+  selection: ProfileSelection,
+  hour: number,
+  now: number,
+) {
+  const id = profileId(selection),
+    key = `la-baraj-environment-clock-v2:${selection.time}:${selection.weather}`;
+  let prior = clockBases.get(id);
+  try {
+    const stored = JSON.parse(storage?.getItem(key) ?? "null");
+    if (
+      typeof stored?.phaseHour === "number" &&
+      Number.isFinite(stored.phaseHour)
+    )
+      prior = stored.phaseHour;
+  } catch {
+    /* Memory basis still supports this session. */
+  }
+  const phase = phaseHour(selection.time, now, selection.month);
+  const next = Math.abs(hour - (prior ?? phase)) < 0.02 ? phase : hour;
+  clockBases.set(id, phase);
+  try {
+    storage?.setItem(key, JSON.stringify({ phaseHour: phase }));
+  } catch {
+    /* Session-only basis. */
+  }
+  return next;
+}

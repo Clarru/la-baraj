@@ -21,7 +21,8 @@ Open **Lighting** on `http://127.0.0.1:4173/`.
 Dialkit panel IDs use `la-baraj-environment-v2:<time>:<weather>`; its normal
 `dialkit:` localStorage prefix retains each panel's values, base, versions and
 selected version. `la-baraj-environment-selection-v2` remembers the selected
-condition and month. The optional timeline retains its separate stable ID.
+condition and month. Per-condition `la-baraj-environment-clock-v2:` metadata
+retains the automatic phase-hour basis across month/condition switches. The optional timeline retains its separate stable ID.
 
 The old `dialkit:la-baraj-environment-v1` draft is copied once into the inferred
 condition, never overwritten or deleted. In the former UI, selecting Clear did

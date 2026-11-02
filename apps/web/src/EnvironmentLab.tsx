@@ -28,6 +28,7 @@ import {
 } from "./environment-tuning";
 import {
   phaseHour,
+  syncProfileHour,
   profileId,
   readProfileSelection,
   rememberProfile,
@@ -175,20 +176,21 @@ function ProfileEditor({
     },
   );
   const values = dial.values;
-  const previousMonth = useRef(selection.month);
   useEffect(() => {
     if (requested) dial.setValue("enabled", true);
   }, [requested]);
   useEffect(() => {
-    const prior = previousMonth.current;
     const current = dial.getValues();
-    const followsPhase =
-      Math.abs(
-        current.clock.hour - phaseHour(selection.time, worldNow(), prior),
-      ) < 0.02;
-    const hour = followsPhase
-      ? phaseHour(selection.time, worldNow(), selection.month)
-      : current.clock.hour;
+    let storage: Storage | null = null;
+    try {
+      storage = localStorage;
+    } catch {}
+    const hour = syncProfileHour(
+      storage,
+      selection,
+      current.clock.hour,
+      worldNow(),
+    );
     const sun = solarPosition(hour, solarDay(worldNow(), selection.month));
     dial.setValues({
       clock: { hour },
@@ -203,8 +205,7 @@ function ProfileEditor({
           }
         : {}),
     });
-    previousMonth.current = selection.month;
-  }, [selection.month]);
+  }, [selection.time, selection.weather, selection.month, values.clock.hour]);
   actions.current = (path) => {
     if (path === "palette.sampleTime") {
       const light = lightingAt(
@@ -237,6 +238,12 @@ function ProfileEditor({
       setStatus("This condition reset.");
     }
     if (path === "exportSettings") {
+      let profiles: Record<string, unknown> = {},
+        previousDraft: string | null = null;
+      try {
+        profiles = exportProfiles(localStorage);
+        previousDraft = localStorage.getItem("dialkit:la-baraj-environment-v1");
+      } catch {}
       const blob = new Blob(
         [
           JSON.stringify(
@@ -244,10 +251,8 @@ function ProfileEditor({
               schema: 2,
               selection,
               current: dial.getValues(),
-              profiles: exportProfiles(localStorage),
-              previousDraft: localStorage.getItem(
-                "dialkit:la-baraj-environment-v1",
-              ),
+              profiles,
+              previousDraft,
             },
             null,
             2,
