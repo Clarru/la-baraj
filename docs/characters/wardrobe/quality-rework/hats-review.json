@@ -158,8 +158,8 @@
     "scripts/check-hat-colors-browser.mjs": "012440dc94092942a5c508b91987f98ae6e8664d5f8f4644c0dd887e54939d02",
     "tests/browser/hat-wardrobe-catalog.ts": "3a68f3308b5e0f7c44de3c631801eca0d2536efd5b02eb997051a44ba2a14c8c"
   },
-  "previewPublication": "Awaiting release owner disk clearance and bounded QA grant",
-  "browserValidation": "Prepared, paused by release owner for disk-space recovery",
+  "previewPublication": "Completed and fully cleaned; 409 baseline files + normal HTTP/PID unchanged",
+  "browserValidation": "Passed bounded published frozen settings/two-client and actual Game checks; accepted-hats/summary.json",
   "serverDeploymentRequired": true,
   "capVisualApproval": "User approved anatomical cap, 2026-11-02",
   "filteredVersions": "docs/characters/wardrobe/quality-rework/hats-runtime-versions.json",
@@ -172,5 +172,6 @@
   "qaSource": "Existing tests/browser/wardrobe-world.tsx + wardrobe-game.tsx at this clean commit; build-wardrobe-qa.mjs creates uniquely named wardrobe-qa worker",
   "qaBuild": "scripts/build-hat-colours-qa.mjs",
   "qaFreeze": "scripts/snapshot-hat-colours-qa.mjs",
-  "qaURLIsolation": "QA-only catalogue alias; six content-named hat/under-hair GLBs; canonical clothing assets and URLs unchanged"
+  "qaURLIsolation": "QA-only catalogue alias; six content-named hat/under-hair GLBs; canonical clothing assets and URLs unchanged",
+  "backendActivationGate": "features.appearanceHatColors === true in a live snapshot before frontend publication"
 }

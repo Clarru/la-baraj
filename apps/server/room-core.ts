@@ -385,7 +385,9 @@ export class RoomCore {
               ...(this.runtime.arcade
                 ? { arcade2048: true, arcadeStations: true }
                 : {}),
-              ...(this.runtime.appearances ? { appearance: true } : {}),
+              ...(this.runtime.appearances
+                ? { appearance: true, appearanceHatColors: true }
+                : {}),
             },
           }
         : {}),

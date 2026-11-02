@@ -109,21 +109,21 @@
     },
     {
       "id": "hat-knit-beanie",
-      "sha256": "863b5dd80a3fc29facb32457f00b72cbbfb10f17e21be63a8550030022b4dc4b",
+      "sha256": "04dfafc3872fd5d8586c2544d987d51ba74bf276390fb4e3b704e0f2210a3069",
       "accepted": true,
-      "evidence": "MESH_ACTION_REVIEW.md; NEUTRAL_FIT_REVIEW.md; REVIEW_EVIDENCE.json"
+      "evidence": "quality-rework/accepted-hats/summary.json; quality-rework/HATS_REVIEW.md"
     },
     {
       "id": "hat-panel-cap",
-      "sha256": "da9f48640eef27321172892595cbfc7fd436104398a17bd2fb7f6de7be25d3a0",
+      "sha256": "a48abc75673f3dbc5a1e175f5fdac0e4687bbbb497f19c784a904e0be828519f",
       "accepted": true,
-      "evidence": "MESH_ACTION_REVIEW.md; NEUTRAL_FIT_REVIEW.md; REVIEW_EVIDENCE.json"
+      "evidence": "quality-rework/accepted-hats/summary.json; quality-rework/HATS_REVIEW.md"
     },
     {
       "id": "hat-stitched-bucket",
-      "sha256": "cd9f7de28dfda43e535f9976184b9167c68f598e100cbace0f6519cb4e78f897",
+      "sha256": "145d0522b9f6230e29fd11ef2fb215d0c4e1f6c23f6dd295059e17578ee55fc2",
       "accepted": true,
-      "evidence": "MESH_ACTION_REVIEW.md; NEUTRAL_FIT_REVIEW.md; REVIEW_EVIDENCE.json"
+      "evidence": "quality-rework/accepted-hats/summary.json; quality-rework/HATS_REVIEW.md"
     },
     {
       "id": "male-custom-top-skin",
@@ -154,6 +154,29 @@
       "sha256": "e69b4a180e7311a4c047c2a5dc8a4abdbc5de22d90a9180bec7f09b1e92d99cd",
       "accepted": true,
       "evidence": "MESH_ACTION_REVIEW.md; NEUTRAL_FIT_REVIEW.md; REVIEW_EVIDENCE.json"
+    },
+    {
+      "id": "hair-parted-hat",
+      "sha256": "a08bcd02352c5ffc501ffa13455c20e051ecfa1de7e6f3908037bbaf36c60ebe",
+      "accepted": true,
+      "evidence": "quality-rework/accepted-hats/summary.json; quality-rework/HATS_REVIEW.md"
+    },
+    {
+      "id": "hair-buzzed-hat",
+      "sha256": "fa3955fa53c14c21b01d905735b9ccccba246ad3258d164cc4ecaba1efc22ca0",
+      "accepted": true,
+      "evidence": "quality-rework/accepted-hats/summary.json; quality-rework/HATS_REVIEW.md"
+    },
+    {
+      "id": "hair-long-hat",
+      "sha256": "a6cdc6b65708afac6f7953789ae3020e4fac20399d002db44f7b2d6c6274df55",
+      "accepted": true,
+      "evidence": "quality-rework/accepted-hats/summary.json; quality-rework/HATS_REVIEW.md"
     }
-  ]
+  ],
+  "hatRework": {
+    "frozenRuntimeHead": "0b461639931fa784b284539d974ddcf13a5b26c9",
+    "evidence": "quality-rework/accepted-hats/summary.json",
+    "scope": "Nine hat/hair fits; six colours per hat; staged UI and two-client actual Game checks; other clothing acceptance unchanged"
+  }
 }

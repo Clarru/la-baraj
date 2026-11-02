@@ -1,0 +1,29 @@
+{
+  "checks": [
+    {
+      "hair": "parted",
+      "removeHatRestoresFullStyle": true,
+      "observer": true
+    },
+    {
+      "hair": "buzzed",
+      "removeHatRestoresFullStyle": true,
+      "observer": true
+    },
+    {
+      "hair": "long",
+      "removeHatRestoresFullStyle": true,
+      "observer": true
+    }
+  ],
+  "errors": [],
+  "requests": [
+    "http://127.0.0.1:4173/assets/hat-colours-qa/hair-parted-hat-a08bcd02352c5ffc.glb",
+    "http://127.0.0.1:4173/assets/hat-colours-qa/hat-panel-cap-a48abc75673f3dbc.glb",
+    "http://127.0.0.1:4173/assets/hat-colours-qa/hair-buzzed-hat-fa3955fa53c14c21.glb",
+    "http://127.0.0.1:4173/assets/avatars/wardrobe/hair-buzzed.glb?v=1634d3a6627c5f57",
+    "http://127.0.0.1:4173/assets/hat-colours-qa/hair-long-hat-a6cdc6b65708afac.glb",
+    "http://127.0.0.1:4173/assets/avatars/wardrobe/hair-long.glb?v=ccc33e3a8da7933e"
+  ],
+  "defaultExtraDownloads": 0
+}

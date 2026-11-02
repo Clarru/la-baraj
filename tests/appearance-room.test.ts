@@ -13,7 +13,7 @@ import {
   type ServerMessage,
 } from "../packages/shared/protocol";
 
-function fixture() {
+function fixture(appearanceEnabled = true) {
   const connections: RoomConnection[] = [];
   const save = vi.fn().mockResolvedValue(undefined);
   const profiles = new AppearanceProfiles({ save });
@@ -39,7 +39,7 @@ function fixture() {
     connections: () => connections,
     saveFire: async () => {},
     homes,
-    appearances: profiles,
+    ...(appearanceEnabled ? { appearances: profiles } : {}),
   });
   function connect(id: string) {
     const messages: ServerMessage[] = [];
@@ -75,6 +75,19 @@ function fixture() {
 }
 
 describe("room appearance authority and compatibility", () => {
+  it("advertises hat colours only when appearance profiles are available", async () => {
+    for (const enabled of [true, false]) {
+      const f = fixture(enabled),
+        owner = f.connect("owner");
+      await f.hello(owner);
+      const snapshot = owner.messages.find(
+        (message) => message.type === "snapshot",
+      );
+      expect(snapshot?.features?.appearanceHatColors).toBe(
+        enabled ? true : undefined,
+      );
+    }
+  });
   it("keeps old hellos valid and strips arbitrary cosmetic paths", () => {
     expect(
       parseClientMessage(

@@ -28,11 +28,9 @@ profile normalization and profile reload. Local exported-model renders cover all
 views, selected light/dark colours and the existing hair choices. Reports identify
 exact asset hashes.
 
-The prepared real AppearanceDialog/two-client browser check has NOT run yet.
-Main cleared one space-guarded build after the machine hit ENOSPC; 3D browser
-contexts and shared publication still require a bounded review grant.
-No shared-preview write or production deployment was made. UI click-through,
-shared-world appearance and device performance remain release checks.
+The bounded published settings/two-client and actual Game checks passed. See
+RELEASE_CHECKS.md and accepted-hats/summary.json for exact scope, raw runner
+findings and cleanup proof. Production deployment remains owned by Main.
 
 Sources: scripts/prototype-cap-scalp.py, scripts/wardrobe_anatomical.py,
 scripts/build-wardrobe-hats.py, scripts/build-wardrobe-hat-hair.py.

@@ -1,0 +1,185 @@
+{
+  "head": "0b461639931fa784b284539d974ddcf13a5b26c9",
+  "runnerSHA256": "95a99c697a5f5b07e3be0ef52b670227b96a87591cd549cd5fc4cd2ac434a37f",
+  "checks": [],
+  "fits": [
+    {
+      "hat": "panel-cap",
+      "hair": "parted",
+      "views": [
+        "front",
+        "side",
+        "rear"
+      ],
+      "walk": true,
+      "turn": true
+    },
+    {
+      "hat": "panel-cap",
+      "hair": "buzzed",
+      "views": [
+        "front",
+        "side",
+        "rear"
+      ],
+      "walk": true,
+      "turn": true
+    },
+    {
+      "hat": "panel-cap",
+      "hair": "long",
+      "views": [
+        "front",
+        "side",
+        "rear"
+      ],
+      "walk": true,
+      "turn": true
+    },
+    {
+      "hat": "knit-beanie",
+      "hair": "parted",
+      "views": [
+        "front",
+        "side",
+        "rear"
+      ],
+      "walk": true,
+      "turn": true
+    },
+    {
+      "hat": "knit-beanie",
+      "hair": "buzzed",
+      "views": [
+        "front",
+        "side",
+        "rear"
+      ],
+      "walk": true,
+      "turn": true
+    },
+    {
+      "hat": "knit-beanie",
+      "hair": "long",
+      "views": [
+        "front",
+        "side",
+        "rear"
+      ],
+      "walk": true,
+      "turn": true
+    },
+    {
+      "hat": "stitched-bucket",
+      "hair": "parted",
+      "views": [
+        "front",
+        "side",
+        "rear"
+      ],
+      "walk": true,
+      "turn": true
+    },
+    {
+      "hat": "stitched-bucket",
+      "hair": "buzzed",
+      "views": [
+        "front",
+        "side",
+        "rear"
+      ],
+      "walk": true,
+      "turn": true
+    },
+    {
+      "hat": "stitched-bucket",
+      "hair": "long",
+      "views": [
+        "front",
+        "side",
+        "rear"
+      ],
+      "walk": true,
+      "turn": true
+    }
+  ],
+  "errors": [],
+  "sockets": [],
+  "privateAssets": [
+    "http://127.0.0.1:4173/assets/hat-colours-qa/hair-parted-hat-a08bcd02352c5ffc.glb",
+    "http://127.0.0.1:4173/assets/hat-colours-qa/hat-panel-cap-a48abc75673f3dbc.glb",
+    "http://127.0.0.1:4173/assets/hat-colours-qa/hair-buzzed-hat-fa3955fa53c14c21.glb",
+    "http://127.0.0.1:4173/assets/hat-colours-qa/hair-long-hat-a6cdc6b65708afac.glb",
+    "http://127.0.0.1:4173/assets/hat-colours-qa/hat-knit-beanie-04dfafc3872fd5d8.glb",
+    "http://127.0.0.1:4173/assets/hat-colours-qa/hat-stitched-bucket-145d0522b9f6230e.glb"
+  ],
+  "canonicalHats": [],
+  "screens": [
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/hat-colours/acceptance/fit-panel-cap-parted-front.png",
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/hat-colours/acceptance/fit-panel-cap-parted-side.png",
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/hat-colours/acceptance/fit-panel-cap-parted-rear.png",
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/hat-colours/acceptance/fit-panel-cap-buzzed-front.png",
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/hat-colours/acceptance/fit-panel-cap-buzzed-side.png",
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/hat-colours/acceptance/fit-panel-cap-buzzed-rear.png",
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/hat-colours/acceptance/fit-panel-cap-long-front.png",
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/hat-colours/acceptance/fit-panel-cap-long-side.png",
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/hat-colours/acceptance/fit-panel-cap-long-rear.png",
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/hat-colours/acceptance/fit-knit-beanie-parted-front.png",
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/hat-colours/acceptance/fit-knit-beanie-parted-side.png",
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/hat-colours/acceptance/fit-knit-beanie-parted-rear.png",
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/hat-colours/acceptance/fit-knit-beanie-buzzed-front.png",
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/hat-colours/acceptance/fit-knit-beanie-buzzed-side.png",
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/hat-colours/acceptance/fit-knit-beanie-buzzed-rear.png",
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/hat-colours/acceptance/fit-knit-beanie-long-front.png",
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/hat-colours/acceptance/fit-knit-beanie-long-side.png",
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/hat-colours/acceptance/fit-knit-beanie-long-rear.png",
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/hat-colours/acceptance/fit-stitched-bucket-parted-front.png",
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/hat-colours/acceptance/fit-stitched-bucket-parted-side.png",
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/hat-colours/acceptance/fit-stitched-bucket-parted-rear.png",
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/hat-colours/acceptance/fit-stitched-bucket-buzzed-front.png",
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/hat-colours/acceptance/fit-stitched-bucket-buzzed-side.png",
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/hat-colours/acceptance/fit-stitched-bucket-buzzed-rear.png",
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/hat-colours/acceptance/fit-stitched-bucket-long-front.png",
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/hat-colours/acceptance/fit-stitched-bucket-long-side.png",
+    "/Users/claumarin/Documents/ChatGPT/multiplayer-game-worktrees/mobile-play/.impeccable/review/hat-colours/acceptance/fit-stitched-bucket-long-rear.png"
+  ],
+  "materialIsolation": [
+    {
+      "x": -1.4,
+      "name": "Wardrobe_Hat_Cap_Navy",
+      "uuid": "c5f821de-1dcd-4318-a466-f89c039e1df2",
+      "color": [
+        1.9808306709265178,
+        1.661341853035144,
+        1.1501597444089458
+      ],
+      "map": "5981b52c-44ca-4f6d-b8ab-70ecc18910a1",
+      "normal": "16d4a9fa-6da0-4af2-bb92-07ecf293e822"
+    },
+    {
+      "x": 0,
+      "name": "Wardrobe_Hat_Cap_Navy",
+      "uuid": "f4e7afbf-73d8-48d0-874f-722cce4d3b7e",
+      "color": [
+        1.9808306709265178,
+        1.661341853035144,
+        1.1501597444089458
+      ],
+      "map": "5981b52c-44ca-4f6d-b8ab-70ecc18910a1",
+      "normal": "16d4a9fa-6da0-4af2-bb92-07ecf293e822"
+    },
+    {
+      "x": 1.4,
+      "name": "Wardrobe_Hat_Cap_Navy",
+      "uuid": "7b542bf3-9bac-437b-8b49-ee5d592202a1",
+      "color": [
+        0.12779552715654954,
+        0.23961661341853036,
+        0.415335463258786
+      ],
+      "map": "5981b52c-44ca-4f6d-b8ab-70ecc18910a1",
+      "normal": "16d4a9fa-6da0-4af2-bb92-07ecf293e822"
+    }
+  ],
+  "failure": "TimeoutError: locator.click: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Apply look', exact: true })\u001b[22m\n\u001b[2m    - locator resolved to <button disabled type=\"button\" class=\"appearance-apply\">Apply look</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not enabled\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not enabled\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    37 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is not enabled\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n"
+}
