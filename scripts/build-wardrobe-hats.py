@@ -8,6 +8,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 from wardrobe_rig import RAW, approved_rig, export_item, role
 from wardrobe_surfaces import Surface
+from wardrobe_materials import fabric_normal
 
 rig, approved = approved_rig()
 
@@ -22,6 +23,7 @@ def material(name, color, texture=None):
         node.image = bpy.data.images.load(str(ROOT / "assets/wardrobe-source/textures" / texture),
                                           check_existing=True)
         result.node_tree.links.new(node.outputs["Color"], shader.inputs["Base Color"])
+        fabric_normal(result,"knit" if texture.startswith("knit") else "twill")
     return result
 
 fabric = material("Wardrobe_Hat_Twill", (.06, .08, .12), "twill-albedo.png")
@@ -41,8 +43,12 @@ def ring_surface(name, profiles, mat, segments=64, center_y=.022):
             n = (i + 1) % segments
             u, un = i / segments * 3, (i + 1) / segments * 3
             v, vn = profiles[k][0] * 8, profiles[k + 1][0] * 8
-            s.face((rings[k][i], rings[k][n], rings[k + 1][n], rings[k + 1][i]),
-                   [(u,v),(un,v),(un,vn),(u,vn)])
+            vertices=(rings[k][i],rings[k][n],rings[k+1][n],rings[k+1][i])
+            coordinates=[(u,v),(un,v),(un,vn),(u,vn)]
+            if profiles[k][1]<.10 and profiles[k+1][1]<.10:
+                coordinates=[(s.vertices[index][0]/.24+.5,s.vertices[index][1]/.24+.5)
+                             for index in vertices]
+            s.face(vertices,coordinates)
     return s.object(name, mat)
 
 def curve(name, points, radius, mat):
@@ -125,7 +131,7 @@ items.append(("hat-panel-cap",consolidate(parts,"Wardrobe_Hat_PanelCap")))
 
 # Beanie is a rounded knit crown with a doubled folded cuff.
 parts = [ring_surface("Beanie crown",[(1.76,.117,.130),(1.81,.116,.131),
-    (1.86,.110,.124),(1.91,.092,.102),(1.943,.055,.063),(1.953,.002,.002)],knit)]
+    (1.85,.110,.124),(1.885,.092,.102),(1.905,.055,.063),(1.913,.002,.002)],knit)]
 parts.append(ring_surface("Beanie folded cuff",[(1.750,.119,.131),(1.758,.123,.135),
     (1.79,.122,.135),(1.806,.118,.131)],knit))
 for z in [1.755,1.801]:
@@ -136,8 +142,8 @@ items.append(("hat-knit-beanie",consolidate(parts,"Wardrobe_Hat_KnitBeanie")))
 
 # Bucket has a sloped stitched brim and shallow flat-topped, tapered crown.
 parts = [ring_surface("Bucket crown",[(1.77,.122,.132),(1.785,.121,.131),
-    (1.87,.109,.118),(1.902,.105,.114),(1.911,.09,.098),
-    (1.913,.002,.002)],fabric)]
+    (1.838,.111,.121),(1.858,.108,.117),(1.867,.09,.098),
+    (1.869,.002,.002)],fabric)]
 brim = ring_surface("Bucket sloping brim",[(1.77,.122,.132),(1.768,.136,.146),
     (1.751,.167,.178),(1.750,.17,.181)],fabric)
 bpy.context.view_layer.objects.active = brim

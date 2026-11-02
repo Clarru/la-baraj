@@ -140,6 +140,15 @@ def finish_garment(obj, thickness=.003):
         polygon.use_smooth = True
 
 
+def reduce_garment(obj,ratio=.4):
+    """Keep the fitted subdivision silhouette, then reduce the exported skin."""
+    bpy.context.view_layer.objects.active=obj
+    modifier=obj.modifiers.new("Mobile garment surface reduction","DECIMATE")
+    modifier.ratio=ratio
+    modifier.use_collapse_triangulate=True
+    bpy.ops.object.modifier_apply(modifier=modifier.name)
+
+
 def bind_surface(obj, body, rig):
     """Transfer interpolated source-surface weights, bounded to four influences."""
     body.data.calc_loop_triangles()

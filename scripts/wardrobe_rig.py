@@ -78,10 +78,28 @@ def role(obj, value):
 
 def export_item(rig, meshes, name):
     reset_rig(rig)
+    # Coalesce meshes by appearance role before export. Work on copies so an
+    # authored piece can also be used by its tucked/full fit variant.
+    grouped = {}
+    for obj in meshes:
+        grouped.setdefault(obj.get("wardrobeRole", "item"), []).append(obj)
+    temporary = []
+    for item_role, originals in grouped.items():
+        copies = [duplicate(obj, f"__export_{name}_{index}") for index,obj in enumerate(originals)]
+        for selected in bpy.context.selected_objects:
+            selected.select_set(False)
+        for obj in copies:
+            obj.select_set(True)
+        bpy.context.view_layer.objects.active = copies[0]
+        if len(copies) > 1:
+            bpy.ops.object.join()
+        result = copies[0]
+        result.name = f"Wardrobe_{name}_{item_role}"
+        temporary.append(result)
     for obj in bpy.context.scene.objects:
         obj.select_set(False)
     rig.select_set(True)
-    for obj in meshes:
+    for obj in temporary:
         obj.select_set(True)
     bpy.context.view_layer.objects.active = rig
     path = BUILD / f"{name}.glb"
@@ -89,6 +107,11 @@ def export_item(rig, meshes, name):
         filepath=str(path), export_format="GLB", use_selection=True,
         export_animations=False, export_skins=True, export_extras=True,
     )
+    for obj in temporary:
+        data = obj.data
+        bpy.data.objects.remove(obj, do_unlink=True)
+        if not data.users:
+            bpy.data.meshes.remove(data)
     return path
 
 

@@ -1,0 +1,17 @@
+[
+  {
+    "id": "shoes-lake-boots",
+    "artifact": "assets/source-models/wardrobe/build/shoes-lake-boots.glb",
+    "accepted": false
+  },
+  {
+    "id": "shoes-trail-hikers",
+    "artifact": "assets/source-models/wardrobe/build/shoes-trail-hikers.glb",
+    "accepted": false
+  },
+  {
+    "id": "shoes-canvas-low",
+    "artifact": "assets/source-models/wardrobe/build/shoes-canvas-low.glb",
+    "accepted": false
+  }
+]

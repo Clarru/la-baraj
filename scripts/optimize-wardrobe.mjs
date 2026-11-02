@@ -21,6 +21,13 @@ function bindings(skin) {
     [node.getName(), [...matrices.slice(index * 16, index * 16 + 16)]]));
 }
 const expected = bindings(reference);
+async function pixelKey(texture) {
+  const {data,info} = await sharp(texture.getImage()).ensureAlpha().raw().toBuffer({resolveWithObject:true});
+  return [info.width,info.height,crypto.createHash("sha256").update(data).digest("hex")].join(":");
+}
+const approvedTextures = new Map();
+for (const texture of approved.getRoot().listTextures())
+  approvedTextures.set(await pixelKey(texture), texture);
 const records = [];
 for (const filename of (await fs.readdir(source)).filter((name) => name.endsWith(".glb")).sort()) {
   const doc = await io.read(path.join(source, filename));
@@ -34,8 +41,24 @@ for (const filename of (await fs.readdir(source)).filter((name) => name.endsWith
         throw Error(`${filename}: bind mismatch at ${name}`);
     }
   }
+  let retainedApprovedTextures = 0;
+  for (const texture of doc.getRoot().listTextures()) {
+    const original = approvedTextures.get(await pixelKey(texture));
+    if (!original) continue;
+    // Blender stores an imported WebP as PNG. Reuse the exact approved encoded
+    // texture when decoded pixels agree; don't inflate or recompress that map.
+    const hash = crypto.createHash("sha256").update(original.getImage()).digest("hex");
+    texture.setImage(original.getImage()).setMimeType(original.getMimeType()).setName("approved_"+hash);
+    retainedApprovedTextures++;
+  }
   await doc.transform(dedup(), prune(), textureCompress({
     encoder: sharp, targetFormat: "webp", resize: [1024, 1024],
+    pattern: /^(?!approved_)/,
+    slots: /^(?!normalTexture|metallicRoughnessTexture|occlusionTexture).*$/,
+  }), textureCompress({
+    encoder: sharp, targetFormat: "webp", resize: [512, 512], lossless: true,
+    pattern: /^(?!approved_)/,
+    slots: /^(normalTexture|metallicRoughnessTexture|occlusionTexture)$/,
   }));
   let triangles = 0;
   for (const mesh of doc.getRoot().listMeshes())
@@ -59,6 +82,14 @@ for (const filename of (await fs.readdir(source)).filter((name) => name.endsWith
       material.setBaseColorFactor(filename.includes("beanie")
         ? [0.12, 0.15, 0.14, 1] : [0.06, 0.08, 0.12, 1]);
     }
+    if (filename.startsWith("bottom-trail-cargo") && material.getBaseColorTexture())
+      material.setBaseColorFactor([0.17, 0.20, 0.12, 1]);
+    if (filename.startsWith("bottom-weekend-shorts") && material.getName().includes("Twill"))
+      material.setBaseColorFactor([0.7, 0.59, 0.41, 1]);
+    if (filename === "top-trail-overshirt.glb" && material.getBaseColorTexture())
+      material.setBaseColorFactor([0.04, 0.075, 0.13, 1]);
+    if (filename === "female-brunette-tailored.glb" && material.getName().includes("Black_Tailoring"))
+      material.setBaseColorFactor([0.009, 0.012, 0.015, 1]);
     const hashes = {};
     for (const [slot, texture] of [
       ["map", material.getBaseColorTexture()], ["normalMap", material.getNormalTexture()],
@@ -73,7 +104,7 @@ for (const filename of (await fs.readdir(source)).filter((name) => name.endsWith
   const bytes = await fs.readFile(target);
   records.push({ id: filename.replace(/\.glb$/, ""), candidate: path.relative(root, target),
     bytes: bytes.length, triangles, meshes: doc.getRoot().listMeshes().length,
-    textures: doc.getRoot().listTextures().length, joints: expected.size,
+    textures: doc.getRoot().listTextures().length, retainedApprovedTextures, joints: expected.size,
     bounds: getBounds(doc.getRoot().getDefaultScene()),
     sha256: crypto.createHash("sha256").update(bytes).digest("hex") });
 }

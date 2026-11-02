@@ -9,7 +9,8 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 from wardrobe_rig import (RAW, approved_rig, duplicate, export_item, import_model,
                           rebind, remove_source_rig, role)
-from wardrobe_surfaces import knit_surface, finish_garment, bind_surface, rib_band
+from wardrobe_surfaces import knit_surface, finish_garment, bind_surface, rib_band, reduce_garment
+from wardrobe_materials import fabric_normal
 
 rig, approved = approved_rig()
 source = next((RAW / "base/extracted").rglob("Superhero_Male_FullBody.gltf"))
@@ -32,6 +33,7 @@ if texture.exists():
     node = material.node_tree.nodes.new("ShaderNodeTexImage")
     node.image = image
     material.node_tree.links.new(node.outputs["Color"], shader.inputs["Base Color"])
+fabric_normal(material,"knit")
 garment = knit_surface(material)
 finish_garment(garment)
 parts = [garment,
@@ -49,6 +51,7 @@ for part in parts:
     part.select_set(True)
 bpy.context.view_layer.objects.active=garment
 bpy.ops.object.join()
+reduce_garment(garment,.36)
 bind_surface(garment, body, rig)
 role(garment, "top")
 garment["wardrobeItem"] = "weekend-knit"

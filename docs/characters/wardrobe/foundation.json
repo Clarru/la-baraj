@@ -5,23 +5,33 @@
   "assets": [
     {
       "path": "assets/source-models/wardrobe/build/hair-parted.glb",
-      "bytes": 62724,
-      "sha256": "9e4c06a69cd9e5f711d005af203985f7525e5418a815ff54ad80ca0c89f9ed5f"
+      "bytes": 62728,
+      "sha256": "08b13a147d6102bb924ac12e32a339c765d2d4cd5e960aa205547f0e4efe0a5b"
     },
     {
       "path": "assets/source-models/wardrobe/build/beard-full.glb",
-      "bytes": 54044,
-      "sha256": "925d7a26f1a676fcd0b65934a82cb399587ccdd4099da925bb0196e09ae4fceb"
+      "bytes": 54052,
+      "sha256": "7879300828fa76b01bf9b560bbad77f397256be103517190febd287353573e7c"
+    },
+    {
+      "path": "assets/source-models/wardrobe/build/beard-short.glb",
+      "bytes": 54056,
+      "sha256": "1d56022ed338808c28edae61fbe90c04c6147cdbac28595db8a631c65fa9becc"
+    },
+    {
+      "path": "assets/source-models/wardrobe/build/beard-moustache.glb",
+      "bytes": 22392,
+      "sha256": "6eb06f6ef983843d55730777bc616548146400f197e7043578c8f17823457eaa"
     },
     {
       "path": "assets/source-models/wardrobe/build/hair-buzzed.glb",
-      "bytes": 5947764,
-      "sha256": "63fae8a35fa5b3804fc22e81a28100b6ef848f0bec45441f5808c9b7bb5fee0a"
+      "bytes": 5947768,
+      "sha256": "ab2c168d6cad7f469e6cb77d1ca978e172c5f343e969ef2218a1c1917d3c6208"
     },
     {
       "path": "assets/source-models/wardrobe/build/hair-long.glb",
-      "bytes": 6639176,
-      "sha256": "e0864ce2c3458a99828ec3d3bb66d06b3da5ddde170480bf414abe6cf9621b48"
+      "bytes": 6639184,
+      "sha256": "c552da7e287e6c7daccfeb6816928f3d4c792d146b82e87e8c41a34f796d61b8"
     }
   ]
 }

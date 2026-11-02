@@ -35,18 +35,22 @@ for index, (label, angle, clip, frame) in enumerate(views):
     for name in hidden:
         names[name].hide_render = True
     if slot == "top":
-        hands = duplicate(names["Male_Peasant_Arms"], "__review_hands")
-        hands.hide_render = False
-        mesh = bmesh.new()
-        mesh.from_mesh(hands.data)
-        bmesh.ops.delete(mesh, geom=[f for f in mesh.faces if f.material_index == 0
-                         or max(abs(v.co.x) for v in f.verts) < .700], context="FACES")
-        mesh.to_mesh(hands.data)
-        mesh.free()
+        names["SuperHero_Male"].hide_render = True
+        skin_rig, skin_meshes = import_model(RAW / "optimized/male-custom-top-skin.glb")
+        for mesh in skin_meshes:
+            rebind(mesh, skin_rig, rig)
+        remove_source_rig(skin_rig)
     item_rig, item_meshes = import_model(source)
     for obj in item_meshes:
         rebind(obj, item_rig, rig)
     remove_source_rig(item_rig)
+    if slot == "shoes" and item != "shoes-lake-boots":
+        names["Male_Peasant_Legs"].hide_render = True
+        pants_rig, pants = import_model(RAW / ("optimized/bottom-classic-ankle.glb"
+            if item == "shoes-trail-hikers" else "optimized/bottom-classic-full.glb"))
+        for obj in pants:
+            rebind(obj, pants_rig, rig)
+        remove_source_rig(pants_rig)
     if rig.animation_data:
         for track in rig.animation_data.nla_tracks:
             track.mute = not track.name.startswith(clip)

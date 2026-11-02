@@ -9,7 +9,8 @@ from mathutils import Vector
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/"scripts"))
 from wardrobe_rig import RAW,approved_rig,import_model,rebind,remove_source_rig,duplicate,export_item,role
-from wardrobe_surfaces import Surface,knit_surface,finish_garment,bind_surface,rib_band
+from wardrobe_surfaces import Surface,knit_surface,finish_garment,bind_surface,rib_band,reduce_garment
+from wardrobe_materials import fabric_normal
 rig,approved=approved_rig()
 for obj in approved.values():
     obj.hide_render=True
@@ -28,7 +29,11 @@ def mat(name,color,roughness=.8,metal=0):
     bsdf.inputs["Roughness"].default_value=roughness
     bsdf.inputs["Metallic"].default_value=metal
     return result
-cloth=mat("Wardrobe_Female_Black_Tailoring",(.018,.021,.025))
+cloth=mat("Wardrobe_Female_Black_Tailoring",(.005,.007,.009),.9)
+texture=cloth.node_tree.nodes.new("ShaderNodeTexImage")
+texture.image=bpy.data.images.load(str(ROOT/"assets/wardrobe-source/textures/twill-albedo.png"))
+cloth.node_tree.links.new(texture.outputs["Color"],cloth.node_tree.nodes.get("Principled BSDF").inputs["Base Color"])
+fabric_normal(cloth,"twill")
 underlayer=mat("Wardrobe_Female_Black_Crop",(.009,.011,.014))
 tights_mat=mat("Wardrobe_Female_Sheer_Tights",(.055,.041,.034),.76)
 leather=mat("Wardrobe_Female_Black_Leather",(.008,.009,.011),.35)
@@ -45,18 +50,36 @@ def select_faces(obj,keep):
     mesh.free()
 def centroid(face):
     return sum((v.co for v in face.verts),Vector())/len(face.verts)
+def clip_height(obj, low=None, high=None):
+    mesh=bmesh.new()
+    mesh.from_mesh(obj.data)
+    for height,inner in [(low,True),(high,False)]:
+        if height is not None:
+            bmesh.ops.bisect_plane(mesh,geom=list(mesh.verts)+list(mesh.edges)+list(mesh.faces),
+                plane_co=(0,0,height),plane_no=(0,0,1),
+                clear_inner=inner,clear_outer=not inner)
+    bmesh.ops.delete(mesh,geom=[v for v in mesh.verts if not v.link_faces],context="VERTS")
+    mesh.to_mesh(obj.data)
+    mesh.free()
 def attach(obj,role_name):
     bind_surface(obj,body,rig)
     role(obj,role_name)
     pieces.append(obj)
     return obj
 # Keep exposed face/neck, hands and the narrow midriff only. Covered body is removed.
-skin=duplicate(body,"Wardrobe_Female_ExposedSkin")
-skin.hide_render=False
-select_faces(skin,lambda f:(lambda p:p.z>1.54 or abs(p.x)>.695
-    or (1.075<p.z<1.18 and abs(p.x)<.17))(centroid(f)))
-role(skin,"skin")
-pieces.append(skin)
+for region in ["Head","Hands","Midriff"]:
+    skin=duplicate(body,"Wardrobe_Female_"+region)
+    skin.hide_render=False
+    if region=="Head":
+        clip_height(skin,1.54,None)
+        select_faces(skin,lambda f:abs(centroid(f).x)<.13)
+    elif region=="Hands":
+        select_faces(skin,lambda f:abs(centroid(f).x)>.685)
+    else:
+        clip_height(skin,1.055,1.20)
+        select_faces(skin,lambda f:abs(centroid(f).x)<.18)
+    role(skin,"skin")
+    pieces.append(skin)
 for obj in meshes:
     if obj!=body:
         obj.hide_render=False
@@ -65,7 +88,15 @@ for obj in meshes:
 # a black sheer material without expensive transparent avatar sorting.
 tights=duplicate(body,"Wardrobe_Female_Tights")
 tights.hide_render=False
-select_faces(tights,lambda f:.045<centroid(f).z<.825)
+clip_height(tights,.015,.825)
+for vertex in tights.data.vertices:
+    p=vertex.co
+    if p.z<.15:
+        side=1 if p.x>=0 else -1
+        factor=max(0,min(1,(.15-p.z)/.10))
+        p.x=side*.1143+(p.x-side*.1143)*(1-.20*factor)
+        p.y=.012+(p.y-.012)*(1-.10*factor)
+        p.z+=.050*max(0,min(1,p.y/.13))*factor
 tights.data.materials.clear()
 tights.data.materials.append(tights_mat)
 role(tights,"tights")
@@ -76,10 +107,21 @@ profiles=[(.79,.225,.170,.175),(.807,.228,.173,.178),(.87,.226,.174,.175),
     (1.03,.209,.178,.170),(1.24,.215,.213,.164),(1.37,.228,.207,.155),
     (1.43,.238,.180,.149),(1.48,.243,.160,.145),(1.52,.232,.135,.131),
     (1.555,.092,.083,.080),(1.575,.086,.079,.077)]
-blazer=knit_surface(cloth,profiles,[.33,.33,.32,.28,.43,.57,.62,.53,.39,.32,.28],
+blazer=knit_surface(cloth,profiles,[.52,.52,.49,.38,.43,.57,.62,.53,.39,.32,.28],
                     name="Wardrobe_Female_Blazer")
 finish_garment(blazer,.004)
+reduce_garment(blazer,.4)
 attach(blazer,"top")
+# Coat skirts hang from the pelvis rather than acquiring arbitrary nearest-thigh
+# weights. Keep ring weights continuous across the front opening and hem.
+pelvis=blazer.vertex_groups.get("pelvis")
+if not pelvis:
+    pelvis=blazer.vertex_groups.new(name="pelvis")
+for vertex in blazer.data.vertices:
+    if vertex.co.z<1.12:
+        for group in blazer.vertex_groups:
+            group.remove([vertex.index])
+        pelvis.add([vertex.index],1,"REPLACE")
 
 # Lapels have their own crisp fold line, rather than a painted triangle.
 for side in [-1,1]:
@@ -123,6 +165,7 @@ bmesh.ops.bisect_plane(mesh,geom=list(mesh.verts)+list(mesh.edges)+list(mesh.fac
     plane_co=(0,0,.765),plane_no=(0,0,1),clear_inner=True,clear_outer=False)
 mesh.to_mesh(shorts.data)
 mesh.free()
+clip_height(shorts,.765,1.075)
 shorts.hide_render=False
 role(shorts,"bottom")
 pieces.append(shorts)
@@ -165,7 +208,7 @@ for side in [-1,1]:
         for j in range(count):
             a=j*math.tau/count
             cosine,sine=math.cos(a),math.sin(a)
-            depth=.194 if cosine>=0 else .129
+            depth=.150 if cosine>=0 else .120
             taper=1-.62*max(0,cosine)**3
             ox=center_x+.052*sine*taper
             oy=.012-depth*cosine
@@ -176,9 +219,10 @@ for side in [-1,1]:
                 point=(ox,oy,floor+.008)
             else:
                 t=.42 if stage==2 else 1
-                ix=center_x+.031*sine
-                iy=.082-.041*cosine
-                z=floor+.008+(1.15 if stage==2 else 1)*t*(.128-floor)
+                ix=center_x+.036*sine
+                iy=.033-.096*cosine
+                opening_height=.055+.075*((1-cosine)/2)
+                z=floor+.008+(1.1 if stage==2 else 1)*t*(opening_height-floor)
                 point=(ox*(1-t)+ix*t,oy*(1-t)+iy*t,z)
             ring.append(s.point(point))
         rings.append(ring)
@@ -187,6 +231,11 @@ for side in [-1,1]:
             n=(j+1)%count
             s.face((rings[k][j],rings[k][n],rings[k+1][n],rings[k+1][j]),
                    [(j/count,k/3),((j+1)/count,k/3),((j+1)/count,(k+1)/3),(j/count,(k+1)/3)])
+    center=s.point((center_x,.02,.035))
+    for j in range(count):
+        n=(j+1)%count
+        s.face((rings[0][n],rings[0][j],center),
+               [(n/count,0),(j/count,0),(.5,.5)])
     shoe=s.object("Wardrobe_Female_PointedPump",leather)
     bpy.context.view_layer.objects.active=shoe
     shell=shoe.modifiers.new("Pump leather thickness","SOLIDIFY")
@@ -195,6 +244,14 @@ for side in [-1,1]:
     attach(shoe,"shoes")
     heel=box("Wardrobe_Female_SlenderHeel",(center_x,.117,.032),(.016,.020,.064),leather)
     attach(heel,"shoes")
+    for component in [shoe,heel]:
+        component.vertex_groups.clear()
+        foot=component.vertex_groups.new(name="foot_l" if side==1 else "foot_r")
+        ball=component.vertex_groups.new(name="ball_l" if side==1 else "ball_r")
+        for vertex in component.data.vertices:
+            t=max(0,min(.75,(-vertex.co.y-.05)/.11)) if component==shoe else 0
+            foot.add([vertex.index],1-t,"REPLACE")
+            if t:ball.add([vertex.index],t,"REPLACE")
 
 # Publisher hair is a short bob; keep its sculpted crown and extend the lower
 # locks in Blender to the chest/back length required by the reference.

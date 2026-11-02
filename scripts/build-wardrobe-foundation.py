@@ -1,5 +1,6 @@
 """Retain the approved adult face/rig and prepare authored hair on that rig."""
 import bpy
+import bmesh
 import hashlib
 import json
 import sys
@@ -18,6 +19,27 @@ artifacts.append(export_item(rig, [parted], "hair-parted"))
 beard = duplicate(original["Hairstyle_Hair_Beard"], "Wardrobe_Beard_Full")
 role(beard, "facialHair")
 artifacts.append(export_item(rig, [beard], "beard-full"))
+short = duplicate(beard, "Wardrobe_Beard_Short")
+for vertex in short.data.vertices:
+    if vertex.co.z < 1.63:
+        t = min(1, (1.63-vertex.co.z)/.08)
+        vertex.co.z += .032*t
+        vertex.co.y += .012*t
+role(short,"facialHair")
+artifacts.append(export_item(rig,[short],"beard-short"))
+moustache=duplicate(beard,"Wardrobe_Moustache")
+mesh=bmesh.new()
+mesh.from_mesh(moustache.data)
+for height,lower in [(1.643,True),(1.673,False)]:
+    bmesh.ops.bisect_plane(mesh,geom=list(mesh.verts)+list(mesh.edges)+list(mesh.faces),
+        plane_co=(0,0,height),plane_no=(0,0,1),clear_inner=lower,clear_outer=not lower)
+bmesh.ops.delete(mesh,geom=[f for f in mesh.faces
+    if abs(sum(v.co.x for v in f.verts)/len(f.verts))>.045],context="FACES")
+bmesh.ops.delete(mesh,geom=[v for v in mesh.verts if not v.link_faces],context="VERTS")
+mesh.to_mesh(moustache.data)
+mesh.free()
+role(moustache,"facialHair")
+artifacts.append(export_item(rig,[moustache],"beard-moustache"))
 
 for filename, identifier in [("Hair_Buzzed.gltf", "buzzed"), ("Hair_Long.gltf", "long")]:
     source = next(p for p in (RAW / "base/extracted").rglob(filename)
