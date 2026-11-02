@@ -1,0 +1,69 @@
+# Wardrobe runtime evidence
+
+Frozen candidate: `b2e28ac7589c4fddb3f4a3c477464c0ab2cf5f45`.
+Runtime manifest SHA256:
+`cc00e165695d60ffd3fc7a6e584a4588fdaf09657f24ca78ac774f683af7c9fc`.
+These are local acceptance fixtures on the coordinated single4173 listener.
+No production socket or backend listener was used.
+
+## Actual Game
+
+Two fresh pages in one browser context connected through the emitted local
+SharedWorker. Both rendered the actual Game. Female appearance was applied through
+Menu → Appearance → Female → Apply look; a second client observed the same bounded
+record, and reloading the owner page restored it while the worker survived.
+See `captures-b2/game/bootstrap-report.json`.
+
+The normal controls exercised campfire sitting (F), standing fishing cast (E),
+scooter and boat mounting/movement (V/W), and walking. Casting from a fishing bench
+is intentionally not supported by existing activities.tsx, so the corrected test
+casts while standing. A blocked bench-seated attempt was not counted as a failure
+of wardrobe geometry or changed to bypass gameplay guards.
+
+C/Z tests near a cabin or bench could legitimately fail grounded/headroom/state
+checks. The corrected prone procedure moved clear of the bench, waited for
+settlement, pressed Z and asserted `remote.posture === "prone"` in the independent
+client. The visible settled capture is `verified-clear-grass-prone-front.png`.
+Old filenames `actual-prone.png` and `actual-crouch.png` are unproven and excluded;
+tree-occluded views do not count as visual evidence. No Player physics or stance
+logic was changed. See final-activity-report.json and focused-prone-report.json.
+All successful runners closed their own contexts/browsers in finally blocks;
+reports contain zero page errors and zero sockets.
+
+## Sampled model actions
+
+88 actual WebGL front/rear captures cover four looks in 11 clips. Three men's
+looks collectively cover all three modeled options per requested slot, including
+hats and each footwear height. The fourth look is the female preset. Clips are
+recorded in `captures-b2/adverse/report.json`, alongside bounded configurations and
+one-skeleton-per-actor observations. These are sampled poses, not continuous
+sweeps, collision checks or contact validation on their own.
+
+## Matched resource fixture
+
+Chrome156, ANGLE Metal on Apple M4 Pro; 1280×800, DPR1, Idle_Neutral, no shadows.
+Two-actor and 50-actor samples use the same fixture/framing. The 50 models are a
+rendering stress fixture, not 50 network clients. The release owner kept unrelated
+heavy jobs quiet for the measurements.
+
+| Appearance | Actors | Draw calls | Triangles | Geometries | Textures |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Approved default | 2 | 21 | 39,762 | 11 | 14 |
+| Approved default | 50 | 501 | 994,050 | 11 | 62 |
+| Revised female | 2 | 25 | 60,508 | 23 | 22 |
+| Revised female | 50 | 601 | 1,512,700 | 23 | 70 |
+
+Every inspected actor had exactly one canonical skeleton. Returning to two actors
+and restoring default left the expected bounded retained catalogue cache.
+Warm requestAnimationFrame means were display-paced at about16.67ms. This is not
+GPU duration, whole-Game FPS, iPhone Safari performance, heat or battery evidence.
+Source report: `captures-b2/resources.json`.
+
+## Publication cleanup
+
+The B2 session ended early at monotonic245796.942767916. Exactly35 authorized
+hash-matching additions were removed. All351 original path/size/SHA entries were
+verified, as was the HTTP index SHA256
+`16c499ab1c8235ad1322817d74cde81f9778e37b5ae443edff7523d5e496f21f`.
+ListenerPID35046 remained running and untouched. The cleanup report is
+`.impeccable/review/wardrobe/cleanup-b2e28ac.json`.

@@ -25,6 +25,16 @@ uses its local skin field with a gradual head/torso transition, and adds only th
 longitudinal support required by stretched faces. The canonical 65-bone rig,
 approved male, clips and renderer/depth settings remain unchanged.
 
-The current export is a **candidate for renewed runtime/adverse-pose inspection**,
-not a completed mesh acceptance. Refresh its packed hash/content URL/manifest only
-through the normal packer. The frozen c60 runtime/control packet is never replaced.
+The b2e28ac runtime inspection resolved the four targeted defects: brow/iris
+readability, root integration, prior striped prone tips and plausible solid
+stylized prone drape. A fresh independent fallback reviewer inspected current
+head/side/rear and prone/sit/crouch/swim views, compared rejected controls, and found
+no new material fit failure at that correction scope. This is separate from the
+pending full-outfit/action acceptance.
+
+Current female GLB SHA256:
+`4e348f26e1b0daefb389d2d24974a8c0f498af845df4ea45c5cb39afd01e94e1`.
+It contains30,254 triangles and12 rendered primitives; the rejected control had
+35,310 triangles and13 primitives. Runtime/resource and actual Game evidence is
+recorded in RUNTIME_REVIEW.md. Refresh packed hashes/content URLs only through the
+normal packer. Both frozen QA packets remain immutable controls.

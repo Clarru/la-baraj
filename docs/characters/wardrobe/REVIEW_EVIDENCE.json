@@ -1,0 +1,749 @@
+{
+  "frozenHead": "b2e28ac7589c4fddb3f4a3c477464c0ab2cf5f45",
+  "runtimeManifestSHA256": "cc00e165695d60ffd3fc7a6e584a4588fdaf09657f24ca78ac774f683af7c9fc",
+  "scope": "Sampled exported-model deformation and local Game state; no iPhone thermal claim or production acceptance",
+  "reports": [
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/report.json",
+      "bytes": 20174,
+      "sha256": "29a11303618b6da81e241012d155e7a901a95e955bd81de7724634f4099cd580"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/game/bootstrap-report.json",
+      "bytes": 11001,
+      "sha256": "7624cb25be07e05eb8efedbe5e8491cff13422bb4592e070dd424c709402f66a"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/game/final-activity-report.json",
+      "bytes": 13905,
+      "sha256": "0002574f59732e9e23e2b9f6c4d8b000435f80cfa62205ed250e935f6bf1bc76"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/game/focused-prone-report.json",
+      "bytes": 8847,
+      "sha256": "a8cb8d1cddf88e5e032f86d1d33e43c61ac681214da93c1ad985b3075d8f6e3c"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/resources.json",
+      "bytes": 3852,
+      "sha256": "5cd3ac1768e289490d0e7d5921473c95c9a6c103c8e0ee43a3b7eb5fbaf20005"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/cleanup-b2e28ac.json",
+      "bytes": 2216,
+      "sha256": "c9bec530b3e1ff9a9255093f3e2735048d4ea727f80b3b6d323af59f198cda2a"
+    }
+  ],
+  "actionCaptures": [
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-classic-Idle_Neutral-full.png",
+      "bytes": 149230,
+      "sha256": "9b243c2e57d05d1c885541bfb706560f0d44b30f2e009e44b6bc84dd77c40a23",
+      "look": "male-classic",
+      "clip": "Idle_Neutral",
+      "view": "full"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-classic-Idle_Neutral-rear.png",
+      "bytes": 133246,
+      "sha256": "797ca54a7fc6a85e0d6f9cc56af2ad796b0cde3514f6108b88a47bf81c261f2e",
+      "look": "male-classic",
+      "clip": "Idle_Neutral",
+      "view": "rear"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-classic-Jump_Loop-full.png",
+      "bytes": 150290,
+      "sha256": "8a0b9786d2efbbbe967d068ca6ceb7a33f76200f3d84a780418ceaf907abeedb",
+      "look": "male-classic",
+      "clip": "Jump_Loop",
+      "view": "full"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-classic-Jump_Loop-rear.png",
+      "bytes": 141637,
+      "sha256": "6cb2b3a8d2b4d2e9d3454a8b6122d2a6468784bc61f31195ad7e9c7ce5c91c2a",
+      "look": "male-classic",
+      "clip": "Jump_Loop",
+      "view": "rear"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-classic-Run-full.png",
+      "bytes": 130806,
+      "sha256": "449bc3822b239d190593a95edf798f7ccb5c5680a47ee64c500039131cafcb15",
+      "look": "male-classic",
+      "clip": "Run",
+      "view": "full"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-classic-Run-rear.png",
+      "bytes": 113782,
+      "sha256": "12a3f3a7ce9c332d8c10728e57b96646ca503170bee005fa8cafe919db4f0ceb",
+      "look": "male-classic",
+      "clip": "Run",
+      "view": "rear"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-classic-Walk-full.png",
+      "bytes": 143971,
+      "sha256": "03b462f2e11632cc274c883ba8a9cff765b5046c9fdef49585a62aaf1cf52650",
+      "look": "male-classic",
+      "clip": "Walk",
+      "view": "full"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-classic-Walk-rear.png",
+      "bytes": 122460,
+      "sha256": "b67415fa33f5a58d3211e246cc1b4fd12ee12b747c2d24aaf804221a8b5c0014",
+      "look": "male-classic",
+      "clip": "Walk",
+      "view": "rear"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-classic-Activity_HoldRod-full.png",
+      "bytes": 137929,
+      "sha256": "8924ff69860fe785d0fb3cfe509012d263d3d662c4783e64ec2f0c069c71a587",
+      "look": "male-classic",
+      "clip": "Activity_HoldRod",
+      "view": "full"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-classic-Activity_HoldRod-rear.png",
+      "bytes": 118217,
+      "sha256": "5b51e7f541251c558517294247391317133b0f269d69c2b23efade011737596d",
+      "look": "male-classic",
+      "clip": "Activity_HoldRod",
+      "view": "rear"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-classic-Activity_SitDown-full.png",
+      "bytes": 135261,
+      "sha256": "4da6317c89dc6502d9df66da41817b45b692f347a5e453da89d588edc534e855",
+      "look": "male-classic",
+      "clip": "Activity_SitDown",
+      "view": "full"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-classic-Activity_SitDown-rear.png",
+      "bytes": 112261,
+      "sha256": "de31c0487040b023245109d37a4c8a082430fd2c248e805c25501272a34193d2",
+      "look": "male-classic",
+      "clip": "Activity_SitDown",
+      "view": "rear"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-classic-Activity_Sit-full.png",
+      "bytes": 135023,
+      "sha256": "3ea06d215a4ac821d592cca49f847b4969e810240ab27ccfc494e03c00273609",
+      "look": "male-classic",
+      "clip": "Activity_Sit",
+      "view": "full"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-classic-Activity_Sit-rear.png",
+      "bytes": 106724,
+      "sha256": "7ab99cb80c9f3c2cec84e2781153c52b05a3c68ce7b87127af1c9db4631188e2",
+      "look": "male-classic",
+      "clip": "Activity_Sit",
+      "view": "rear"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-classic-Activity_Cast-full.png",
+      "bytes": 122503,
+      "sha256": "6d49bb29de9bd883444f7856d4590b773cd61d28ee6edbd12936ada6d280f814",
+      "look": "male-classic",
+      "clip": "Activity_Cast",
+      "view": "full"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-classic-Activity_Cast-rear.png",
+      "bytes": 103936,
+      "sha256": "46539b2a18e1638d421cd2cd10ee3bb034a6c926eea564b69122f2e9e2910b41",
+      "look": "male-classic",
+      "clip": "Activity_Cast",
+      "view": "rear"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-classic-Swim_Idle-full.png",
+      "bytes": 142537,
+      "sha256": "3e93982f2ca5f1fea994815146946632ca7829c901d0b32bcfbe2e924cabf836",
+      "look": "male-classic",
+      "clip": "Swim_Idle",
+      "view": "full"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-classic-Swim_Idle-rear.png",
+      "bytes": 121476,
+      "sha256": "f35d4e09857485bf33e3f5c768a41826feb62acd703d8dfbceaa30a38b39822c",
+      "look": "male-classic",
+      "clip": "Swim_Idle",
+      "view": "rear"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-classic-Crouch_Idle-full.png",
+      "bytes": 104394,
+      "sha256": "1fa47c2e2548f6f6f4b9336c1dc00b08a4784d3dbe1fe5ce2cd121ea26de66ff",
+      "look": "male-classic",
+      "clip": "Crouch_Idle",
+      "view": "full"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-classic-Crouch_Idle-rear.png",
+      "bytes": 111751,
+      "sha256": "98d922486a0d997709b3b19f91c0edc646cad8287f0d1e1e98a5141d72826f3c",
+      "look": "male-classic",
+      "clip": "Crouch_Idle",
+      "view": "rear"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-classic-Prone_Idle-full.png",
+      "bytes": 97469,
+      "sha256": "3a856f175d5f347a3d0da8cb0a66810c120caf607365bb5f67d772836dd75fdd",
+      "look": "male-classic",
+      "clip": "Prone_Idle",
+      "view": "full"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-classic-Prone_Idle-rear.png",
+      "bytes": 102724,
+      "sha256": "fec491a58ed59cb27eb95d0b1c0c6f442016a548734fdda90e57167964e17015",
+      "look": "male-classic",
+      "clip": "Prone_Idle",
+      "view": "rear"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-trail-Idle_Neutral-full.png",
+      "bytes": 135137,
+      "sha256": "62416a0ace8803779d5deb430e3ea8b6af44c2b916ca8ac5c69e834108a62874",
+      "look": "male-trail",
+      "clip": "Idle_Neutral",
+      "view": "full"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-trail-Idle_Neutral-rear.png",
+      "bytes": 125890,
+      "sha256": "c8bc02dc873a3eb359e2df026d3f6e4495a52b4dbcf30e7cb3bc9ee18876dda2",
+      "look": "male-trail",
+      "clip": "Idle_Neutral",
+      "view": "rear"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-trail-Jump_Loop-full.png",
+      "bytes": 140670,
+      "sha256": "4c83a0454d88e1535df065b6b0c92aaefe5731b528e2a0142743a374f2316bc8",
+      "look": "male-trail",
+      "clip": "Jump_Loop",
+      "view": "full"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-trail-Jump_Loop-rear.png",
+      "bytes": 134851,
+      "sha256": "9685d1c6d4842a00bb33227b5292f94394df9ae51139f737e49b308e806a568c",
+      "look": "male-trail",
+      "clip": "Jump_Loop",
+      "view": "rear"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-trail-Run-full.png",
+      "bytes": 119564,
+      "sha256": "298816333bc0a76f1b384ff7aff43908df8ddaa35b0b356830282d48ce815de8",
+      "look": "male-trail",
+      "clip": "Run",
+      "view": "full"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-trail-Run-rear.png",
+      "bytes": 109090,
+      "sha256": "a175c4ef31ae3a11b110f275ec2e59b119d49ff35dfe402460795619f46944b3",
+      "look": "male-trail",
+      "clip": "Run",
+      "view": "rear"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-trail-Walk-full.png",
+      "bytes": 130872,
+      "sha256": "c5291f8dda5948cb0b325c58b55e17be16706d9b795facf08bafcc8731126010",
+      "look": "male-trail",
+      "clip": "Walk",
+      "view": "full"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-trail-Walk-rear.png",
+      "bytes": 115490,
+      "sha256": "afa5760d27f0900421169684b2e3249b9a13a74bd9084d75a29c50946368412f",
+      "look": "male-trail",
+      "clip": "Walk",
+      "view": "rear"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-trail-Activity_HoldRod-full.png",
+      "bytes": 120215,
+      "sha256": "1c1887cdc2c4ef6515860307af323a94b8017ab073636c1449cde535c54c67de",
+      "look": "male-trail",
+      "clip": "Activity_HoldRod",
+      "view": "full"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-trail-Activity_HoldRod-rear.png",
+      "bytes": 112482,
+      "sha256": "3f905c54e04f3f964abca413bb89ee2d263121010920533a908c0b0eedde09ae",
+      "look": "male-trail",
+      "clip": "Activity_HoldRod",
+      "view": "rear"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-trail-Activity_SitDown-full.png",
+      "bytes": 119129,
+      "sha256": "cbb8dee9882ff6563002365533014fc6c43eece670cd7648bcf3c5fba07b1afc",
+      "look": "male-trail",
+      "clip": "Activity_SitDown",
+      "view": "full"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-trail-Activity_SitDown-rear.png",
+      "bytes": 103281,
+      "sha256": "d0280f3267e84ab65b96a81a7d002faac3f035593195c4f35837fbd770669bcf",
+      "look": "male-trail",
+      "clip": "Activity_SitDown",
+      "view": "rear"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-trail-Activity_Sit-full.png",
+      "bytes": 117955,
+      "sha256": "24e068ffaa58886ad82993ae9be3eed202641c8bbc0916fea6bde904c33d3be2",
+      "look": "male-trail",
+      "clip": "Activity_Sit",
+      "view": "full"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-trail-Activity_Sit-rear.png",
+      "bytes": 103478,
+      "sha256": "acc095ac932ad92815062f65d380afb5882b953cd17e238cb4d5fbbb60997d95",
+      "look": "male-trail",
+      "clip": "Activity_Sit",
+      "view": "rear"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-trail-Activity_Cast-full.png",
+      "bytes": 117292,
+      "sha256": "5b5109808908c60230fe5c55dfeaa76bcd5203c43700b8520aaac382ce82061f",
+      "look": "male-trail",
+      "clip": "Activity_Cast",
+      "view": "full"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-trail-Activity_Cast-rear.png",
+      "bytes": 96019,
+      "sha256": "7895e9f0495ac377e4b3a5429e821be1c7a98c5f0d19c04cf9e74da24cebec59",
+      "look": "male-trail",
+      "clip": "Activity_Cast",
+      "view": "rear"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-trail-Swim_Idle-full.png",
+      "bytes": 129484,
+      "sha256": "363e84981824b9c903dc58ffe5d373374e64237dbb6cc89e3e9c4a7e0023312c",
+      "look": "male-trail",
+      "clip": "Swim_Idle",
+      "view": "full"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-trail-Swim_Idle-rear.png",
+      "bytes": 112235,
+      "sha256": "7d6e2c15fa13dd5a9c4d07a1c4cc6cf66ba87ceda299a0bd36bc583bf2c69629",
+      "look": "male-trail",
+      "clip": "Swim_Idle",
+      "view": "rear"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-trail-Crouch_Idle-full.png",
+      "bytes": 99538,
+      "sha256": "42a74a7b55d2b393f9b1f76bd3aecf4dd414d073dc2c234cfc188d26254ba399",
+      "look": "male-trail",
+      "clip": "Crouch_Idle",
+      "view": "full"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-trail-Crouch_Idle-rear.png",
+      "bytes": 105806,
+      "sha256": "81558efe1701baff9b05888a0d95a13a2f30ee56f7dea6e2f9af5d43cf5d95ee",
+      "look": "male-trail",
+      "clip": "Crouch_Idle",
+      "view": "rear"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-trail-Prone_Idle-full.png",
+      "bytes": 92373,
+      "sha256": "85ae94240e6b8f16b4c237057cb2a48faa1f37b2b4d34fa0fef50ce11c61ca08",
+      "look": "male-trail",
+      "clip": "Prone_Idle",
+      "view": "full"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-trail-Prone_Idle-rear.png",
+      "bytes": 90063,
+      "sha256": "3826ef6d33af841453e432ec8a6be70f410a06693cd424fc5950987d6e7ac442",
+      "look": "male-trail",
+      "clip": "Prone_Idle",
+      "view": "rear"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-weekend-Idle_Neutral-full.png",
+      "bytes": 127753,
+      "sha256": "39aa7727749927cedb0792070f060e27bb3ec6305b80da6a5cdcafd6d9e23160",
+      "look": "male-weekend",
+      "clip": "Idle_Neutral",
+      "view": "full"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-weekend-Idle_Neutral-rear.png",
+      "bytes": 122182,
+      "sha256": "840ed2de11a94c9704778eee290cf245259d1df3f56aff74e731a8981dfab0c6",
+      "look": "male-weekend",
+      "clip": "Idle_Neutral",
+      "view": "rear"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-weekend-Jump_Loop-full.png",
+      "bytes": 131571,
+      "sha256": "6fa96de6c4f39e1b7fcb8d14b165701a01f42778fc3e97a27f0567c0bbd258d0",
+      "look": "male-weekend",
+      "clip": "Jump_Loop",
+      "view": "full"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-weekend-Jump_Loop-rear.png",
+      "bytes": 133323,
+      "sha256": "a2fcd1c95cad835117678e55ebfa5dddbc9c8be497cc28dc49121b0c2024d425",
+      "look": "male-weekend",
+      "clip": "Jump_Loop",
+      "view": "rear"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-weekend-Run-full.png",
+      "bytes": 114696,
+      "sha256": "600cc1b76be9235b75545888e7490e85d9e4bce02686c382962b78801f2e0d87",
+      "look": "male-weekend",
+      "clip": "Run",
+      "view": "full"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-weekend-Run-rear.png",
+      "bytes": 105485,
+      "sha256": "c804d5d80930cfa6b98319c14c3f8571a9568bbc665463fb46c01b1bc60b4dbe",
+      "look": "male-weekend",
+      "clip": "Run",
+      "view": "rear"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-weekend-Walk-full.png",
+      "bytes": 125197,
+      "sha256": "a8cc920d670eb716e7532056b0e6db32aff505592043299d57e6801ba05189d8",
+      "look": "male-weekend",
+      "clip": "Walk",
+      "view": "full"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-weekend-Walk-rear.png",
+      "bytes": 112231,
+      "sha256": "a912b30bcba00077e4f4825aba61e640469ac00df46995e039788cb16bdc5e31",
+      "look": "male-weekend",
+      "clip": "Walk",
+      "view": "rear"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-weekend-Activity_HoldRod-full.png",
+      "bytes": 117927,
+      "sha256": "b184ea46df753d64851d36a66a161d922c012b187b05029429424b6b597f7251",
+      "look": "male-weekend",
+      "clip": "Activity_HoldRod",
+      "view": "full"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-weekend-Activity_HoldRod-rear.png",
+      "bytes": 110359,
+      "sha256": "b09c8d77dc094b82d27d3973f463b97958ed68680d765166098c8f466d821d47",
+      "look": "male-weekend",
+      "clip": "Activity_HoldRod",
+      "view": "rear"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-weekend-Activity_SitDown-full.png",
+      "bytes": 116338,
+      "sha256": "e4dbf062991ff43eadbdf210f7112c34b4cdbe0a4bdee9196a02955eea9690d1",
+      "look": "male-weekend",
+      "clip": "Activity_SitDown",
+      "view": "full"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-weekend-Activity_SitDown-rear.png",
+      "bytes": 103287,
+      "sha256": "7ea03118c8d7483761c8185b031d20a3e0657df3d6f4f6480298c9193bf57ec5",
+      "look": "male-weekend",
+      "clip": "Activity_SitDown",
+      "view": "rear"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-weekend-Activity_Sit-full.png",
+      "bytes": 115307,
+      "sha256": "fb9db411437dea97cd3a4f0e4415526b14faf2b5499344a15e5f2400c2841045",
+      "look": "male-weekend",
+      "clip": "Activity_Sit",
+      "view": "full"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-weekend-Activity_Sit-rear.png",
+      "bytes": 98538,
+      "sha256": "ed2d0a01d2f785c12042710878e01371884fc66af7d0cf0b4e601a230caf92d7",
+      "look": "male-weekend",
+      "clip": "Activity_Sit",
+      "view": "rear"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-weekend-Activity_Cast-full.png",
+      "bytes": 113668,
+      "sha256": "a06ddec2d58124462dd8f2f7c717e787d0628652e8ee7dde9d0278628ae55745",
+      "look": "male-weekend",
+      "clip": "Activity_Cast",
+      "view": "full"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-weekend-Activity_Cast-rear.png",
+      "bytes": 94812,
+      "sha256": "bf4363c7a8856e094952c4103979eeb17c7c506d97838ed58ce19198118933c8",
+      "look": "male-weekend",
+      "clip": "Activity_Cast",
+      "view": "rear"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-weekend-Swim_Idle-full.png",
+      "bytes": 123937,
+      "sha256": "c1027dd2d000e3c5613e355aac4fc93e7e8eeb154b9df4e80442bb633a8ca668",
+      "look": "male-weekend",
+      "clip": "Swim_Idle",
+      "view": "full"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-weekend-Swim_Idle-rear.png",
+      "bytes": 109965,
+      "sha256": "88ab582f26cf8e2a5bfc0c95058bc87935d12908fb33d3a43abfffec9655aab7",
+      "look": "male-weekend",
+      "clip": "Swim_Idle",
+      "view": "rear"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-weekend-Crouch_Idle-full.png",
+      "bytes": 97693,
+      "sha256": "46f1ab42e7c39bd5ec42ec8042887b3fd3ad1f09b3801bf29db62e8b33e8cd93",
+      "look": "male-weekend",
+      "clip": "Crouch_Idle",
+      "view": "full"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-weekend-Crouch_Idle-rear.png",
+      "bytes": 104767,
+      "sha256": "9c45b9e2fb3b1aaa70c49358ab0c5107554b9f93261a5276ddf09feb7eaf4dfb",
+      "look": "male-weekend",
+      "clip": "Crouch_Idle",
+      "view": "rear"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-weekend-Prone_Idle-full.png",
+      "bytes": 89582,
+      "sha256": "e2d4bb82e1184eaeccdc62ac7bae82f38c767a023ec0d55e6852095998b98c7f",
+      "look": "male-weekend",
+      "clip": "Prone_Idle",
+      "view": "full"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/male-weekend-Prone_Idle-rear.png",
+      "bytes": 88014,
+      "sha256": "8c1c7b5ecfbad23eaba3f775eb98db17e15a5abd7e9aec41102860f1ea35888d",
+      "look": "male-weekend",
+      "clip": "Prone_Idle",
+      "view": "rear"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/female-Idle_Neutral-full.png",
+      "bytes": 102502,
+      "sha256": "350585cce7ca6bc3ae965b667f17da288024b8fa0d34b9d7f86976e76f4d4543",
+      "look": "female",
+      "clip": "Idle_Neutral",
+      "view": "full"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/female-Idle_Neutral-rear.png",
+      "bytes": 84271,
+      "sha256": "cf52a38d2f458fc64ab435e37b8f9ec908369093eb2775a5748f80642e21f919",
+      "look": "female",
+      "clip": "Idle_Neutral",
+      "view": "rear"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/female-Jump_Loop-full.png",
+      "bytes": 103983,
+      "sha256": "8761e1e0b4be545bd75338b54d031eeb0feab12c9205f944c20f627441cdfec2",
+      "look": "female",
+      "clip": "Jump_Loop",
+      "view": "full"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/female-Jump_Loop-rear.png",
+      "bytes": 93439,
+      "sha256": "1a845badeb970a221cd10b2d752ab18a5ae0c4b552e5cc2d8158183b6162aaf4",
+      "look": "female",
+      "clip": "Jump_Loop",
+      "view": "rear"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/female-Run-full.png",
+      "bytes": 95194,
+      "sha256": "9b2b50d5f76c2eaea6b23567b7567c37a017d8c334f295a3859c8f9d6610a42c",
+      "look": "female",
+      "clip": "Run",
+      "view": "full"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/female-Run-rear.png",
+      "bytes": 76370,
+      "sha256": "2c6fc4956a96dca8c935f7a39620c6979dc8aeebc955e51cdcbeab1289882c5f",
+      "look": "female",
+      "clip": "Run",
+      "view": "rear"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/female-Walk-full.png",
+      "bytes": 99822,
+      "sha256": "66e26f340b6c292f2b27de1bde2925655acd589cd6263e70f259d6997924f98e",
+      "look": "female",
+      "clip": "Walk",
+      "view": "full"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/female-Walk-rear.png",
+      "bytes": 76949,
+      "sha256": "eac30b062fbd7038b3fe3e478048288486eba27ee8d2f01ca16782a8143e4cbc",
+      "look": "female",
+      "clip": "Walk",
+      "view": "rear"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/female-Activity_HoldRod-full.png",
+      "bytes": 96841,
+      "sha256": "f75fdd74306c62e83a0dab871ecfcd7f2e63eac18526a6fdb5741614036500b4",
+      "look": "female",
+      "clip": "Activity_HoldRod",
+      "view": "full"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/female-Activity_HoldRod-rear.png",
+      "bytes": 80085,
+      "sha256": "8c5bd80caad8396764283bf4f5832e8b3db6f5a3cc97f5f0b3475a38672c73c6",
+      "look": "female",
+      "clip": "Activity_HoldRod",
+      "view": "rear"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/female-Activity_SitDown-full.png",
+      "bytes": 94233,
+      "sha256": "6e2041771f888e519086105a750e7455201eb3904fded86180cc27d58d601dcc",
+      "look": "female",
+      "clip": "Activity_SitDown",
+      "view": "full"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/female-Activity_SitDown-rear.png",
+      "bytes": 68984,
+      "sha256": "49152d8623f7d2f1e2565cc60cd4d68ed0aa768689eec0ed5e6e7fd46793ae47",
+      "look": "female",
+      "clip": "Activity_SitDown",
+      "view": "rear"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/female-Activity_Sit-full.png",
+      "bytes": 95028,
+      "sha256": "049ec738fefd08bdbaa1c6e39b02e053508b72f3b748060b69f6fa810416c11e",
+      "look": "female",
+      "clip": "Activity_Sit",
+      "view": "full"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/female-Activity_Sit-rear.png",
+      "bytes": 68690,
+      "sha256": "bec403b9ebe68571534ee6b348f767ca161fb0285b412996a12f824dc14909d5",
+      "look": "female",
+      "clip": "Activity_Sit",
+      "view": "rear"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/female-Activity_Cast-full.png",
+      "bytes": 83331,
+      "sha256": "d514cdc389de2c33a21fd557814517b2ad1bf18a19ec8b42c227d77d646ac03f",
+      "look": "female",
+      "clip": "Activity_Cast",
+      "view": "full"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/female-Activity_Cast-rear.png",
+      "bytes": 75454,
+      "sha256": "251ac9cadc6fe257b2404b4fff7ecb121d7394bcaef07daaacb4da77a98559b0",
+      "look": "female",
+      "clip": "Activity_Cast",
+      "view": "rear"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/female-Swim_Idle-full.png",
+      "bytes": 102172,
+      "sha256": "b7db5d292538c28ca62bb143e8cc3d07861830ba83a79e018547c7927d848384",
+      "look": "female",
+      "clip": "Swim_Idle",
+      "view": "full"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/female-Swim_Idle-rear.png",
+      "bytes": 79267,
+      "sha256": "7e2e3dc2f8ea3c505d68406fc8bc2ce1bf0a8eb8c43c9de26955a8019bc1fe30",
+      "look": "female",
+      "clip": "Swim_Idle",
+      "view": "rear"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/female-Crouch_Idle-full.png",
+      "bytes": 82404,
+      "sha256": "afb25fc64df48fc50970c180e7ba947e864377bf5835315d4f96564bf6d8628b",
+      "look": "female",
+      "clip": "Crouch_Idle",
+      "view": "full"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/female-Crouch_Idle-rear.png",
+      "bytes": 74827,
+      "sha256": "58f3364136ba15116e18c3f55ca11b2023952be065597153e412cb8ce6d2c070",
+      "look": "female",
+      "clip": "Crouch_Idle",
+      "view": "rear"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/female-Prone_Idle-full.png",
+      "bytes": 73319,
+      "sha256": "d4e52d6f1270743617fce4cccd3d3a81137d44cc1f072d67942b56d0bf9c63a6",
+      "look": "female",
+      "clip": "Prone_Idle",
+      "view": "full"
+    },
+    {
+      "path": ".impeccable/review/wardrobe/captures-b2/adverse/female-Prone_Idle-rear.png",
+      "bytes": 74616,
+      "sha256": "e1503ac094c4a7a87608dae58c1200db1f471cdfd16d307d7e0a87cc26055c6b",
+      "look": "female",
+      "clip": "Prone_Idle",
+      "view": "rear"
+    }
+  ],
+  "excludedCaptures": {
+    "captures-b2/game/actual-prone.png": "Character is standing; not prone evidence",
+    "captures-b2/game/actual-crouch.png": "Initial toggle did not establish active posture",
+    "captures-b2/game/verified-clear-grass-prone.png": "State asserted but tree obscures character",
+    "captures-b2/game/verified-clear-grass-prone-orbit.png": "Camera occluded by tree; use -front instead"
+  }
+}

@@ -1,71 +1,82 @@
 # Wardrobe implementation status
 
-This is an in-progress feature branch. Nothing here replaces the live character.
+The optional wardrobe is implemented on `codex/appearance-wardrobe` and remains
+unreleased. The approved male GLB is unchanged (SHA256
+`1c89c5710998736679a7a10403e89f998a912624c1fe674959668364bd2ba520`).
+Production integration and release belong to Main orchestrator.
 
-The approved male GLB and all runtime source remain unchanged. Source packs are
-the official free Standard Quaternius CC0 downloads; manifests and license notices
-are retained. Raw archives, downloaded models and editable Blender scenes are
-ignored local source; scripts reconstruct the exports.
+## Implemented scope
 
-Current evidence:
+The men's catalogue has three modeled hairstyles, three modeled hats plus None,
+three tops, three bottoms and three shoes. Short beard and moustache supplement
+the existing full beard and clean-shaven option. Hair and cloth palettes are
+bounded choices. Tall/ankle/low footwear fit variants preserve covered skin and
+trouser boundaries. Classic trouser dye uses its own neutral albedo UV set while
+retaining the approved normal/roughness atlas.
 
-- Three real hair meshes exported and optimized, each with the canonical 65-bone
-  bind, plus the existing beard. See render/hair-exported-v1.png.
-- Three modeled hats exported with head skinning: six-panel cap, folded beanie
-  and stitched bucket. Their exported bind contract passes. The cap review found
-  an oversized crown; its authoring profile is corrected pending a fresh render.
-- Connected charcoal knit top exported and reviewed in front/side/rear and
-  walk/run/jump poses. Rear elbow skin exposure was corrected by retaining only
-  the covered sleeve's hands. Collar, cuffs and hem gained modeled rib bands.
-  The retained approved neck has an irregular lower boundary that is still visible
-  with this collar; this must be corrected before acceptance.
-- Female reference outfit now has an initial rigged, complete-component Blender
-  prototype with the official female base, long brunette hair, open blazer,
-  notched lapels, cropped underlayer, tailored shorts, belt/gold buckle, tights
-  and pointed pumps/heels. Its exported visual/fit review is still pending.
+The selectable female preset has brunette hair, structured black blazer with
+lapels, cropped high-neck top, tailored high-waisted shorts, belt/gold buckle,
+sheer tights and pointed pumps with heels. The publisher's authored hair islands
+are fitted to the coat and canonical rig; the rejected added forelock tubes and
+white-brow candidate are preserved as local controls rather than published.
 
-ImageGen references, exact prompts, input roles and the actual sweater paintover
-are retained under references/. Shared tintable knit/twill albedos are retained
-under assets/wardrobe-source/textures/. Concepts and paintovers are not evidence
-of finished meshes.
+Menu → Appearance has a real demand-rendered rotatable preview, category focus,
+Apply/Cancel, Reset look and explicit loading/save errors with Retry. Changes use
+normalized cosmetic IDs, authoritative owner saves and a separate appearance
+message; ordinary pose packets do not reparse cosmetic fields. Local/remote
+actors share one canonical skeleton each and immutable geometry/textures, with
+actor-owned materials. The original male look loads zero extra wardrobe files.
+The local SharedWorker path uses the same bounded owner profile store in memory;
+restoration is only promised while that worker survives, not after its expiry.
 
-All five men's slots now have at least three modeled candidates: the approved
-workshirt/trousers/boots plus distinct custom overshirt/knit, cargo/shorts,
-hiking/canvas shoes, three hairstyles and three hats. Separate high-boot,
-ankle-boot and low-shoe fit exports prevent uncovered ankles and skin inside
-opaque boots. A short beard and moustache are also being fitted.
+Official Quaternius CC0 Standard downloads, provenance, license notices, exact
+ImageGen prompts/references and reproducible Blender scripts are retained. Raw
+archives, original sources and editable Blender scenes remain ignored locally.
+The runtime pack contains 24 selected GLBs; final acceptance packing remains gated.
 
-The shared schema, selected-asset resolver, safe skeleton attachment and optional
-owner profile store have focused passing tests. These modules are not wired into
-the live renderer or network yet. Skeleton attachments reuse one canonical
-skeleton per actor and share immutable geometry; only per-actor materials will
-carry colour changes. The original appearance selects zero extra downloads.
+## Evidence completed
 
-The client/server and local/remote renderer are now connected, with an optional
-Menu → Appearance dialog, real rotatable on-demand 3D preview, category focus,
-body/garment/hair/facial-hair selections, colours and staged Apply/Cancel.
-Default appearances still request no additional wardrobe files. Classic trouser
-dyes use a neutral albedo on a separate UV set while retaining the approved
-normal/roughness atlas, so pale colours do not multiply a brown atlas into brown.
+- Independent settings UI review: **ship at dialog/workflow scope**, with loaded
+  Chromium and WebKit desktop, phone portrait and phone landscape evidence.
+  Apply/Cancel/reset, two-client agreement, restored selection, all options,
+  asset-failure retention/Retry, delayed-request ordering and cleanup passed.
+  See UI_REVIEW.md for exact scope and resource limits.
+- Independent men's neutral fit review: **pass across all 243 core combinations**,
+  front and rear, with source and PNG hashes. See NEUTRAL_FIT_REVIEW.md.
+- Female targeted correction review: dark brows/iris readability, integrated hair
+  roots, prior prone hatching and stylized prone drape resolved; no new material
+  fit failure observed in neutral/side/rear/sit/crouch/prone/swim evidence.
+- Frozen `b2e28ac` runtime: 88 actual WebGL front/rear sampled frames cover three
+  complete men's outfits and the female preset in 11 clips. The men's selections
+  cover each modeled hair/hat/top/bottom/shoe choice. Independent full-mesh/action
+  review is pending; sampled frames are not a complete animation sweep.
+- Actual Game with two independent clients on the local SharedWorker: female Apply,
+  observer agreement and same-worker reload restore passed. Campfire sit, standing
+  fishing cast, mounted scooter/boat movement and walking were state checked.
+  Prone was independently corroborated by the observer's remote posture and a
+  visible settled capture (`verified-clear-grass-prone-front.png`).
+- Earlier misleading `actual-prone.png`/`actual-crouch.png` and tree-occluded prone
+  captures are explicitly excluded from visual acceptance. No physics or gameplay
+  source was changed to make these tests pass.
+- B2 female has 30,254 triangles and 12 rendered primitives, versus the rejected
+  control's 35,310 triangles/13 primitives. Matched isolated desktop crowd results
+  are recorded in RUNTIME_REVIEW.md; they do not establish iPhone performance.
 
-No garment or hat has final visual acceptance. The first 243-combination front/rear
-render pass found the guessed hiking collar floating around the ankle. It was
-replaced by a bound rim extruded directly from the source last; a repeated review
-is required. Browser UI, activity poses and performance acceptance remain pending.
-The localhost-only paired fixture uses the real RoomCore and two MultiplayerRoom
-clients over an in-browser channel, never a backend listener or production socket.
+`REVIEW_EVIDENCE.json` pins local reports and all 88 adverse-pose capture hashes.
+Full frontend tests passed 581/581 before the added local-profile test; the focused
+local factory/catalogue checks subsequently passed 18/18. Protocol passed 182/182,
+material positive/negative controls 2/2, client/server TypeScript and production
+and isolated QA builds passed. Final integrated checks remain required.
 
-Focused tests pass for bounded IDs, all configuration combinations,
-fit resolution, bind mismatch rejection, geometry/texture sharing, durable save
-failure/retry and receipt ordering. TypeScript checks pass for client and server.
-The full frontend suite passes 581 tests. All 182 protocol tests and client/server
-TypeScript checks pass. The normal production build and isolated fixture build
-pass. The packed model hashes are checked against the allowlisted URL versions.
-Ordinary movement packets preserve the existing cosmetic object without parsing
-or serializing its fields again.
-Its first read-only preflight found no conflicting paths or shared dependency
-differences against the release owner's protected normal/editor preview.
+## Preview safety and remaining work
 
-No shared preview, release checkout, live world state or deployment has been
-changed by this feature chat. Runtime GLBs are explicitly packed as preview
-candidates; final packing requires a matching visual acceptance record.
+Both bounded shared-preview sessions are closed. The B2 session removed exactly
+35 authorized, hash-matching additions and verified all 351 original files plus
+the normal HTTP index. Listener PID35046 was untouched. The earlier C60 session
+also restored its protected baseline. No production connection, live world/home
+write, Worker deployment or additional listener was made by these QA fixtures.
+
+Still required: independent full mesh/action disposition; coverage of any named
+remaining pose/item gaps; final hash-matching asset acceptance; current-main
+integration, checks and release-owner PR/release review. Existing mobile controls,
+chat, 2048, ownership and world integration must be preserved.
