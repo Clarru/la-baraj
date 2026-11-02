@@ -13,6 +13,7 @@ import {
 } from "./boats.ts";
 export type { BoatPose } from "./boats.ts";
 import type { LakeWeather } from "./weather.ts";
+import { normalizeAppearance, type Appearance } from "./appearance.ts";
 import {
   legalFleet,
   isGridPoint,
@@ -55,6 +56,8 @@ export type PlayerPresence = PlayerPose & {
   id: string;
   nickname: string;
   homeIndex?: number;
+  /** Snapshot/join cosmetics. Ordinary pose packets need not repeat this. */
+  appearance?: Appearance;
   /** Snapshot-only: milliseconds since last user input, when known. */
   idleMs?: number;
 };
@@ -76,7 +79,9 @@ export type ClientMessage =
       resumeToken?: string;
       createHome?: true;
       housingEpoch?: number;
+      appearance?: Appearance;
     }
+  | { type: "appearance"; requestId: string; appearance: Appearance }
   | { type: "pose"; pose: PlayerPose }
   | { type: "activity"; idleMs: number }
   | { type: "weather-refresh" }
@@ -130,12 +135,23 @@ export type ServerMessage =
       village?: VillageState;
       planes?: PlanesView;
       cruce?: CruceView;
-      features?: { arcade2048?: boolean; arcadeStations?: boolean };
+      features?: {
+        arcade2048?: boolean;
+        arcadeStations?: boolean;
+        appearance?: boolean;
+      };
       arcadeStations?: ArcadeStationView[];
       cruceRecovery?: CruceRecovery;
     }
   | { type: "village"; village: VillageState }
   | { type: "joined"; player: PlayerPresence }
+  | {
+      type: "appearance";
+      id: string;
+      appearance: Appearance;
+      requestId?: string;
+      error?: string;
+    }
   | { type: "pose"; player: PlayerPresence }
   | { type: "left"; id: string }
   | { type: "weather"; weather: LakeWeather | null }
@@ -217,6 +233,14 @@ export function parseClientMessage(raw: string): ClientMessage | null {
   }
   if (!object(value)) return null;
   switch (value.type) {
+    case "appearance":
+      return label(value.requestId, 64)
+        ? {
+            type: "appearance",
+            requestId: value.requestId,
+            appearance: normalizeAppearance(value.appearance),
+          }
+        : null;
     case "arcade2048-action": {
       const action = parseArcadeAction(value.action);
       if (
@@ -338,6 +362,9 @@ export function parseClientMessage(raw: string): ClientMessage | null {
             }
           : {}),
         ...(value.createHome === true ? { createHome: true as const } : {}),
+        ...(value.appearance === undefined
+          ? {}
+          : { appearance: normalizeAppearance(value.appearance) }),
       };
     }
     case "fire":

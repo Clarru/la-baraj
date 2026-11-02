@@ -30,11 +30,12 @@ artifacts.append(export_item(rig,[short],"beard-short"))
 moustache=duplicate(beard,"Wardrobe_Moustache")
 mesh=bmesh.new()
 mesh.from_mesh(moustache.data)
-for height,lower in [(1.643,True),(1.673,False)]:
+for height,lower in [(1.622,True),(1.650,False)]:
     bmesh.ops.bisect_plane(mesh,geom=list(mesh.verts)+list(mesh.edges)+list(mesh.faces),
         plane_co=(0,0,height),plane_no=(0,0,1),clear_inner=lower,clear_outer=not lower)
 bmesh.ops.delete(mesh,geom=[f for f in mesh.faces
-    if abs(sum(v.co.x for v in f.verts)/len(f.verts))>.045],context="FACES")
+    if abs(sum(v.co.x for v in f.verts)/len(f.verts))>.050
+    or sum(v.co.y for v in f.verts)/len(f.verts)>-.070],context="FACES")
 bmesh.ops.delete(mesh,geom=[v for v in mesh.verts if not v.link_faces],context="VERTS")
 mesh.to_mesh(moustache.data)
 mesh.free()

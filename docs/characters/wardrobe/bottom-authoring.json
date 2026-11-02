@@ -43,5 +43,20 @@
     "id": "bottom-weekend-shorts-ankle",
     "artifact": "assets/source-models/wardrobe/build/bottom-weekend-shorts-ankle.glb",
     "accepted": false
+  },
+  {
+    "id": "bottom-classic-dyed-tucked",
+    "artifact": "assets/source-models/wardrobe/build/bottom-classic-dyed-tucked.glb",
+    "accepted": false
+  },
+  {
+    "id": "bottom-classic-dyed-full",
+    "artifact": "assets/source-models/wardrobe/build/bottom-classic-dyed-full.glb",
+    "accepted": false
+  },
+  {
+    "id": "bottom-classic-dyed-ankle",
+    "artifact": "assets/source-models/wardrobe/build/bottom-classic-dyed-ankle.glb",
+    "accepted": false
   }
 ]

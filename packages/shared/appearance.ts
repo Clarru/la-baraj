@@ -1,12 +1,34 @@
 /** Bounded cosmetic IDs only. Asset paths and material values never cross the wire. */
 export const HAIR_IDS = ["parted", "buzzed", "long"] as const;
-export const HAT_IDS = ["none", "panel-cap", "knit-beanie", "stitched-bucket"] as const;
-export const TOP_IDS = ["lake-workshirt", "trail-overshirt", "weekend-knit"] as const;
+export const HAT_IDS = [
+  "none",
+  "panel-cap",
+  "knit-beanie",
+  "stitched-bucket",
+] as const;
+export const TOP_IDS = [
+  "lake-workshirt",
+  "trail-overshirt",
+  "weekend-knit",
+] as const;
 export const BOTTOM_IDS = ["classic", "trail-cargo", "weekend-shorts"] as const;
 export const SHOE_IDS = ["lake-boots", "trail-hikers", "canvas-low"] as const;
 export const BEARD_IDS = ["none", "full", "short", "moustache"] as const;
-export const HAIR_COLORS = ["brown", "black", "blond", "auburn", "grey"] as const;
-export const CLOTH_COLORS = ["original", "navy", "sage", "charcoal", "cream", "rust"] as const;
+export const HAIR_COLORS = [
+  "brown",
+  "black",
+  "blond",
+  "auburn",
+  "grey",
+] as const;
+export const CLOTH_COLORS = [
+  "original",
+  "navy",
+  "sage",
+  "charcoal",
+  "cream",
+  "rust",
+] as const;
 
 export type MaleAppearance = {
   version: 1;
@@ -38,8 +60,14 @@ export const DEFAULT_APPEARANCE: Readonly<MaleAppearance> = Object.freeze({
   bottomColor: "original",
 });
 
-function choice<T extends string>(ids: readonly T[], value: unknown, fallback: T): T {
-  return typeof value === "string" && ids.includes(value as T) ? value as T : fallback;
+function choice<T extends string>(
+  ids: readonly T[],
+  value: unknown,
+  fallback: T,
+): T {
+  return typeof value === "string" && ids.includes(value as T)
+    ? (value as T)
+    : fallback;
 }
 
 /** Old, missing or unknown fields resolve independently to the approved default. */
@@ -59,9 +87,21 @@ export function normalizeAppearance(value: unknown): Appearance {
     bottom: choice(BOTTOM_IDS, source.bottom, DEFAULT_APPEARANCE.bottom),
     shoes: choice(SHOE_IDS, source.shoes, DEFAULT_APPEARANCE.shoes),
     beard: choice(BEARD_IDS, source.beard, DEFAULT_APPEARANCE.beard),
-    hairColor: choice(HAIR_COLORS, source.hairColor, DEFAULT_APPEARANCE.hairColor),
-    topColor: choice(CLOTH_COLORS, source.topColor, DEFAULT_APPEARANCE.topColor),
-    bottomColor: choice(CLOTH_COLORS, source.bottomColor, DEFAULT_APPEARANCE.bottomColor),
+    hairColor: choice(
+      HAIR_COLORS,
+      source.hairColor,
+      DEFAULT_APPEARANCE.hairColor,
+    ),
+    topColor: choice(
+      CLOTH_COLORS,
+      source.topColor,
+      DEFAULT_APPEARANCE.topColor,
+    ),
+    bottomColor: choice(
+      CLOTH_COLORS,
+      source.bottomColor,
+      DEFAULT_APPEARANCE.bottomColor,
+    ),
   };
 }
 

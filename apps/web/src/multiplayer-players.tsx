@@ -41,6 +41,9 @@ import { BOAT_TUNING, boatWheelTarget, inferBoatTurnRate } from "./boat-motion";
 import { AFK_AFTER_MS } from "../../../packages/shared/protocol";
 import { postureFromAnimation, stanceBaseAnimation } from "./stance-motion";
 import { RemoteMooredBoat } from "./RemoteMooredBoat";
+import { DEFAULT_APPEARANCE } from "../../../packages/shared/appearance";
+import { useAvatarWardrobe } from "./use-avatar-wardrobe";
+const noWorldSubscription = () => () => {};
 
 // Only the isolated local browser lab may shorten the visual timeout for QA.
 const displayAfkAfter =
@@ -99,6 +102,11 @@ function RemoteAvatarRig({ id, room }: { id: string; room: RemoteCardRoom }) {
     "/assets/animations/character-actions.json",
   );
   const object = useMemo(() => cloneCharacter(scene), [scene]);
+  const appearance = useSyncExternalStore(
+    room.subscribeWorld ?? noWorldSubscription,
+    () => room.remotes.get(id)?.player.appearance ?? DEFAULT_APPEARANCE,
+  );
+  useAvatarWardrobe(object, appearance);
   const tableReaction = useMemo(() => createTableReactionRig(object), [object]);
   useEffect(() => () => tableReaction.dispose(), [tableReaction]);
   const clips = useMemo(() => {

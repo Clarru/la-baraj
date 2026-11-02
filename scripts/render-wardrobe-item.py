@@ -24,6 +24,8 @@ views = [("Front", 0, "Idle_Neutral", 1),
          ("Walk", .25, "Walk", 10),
          ("Run", -.25, "Run", 8),
          ("Jump", .5, "Jump_Loop", 10)]
+if slot == "facial":
+    views = views[:3]
 source = RAW / "optimized" / f"{item}.glb"
 for index, (label, angle, clip, frame) in enumerate(views):
     rig, meshes = import_model(ROOT / "apps/web/public/assets/optimized/Lakeside_Man.glb")
@@ -31,6 +33,7 @@ for index, (label, angle, clip, frame) in enumerate(views):
     hidden = {"top": ["Male_Peasant_Body", "Male_Peasant_Arms"],
               "bottom": ["Male_Peasant_Legs"], "shoes": ["Male_Peasant_Feet"],
               "hat": [], "hair": ["Hairstyle_Hair_SimpleParted"],
+              "facial": ["Hairstyle_Hair_Beard"],
               "full": list(names)}[slot]
     for name in hidden:
         names[name].hide_render = True
@@ -61,7 +64,7 @@ for index, (label, angle, clip, frame) in enumerate(views):
     pivot = bpy.data.objects.new(f"Review view {index}", None)
     bpy.context.collection.objects.link(pivot)
     rig.parent = pivot
-    pivot.location.x = (index - 2.5) * 1.12
+    pivot.location.x = (index - (len(views)-1)/2) * (.55 if slot == "facial" else 1.12)
     pivot.rotation_euler.z = angle
     text = bpy.data.curves.new(f"label-{index}", "FONT")
     text.body, text.align_x, text.size = label, "CENTER", .08
@@ -98,6 +101,10 @@ bpy.context.collection.objects.link(camera)
 camera.location = (0, -10, 3)
 camera.data.type, camera.data.ortho_scale = "ORTHO", 7.2
 aim(camera, (0, 0, .9))
+if slot == "facial":
+    camera.location = (0, -8, 2.25)
+    camera.data.ortho_scale = 1.9
+    aim(camera, (0, 0, 1.62))
 scene = bpy.context.scene
 scene.camera = camera
 scene.frame_set(1)
@@ -106,6 +113,8 @@ scene.cycles.samples = 20
 scene.cycles.use_denoising = True
 scene.render.threads_mode, scene.render.threads = "FIXED", 4
 scene.render.resolution_x, scene.render.resolution_y = 2400, 900
+if slot == "facial":
+    scene.render.resolution_x, scene.render.resolution_y = 1800, 650
 scene.render.resolution_percentage = 100
 scene.render.image_settings.file_format = "PNG"
 scene.render.filepath = str(OUT / f"{item}-exported-v1.png")

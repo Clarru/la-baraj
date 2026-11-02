@@ -28,6 +28,17 @@ async function pixelKey(texture) {
 const approvedTextures = new Map();
 for (const texture of approved.getRoot().listTextures())
   approvedTextures.set(await pixelKey(texture), texture);
+const approvedMaterials={};
+for(const material of approved.getRoot().listMaterials()) {
+  const hashes={};
+  for(const [slot,texture] of [["map",material.getBaseColorTexture()],["normalMap",material.getNormalTexture()],
+    ["roughnessMap",material.getMetallicRoughnessTexture()],["metalnessMap",material.getMetallicRoughnessTexture()],
+    ["aoMap",material.getOcclusionTexture()]])
+    if(texture?.getImage()) hashes[slot]=crypto.createHash("sha256").update(texture.getImage()).digest("hex");
+  approvedMaterials[material.getName()]=hashes;
+}
+await fs.writeFile(path.join(root,"apps/web/src/wardrobe-approved-textures.json"),
+  JSON.stringify(approvedMaterials,null,2)+"\n");
 const records = [];
 for (const filename of (await fs.readdir(source)).filter((name) => name.endsWith(".glb")).sort()) {
   const doc = await io.read(path.join(source, filename));
@@ -90,6 +101,10 @@ for (const filename of (await fs.readdir(source)).filter((name) => name.endsWith
       material.setBaseColorFactor([0.04, 0.075, 0.13, 1]);
     if (filename === "female-brunette-tailored.glb" && material.getName().includes("Black_Tailoring"))
       material.setBaseColorFactor([0.009, 0.012, 0.015, 1]);
+    if (filename === "female-brunette-tailored.glb" && material.getName().includes("Female_Brunette"))
+      material.setBaseColorFactor([0.045, 0.021, 0.011, 1]);
+    if (filename === "shoes-trail-hikers.glb" && material.getName().includes("Hiking_Leather"))
+      material.setBaseColorFactor([0.30, 0.19, 0.12, 1]);
     const hashes = {};
     for (const [slot, texture] of [
       ["map", material.getBaseColorTexture()], ["normalMap", material.getNormalTexture()],

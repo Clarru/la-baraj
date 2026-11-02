@@ -17,7 +17,9 @@ def mat(name,color,roughness):
     shader.inputs["Base Color"].default_value=(*color,1)
     shader.inputs["Roughness"].default_value=roughness
     return result
-leather=mat("Wardrobe_Hiking_Leather",(.105,.055,.027),.76)
+leather=approved["Male_Peasant_Feet"].data.materials[0].copy()
+leather.name="Wardrobe_Hiking_Leather"
+leather.node_tree.nodes.get("Principled BSDF").inputs["Roughness"].default_value=.84
 trim=mat("Wardrobe_Shoe_DarkRubber",(.02,.023,.024),.9)
 canvas=mat("Wardrobe_Canvas_Charcoal",(.025,.028,.03),.91)
 rubber=mat("Wardrobe_Canvas_Sole",(.44,.40,.32),.83)
@@ -73,6 +75,22 @@ for style,height,material in [("hiking",.242,leather),("canvas",.119,canvas)]:
                 vertex.co.z=-.004+(vertex.co.z+.004)*.63
             else:
                 vertex.co.z-=.018
+    # Derive a bound opening rim from the actual source last. The former guessed
+    # ellipse had foot-only weights and floated away from the calf-weighted upper.
+    mesh=bmesh.new()
+    mesh.from_mesh(shoe.data)
+    opening=height-(.018 if style=="canvas" else 0)
+    boundary=[edge for edge in mesh.edges if edge.is_boundary and
+        all(abs(vertex.co.z-opening)<.00001 for vertex in edge.verts)]
+    if boundary:
+        result=bmesh.ops.extrude_edge_only(mesh,edges=boundary)
+        for vertex in [item for item in result["geom"] if isinstance(item,bmesh.types.BMVert)]:
+            center=.1143 if vertex.co.x>=0 else -.1143
+            vertex.co.x=center+(vertex.co.x-center)*.94
+            vertex.co.y=.066+(vertex.co.y-.066)*.94
+            vertex.co.z-=.003
+    mesh.to_mesh(shoe.data)
+    mesh.free()
     mesh=bmesh.new()
     mesh.from_mesh(shoe.data)
     bmesh.ops.bisect_plane(mesh,geom=list(mesh.verts)+list(mesh.edges)+list(mesh.faces),
@@ -84,11 +102,6 @@ for style,height,material in [("hiking",.242,leather),("canvas",.119,canvas)]:
     pieces=[shoe]
     for side in [-1,1]:
         cx=side*.1143
-        if style=="hiking":
-            collar=rib_band("Hiking padded ankle collar",[(.230,.069,.078),(.238,.073,.081),
-                (.248,.071,.080)],leather,center=(cx,.066,0))
-            rigid_foot(collar,side,False)
-            pieces.append(collar)
         # Crossed laces follow the rising instep, without floating above the shoe.
         for step in range(5 if style=="hiking" else 4):
             y=-.058+step*.021

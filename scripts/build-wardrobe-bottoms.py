@@ -124,6 +124,28 @@ for name,minimum in [("tucked",.445),("ankle",.240)]:
     role(leg_skin,"skin")
     items.append(("bottom-weekend-shorts-"+name,[shorts,leg_skin]))
 records=[]
+# Dye variants retain the approved normal/roughness atlas and its original UVs.
+# A separate UV set gives neutral fabric albedo a fine repeat, so cream/grey dyes
+# don't multiply the brown atlas into a misleading dark brown.
+for fit,source in [("tucked",classic),("full",full),("ankle",ankle)]:
+    dyed=duplicate(source,"Wardrobe_Bottom_ClassicDyed_"+fit)
+    material=dyed.data.materials[0].copy()
+    material.name="Wardrobe_Classic_Dyeable"
+    dyed.data.materials.clear()
+    dyed.data.materials.append(material)
+    original_uv=dyed.data.uv_layers[0]
+    uv=dyed.data.uv_layers.new(name="DyeUV")
+    for previous,current in zip(original_uv.data,uv.data):current.uv=previous.uv*16
+    dyed.data.uv_layers.active_index=0
+    original_uv.active_render=True
+    nodes,links=material.node_tree.nodes,material.node_tree.links
+    texture=nodes.new("ShaderNodeTexImage")
+    texture.image=bpy.data.images.load(str(ROOT/"assets/wardrobe-source/textures/twill-albedo.png"),check_existing=True)
+    coordinates=nodes.new("ShaderNodeUVMap")
+    coordinates.uv_map="DyeUV"
+    links.new(coordinates.outputs["UV"],texture.inputs["Vector"])
+    links.new(texture.outputs["Color"],nodes.get("Principled BSDF").inputs["Base Color"])
+    items.append(("bottom-classic-dyed-"+fit,[dyed]))
 for name,meshes in items:
     for obj in meshes:
         if obj.get("wardrobeRole")!="skin":role(obj,"bottom")

@@ -1,12 +1,6 @@
-export type GamePanel = "menu" | "controls" | null;
+export type GamePanel = "menu" | "controls" | "appearance" | null;
 export type GameShortcut =
-  | "pass"
-  | "block"
-  | "close-panel"
-  | "controls"
-  | "home"
-  | "reset"
-  | "walk";
+  "pass" | "block" | "close-panel" | "controls" | "home" | "reset" | "walk";
 export type GameKey = {
   code: string;
   key: string;

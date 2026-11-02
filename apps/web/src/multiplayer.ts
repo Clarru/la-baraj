@@ -42,6 +42,15 @@ import { syncOnlineSeats } from "./bench-registry";
 import { readPlayerName, savePlayerName } from "./player-name";
 import { isHomeIndex, shouldSpawnAtHome } from "./home";
 import type { PlanesView, PlanesAction } from "../../../packages/shared/planes";
+import {
+  appearanceKey,
+  normalizeAppearance,
+  type Appearance,
+} from "../../../packages/shared/appearance";
+import {
+  readAppearancePreference,
+  saveAppearancePreference,
+} from "./appearance-preference";
 
 export type NetworkStatus =
   "connecting" | "online" | "reconnecting" | "full" | "error" | "offline";
@@ -64,6 +73,8 @@ type RoomView = {
   arcadeStations: ArcadeStationView[];
   arcadeBlocked: boolean;
   weather: LakeWeather | null;
+  appearance: Appearance;
+  appearanceAvailable: boolean;
 };
 export type RemotePlayer = {
   player: PlayerPresence;
@@ -242,6 +253,15 @@ export class MultiplayerRoom {
     }
   >();
   private planesEventAt = 0;
+  private appearancePreference: Appearance | null = null;
+  private latestAppearanceRequest: string | null = null;
+  private appearanceRequests = new Map<
+    string,
+    {
+      resolve: (error: string | null) => void;
+      timer: ReturnType<typeof setTimeout>;
+    }
+  >();
   private planeRequests = new Map<
     string,
     {
@@ -268,12 +288,19 @@ export class MultiplayerRoom {
     arcadeStations: [],
     arcadeBlocked: false,
     weather: null,
+    appearance: normalizeAppearance(undefined),
+    appearanceAvailable: false,
   };
   constructor(
     initialName?: string,
     private readonly persistHome = true,
   ) {
     if (initialName) this.view = { ...this.view, nickname: initialName };
+    if (persistHome) {
+      this.appearancePreference = readAppearancePreference();
+      if (this.appearancePreference)
+        this.view = { ...this.view, appearance: this.appearancePreference };
+    }
   }
   noteInput = () => this.inputActivity.input();
   stopTrackingInput = () => this.inputActivity.dispose();
@@ -442,6 +469,9 @@ export class MultiplayerRoom {
       type: "hello",
       nickname: this.view.nickname,
       housingEpoch: HOUSING_EPOCH,
+      ...(this.appearancePreference
+        ? { appearance: this.appearancePreference }
+        : {}),
       ...(credential
         ? {
             requestHome: true as const,
@@ -509,10 +539,18 @@ export class MultiplayerRoom {
   private updateRemote(player: PlayerPresence) {
     if (player.id === this.view.selfId) return;
     const old = this.remotes.get(player.id);
+    const appearance =
+      player.appearance === undefined
+        ? old?.player.appearance
+        : normalizeAppearance(player.appearance);
+    const changed =
+      player.appearance !== undefined &&
+      appearanceKey(normalizeAppearance(old?.player.appearance)) !==
+        appearanceKey(appearance!);
     const added = !old,
       renamed = old?.player.nickname !== player.nickname;
     this.remotes.set(player.id, {
-      player,
+      player: { ...player, ...(appearance ? { appearance } : {}) },
       receivedAt: performance.now(),
       lastInputAt:
         player.idleMs === undefined
@@ -528,9 +566,66 @@ export class MultiplayerRoom {
         ids: [...this.remotes.keys()],
         count: this.remotes.size + 1,
       });
+    if (changed) this.publishWorld();
+  }
+  private acceptAppearance(value: Appearance) {
+    const appearance = normalizeAppearance(value);
+    this.appearancePreference = appearance;
+    if (this.persistHome) saveAppearancePreference(appearance);
+    this.publish({ appearance });
+  }
+  setAppearance(value: Appearance): Promise<string | null> {
+    if (this.view.status !== "online" || this.view.homeIndex === null)
+      return Promise.resolve("Reconnect to save your appearance.");
+    if (!this.view.appearanceAvailable)
+      return Promise.resolve(
+        "Appearance saving is temporarily unavailable. Try again later.",
+      );
+    const requestId = crypto.randomUUID();
+    this.latestAppearanceRequest = requestId;
+    this.noteInput();
+    return new Promise((resolve) => {
+      const timer = setTimeout(() => {
+        if (!this.appearanceRequests.delete(requestId)) return;
+        resolve("Your appearance save could not be confirmed. Try again.");
+      }, 10000);
+      this.appearanceRequests.set(requestId, { resolve, timer });
+      this.send({
+        type: "appearance",
+        requestId,
+        appearance: normalizeAppearance(value),
+      });
+    });
   }
   protected receive(message: ServerMessage) {
     switch (message.type) {
+      case "appearance": {
+        const appearance = normalizeAppearance(message.appearance);
+        if (message.id === this.view.selfId) {
+          const pending = message.requestId
+            ? this.appearanceRequests.get(message.requestId)
+            : undefined;
+          if (pending) {
+            clearTimeout(pending.timer);
+            this.appearanceRequests.delete(message.requestId!);
+            pending.resolve(message.error ?? null);
+          }
+          if (
+            !message.error &&
+            (message.requestId
+              ? message.requestId === this.latestAppearanceRequest
+              : this.appearanceRequests.size === 0)
+          )
+            this.acceptAppearance(appearance);
+        } else if (!message.error) {
+          const remote = this.remotes.get(message.id);
+          if (remote) {
+            remote.player = { ...remote.player, appearance };
+            this.publishWorld();
+          }
+        }
+        break;
+      }
       case "boat-impact":
         if (message.revision > this.boatRevision) {
           this.boatRevision = message.revision;
@@ -621,6 +716,7 @@ export class MultiplayerRoom {
         this.publish({
           arcadeAvailable: message.features?.arcade2048 === true,
           arcadeStationsAvailable: message.features?.arcadeStations === true,
+          appearanceAvailable: message.features?.appearance === true,
           arcadeStations: message.arcadeStations ?? [],
         });
         if (this.pendingCruceRecovery && message.cruce) {
@@ -641,6 +737,11 @@ export class MultiplayerRoom {
         this.boatRevision =
           message.players.find((p) => p.id === message.selfId)
             ?.boatImpactRevision ?? 0;
+        const ownAppearance = message.players.find(
+          (p) => p.id === message.selfId,
+        )?.appearance;
+        if (ownAppearance !== undefined && this.appearanceRequests.size === 0)
+          this.acceptAppearance(normalizeAppearance(ownAppearance));
         if (typeof message.serverTime === "number")
           syncWorldTime(message.serverTime);
         if (message.weather === null || validLakeWeather(message.weather))
@@ -974,6 +1075,12 @@ export class MultiplayerRoom {
     this.setFire(!this.view.fireLit);
   }
   private resolvePending() {
+    this.appearanceRequests.forEach(({ resolve, timer }) => {
+      clearTimeout(timer);
+      resolve("Connection lost before your appearance save was confirmed.");
+    });
+    this.appearanceRequests.clear();
+    this.latestAppearanceRequest = null;
     this.pending.forEach(({ resolve, timer }) => {
       clearTimeout(timer);
       resolve(false);

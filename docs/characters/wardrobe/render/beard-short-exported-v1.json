@@ -1,0 +1,37 @@
+{
+  "asset": "assets/source-models/wardrobe/optimized/beard-short.glb",
+  "sha256": "caa5cfa1d88dc13e5c9d44548b514697b4feef7c8a3fbd2e23abf9a324dd4f6c",
+  "proof": "Exported GLB on unchanged approved animated skeleton; not a concept image",
+  "poses": [
+    {
+      "view": "Front",
+      "clip": "Idle_Neutral",
+      "frameOffset": 1
+    },
+    {
+      "view": "Side",
+      "clip": "Idle_Neutral",
+      "frameOffset": 1
+    },
+    {
+      "view": "Rear",
+      "clip": "Idle_Neutral",
+      "frameOffset": 1
+    },
+    {
+      "view": "Walk",
+      "clip": "Walk",
+      "frameOffset": 10
+    },
+    {
+      "view": "Run",
+      "clip": "Run",
+      "frameOffset": 8
+    },
+    {
+      "view": "Jump",
+      "clip": "Jump_Loop",
+      "frameOffset": 10
+    }
+  ]
+}

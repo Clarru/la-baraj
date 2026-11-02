@@ -35,8 +35,9 @@ texture.image=bpy.data.images.load(str(ROOT/"assets/wardrobe-source/textures/twi
 cloth.node_tree.links.new(texture.outputs["Color"],cloth.node_tree.nodes.get("Principled BSDF").inputs["Base Color"])
 fabric_normal(cloth,"twill")
 underlayer=mat("Wardrobe_Female_Black_Crop",(.009,.011,.014))
-tights_mat=mat("Wardrobe_Female_Sheer_Tights",(.055,.041,.034),.76)
-leather=mat("Wardrobe_Female_Black_Leather",(.008,.009,.011),.35)
+tights_mat=mat("Wardrobe_Female_Sheer_Tights",(.028,.020,.017),.76)
+leather=mat("Wardrobe_Female_Black_Leather",(.006,.007,.009),.44)
+leather.node_tree.nodes.get("Principled BSDF").inputs["Specular IOR Level"].default_value=.27
 gold=mat("Wardrobe_Female_Buckle_Brass",(.48,.30,.09),.35,.75)
 hair_mat=mat("Wardrobe_Female_Brunette",(.045,.021,.011),.72)
 pieces=[]
@@ -96,7 +97,7 @@ for vertex in tights.data.vertices:
         factor=max(0,min(1,(.15-p.z)/.10))
         p.x=side*.1143+(p.x-side*.1143)*(1-.20*factor)
         p.y=.012+(p.y-.012)*(1-.10*factor)
-        p.z+=.050*max(0,min(1,p.y/.13))*factor
+        p.z+=.070*max(0,min(1,p.y/.13))*factor
 tights.data.materials.clear()
 tights.data.materials.append(tights_mat)
 role(tights,"tights")
@@ -140,6 +141,26 @@ for side in [-1,1]:
     bevel.segments=2
     bpy.ops.object.modifier_apply(modifier=bevel.name)
     attach(lapel,"top")
+    s=Surface()
+    rows=[]
+    for row in range(3):
+        z=.97+row*.016
+        ids=[]
+        for column in range(7):
+            x=side*(.105+column*.013)
+            y=.045-.177*math.sqrt(max(0,1-(x/.218)**2))-.004
+            ids.append(s.point((x,y,z)))
+        rows.append(ids)
+    for row in range(2):
+        for col in range(6):
+            s.face((rows[row][col],rows[row][col+1],rows[row+1][col+1],rows[row+1][col]),
+                [(col/6,row/2),((col+1)/6,row/2),((col+1)/6,(row+1)/2),(col/6,(row+1)/2)])
+    welt=s.object("Blazer tailored pocket welt",cloth)
+    bpy.context.view_layer.objects.active=welt
+    shell=welt.modifiers.new("Pocket flap doubled cloth","SOLIDIFY")
+    shell.thickness=.0035
+    bpy.ops.object.modifier_apply(modifier=shell.name)
+    attach(welt,"top")
 
 # Fitted cropped high neck underlayer, separate from blazer.
 crop=rib_band("Wardrobe_Female_CropTop",[(1.175,.113,.106),(1.19,.116,.11),
@@ -208,11 +229,11 @@ for side in [-1,1]:
         for j in range(count):
             a=j*math.tau/count
             cosine,sine=math.cos(a),math.sin(a)
-            depth=.150 if cosine>=0 else .120
-            taper=1-.62*max(0,cosine)**3
+            depth=.145 if cosine>=0 else .120
+            taper=1-.52*max(0,cosine)**3
             ox=center_x+.052*sine*taper
             oy=.012-depth*cosine
-            floor=.013+.050*((1-cosine)/2)**2
+            floor=.013+.070*((1-cosine)/2)**2
             if stage==0:
                 point=(ox,oy,floor)
             elif stage==1:
@@ -221,7 +242,7 @@ for side in [-1,1]:
                 t=.42 if stage==2 else 1
                 ix=center_x+.036*sine
                 iy=.033-.096*cosine
-                opening_height=.055+.075*((1-cosine)/2)
+                opening_height=.055+.095*((1-cosine)/2)
                 z=floor+.008+(1.1 if stage==2 else 1)*t*(opening_height-floor)
                 point=(ox*(1-t)+ix*t,oy*(1-t)+iy*t,z)
             ring.append(s.point(point))
@@ -242,7 +263,7 @@ for side in [-1,1]:
     shell.thickness=.002
     bpy.ops.object.modifier_apply(modifier=shell.name)
     attach(shoe,"shoes")
-    heel=box("Wardrobe_Female_SlenderHeel",(center_x,.117,.032),(.016,.020,.064),leather)
+    heel=box("Wardrobe_Female_SlenderHeel",(center_x,.117,.042),(.014,.018,.084),leather)
     attach(heel,"shoes")
     for component in [shoe,heel]:
         component.vertex_groups.clear()
@@ -259,13 +280,15 @@ hair_rig,hair_meshes=import_model(next(p for p in (RAW/"base/extracted").rglob("
     if "Rigged to Head Bone" in str(p)))
 for hair in hair_meshes:
     rebind(hair,hair_rig,rig)
+    hair_mat=hair.data.materials[0].copy()
+    hair_mat.name="Wardrobe_Female_Brunette"
     hair.data.materials.clear()
     hair.data.materials.append(hair_mat)
     hair.name="Wardrobe_Female_LongBrunette"
     for vertex in hair.data.vertices:
         if vertex.co.z<1.68:
             t=max(0,min(1,(1.68-vertex.co.z)/.13))
-            vertex.co.z-=.27*t**1.1
+            vertex.co.z-=.32*t**1.1
             vertex.co.x*=1+.19*t
             if vertex.co.y>.04:
                 vertex.co.y+=.07*t
@@ -282,6 +305,60 @@ for hair in hair_meshes:
     role(hair,"hair")
     pieces.append(hair)
 remove_source_rig(hair_rig)
+front_hair=mat("Wardrobe_Female_Brunette_FrontFibers",(.045,.021,.011),.68)
+node=front_hair.node_tree.nodes.new("ShaderNodeTexImage")
+node.image=bpy.data.images.load(str(ROOT/"assets/wardrobe-source/textures/hair-albedo.png"))
+front_hair.node_tree.links.new(node.outputs["Color"],front_hair.node_tree.nodes.get("Principled BSDF").inputs["Base Color"])
+fabric_normal(front_hair,"hair")
+
+# Independent tapered front locks bridge the publisher bob into chest-length
+# hair. Their curved ridges preserve the sculpted style of the retained crown.
+for side in [-1,1]:
+    for strand in range(5):
+        s=Surface()
+        rows=[]
+        offset=(strand-2)*.010
+        end=[1.30,1.24,1.28,1.34,1.31][strand]
+        controls=[(.091+offset*.5,-.050,1.72,.005),(.118+offset,-.095,1.62,.008),
+              (.132+offset,-.160,1.51,.007),(.145+offset,-.185,1.40,.005),
+              (.139+offset,-.190,1.34,.003),(.121+offset,-.181,end,.0004)]
+        path=[]
+        for segment in range(len(controls)-1):
+            p0=Vector(controls[max(0,segment-1)])
+            p1=Vector(controls[segment])
+            p2=Vector(controls[segment+1])
+            p3=Vector(controls[min(len(controls)-1,segment+2)])
+            for sample in range(5):
+                t=sample/5
+                point=.5*((2*p1)+(-p0+p2)*t+(2*p0-5*p1+4*p2-p3)*t*t+
+                          (-p0+3*p1-3*p2+p3)*t*t*t)
+                path.append(tuple(point))
+        path.append(controls[-1])
+        for level,(x,y,z,width) in enumerate(path):
+            ids=[]
+            for j in range(12):
+                angle=j*math.tau/12
+                ridge=.0003*math.cos(angle*3)
+                ids.append(s.point((side*x+(width+ridge)*math.sin(angle),
+                    y+(.003+ridge)*math.cos(angle),z)))
+            rows.append(ids)
+        for level in range(len(rows)-1):
+            for j in range(12):
+                n=(j+1)%12
+                s.face((rows[level][j],rows[level][n],rows[level+1][n],rows[level+1][j]),
+                    [(j/12,level/25),((j+1)/12,level/25),((j+1)/12,(level+1)/25),(j/12,(level+1)/25)])
+        lock=s.object("Wardrobe_Female_FrontLock",front_hair)
+        lock.parent=rig
+        head=lock.vertex_groups.new(name="Head")
+        chest=lock.vertex_groups.new(name="spine_03")
+        for v in lock.data.vertices:
+            t=max(0,min(.7,(1.56-v.co.z)/.30))
+            head.add([v.index],1-t,"REPLACE")
+            if t:chest.add([v.index],t,"REPLACE")
+        modifier=lock.modifiers.new("Hair head and chest flow","ARMATURE")
+        modifier.object=rig
+        role(lock,"hair")
+        pieces.append(lock)
 
 for obj in bpy.context.scene.objects:
     if obj.type=="MESH" and not obj.vertex_groups:obj.hide_render=True

@@ -6,7 +6,7 @@ from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 OUT=ROOT/"assets/wardrobe-source/textures"
 records=[]
-for fabric in ["knit","twill"]:
+for fabric in ["knit","twill","hair"]:
     bpy.ops.wm.read_factory_settings(use_empty=True)
     bpy.ops.mesh.primitive_plane_add(size=.24)
     obj=bpy.context.object
@@ -18,7 +18,7 @@ for fabric in ["knit","twill"]:
     texture=nodes.new("ShaderNodeTexImage")
     texture.image=bpy.data.images.load(str(source))
     bump=nodes.new("ShaderNodeBump")
-    bump.inputs["Distance"].default_value=.00055 if fabric=="knit" else .00015
+    bump.inputs["Distance"].default_value={"knit":.00055,"twill":.00015,"hair":.00020}[fabric]
     bump.inputs["Strength"].default_value=.55
     links.new(texture.outputs["Color"],bump.inputs["Height"])
     links.new(bump.outputs["Normal"],bsdf.inputs["Normal"])

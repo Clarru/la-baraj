@@ -41,9 +41,31 @@ the live renderer or network yet. Skeleton attachments reuse one canonical
 skeleton per actor and share immutable geometry; only per-actor materials will
 carry colour changes. The original appearance selects zero extra downloads.
 
-No garment or hat has final visual acceptance. All-combination/adverse-pose QA,
-runtime integration, Appearance UI, network synchronization and game acceptance
-remain required. Focused tests pass for bounded IDs, all configuration combinations,
+The client/server and local/remote renderer are now connected, with an optional
+Menu → Appearance dialog, real rotatable on-demand 3D preview, category focus,
+body/garment/hair/facial-hair selections, colours and staged Apply/Cancel.
+Default appearances still request no additional wardrobe files. Classic trouser
+dyes use a neutral albedo on a separate UV set while retaining the approved
+normal/roughness atlas, so pale colours do not multiply a brown atlas into brown.
+
+No garment or hat has final visual acceptance. The first 243-combination front/rear
+render pass found the guessed hiking collar floating around the ankle. It was
+replaced by a bound rim extruded directly from the source last; a repeated review
+is required. Browser UI, activity poses and performance acceptance remain pending.
+The localhost-only paired fixture uses the real RoomCore and two MultiplayerRoom
+clients over an in-browser channel, never a backend listener or production socket.
+
+Focused tests pass for bounded IDs, all configuration combinations,
 fit resolution, bind mismatch rejection, geometry/texture sharing, durable save
 failure/retry and receipt ordering. TypeScript checks pass for client and server.
-No shared preview, release checkout, world state or deployment has been changed.
+The full frontend suite passes 581 tests. All 182 protocol tests and client/server
+TypeScript checks pass. The normal production build and isolated fixture build
+pass. The packed model hashes are checked against the allowlisted URL versions.
+Ordinary movement packets preserve the existing cosmetic object without parsing
+or serializing its fields again.
+Its first read-only preflight found no conflicting paths or shared dependency
+differences against the release owner's protected normal/editor preview.
+
+No shared preview, release checkout, live world state or deployment has been
+changed by this feature chat. Runtime GLBs are explicitly packed as preview
+candidates; final packing requires a matching visual acceptance record.

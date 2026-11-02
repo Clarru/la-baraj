@@ -11,6 +11,6 @@ def fabric_normal(material,fabric):
     texture.image=bpy.data.images.load(str(path),check_existing=True)
     texture.image.colorspace_settings.name="Non-Color"
     normal=nodes.new("ShaderNodeNormalMap")
-    normal.inputs["Strength"].default_value=.6
+    normal.inputs["Strength"].default_value=.4 if fabric=="hair" else .6
     links.new(texture.outputs["Color"],normal.inputs["Color"])
     links.new(normal.outputs["Normal"],nodes.get("Principled BSDF").inputs["Normal"])

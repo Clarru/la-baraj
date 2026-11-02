@@ -27,25 +27,25 @@
     {
       "id": "beard-moustache",
       "candidate": "assets/source-models/wardrobe/optimized/beard-moustache.glb",
-      "bytes": 19944,
-      "triangles": 14,
+      "bytes": 23648,
+      "triangles": 124,
       "meshes": 1,
       "textures": 0,
       "retainedApprovedTextures": 0,
       "joints": 65,
       "bounds": {
         "min": [
-          -0.00949491560459137,
-          1.6430000066757202,
-          0.08511773496866226
+          -0.045538607984781265,
+          1.621999979019165,
+          0.06635086238384247
         ],
         "max": [
-          0.00949491560459137,
+          0.045538607984781265,
           1.6440913677215576,
-          0.09275275468826294
+          0.09683027118444443
         ]
       },
-      "sha256": "eed29a36f70fb8fe70d293bc0660940b5a7a4bc6a5cf9bac370b37e37265e0f8"
+      "sha256": "7908187322d595873f70369cd0ad31f1fdca06327cee4ce8b9ff8ce35a8cf30d"
     },
     {
       "id": "beard-short",
@@ -91,7 +91,76 @@
           0.0769030973315239
         ]
       },
-      "sha256": "f9d6eac3d6ab3297ffb7629ca90ba19a9f5231995e3008ad05281eb6f95b6df9"
+      "sha256": "77058a5690b8ef43c4290c7d6b2c1a2ae400e2e0cadfb1c28c2ffad240f3789d"
+    },
+    {
+      "id": "bottom-classic-dyed-ankle",
+      "candidate": "assets/source-models/wardrobe/optimized/bottom-classic-dyed-ankle.glb",
+      "bytes": 667204,
+      "triangles": 952,
+      "meshes": 1,
+      "textures": 3,
+      "retainedApprovedTextures": 2,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.22150075435638428,
+          0.23000000417232513,
+          -0.1427704393863678
+        ],
+        "max": [
+          0.22150078415870667,
+          1.0536991357803345,
+          0.0769030973315239
+        ]
+      },
+      "sha256": "b1b7dd1d35ea55afa99c2a76ce9f87eb26fb4ce0fb20abda5b3a3af83e6abec1"
+    },
+    {
+      "id": "bottom-classic-dyed-full",
+      "candidate": "assets/source-models/wardrobe/optimized/bottom-classic-dyed-full.glb",
+      "bytes": 672896,
+      "triangles": 1112,
+      "meshes": 1,
+      "textures": 3,
+      "retainedApprovedTextures": 2,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.22150075435638428,
+          0.111098513007164,
+          -0.1427704393863678
+        ],
+        "max": [
+          0.22150078415870667,
+          1.0536991357803345,
+          0.0769030973315239
+        ]
+      },
+      "sha256": "b475b68b73b0b1529c7b8c7a15969eccb485157fdd41aa4cc47ea8abe1feeebc"
+    },
+    {
+      "id": "bottom-classic-dyed-tucked",
+      "candidate": "assets/source-models/wardrobe/optimized/bottom-classic-dyed-tucked.glb",
+      "bytes": 672896,
+      "triangles": 1112,
+      "meshes": 1,
+      "textures": 3,
+      "retainedApprovedTextures": 2,
+      "joints": 65,
+      "bounds": {
+        "min": [
+          -0.23513281345367432,
+          0.4030441343784332,
+          -0.1517549753189087
+        ],
+        "max": [
+          0.2351328432559967,
+          1.0536991357803345,
+          0.0769030973315239
+        ]
+      },
+      "sha256": "deb637225f803395505a20da58d9de05ff05ac8f47ba77ed53c0a2dc8044c320"
     },
     {
       "id": "bottom-classic-full",
@@ -114,7 +183,7 @@
           0.0769030973315239
         ]
       },
-      "sha256": "6f6e8d479f95f89183d07cc66d1e1bf42d658d80d7fa70a8511c18d19863f1c3"
+      "sha256": "9dadae65a1c2798ba0e4ce95036c113919a4d1e09cdadc077a43d24a340af044"
     },
     {
       "id": "bottom-classic-tucked",
@@ -137,7 +206,7 @@
           0.0769030973315239
         ]
       },
-      "sha256": "3e7cdf57e76556148a34e40b58dff0719d1a698096cb85819c2f034f5690e173"
+      "sha256": "1ff3dc25d4701a42531a15edd5fe68d410dfe39e1ab42491dd640c6eb681a00a"
     },
     {
       "id": "bottom-trail-cargo-ankle",
@@ -160,7 +229,7 @@
           0.0769030973315239
         ]
       },
-      "sha256": "6e980bb9fd3f4fd5165e06af87c02896c0e688c4abe6cfc511f2088930ae7ca0"
+      "sha256": "781e245c70fd5a3287b064067017169a23c223f0a24cecb8bc323d53f2c0b545"
     },
     {
       "id": "bottom-trail-cargo-full",
@@ -183,7 +252,7 @@
           0.0769030973315239
         ]
       },
-      "sha256": "454c71ca6d8689e0a84a44be312a0d33b529fbe2dddb09f2db20883e5049fd28"
+      "sha256": "bc61a63329bfab0f3f0facf1f4a25d07d51f51af31e8acf2ca37aa0670303608"
     },
     {
       "id": "bottom-trail-cargo-tucked",
@@ -206,7 +275,7 @@
           0.0769030973315239
         ]
       },
-      "sha256": "7b6b14254ceb494c3f5599227dbfdc077eefabc5f01f66cb6ab1088ef5513030"
+      "sha256": "4a695996450017db56f77f24a7b0b0d1e7e051c64d685305bfaf72bedf00f72e"
     },
     {
       "id": "bottom-weekend-shorts-ankle",
@@ -229,7 +298,7 @@
           0.0769030973315239
         ]
       },
-      "sha256": "9af2c6e4d9dc85253b00125c827d44f2162f09d029535ad9ee9b301730f5286d"
+      "sha256": "2aa0ed70babc20ebf2167d58f0c4e23cf397c31f78cc019da92ac09dd0cebfe7"
     },
     {
       "id": "bottom-weekend-shorts-tucked",
@@ -252,7 +321,7 @@
           0.0769030973315239
         ]
       },
-      "sha256": "0916f99eda6ea1f670916f09e2f41fba0655f2b82b702ebecc26cb27edf7864c"
+      "sha256": "096fd4a62412aab5289a715bdc47286b4341b6722570100d87ae6a1f598dcd03"
     },
     {
       "id": "bottom-weekend-shorts",
@@ -275,15 +344,15 @@
           0.0769030973315239
         ]
       },
-      "sha256": "4178272a469a6eaae32ba198772bd1bc02bc9b8b74e0b584c0ada28706058cab"
+      "sha256": "ede3a1e260f7431b5463b67770e974c7048b102c8f0962b76cfc92511f1377d0"
     },
     {
       "id": "female-brunette-tailored",
       "candidate": "assets/source-models/wardrobe/optimized/female-brunette-tailored.glb",
-      "bytes": 2378652,
-      "triangles": 29150,
+      "bytes": 2819188,
+      "triangles": 35310,
       "meshes": 7,
-      "textures": 9,
+      "textures": 11,
       "retainedApprovedTextures": 0,
       "joints": 65,
       "bounds": {
@@ -295,10 +364,10 @@
         "max": [
           0.9316649436950684,
           1.8274903297424316,
-          0.17119386792182922
+          0.19291599094867706
         ]
       },
-      "sha256": "b8334f9b90ae7da731806fc72d229183a173eb8a85ca5a832177f5e9cceeb0f4"
+      "sha256": "62d67be4ac6e9dbe937a046c620be6a0f778007bd39e9f23e5ce048b98d50376"
     },
     {
       "id": "hair-buzzed",
@@ -464,8 +533,8 @@
     {
       "id": "shoes-canvas-low",
       "candidate": "assets/source-models/wardrobe/optimized/shoes-canvas-low.glb",
-      "bytes": 96576,
-      "triangles": 1606,
+      "bytes": 105672,
+      "triangles": 1890,
       "meshes": 1,
       "textures": 0,
       "retainedApprovedTextures": 0,
@@ -482,7 +551,7 @@
           0.16754069924354553
         ]
       },
-      "sha256": "1e72c764832b57f0e9ab85205da2acd619e6c16e8a12c8f7bc1a8adfc53bf06f"
+      "sha256": "7d753e558995274e514b80c59547b888212c6de082a9383449b3f87a8634406c"
     },
     {
       "id": "shoes-lake-boots",
@@ -510,25 +579,25 @@
     {
       "id": "shoes-trail-hikers",
       "candidate": "assets/source-models/wardrobe/optimized/shoes-trail-hikers.glb",
-      "bytes": 188620,
-      "triangles": 4478,
+      "bytes": 544160,
+      "triangles": 2374,
       "meshes": 1,
-      "textures": 0,
-      "retainedApprovedTextures": 0,
+      "textures": 3,
+      "retainedApprovedTextures": 3,
       "joints": 65,
       "bounds": {
         "min": [
-          -0.18809999525547028,
+          -0.1826712042093277,
           -0.003967706114053726,
-          -0.1477999985218048
+          -0.1391800045967102
         ],
         "max": [
-          0.18809999525547028,
-          0.24799999594688416,
+          0.1826712191104889,
+          0.24199999868869781,
           0.16754069924354553
         ]
       },
-      "sha256": "0c274341b88003b819c03279daf64aeb4367cae5648c2a04f0d7443d8a5befe6"
+      "sha256": "78dbe3e831518db8659d524a12441b1a5f3918205fef91750eb4012961ee37a3"
     },
     {
       "id": "top-trail-overshirt",

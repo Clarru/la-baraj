@@ -54,10 +54,14 @@ export function GameDialog({
   title,
   onClose,
   children,
+  className = "",
+  closeDisabled = false,
 }: {
   title: string;
   onClose: () => void;
   children: ReactNode;
+  className?: string;
+  closeDisabled?: boolean;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
   useEffect(() => {
@@ -73,11 +77,12 @@ export function GameDialog({
   return (
     <dialog
       ref={dialog}
-      className="game-dialog"
+      className={"game-dialog " + className}
+      aria-busy={closeDisabled || undefined}
       aria-label={title}
       onCancel={(event) => {
         event.preventDefault();
-        onClose();
+        if (!closeDisabled) onClose();
       }}
     >
       <header className="game-dialog-heading">
@@ -86,6 +91,7 @@ export function GameDialog({
           className="game-close"
           onClick={onClose}
           aria-label={`Close ${title.toLowerCase()}`}
+          disabled={closeDisabled}
         >
           <GameIcon name="close" size={20} />
         </button>
@@ -103,6 +109,7 @@ export function GameMenu({
   canLookHome = true,
   onRename,
   onControls,
+  onAppearance,
   onHome,
   onReset,
   onWave,
@@ -116,6 +123,7 @@ export function GameMenu({
   canLookHome?: boolean;
   onRename: (name: string) => void;
   onControls: () => void;
+  onAppearance?: () => void;
   onHome: () => void;
   onReset: () => void;
   onWave?: () => void;
@@ -166,6 +174,12 @@ export function GameMenu({
         </p>
       )}
       <div className="game-menu-actions">
+        {onAppearance && (
+          <button onClick={onAppearance}>
+            <GameIcon name="people" size={29} />
+            <span>Appearance</span>
+          </button>
+        )}
         {onWave && (
           <button
             onClick={onWave}

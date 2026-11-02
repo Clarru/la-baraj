@@ -10,7 +10,9 @@
     "Wardrobe_Female_Tights",
     "Wardrobe_Female_Blazer",
     "Blazer notched lapel",
+    "Blazer tailored pocket welt",
     "Blazer notched lapel.001",
+    "Blazer tailored pocket welt.001",
     "Wardrobe_Female_CropTop",
     "Wardrobe_Female_TailoredShorts",
     "Wardrobe_Female_Belt",
@@ -28,7 +30,17 @@
     "Wardrobe_Female_SlenderHeel",
     "Wardrobe_Female_PointedPump.001",
     "Wardrobe_Female_SlenderHeel.001",
-    "Wardrobe_Female_LongBrunette"
+    "Wardrobe_Female_LongBrunette",
+    "Wardrobe_Female_FrontLock",
+    "Wardrobe_Female_FrontLock.001",
+    "Wardrobe_Female_FrontLock.002",
+    "Wardrobe_Female_FrontLock.003",
+    "Wardrobe_Female_FrontLock.004",
+    "Wardrobe_Female_FrontLock.005",
+    "Wardrobe_Female_FrontLock.006",
+    "Wardrobe_Female_FrontLock.007",
+    "Wardrobe_Female_FrontLock.008",
+    "Wardrobe_Female_FrontLock.009"
   ],
   "canonicalBones": 65,
   "accepted": false
